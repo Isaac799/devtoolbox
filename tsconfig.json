@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ES2023",
+        "module": "esnext",
+        "lib": ["dom", "es6"],
+        "strict": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "outDir": "dist",
+        "rootDir": "src",
+        "sourceMap": true,
+        "declaration": false,
+        "removeComments": true,
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true
+    },
+    "include": ["src/public/scripts/**/*"],
+    "exclude": ["node_modules", "dist"]
+}
