@@ -10,13 +10,13 @@ import {
         STATE_CHANGE_TRIGGERS,
         Types,
         UNALIASED_SELF_REFERENCE_ALIAS,
-} from "./structure";
+} from './structure';
 
 /**
  * Tokenize text input. Result is used for all other features.
  */
 export class InputParser {
-        input: string = "";
+        input: string = '';
         output: {
                 [x: string]: SqlSchema;
         } = {};
@@ -38,7 +38,7 @@ export class InputParser {
         }
 
         Clear() {
-                this.input = "";
+                this.input = '';
                 this.output = {};
                 this.errorMessages = [];
                 return this;
@@ -57,7 +57,7 @@ export class InputParser {
                 let schemas: {
                         [x: string]: SqlSchema;
                 } = {
-                        public: new SqlSchema("public"),
+                        public: new SqlSchema('public'),
                 };
 
                 searchingLines: while (lines.length > 0) {
@@ -85,93 +85,58 @@ export class InputParser {
 
                         switch (state) {
                                 case TokenizingState.Attribute:
-                                        let attributes = this.CreateAttributes(
-                                                line,
-                                                schemas,
-                                                table
-                                        );
+                                        let attributes = this.CreateAttributes(line, schemas, table);
 
-                                        if (
-                                                !attributes ||
-                                                attributes.length === 0
-                                        ) {
+                                        if (!attributes || attributes.length === 0) {
                                                 state = TokenizingState.None;
                                                 lines.unshift(line);
                                                 continue searchingLines;
                                         }
 
-                                        for (
-                                                let m = 0;
-                                                m < attributes.length;
-                                                m++
-                                        ) {
+                                        for (let m = 0; m < attributes.length; m++) {
                                                 const attribute = attributes[m];
 
-                                                let validAttribute =
-                                                        this.ValidAttribute(
-                                                                attribute,
-                                                                table
-                                                        );
+                                                let validAttribute = this.ValidAttribute(attribute, table);
 
                                                 if (!validAttribute) {
                                                         // we don't need to reset the state
                                                         continue searchingLines;
                                                 }
 
-                                                table.attributes[
-                                                        attribute.value
-                                                ] = attribute;
+                                                table.attributes[attribute.value] = attribute;
                                         }
 
                                         break;
                                 case TokenizingState.Schema:
-                                        let newSchema =
-                                                this.ParseSqlSchema(line);
+                                        let newSchema = this.ParseSqlSchema(line);
                                         schemas[newSchema.name] = newSchema;
                                         state = TokenizingState.None;
                                         break;
                                 case TokenizingState.Table:
-                                        let newTable = this.ParseSqlTable(
-                                                schema,
-                                                line
-                                        );
+                                        let newTable = this.ParseSqlTable(schema, line);
 
-                                        if (
-                                                !this.ValidTable(
-                                                        newTable,
-                                                        tables
-                                                )
-                                        ) {
+                                        if (!this.ValidTable(newTable, tables)) {
                                                 // we don't need to reset the state
                                                 state = TokenizingState.None;
                                                 continue searchingLines;
                                         }
 
                                         let schemaList = Object.values(schemas);
-                                        newTable.parentSchema =
-                                                schemaList[
-                                                        schemaList.length - 1
-                                                ];
+                                        newTable.parentSchema = schemaList[schemaList.length - 1];
 
                                         tables[newTable.label] = newTable;
                                         state = TokenizingState.Attribute;
                                         break;
                                 case TokenizingState.None:
-                                        let nextState =
-                                                this.DetermineNextState(line);
-                                        if (
-                                                nextState ===
-                                                TokenizingState.None
-                                        ) {
+                                        let nextState = this.DetermineNextState(line);
+                                        if (nextState === TokenizingState.None) {
                                                 continue searchingLines;
                                         }
                                         state = nextState;
                                         lines.unshift(line);
                                         continue searchingLines;
                                 default:
-                                        this.SaveErrorMessage(
-                                                `Unhandled state: "${state}"!`
-                                        );
+                                        this.SaveErrorMessage(`Unhandled state: "${state}"!`);
                                         return {};
                         }
                 }
@@ -180,12 +145,7 @@ export class InputParser {
                         [x: string]: SqlSchema;
                 } = {};
                 for (const schemaName in schemas) {
-                        if (
-                                !Object.prototype.hasOwnProperty.call(
-                                        schemas,
-                                        schemaName
-                                )
-                        ) {
+                        if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
                                 continue;
                         }
                         const schema = schemas[schemaName];
@@ -199,23 +159,13 @@ export class InputParser {
 
         GenerateLogic(schemas: { [x: string]: SqlSchema }) {
                 for (const schemaName in schemas) {
-                        if (
-                                !Object.prototype.hasOwnProperty.call(
-                                        schemas,
-                                        schemaName
-                                )
-                        ) {
+                        if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
                                 continue;
                         }
                         const schema = schemas[schemaName];
 
                         for (const tableName in schema.tables) {
-                                if (
-                                        !Object.prototype.hasOwnProperty.call(
-                                                schema.tables,
-                                                tableName
-                                        )
-                                ) {
+                                if (!Object.prototype.hasOwnProperty.call(schema.tables, tableName)) {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
@@ -224,14 +174,9 @@ export class InputParser {
 
                                 if (
                                         !table.hasPrimaryKey() &&
-                                        (table.logic.create !== null ||
-                                                table.logic.read !== null ||
-                                                table.logic.update !== null ||
-                                                table.logic.delete !== null)
+                                        (table.logic.create !== null || table.logic.read !== null || table.logic.update !== null || table.logic.delete !== null)
                                 ) {
-                                        this.SaveErrorMessage(
-                                                `Cannot generate logic for '${table.parentSchema.name}.${table.label}' without a primary key.`
-                                        );
+                                        this.SaveErrorMessage(`Cannot generate logic for '${table.parentSchema.name}.${table.label}' without a primary key.`);
                                 }
 
                                 table.fillInEmptyLogic();
@@ -241,34 +186,22 @@ export class InputParser {
         }
 
         Run() {
-                let lines: Array<string> = this.input
-                        .split("\n")
-                        .filter((e) => !!e);
+                let lines: Array<string> = this.input.split('\n').filter((e) => !!e);
                 let schemas = this.ProcessLines(lines);
                 this.GenerateLogic(schemas);
                 this.output = schemas;
                 return this;
         }
 
-        ExtractSqlOptions(
-                values: Array<string>,
-                position: number
-        ): Array<string> {
+        ExtractSqlOptions(values: Array<string>, position: number): Array<string> {
                 let remainingItems = values.slice(position, values.length);
                 let relevantRemainingItems: string[] = [];
                 for (let i = 0; i < remainingItems.length; i++) {
                         let option = remainingItems[i];
                         option = option.trim();
                         if (!option) continue;
-                        if (
-                                relevantRemainingItems[
-                                        relevantRemainingItems.length - 1
-                                ] === "*" &&
-                                option === "*"
-                        ) {
-                                relevantRemainingItems[
-                                        relevantRemainingItems.length - 1
-                                ] += "*";
+                        if (relevantRemainingItems[relevantRemainingItems.length - 1] === '*' && option === '*') {
+                                relevantRemainingItems[relevantRemainingItems.length - 1] += '*';
                         } else {
                                 relevantRemainingItems.push(option);
                         }
@@ -281,7 +214,7 @@ export class InputParser {
         }
 
         ParseSqlSchema(line: string): SqlSchema {
-                let splitSqlAttribute: Array<string> = line.trim().split(" ");
+                let splitSqlAttribute: Array<string> = line.trim().split(' ');
                 // Because matching regex gets us this far re grantee items in these positions
                 let value = splitSqlAttribute[1];
                 let options = this.ExtractSqlOptions(splitSqlAttribute, 2);
@@ -292,12 +225,8 @@ export class InputParser {
                 return schema;
         }
 
-        ParseSqlAttribute(
-                line: string,
-                sqlType: Types,
-                parentTable: SqlTable
-        ): SqlTableAttribute {
-                let splitSqlAttribute: Array<string> = line.trim().split(" ");
+        ParseSqlAttribute(line: string, sqlType: Types, parentTable: SqlTable): SqlTableAttribute {
+                let splitSqlAttribute: Array<string> = line.trim().split(' ');
                 // Because matching regex gets us this far re grantee items in these positions
                 let shortHandType = splitSqlAttribute[1];
                 let value = splitSqlAttribute[2];
@@ -309,8 +238,7 @@ export class InputParser {
                         const option = options[k];
                         let optionAdded = false;
                         for (const key in ATTRIBUTE_OPTION) {
-                                const sqlTableAttrOption =
-                                        ATTRIBUTE_OPTION[key];
+                                const sqlTableAttrOption = ATTRIBUTE_OPTION[key];
                                 if (!sqlTableAttrOption.test(option)) {
                                         continue;
                                 }
@@ -322,57 +250,44 @@ export class InputParser {
                         }
                 }
 
-                let attribute: SqlTableAttribute = new SqlTableAttribute(
-                        parentTable,
-                        sqlType
-                );
+                let attribute: SqlTableAttribute = new SqlTableAttribute(parentTable, sqlType);
 
                 attribute.shortHandType = shortHandType;
                 attribute.value = value;
                 attribute.options = new Set([...validOptions]);
                 attribute.defaultValue = undefined;
 
-                let wantToBeReadOnly = attribute.value[0] === "_";
+                let wantToBeReadOnly = attribute.value[0] === '_';
                 if (wantToBeReadOnly) {
                         attribute.readOnly = true;
                         // we just care to replace the first one
-                        attribute.value = attribute.value.replace("_", "");
+                        attribute.value = attribute.value.replace('_', '');
                 }
 
                 // TODO improve default validation
 
-                let defaultCandidate = invalidOptions.join(" ");
+                let defaultCandidate = invalidOptions.join(' ');
 
                 if (!defaultCandidate) {
                         return attribute;
                 }
                 if (!attribute.isModifiable()) {
-                        this.SaveErrorMessage(
-                                `Default value '${defaultCandidate}' was ignored because it is not modifiable.`
-                        );
+                        this.SaveErrorMessage(`Default value '${defaultCandidate}' was ignored because it is not modifiable.`);
                 } else if (attribute.isDefaultNull()) {
-                        this.SaveErrorMessage(
-                                `Default value '${defaultCandidate}' was ignored because it is already defaulted to null.`
-                        );
+                        this.SaveErrorMessage(`Default value '${defaultCandidate}' was ignored because it is already defaulted to null.`);
                 } else if (attribute.isForeignKey()) {
-                        this.SaveErrorMessage(
-                                `Default value '${defaultCandidate}' was ignored because it is a foreign key.`
-                        );
+                        this.SaveErrorMessage(`Default value '${defaultCandidate}' was ignored because it is a foreign key.`);
                 } else if (defaultCandidate.match(/^[nN][uU][lL]{1,2}$/)) {
                         if (attribute.isNullable()) {
                                 attribute.defaultValue = null;
                         } else {
-                                this.SaveErrorMessage(
-                                        `Default value '${defaultCandidate}' was ignored because it was flagged as not null.`
-                                );
+                                this.SaveErrorMessage(`Default value '${defaultCandidate}' was ignored because it was flagged as not null.`);
                         }
                 } else if (attribute.isNumerical()) {
                         if (defaultCandidate.match(/^[0-9]{1,}$/)) {
                                 attribute.defaultValue = defaultCandidate;
                         } else {
-                                this.SaveErrorMessage(
-                                        `Default value '${defaultCandidate}' was ignored. Only a numerical default value works for a number.`
-                                );
+                                this.SaveErrorMessage(`Default value '${defaultCandidate}' was ignored. Only a numerical default value works for a number.`);
                         }
                 } else if (attribute.isText()) {
                         // if (defaultCandidate.match(/^[a-zA-Z ]{1,}$/)) {
@@ -387,16 +302,14 @@ export class InputParser {
                         // Aims to support CURRENT_TIMESTAMP and such
                         attribute.defaultValue = `${defaultCandidate}`;
                 } else {
-                        this.SaveErrorMessage(
-                                `Default value '${defaultCandidate}' was ignored. Unsure how to handle it.`
-                        );
+                        this.SaveErrorMessage(`Default value '${defaultCandidate}' was ignored. Unsure how to handle it.`);
                 }
 
                 return attribute;
         }
 
         ParseSqlTable(parentSchema: SqlSchema, line: string): SqlTable {
-                let splitLine = line.split(" ");
+                let splitLine = line.split(' ');
                 let label = splitLine[1];
                 let options = this.ExtractSqlOptions(splitLine, 2);
 
@@ -405,27 +318,21 @@ export class InputParser {
                 newTable.label = label;
                 newTable.options = options;
 
-                if (newTable.options.includes("@")) {
-                        let attr = new SqlTableAttribute(
-                                newTable,
-                                Types.TIMESTAMP
-                        );
-                        attr.shortHandType = "ts";
-                        attr.defaultValue = "CURRENT_TIMESTAMP";
-                        attr.value = "record_created_on";
-                        attr.options = new Set(["!"]);
+                if (newTable.options.includes('@')) {
+                        let attr = new SqlTableAttribute(newTable, Types.TIMESTAMP);
+                        attr.shortHandType = 'ts';
+                        attr.defaultValue = 'CURRENT_TIMESTAMP';
+                        attr.value = 'record_created_on';
+                        attr.options = new Set(['!']);
                         attr.readOnly = true;
                         newTable.attributes[attr.value] = attr;
                 }
-                if (newTable.options.includes("+")) {
-                        let attr = new SqlTableAttribute(
-                                newTable,
-                                Types.SERIAL
-                        );
-                        attr.shortHandType = "i";
+                if (newTable.options.includes('+')) {
+                        let attr = new SqlTableAttribute(newTable, Types.SERIAL);
+                        attr.shortHandType = 'i';
                         attr.defaultValue = undefined;
-                        attr.value = "id";
-                        attr.options = new Set(["!", "+"]);
+                        attr.value = 'id';
+                        attr.options = new Set(['!', '+']);
                         newTable.attributes[attr.value] = attr;
                 }
                 return newTable;
@@ -440,16 +347,12 @@ export class InputParser {
                 let tableLabels = Object.keys(tables);
                 let tableAlreadyExists = tableLabels.includes(newTable.label);
                 if (tableAlreadyExists) {
-                        this.SaveErrorMessage(
-                                `Duplicate table ${newTable.label} detected. Only the first one is used.`
-                        );
+                        this.SaveErrorMessage(`Duplicate table ${newTable.label} detected. Only the first one is used.`);
                         return false;
                 }
 
                 if (!/^[a-zA-Z_]{3,32}$/.test(newTable.label)) {
-                        this.SaveErrorMessage(
-                                `Did not add table '${newTable.label}' because it must be a string'.`
-                        );
+                        this.SaveErrorMessage(`Did not add table '${newTable.label}' because it must be a string'.`);
                         return false;
                 }
                 return true;
@@ -473,18 +376,18 @@ export class InputParser {
 
                 let foreignTableName: string = attr.value;
                 let foreignTableSchemaName: string | null = null;
-                let foreignTableNameAlias: string = "";
+                let foreignTableNameAlias: string = '';
 
                 // Part A
                 if (/[a-zA-Z]{1,}\|[a-zA-Z]{1,}/.test(attr.value)) {
-                        let splitValue = attr.value.split("|");
+                        let splitValue = attr.value.split('|');
                         foreignTableName = splitValue[0];
                         foreignTableNameAlias = splitValue[1];
                 }
 
                 // find (if there is) the referenced schema
                 if (/[a-zA-Z]{1,}\.[a-zA-Z]{1,}/.test(foreignTableName)) {
-                        let splitValue = foreignTableName.split(".");
+                        let splitValue = foreignTableName.split('.');
                         foreignTableSchemaName = splitValue[0];
                         foreignTableName = splitValue[1];
                 }
@@ -498,9 +401,7 @@ export class InputParser {
                 }
 
                 if (!/^[a-zA-Z_]{3,32}$/.test(foreignTableName)) {
-                        this.SaveErrorMessage(
-                                `Did not add reference to table '${attr.value}' because it must be a valid string.`
-                        );
+                        this.SaveErrorMessage(`Did not add reference to table '${attr.value}' because it must be a valid string.`);
                         return null;
                 }
 
@@ -510,9 +411,7 @@ export class InputParser {
                 // get columns from referenced table
                 let referencedSchema = schemas[foreignTableSchemaName];
                 if (!referencedSchema) {
-                        this.SaveErrorMessage(
-                                `Did not add reference '${attr.value}' because cannot find schema '${foreignTableSchemaName}'.`
-                        );
+                        this.SaveErrorMessage(`Did not add reference '${attr.value}' because cannot find schema '${foreignTableSchemaName}'.`);
                         return null;
                 }
                 let referencedTable = referencedSchema.tables[foreignTableName];
@@ -527,12 +426,7 @@ export class InputParser {
                 let keys = referencedTable.primaryKeys();
 
                 for (const attributeName in keys) {
-                        if (
-                                !Object.prototype.hasOwnProperty.call(
-                                        keys,
-                                        attributeName
-                                )
-                        ) {
+                        if (!Object.prototype.hasOwnProperty.call(keys, attributeName)) {
                                 continue;
                         }
                         const key = keys[attributeName];
@@ -544,16 +438,10 @@ export class InputParser {
                                 type = Types.INT;
                         }
 
-                        let newAttribute = new SqlTableAttribute(
-                                attr.parentTable,
-                                type
-                        );
+                        let newAttribute = new SqlTableAttribute(attr.parentTable, type);
 
                         // add the reference to
-                        newAttribute.referenceTo = new SqlReferenceTo(
-                                foreignTableNameAlias,
-                                key
-                        );
+                        newAttribute.referenceTo = new SqlReferenceTo(foreignTableNameAlias, key);
 
                         if (attr.parentTable.id === referencedTable.id) {
                                 newAttribute.referenceToSelf = true;
@@ -591,37 +479,23 @@ export class InputParser {
 
         ValidAttribute(attr: SqlTableAttribute, table: SqlTable): boolean {
                 for (const attributeName in table.attributes) {
-                        if (
-                                !Object.prototype.hasOwnProperty.call(
-                                        table.attributes,
-                                        attributeName
-                                )
-                        ) {
+                        if (!Object.prototype.hasOwnProperty.call(table.attributes, attributeName)) {
                                 continue;
                         }
                         const attribute = table.attributes[attributeName];
                         if (attribute.value === attr.value) {
-                                this.SaveErrorMessage(
-                                        `Cannot create column '${attr.value}' on table '${table.label}' because it already exists.`
-                                );
+                                this.SaveErrorMessage(`Cannot create column '${attr.value}' on table '${table.label}' because it already exists.`);
                                 return false;
                         }
 
-                        if (
-                                `${attribute.referenceTo?.column.parentTable.label}|${attribute.referenceTo?.tableAlias}` ===
-                                attr.value
-                        ) {
-                                this.SaveErrorMessage(
-                                        `Cannot create column '${attr.value}' on table '${table.label}' because it already exists.`
-                                );
+                        if (`${attribute.referenceTo?.column.parentTable.label}|${attribute.referenceTo?.tableAlias}` === attr.value) {
+                                this.SaveErrorMessage(`Cannot create column '${attr.value}' on table '${table.label}' because it already exists.`);
                                 return false;
                         }
                 }
 
                 if (!attr.isNullable() && attr.isDefaultNull()) {
-                        this.SaveErrorMessage(
-                                `Cannot create column '${attr.value}' on table '${table.label}' due to conflicting nullability flags.`
-                        );
+                        this.SaveErrorMessage(`Cannot create column '${attr.value}' on table '${table.label}' due to conflicting nullability flags.`);
                         return false;
                 }
 
@@ -646,17 +520,9 @@ export class InputParser {
                         if (!sqlTypeCheck.test(line)) {
                                 continue;
                         }
-                        let typicalAttribute = this.ParseSqlAttribute(
-                                line,
-                                sqlType as Types,
-                                table
-                        );
+                        let typicalAttribute = this.ParseSqlAttribute(line, sqlType as Types, table);
                         if (typicalAttribute.isForeignKey()) {
-                                let foreignAttributes =
-                                        this.CreateReferenceAttributes(
-                                                typicalAttribute,
-                                                schemas
-                                        );
+                                let foreignAttributes = this.CreateReferenceAttributes(typicalAttribute, schemas);
                                 return foreignAttributes;
                         } else {
                                 return [typicalAttribute];
@@ -667,10 +533,8 @@ export class InputParser {
 
         DetermineNextState(line: string): number {
                 for (let i = 0; i < STATE_CHANGE_TRIGGERS.length; i++) {
-                        const stateChangeTriggerCheck =
-                                STATE_CHANGE_TRIGGERS[i][0];
-                        const stateChangeTriggerResult =
-                                STATE_CHANGE_TRIGGERS[i][1];
+                        const stateChangeTriggerCheck = STATE_CHANGE_TRIGGERS[i][0];
+                        const stateChangeTriggerResult = STATE_CHANGE_TRIGGERS[i][1];
                         if (stateChangeTriggerCheck.test(line)) {
                                 return stateChangeTriggerResult;
                         }

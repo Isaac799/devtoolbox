@@ -1,5 +1,5 @@
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const path = require("path");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
 
 class Page {
         name;
@@ -10,20 +10,13 @@ class Page {
 
         Gen() {
                 return new HtmlWebpackPlugin({
-                        template: path.resolve(
-                                __dirname,
-                                `../src/public/pages/${this.name}.html`
-                        ),
+                        template: path.resolve(__dirname, `../src/public/pages/${this.name}.html`),
                         filename: `${this.name}.html`,
                 });
         }
 }
 
-const pages = [
-        new Page("index").Gen(),
-        new Page("about").Gen(),
-        new Page("syntax").Gen(),
-];
+const pages = [new Page('index').Gen(), new Page('about').Gen(), new Page('syntax').Gen()];
 
 module.exports = {
         pages,

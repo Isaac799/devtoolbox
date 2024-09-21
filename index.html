@@ -1,267 +1,270 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
-        <title>Document</title>
-    </head>
-    <body>
-        <header>
-            <h1>Boiler Plate</h1>
-            <span>Limited converter of markdown-like syntax into boilerplate code.</span>
-        </header>
+        <head>
+                <meta charset="UTF-8" />
+                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
+                <title>Document</title>
+        </head>
+        <body>
+                <header>
+                        <h1>Boiler Plate</h1>
+                        <span>Limited converter of markdown-like syntax into boilerplate code.</span>
+                </header>
 
-        <section>
-            <div id="error-output" class="highlight rounded"></div>
-            <div>
                 <section>
-                    <span class="scroll-box input">
-                        <button id="copy-input" class="info rounded ml-auto sticky-t-0">Copy</button>
-                        <textarea name="markdown" id="markdown-input" cols="50" rows="35"></textarea>
-                    </span>
+                        <div id="error-output" class="highlight rounded"></div>
+                        <div>
+                                <section>
+                                        <span class="scroll-box input">
+                                                <button id="copy-input" class="info rounded ml-auto sticky-t-0">Copy</button>
+                                                <textarea name="markdown" id="markdown-input" cols="50" rows="35"></textarea>
+                                        </span>
+                                </section>
+                                <section>
+                                        <div id="app-item-tab-menu" class="tabs"></div>
+                                        <span class="scroll-box output">
+                                                <button id="copy-output" class="info rounded ml-auto sticky-t-1">Copy</button>
+                                                <pre id="code-output"></pre>
+                                        </span>
+                                </section>
+                        </div>
                 </section>
+
                 <section>
-                    <div id="app-item-tab-menu" class="tabs"></div>
-                    <span class="scroll-box output">
-                        <button id="copy-output" class="info rounded ml-auto sticky-t-1">Copy</button>
-                        <pre id="code-output"></pre>
-                    </span>
+                        <h2>Syntax Guide</h2>
+                        <span> Here is the syntax that I have come up with so far. </span>
+                        <h3>Schemas</h3>
+                        <table>
+                                <tr>
+                                        <th>Category</th>
+                                        <th>Symbol</th>
+                                        <th>Description</th>
+                                        <th>Example</th>
+                                </tr>
+                                <tr>
+                                        <td></td>
+                                        <td>##</td>
+                                        <td>groups entities below into a schema</td>
+                                        <td><code>## historical</code></td>
+                                </tr>
+                        </table>
+
+                        <h3>Tables / Entities</h3>
+                        <table>
+                                <tr>
+                                        <th>Category</th>
+                                        <th>Symbol</th>
+                                        <th>Description</th>
+                                        <th>Example</th>
+                                </tr>
+                                <tr>
+                                        <td></td>
+                                        <td>-</td>
+                                        <td>creates an entity</td>
+                                        <td><code>- dragon</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>+</td>
+                                        <td>auto generate a id</td>
+                                        <td><code>- dragon +</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>@</td>
+                                        <td>auto generate a creation timestamp</td>
+                                        <td><code>- dragon @</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>crud various casing</td>
+                                        <td>generates logic for capitalized letters. C = Create, R = Read, U = Update, D = Delete</td>
+                                        <td><code>- dragon cRud</code></td>
+                                </tr>
+                        </table>
+                        <h3>Columns / Attributes</h3>
+                        <table>
+                                <tr>
+                                        <th>Category</th>
+                                        <th>Symbol</th>
+                                        <th>Description</th>
+                                        <th>Example</th>
+                                </tr>
+                                <tr>
+                                        <td></td>
+                                        <td>-</td>
+                                        <td>creates an attribute</td>
+                                        <td><code>- </code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ b | bool | boolean ]</td>
+                                        <td>creates an attribute of type <strong>boolean</strong></td>
+                                        <td><code>- boolean alive</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ c | char | character ]</td>
+                                        <td>creates an attribute of type <strong>character</strong></td>
+                                        <td><code>- character status</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- bit</td>
+                                        <td>creates an attribute of type <strong>bit</strong></td>
+                                        <td><code>- bit state</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ i | int | integer ]</td>
+                                        <td>creates an attribute of type <strong>integer</strong></td>
+                                        <td><code>- integer count</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ d | dec | decimal ]</td>
+                                        <td>creates an attribute of type <strong>decimal</strong></td>
+                                        <td><code>- decimal cost</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ f | float ]</td>
+                                        <td>creates an attribute of type <strong>float</strong></td>
+                                        <td><code>- float weight</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ r | real ]</td>
+                                        <td>creates an attribute of type <strong>real</strong></td>
+                                        <td><code>- real weight</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ dt | date ]</td>
+                                        <td>creates an attribute of type <strong>date</strong></td>
+                                        <td><code>- date birthday</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ t | time ]</td>
+                                        <td>creates an attribute of type <strong>time</strong></td>
+                                        <td><code>- time start</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ ts | timestamp ]</td>
+                                        <td>creates an attribute of type <strong>timestamp</strong></td>
+                                        <td><code>- timestamp created</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- [ xs | s | m | l | xl | xxl ] (t-shirt sizes)</td>
+                                        <td>creates an attribute of type <strong>varchar(n)</strong></td>
+                                        <td><code>- m description</code></td>
+                                </tr>
+                                <tr>
+                                        <td>type</td>
+                                        <td>- ^</td>
+                                        <td>creates a <strong>reference</strong> to another entity</td>
+                                        <td><code>- ^ color</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>+</td>
+                                        <td>flags an attribute as a <strong>primary key</strong></td>
+                                        <td><code>- xs code +</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>[ * | ** | *** | and more ]</td>
+                                        <td>flags a attribute(s) as <strong>unique</strong> with matching star count</td>
+                                        <td><code>- b alive *</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>!</td>
+                                        <td>flags a value as <strong>not nullable</strong></td>
+                                        <td><code>- b alive !</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>?</td>
+                                        <td>flags a value as <strong>default null</strong></td>
+                                        <td><code>- b alive ?</code></td>
+                                </tr>
+                                <tr>
+                                        <td>append modifier</td>
+                                        <td>| delimiter</td>
+                                        <td>creates an <strong>alias</strong> for a reference</td>
+                                        <td><code>- ^ dragon|mother</code></td>
+                                </tr>
+                                <tr>
+                                        <td>prefix modifier</td>
+                                        <td>_ prefix</td>
+                                        <td>gives the <strong>readonly</strong> attribute to an entity</td>
+                                        <td><code>- _birthday !</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>everything else</td>
+                                        <td>sets the <strong>default value</strong> for an attribute</td>
+                                        <td><code>- b alive false</code></td>
+                                </tr>
+                        </table>
                 </section>
-            </div>
-        </section>
 
-        <section>
-            <h2>Syntax Guide</h2>
-            <span> Here is the syntax that I have come up with so far. </span>
-            <h3>Schemas</h3>
-            <table>
-                <tr>
-                    <th>Category</th>
-                    <th>Symbol</th>
-                    <th>Description</th>
-                    <th>Example</th>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>##</td>
-                    <td>groups entities below into a schema</td>
-                    <td><code>## historical</code></td>
-                </tr>
-            </table>
+                <section>
+                        <h2>About</h2>
+                        The syntax guide has most features, so here are some less obvious ones.
 
-            <h3>Tables / Entities</h3>
-            <table>
-                <tr>
-                    <th>Category</th>
-                    <th>Symbol</th>
-                    <th>Description</th>
-                    <th>Example</th>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>-</td>
-                    <td>creates an entity</td>
-                    <td><code>- dragon</code></td>
-                </tr>
-                <tr>
-                    <td>flag</td>
-                    <td>+</td>
-                    <td>auto generate a id</td>
-                    <td><code>- dragon +</code></td>
-                </tr>
-                <tr>
-                    <td>flag</td>
-                    <td>@</td>
-                    <td>auto generate a creation timestamp</td>
-                    <td><code>- dragon @</code></td>
-                </tr>
-                <tr>
-                    <td>flag</td>
-                    <td>crud various casing</td>
-                    <td>generates logic for capitalized letters. C = Create, R = Read, U = Update, D = Delete</td>
-                    <td><code>- dragon cRud</code></td>
-                </tr>
-            </table>
-            <h3>Columns / Attributes</h3>
-            <table>
-                <tr>
-                    <th>Category</th>
-                    <th>Symbol</th>
-                    <th>Description</th>
-                    <th>Example</th>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>-</td>
-                    <td>creates an attribute</td>
-                    <td><code>- </code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ b | bool | boolean ]</td>
-                    <td>creates an attribute of type <strong>boolean</strong></td>
-                    <td><code>- boolean alive</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ c | char | character ]</td>
-                    <td>creates an attribute of type <strong>character</strong></td>
-                    <td><code>- character status</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- bit</td>
-                    <td>creates an attribute of type <strong>bit</strong></td>
-                    <td><code>- bit state</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ i | int | integer ]</td>
-                    <td>creates an attribute of type <strong>integer</strong></td>
-                    <td><code>- integer count</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ d | dec | decimal ]</td>
-                    <td>creates an attribute of type <strong>decimal</strong></td>
-                    <td><code>- decimal cost</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ f | float ]</td>
-                    <td>creates an attribute of type <strong>float</strong></td>
-                    <td><code>- float weight</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ r | real ]</td>
-                    <td>creates an attribute of type <strong>real</strong></td>
-                    <td><code>- real weight</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ dt | date ]</td>
-                    <td>creates an attribute of type <strong>date</strong></td>
-                    <td><code>- date birthday</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ t | time ]</td>
-                    <td>creates an attribute of type <strong>time</strong></td>
-                    <td><code>- time start</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ ts | timestamp ]</td>
-                    <td>creates an attribute of type <strong>timestamp</strong></td>
-                    <td><code>- timestamp created</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- [ xs | s | m | l | xl | xxl ] (t-shirt sizes)</td>
-                    <td>creates an attribute of type <strong>varchar(n)</strong></td>
-                    <td><code>- m description</code></td>
-                </tr>
-                <tr>
-                    <td>type</td>
-                    <td>- ^</td>
-                    <td>creates a <strong>reference</strong> to another entity</td>
-                    <td><code>- ^ color</code></td>
-                </tr>
-                <tr>
-                    <td>flag</td>
-                    <td>+</td>
-                    <td>flags an attribute as a <strong>primary key</strong></td>
-                    <td><code>- xs code +</code></td>
-                </tr>
-                <tr>
-                    <td>flag</td>
-                    <td>[ * | ** | *** | and more ]</td>
-                    <td>flags a attribute(s) as <strong>unique</strong> with matching star count</td>
-                    <td><code>- b alive *</code></td>
-                </tr>
-                <tr>
-                    <td>flag</td>
-                    <td>!</td>
-                    <td>flags a value as <strong>not nullable</strong></td>
-                    <td><code>- b alive !</code></td>
-                </tr>
-                <tr>
-                    <td>flag</td>
-                    <td>?</td>
-                    <td>flags a value as <strong>default null</strong></td>
-                    <td><code>- b alive ?</code></td>
-                </tr>
-                <tr>
-                    <td>append modifier</td>
-                    <td>| delimiter</td>
-                    <td>creates an <strong>alias</strong> for a reference</td>
-                    <td><code>- ^ dragon|mother</code></td>
-                </tr>
-                <tr>
-                    <td>prefix modifier</td>
-                    <td>_ prefix</td>
-                    <td>gives the <strong>readonly</strong> attribute to an entity</td>
-                    <td><code>- _birthday !</code></td>
-                </tr>
-                <tr>
-                    <td>flag</td>
-                    <td>everything else</td>
-                    <td>sets the <strong>default value</strong> for an attribute</td>
-                    <td><code>- b alive false</code></td>
-                </tr>
-            </table>
-        </section>
+                        <h3>PostgreSQL</h3>
+                        Currently testing the outputs on this one. Lots of good progress, most outputs seem to run and are able to be called. No promises tho.
+                        <ul>
+                                <li>All aspects (entities, functions, procedures, joins...) take into account a composite primary key</li>
+                                <li>The update procedure ignores attributes marked as readonly</li>
+                                <li>
+                                        Up to three read functions are generated.
+                                        <ol>
+                                                <li>Single is basic, letting you read by primary key</li>
+                                                <li>
+                                                        Options gives a trimmed down list if things in the table
+                                                        <ul>
+                                                                <li>automatically done if an attribute is named: name, label, value, code, or tag.</li>
+                                                                <li>aimed to help with dropdown list / selection needs</li>
+                                                        </ul>
+                                                </li>
+                                                <li>
+                                                        Joined recursively grabs foreign attributes too
+                                                        <ul>
+                                                                <li>Automatically generated if a foreign key is present</li>
+                                                                <li>Limited for self references</li>
+                                                        </ul>
+                                                </li>
+                                        </ol>
+                                </li>
+                        </ul>
 
-        <section>
-            <h2>About</h2>
-            The syntax guide has most features, so here are some less obvious ones.
+                        <h3>Node JS Express</h3>
+                        This is mostly proof of concept, endpoints likely will work, but postgres configuration will need some tweaking.
+                        <ul>
+                                <li>GET, PUT, POST, DELETE endpoints that utilize the PostgreSQL functions and procedures</li>
+                                <li>Handholding when making requests, checking for things missed that it expects on a request</li>
+                                <li>Error handling for failed queries</li>
+                        </ul>
 
-            <h3>PostgreSQL</h3>
-            Currently testing the outputs on this one. Lots of good progress, most outputs seem to run and are able to be called. No promises tho.
-            <ul>
-                <li>All aspects (entities, functions, procedures, joins...) take into account a composite primary key</li>
-                <li>The update procedure ignores attributes marked as readonly</li>
-                <li>
-                    Up to three read functions are generated.
-                    <ol>
-                        <li>Single is basic, letting you read by primary key</li>
-                        <li>
-                            Options gives a trimmed down list if things in the table
-                            <ul>
-                                <li>automatically done if an attribute is named: name, label, value, code, or tag.</li>
-                                <li>aimed to help with dropdown list / selection needs</li>
-                            </ul>
-                        </li>
-                        <li>
-                            Joined recursively grabs foreign attributes too
-                            <ul>
-                                <li>Automatically generated if a foreign key is present</li>
-                                <li>Limited for self references</li>
-                            </ul>
-                        </li>
-                    </ol>
-                </li>
-            </ul>
-
-            <h3>Node JS Express</h3>
-            This is mostly proof of concept, endpoints likely will work, but postgres configuration will need some tweaking.
-            <ul>
-                <li>GET, PUT, POST, DELETE endpoints that utilize the PostgreSQL functions and procedures</li>
-                <li>Handholding when making requests, checking for things missed that it expects on a request</li>
-                <li>Error handling for failed queries</li>
-            </ul>
-
-            <h3>Html</h3>
-            This is mostly proof of concept too, very little time spent so far.
-            <ul>
-                <li>Form for each CRUD operation needed that aligns with all endpoints created by Node JS Express</li>
-            </ul>
-        </section>
-        <footer>
-            <span> I Google ads to help pay for this project, see more in the <a href="https://devtoolbox.org/privacy-policy.html">Privacy Policy</a>.</span>
-        </footer>
-    </body>
+                        <h3>Html</h3>
+                        This is mostly proof of concept too, very little time spent so far.
+                        <ul>
+                                <li>Form for each CRUD operation needed that aligns with all endpoints created by Node JS Express</li>
+                        </ul>
+                </section>
+                <footer>
+                        <span>
+                                I Google ads to help pay for this project, see more in the
+                                <a href="https://devtoolbox.org/privacy-policy.html">Privacy Policy</a>.</span
+                        >
+                </footer>
+        </body>
 </html>

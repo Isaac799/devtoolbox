@@ -1,26 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
         <head>
                 <meta charset="UTF-8" />
                 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-                <meta
-                        name="viewport"
-                        content="width=device-width, initial-scale=1.0"
-                />
-                <link
-                        rel="icon"
-                        href="../assets/favicon.ico"
-                        type="image/x-icon"
-                />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />
                 <title>About</title>
         </head>
         <body>
                 <header>
                         <h1>About</h1>
-                        <span>
-                                Wanted to know a little more? Here it is, and
-                                some less obvious features too!
-                        </span>
+                        <span> Wanted to know a little more? Here it is, and some less obvious features too! </span>
                         <nav>
                                 <a href="/"> Boilerplate </a>
                                 <a href="/about.html" class="routedTo">About</a>
@@ -31,82 +21,32 @@
                 <section>
                         <h2>Development Stage</h2>
 
-                        Note this application is currently in early development.
-                        Outputs are largely untested. For now a lot of what I
-                        have is just proof of concept. Plus most of the outputs
-                        are based on my limited syntax knowledge and off the top
-                        of my head; prone to error and not verbose.
+                        Note this application is currently in early development. Outputs are largely untested. For now a lot of what I have is just proof of
+                        concept. Plus most of the outputs are based on my limited syntax knowledge and off the top of my head; prone to error and not verbose.
                 </section>
 
                 <section>
                         <h2>PostgreSQL</h2>
-                        Currently testing the outputs on this one. Lots of good
-                        progress, most outputs seem to run and are able to be
-                        called. No promises tho.
+                        Currently testing the outputs on this one. Lots of good progress, most outputs seem to run and are able to be called. No promises tho.
                         <ul>
+                                <li>All aspects (entities, functions, procedures, joins...) take into account a composite primary key</li>
+                                <li>The update procedure ignores attributes marked as readonly</li>
                                 <li>
-                                        All aspects (entities, functions,
-                                        procedures, joins...) take into account
-                                        a composite primary key
-                                </li>
-                                <li>
-                                        The update procedure ignores attributes
-                                        marked as readonly
-                                </li>
-                                <li>
-                                        Up to three read functions are
-                                        generated.
+                                        Up to three read functions are generated.
                                         <ol>
+                                                <li>Single is basic, letting you read by primary key</li>
                                                 <li>
-                                                        Single is basic, letting
-                                                        you read by primary key
-                                                </li>
-                                                <li>
-                                                        Options gives a trimmed
-                                                        down list if things in
-                                                        the table
+                                                        Options gives a trimmed down list if things in the table
                                                         <ul>
-                                                                <li>
-                                                                        automatically
-                                                                        done if
-                                                                        an
-                                                                        attribute
-                                                                        is
-                                                                        named:
-                                                                        name,
-                                                                        label,
-                                                                        value,
-                                                                        code, or
-                                                                        tag.
-                                                                </li>
-                                                                <li>
-                                                                        aimed to
-                                                                        help
-                                                                        with
-                                                                        dropdown
-                                                                        list /
-                                                                        selection
-                                                                        needs
-                                                                </li>
+                                                                <li>automatically done if an attribute is named: name, label, value, code, or tag.</li>
+                                                                <li>aimed to help with dropdown list / selection needs</li>
                                                         </ul>
                                                 </li>
                                                 <li>
-                                                        Joined recursively grabs
-                                                        foreign attributes too
+                                                        Joined recursively grabs foreign attributes too
                                                         <ul>
-                                                                <li>
-                                                                        Automatically
-                                                                        generated
-                                                                        if a
-                                                                        foreign
-                                                                        key is
-                                                                        present
-                                                                </li>
-                                                                <li>
-                                                                        Limited
-                                                                        for self
-                                                                        references
-                                                                </li>
+                                                                <li>Automatically generated if a foreign key is present</li>
+                                                                <li>Limited for self references</li>
                                                         </ul>
                                                 </li>
                                         </ol>
@@ -114,32 +54,17 @@
                         </ul>
 
                         <h2>Node JS Express</h2>
-                        This is mostly proof of concept, endpoints likely will
-                        work, but postgres configuration will need some
-                        tweaking.
+                        This is mostly proof of concept, endpoints likely will work, but postgres configuration will need some tweaking.
                         <ul>
-                                <li>
-                                        GET, PUT, POST, DELETE endpoints that
-                                        utilize the PostgreSQL functions and
-                                        procedures
-                                </li>
-                                <li>
-                                        Handholding when making requests,
-                                        checking for things missed that it
-                                        expects on a request
-                                </li>
+                                <li>GET, PUT, POST, DELETE endpoints that utilize the PostgreSQL functions and procedures</li>
+                                <li>Handholding when making requests, checking for things missed that it expects on a request</li>
                                 <li>Error handling for failed queries</li>
                         </ul>
 
                         <h2>Html</h2>
-                        This is mostly proof of concept too, very little time
-                        spent so far.
+                        This is mostly proof of concept too, very little time spent so far.
                         <ul>
-                                <li>
-                                        Form for each CRUD operation needed that
-                                        aligns with all endpoints created by
-                                        Node JS Express
-                                </li>
+                                <li>Form for each CRUD operation needed that aligns with all endpoints created by Node JS Express</li>
                         </ul>
                 </section>
                 <footer>

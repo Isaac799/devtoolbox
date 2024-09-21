@@ -44,5 +44,5 @@ window.__h82AlnkH6D91__("WyJwdWItMjg5MjY5Mzg3MjY4NjYwOCIsW251bGwsbnVsbCxudWxsLCJ
 const googleString = [googleAds, googleAdBlockRecovery, googleAdBlockRecoveryErrorProtection].join('\n');
 
 module.exports = function (source) {
-    return source.replace('</head>', `${googleString}</head>`);
+        return source.replace('</head>', `${googleString}</head>`);
 };

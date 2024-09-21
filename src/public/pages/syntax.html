@@ -1,41 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
         <head>
                 <meta charset="UTF-8" />
                 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-                <meta
-                        name="viewport"
-                        content="width=device-width, initial-scale=1.0"
-                />
-                <link
-                        rel="icon"
-                        href="../assets/favicon.ico"
-                        type="image/x-icon"
-                />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />
                 <title>Syntax</title>
         </head>
         <body>
                 <header>
                         <h1>Syntax</h1>
-                        <span>
-                                Here is the syntax that I have come up with so
-                                far.
-                        </span>
+                        <span> Here is the syntax that I have come up with so far. </span>
                         <nav>
                                 <a href="/"> Boilerplate </a>
                                 <a href="/about.html">About</a>
-                                <a href="/syntax.html" class="routedTo">
-                                        Syntax
-                                </a>
+                                <a href="/syntax.html" class="routedTo"> Syntax </a>
                         </nav>
                 </header>
 
                 <section>
                         <h2>Schemas</h2>
-                        <span>
-                                The main way things are grouped is by schemas,
-                                like a directory or folder
-                        </span>
+                        <span> The main way things are grouped is by schemas, like a directory or folder </span>
                         <table>
                                 <tr>
                                         <th>Category</th>
@@ -46,19 +31,13 @@
                                 <tr>
                                         <td></td>
                                         <td>##</td>
-                                        <td>
-                                                groups entities below into a
-                                                schema
-                                        </td>
+                                        <td>groups entities below into a schema</td>
                                         <td><code>## historical</code></td>
                                 </tr>
                         </table>
 
                         <h2>Tables / Entities</h2>
-                        <span>
-                                Here we specify what things we want to track,
-                                blueprints, tables, or entities
-                        </span>
+                        <span> Here we specify what things we want to track, blueprints, tables, or entities </span>
                         <table>
                                 <tr>
                                         <th>Category</th>
@@ -81,26 +60,18 @@
                                 <tr>
                                         <td>flag</td>
                                         <td>@</td>
-                                        <td>
-                                                auto generate a creation
-                                                timestamp
-                                        </td>
+                                        <td>auto generate a creation timestamp</td>
                                         <td><code>- dragon @</code></td>
                                 </tr>
                                 <tr>
                                         <td>flag</td>
                                         <td>crud various casing</td>
-                                        <td>
-                                                generates logic for capitalized
-                                                letters. C = Create, R = Read, U
-                                                = Update, D = Delete
-                                        </td>
+                                        <td>generates logic for capitalized letters. C = Create, R = Read, U = Update, D = Delete</td>
                                         <td><code>- dragon cRud</code></td>
                                 </tr>
                         </table>
                         <h2>Columns / Attributes</h2>
-                        Finally some specifics, what columns go into the table,
-                        or features of an entity are we interested in tracking
+                        Finally some specifics, what columns go into the table, or features of an entity are we interested in tracking
                         <table>
                                 <tr>
                                         <th>Category</th>
@@ -208,10 +179,7 @@
                                 </tr>
                                 <tr>
                                         <td>type</td>
-                                        <td>
-                                                - [ xs | s | m | l | xl | xxl ]
-                                                (t-shirt sizes)
-                                        </td>
+                                        <td>- [ xs | s | m | l | xl | xxl ] (t-shirt sizes)</td>
                                         <td>
                                                 creates an attribute of type
                                                 <strong>varchar(n)</strong>
@@ -223,8 +191,7 @@
                                         <td>- ^</td>
                                         <td>
                                                 creates a
-                                                <strong>reference</strong> to
-                                                another entity
+                                                <strong>reference</strong> to another entity
                                         </td>
                                         <td><code>- ^ color</code></td>
                                 </tr>
@@ -242,8 +209,7 @@
                                         <td>[ * | ** | *** | and more ]</td>
                                         <td>
                                                 flags a attribute(s) as
-                                                <strong>unique</strong> with
-                                                matching star count
+                                                <strong>unique</strong> with matching star count
                                         </td>
                                         <td><code>- b alive *</code></td>
                                 </tr>
@@ -270,8 +236,7 @@
                                         <td>| delimiter</td>
                                         <td>
                                                 creates an
-                                                <strong>alias</strong> for a
-                                                reference
+                                                <strong>alias</strong> for a reference
                                         </td>
                                         <td><code>- ^ dragon|mother</code></td>
                                 </tr>
