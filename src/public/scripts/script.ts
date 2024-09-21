@@ -6,6 +6,7 @@ import { CodeGenerator } from './core/structure';
 
 import '../assets/normalize.css';
 import '../assets/styles.css';
+import { TsTypesCodeGenerator } from './generators/ts_types';
 
 class AppItem {
         htmlLabel = 'Empty';
@@ -225,6 +226,7 @@ function Main(_: Event) {
 let focusedAppItemIndex = 0;
 const APP_ITEMS = [
         new AppItem('Postgres SQL', new SqlGenerator()),
+        new AppItem('TS types', new TsTypesCodeGenerator()),
         new AppItem('Express JS', new NodeExpressCodeGenerator()),
         new AppItem('HTML Forms', new HtmlCodeGenerator()),
         // new AppItem('GO', undefined),

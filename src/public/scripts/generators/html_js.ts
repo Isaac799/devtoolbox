@@ -1,3 +1,4 @@
+import { SnakeToTitle } from '../core/formatting';
 import { CodeGenerator, CodeLogic, Types } from '../core/structure';
 
 export class HtmlCodeGenerator extends CodeGenerator {
@@ -11,16 +12,6 @@ export class HtmlCodeGenerator extends CodeGenerator {
 
                 function ConvertNameToEndpoint(value: string) {
                         return value.replace(/read_|create_|update_|delete_/g, '').replace(/_/g, '-');
-                }
-
-                function SnakeToTitle(value: string) {
-                        let val = value.split('_');
-                        let answer: string[] = [];
-                        for (let i = 0; i < val.length; i++) {
-                                const e = val[i];
-                                answer.push(e.slice(0, 1).toUpperCase() + e.slice(1, e.length));
-                        }
-                        return answer.join(' ');
                 }
 
                 const SQL_TO_HTML_INPUT_TYPE = {

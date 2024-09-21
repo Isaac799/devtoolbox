@@ -1,3 +1,20 @@
+export const SnakeToPascal = (value: string) => {
+        return value
+                .split('_')
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join('');
+};
+
+export const SnakeToTitle = (value: string) => {
+        let val = value.split('_');
+        let answer: string[] = [];
+        for (let i = 0; i < val.length; i++) {
+                const e = val[i];
+                answer.push(e.slice(0, 1).toUpperCase() + e.slice(1, e.length));
+        }
+        return answer.join(' ');
+};
+
 export const alignKeyword = (strings: string[], keyword: string): string[] => {
         // Find the maximum length of the prefix strings before the keyword
         const maxLength = strings.reduce((max, str) => {

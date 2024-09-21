@@ -22,9 +22,7 @@ function Needs(key, where) {
         next();
         return;
     };
-}
-
-`;
+}`;
                 bd.push(headerInfo);
 
                 function ConvertNameToEndpoint(value: string) {
