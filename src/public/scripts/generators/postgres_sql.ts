@@ -32,7 +32,7 @@ export class SqlGenerator extends CodeGenerator {
                 if (attr.defaultValue !== undefined) {
                         attrStr += ` DEFAULT ${attr.defaultValue}`;
                 }
-                return attrStr;
+                return `    ${attrStr}`;
         }
 
         GenerateSqlLogic(table: SqlTable): string {
@@ -65,19 +65,21 @@ export class SqlGenerator extends CodeGenerator {
                                 alignKeyword(
                                         logic.inputs
                                                 .filter((e) => e.primary)
-                                                .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.name}`),
+                                                .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.sql.name}`),
                                         '='
                                 )
                         );
 
                         where = `\n    ${where}`;
 
+                        const params = alignKeywords(
+                                logic.inputs.filter((e) => e.primary).map((e) => `${e.sql.name} ${e.sql.type}`),
+                                typeKeywords
+                        ).join(',\n    ');
+
                         let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${logic.name};
 CREATE PROCEDURE ${table.parentSchema.name}.${logic.name} (
-    ${alignKeywords(
-            logic.inputs.filter((e) => e.primary).map((e) => `${e.name} ${e.type}`),
-            typeKeywords
-    ).join(',\n    ')}
+    ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
 DELETE FROM ${table.fullName}
 WHERE ${where}; 
@@ -97,26 +99,26 @@ $$;`;
 
                 for (let i = 0; i < table.logic.update.length; i++) {
                         const logic = table.logic.update[i];
-                        let where = this.JoinAnd(
-                                alignKeyword(
-                                        logic.inputs
-                                                .filter((e) => e.primary)
-                                                .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.name}`),
-                                        '='
-                                )
-                        );
+                        const whereEquals = logic.inputs
+                                .filter((e) => e.primary)
+                                .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.sql.name}`);
+                        const whereEqualsAligned = alignKeyword(whereEquals, '=');
+                        let where = `\n    ${this.JoinAnd(whereEqualsAligned)}`;
                         where = `\n    ${where}`;
+
+                        const params = alignKeywords(
+                                logic.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
+                                typeKeywords
+                        ).join(',\n    ');
+
                         let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${logic.name};
 CREATE PROCEDURE ${table.parentSchema.name}.${logic.name} ( 
-    ${alignKeywords(
-            logic.inputs.map((e) => `${e.name} ${e.type}`),
-            typeKeywords
-    ).join(',\n    ')}
+    ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
     UPDATE ${table.fullName} 
 SET 
     ${alignKeyword(
-            logic.inputs.map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.name}`),
+            logic.inputs.map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.sql.name}`),
             '='
     ).join(',\n    ')}
 WHERE ${where};
@@ -140,29 +142,25 @@ $$;`;
 
                         let inputs = logic.inputs.length
                                 ? `\n    ${alignKeywords(
-                                          logic.inputs.filter((e) => e.primary).map((e) => `${e.name} ${e.type}`),
+                                          logic.inputs.filter((e) => e.primary).map((e) => `${e.sql.name} ${e.sql.type}`),
                                           typeKeywords
                                   ).join(',\n    ')}\n`
                                 : ``;
 
-                        let where = this.JoinAnd(
-                                alignKeyword(
-                                        logic.inputs.map((e) => {
-                                                let answer = [];
-                                                if (e.sqlLocation.tableAliasedAs) {
-                                                        answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
-                                                } else {
-                                                        answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
-                                                }
-                                                answer.push('=');
-                                                answer.push(e.name);
-                                                answer = alignKeywords(answer, typeKeywords);
+                        const whereParts = logic.inputs.map((e) => {
+                                let answer = [];
+                                if (e.sqlLocation.tableAliasedAs) {
+                                        answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
+                                } else {
+                                        answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
+                                }
+                                answer.push('=');
+                                answer.push(e.sql.name);
+                                answer = alignKeywords(answer, typeKeywords);
 
-                                                return answer.join(' ');
-                                        }),
-                                        '='
-                                )
-                        );
+                                return answer.join(' ');
+                        });
+                        let where = this.JoinAnd(alignKeyword(whereParts, '='));
                         where = `\n    WHERE ${where}`;
 
                         if (!logic.inputs.length) {
@@ -180,49 +178,47 @@ $$;`;
                                 tableName = `${table.fullName}`;
                         }
 
+                        const paramsNeeded = logic.outputs.map((e) => {
+                                let answer = [];
+
+                                if (e.sqlLocation.columnAliasedAs) {
+                                        if (e.sqlLocation.tableAliasedAs) {
+                                                answer.push(`${e.sqlLocation.tableAliasedAs}_${e.sqlLocation.columnAliasedAs}`);
+                                        } else {
+                                                answer.push();
+                                        }
+                                } else {
+                                        answer.push(e.sqlLocation.column);
+                                }
+
+                                answer.push(e.sql.type);
+
+                                return answer.join(' ');
+                        });
+                        const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
+                        const selectsNeeded = logic.outputs.map((e) => {
+                                let answer = [];
+
+                                if (e.sqlLocation.tableAliasedAs) {
+                                        answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
+                                } else {
+                                        answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
+                                }
+                                if (e.sqlLocation.columnAliasedAs) {
+                                        answer.push(`AS ${e.sqlLocation.tableAliasedAs}_${e.sqlLocation.columnAliasedAs}`);
+                                } else {
+                                        answer.push(e.sqlLocation.columnAliasedAs);
+                                }
+                                return answer.join(' ');
+                        });
+                        const selecting = alignKeyword(selectsNeeded, ' AS ').join(',\n    ');
                         let procedure = `DROP FUNCTION IF EXISTS ${table.parentSchema.name}.${logic.name};
 CREATE FUNCTION ${table.parentSchema.name}.${logic.name} (${inputs}) RETURNS TABLE ( 
-    ${alignKeywords(
-            logic.outputs.map((e) => {
-                    let answer = [];
-
-                    if (e.sqlLocation.columnAliasedAs) {
-                            if (e.sqlLocation.tableAliasedAs) {
-                                    answer.push(`${e.sqlLocation.tableAliasedAs}_${e.sqlLocation.columnAliasedAs}`);
-                            } else {
-                                    answer.push();
-                            }
-                    } else {
-                            answer.push(e.sqlLocation.column);
-                    }
-
-                    answer.push(e.type);
-
-                    return answer.join(' ');
-            }),
-            typeKeywords
-    ).join(',\n    ')}        
+    ${params}        
 ) LANGUAGE plpgsql AS $$ BEGIN
 RETURN QUERY
 SELECT 
-    ${alignKeyword(
-            logic.outputs.map((e) => {
-                    let answer = [];
-
-                    if (e.sqlLocation.tableAliasedAs) {
-                            answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
-                    } else {
-                            answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
-                    }
-                    if (e.sqlLocation.columnAliasedAs) {
-                            answer.push(`AS ${e.sqlLocation.tableAliasedAs}_${e.sqlLocation.columnAliasedAs}`);
-                    } else {
-                            answer.push(e.sqlLocation.columnAliasedAs);
-                    }
-                    return answer.join(' ');
-            }),
-            ' AS '
-    ).join(',\n    ')}     
+    ${selecting}     
 FROM ${tableName}${join}${where};
 END; 
 $$;`;
@@ -233,59 +229,33 @@ $$;`;
         }
 
         private static GenerateReadLeftJoinString(table: SqlTable): string {
-                let allJoinsNeeded = SqlTable.ReadJoins(table);
-                if (!allJoinsNeeded) {
+                const allJoinsNeeded = SqlTable.ReadJoins(table);
+                if (!allJoinsNeeded || !Object.keys(table.foreignKeys()).length) {
                         return '';
                 }
 
-                if (!Object.keys(table.foreignKeys()).length) {
-                        return '';
-                }
+                const allJoinParts: string[] = [];
 
-                let all: string[] = [];
-
-                // console.log('allJoinsNeeded :>> ', allJoinsNeeded);
-
-                for (const leftRightInfo of allJoinsNeeded) {
-                        const left = leftRightInfo.left;
-                        const right = leftRightInfo.right;
-
-                        let parts = [];
-
+                for (const { left, right } of allJoinsNeeded) {
                         if (left.usingAttributes.length !== right.usingAttributes.length) {
                                 console.error('mismatched joined attribute length!');
                                 break;
                         }
 
-                        for (let i = 0; i < left.usingAttributes.length; i++) {
-                                const leftAttr = left.usingAttributes[i];
+                        const singleJoinParts: string[] = [];
+
+                        left.usingAttributes.forEach((leftAttr, i) => {
                                 const rightAttr = right.usingAttributes[i];
+                                const condition = [`${right.alias}.${rightAttr.value}`, '=', `${left.alias}.${leftAttr.value}`];
+                                const aJoin = i === 0 ? ['LEFT JOIN', right.table.fullName, right.alias, 'ON', ...condition] : ['AND', ...condition];
 
-                                let attrEqualsAttr = [
-                                        // t1Attr.fullName,
-                                        // '=',
-                                        // `${table1.tableAlias}.${t2Attr.value}`,
-                                ];
-                                let attrEqualsAttr2 = [`${right.alias}.${rightAttr.value}`, '=', `${left.alias}.${leftAttr.value}`];
-                                if (i === 0) {
-                                        attrEqualsAttr = ['LEFT JOIN', right.table.fullName, right.alias, 'ON', ...attrEqualsAttr2];
-                                } else {
-                                        attrEqualsAttr = ['AND', ...attrEqualsAttr2];
-                                }
+                                singleJoinParts.push(aJoin.join(' '));
+                        });
 
-                                let str = attrEqualsAttr.join(' ');
-
-                                parts.push(str);
-                        }
-
-                        // console.log('parts :>> ', parts);
-                        all.push(parts.join(' '));
-                        // all = all.concat(parts);
+                        allJoinParts.push(singleJoinParts.join(' '));
                 }
 
-                all = alignKeyword(all, ' ON ');
-
-                return all.join('\n    ');
+                return alignKeyword(allJoinParts, ' ON ').join('\n    ');
         }
 
         private GenerateCreateLogic(table: SqlTable, sqlLogic: string[]) {
@@ -296,30 +266,33 @@ $$;`;
 
                 for (let i = 0; i < table.logic.create.length; i++) {
                         const logic = table.logic.create[i];
+                        const paramsNeeded = logic.inputs
+                                .filter((e) => e.primary)
+                                .map((e) => `INOUT ${e.sql.name} ${e.sql.type}`)
+                                .concat(logic.inputs.filter((e) => !e.primary).map((e) => `${e.sql.name} ${e.sql.type}`));
+                        const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
+                        const into = logic.inputs
+                                .filter((e) => !e.primary)
+                                .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`)
+                                .join(',\n    ');
+                        const values = logic.inputs
+                                .filter((e) => !e.primary)
+                                .map((e) => `${e.sql.name}`)
+                                .join(',\n    ');
+                        const returning = logic.outputs.map((e) => `${e.sqlLocation.column}`) + ' INTO ' + logic.outputs.map((e) => `${e.sql.name}`);
+
                         let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${logic.name};
 CREATE PROCEDURE ${table.parentSchema.name}.${logic.name} ( 
-    ${alignKeywords(
-            logic.inputs
-                    .filter((e) => e.primary)
-                    .map((e) => `INOUT ${e.name} ${e.type}`)
-                    .concat(logic.inputs.filter((e) => !e.primary).map((e) => `${e.name} ${e.type}`)),
-            typeKeywords
-    ).join(',\n    ')}
+    ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
 INSERT INTO ${table.fullName} (
-    ${logic.inputs
-            .filter((e) => !e.primary)
-            .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`)
-            .join(',\n    ')}
+    ${into}
 ) 
 VALUES (
-    ${logic.inputs
-            .filter((e) => !e.primary)
-            .map((e) => `${e.name}`)
-            .join(',\n    ')}
+    ${values}
 )
 RETURNING 
-    ${logic.outputs.map((e) => `${e.sqlLocation.column}`) + ' INTO ' + logic.outputs.map((e) => `${e.name}`)}; 
+    ${returning}; 
 END; 
 $$;`;
 
@@ -344,12 +317,57 @@ $$;`;
                         }
                         const table = tables[tableName];
 
-                        let attrStrings: string[] = Object.values(table.attributes).map((e) => this.CreateAttributeString(e));
+                        const attrStrings: string[] = alignKeywords(
+                                Object.values(table.attributes).map((e) => this.CreateAttributeString(e)),
+                                typeKeywords
+                        );
 
-                        attrStrings = alignKeywords(attrStrings, typeKeywords);
+                        const pks: string[] = Object.values(table.primaryKeys()).map((e) => e.value);
+                        const allGroupKeysStrings: string[][] = generateGroupKeyStrings(table);
 
-                        let pks: string[] = Object.values(table.primaryKeys()).map((e) => e.value);
+                        let createTableBody: string[] = [...attrStrings];
 
+                        const groupsStr = allGroupKeysStrings.map((e) => `    UNIQUE (${e.join(', ')})`);
+                        if (groupsStr.length > 0) {
+                                createTableBody.push(`${groupsStr.join(',\n')}`);
+                        }
+
+                        if (pks.length > 0) {
+                                createTableBody.push(`    PRIMARY KEY ( ${pks.join(', ')} )`);
+                        }
+
+                        let fkGroupings = [...table.uniqueFkGroups().entries()];
+                        for (const [fkTable, fkAttrs] of fkGroupings) {
+                                createTableBody.push(
+                                        `    FOREIGN KEY ( ${fkAttrs.map((e) => e.value).join(', ')} ) REFERENCES ${fkTable.fullName} ( ${fkAttrs
+                                                .map((e) => e.referenceTo?.column.value || '!ERROR!')
+                                                .join(', ')} )`
+                                );
+                        }
+
+                        const dropCreate = `DROP TABLE IF EXISTS ${table.fullName};\nCREATE TABLE ${table.fullName} (\n`;
+                        const createTableEnd = '\n);';
+                        const createTable = dropCreate + createTableBody.join(',\n') + createTableEnd;
+
+                        sql += `${createTable}\n`;
+
+                        sqlLogic += this.GenerateSqlLogic(table);
+                }
+
+                if (sqlLogic) {
+                        sqlLogic = sqlLogic.replace(/SERIAL/g, 'INT');
+                        sql = `${sql}${sqlLogic}`;
+                }
+
+                sql = sql.trim();
+
+                if (!sql) {
+                        this.output = '-- Nothing to show here';
+                }
+
+                return sql;
+
+                function generateGroupKeyStrings(table: SqlTable) {
                         let allGroupKeysStrings: string[][] = [];
                         let groupedKeys = table.uniqueGroups();
                         for (const key in groupedKeys) {
@@ -365,59 +383,39 @@ $$;`;
                                         allGroupKeysStrings.push(groupKeysStrings);
                                 }
                         }
-                        let groupsStr = allGroupKeysStrings.map((e) => `    UNIQUE (${e.join(', ')})`);
+                        return allGroupKeysStrings;
+                }
+        }
 
-                        let chunk = `DROP TABLE IF EXISTS ${table.fullName};                         
-CREATE TABLE ${table.fullName} (
-    ${attrStrings.join(',\n    ')}`;
+        GenerateDrops() {
+                let procFnTables = [];
+                let procFnSchemas = [];
+                let procFnDrops = [];
+                let everythingElse = [];
 
-                        let lowerChuck: string[] = [];
-                        if (groupsStr.length > 0) {
-                                lowerChuck.push(`${groupsStr.join(',\n')}`);
+                let lines = this.output.split('\n');
+                for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        if (line.startsWith('DROP TABLE')) {
+                                console.log('HI');
+
+                                procFnTables.push(line);
+                        } else if (line.startsWith('DROP PROCEDURE') || line.startsWith('DROP FUNCTION')) {
+                                procFnDrops.push(line);
+                        } else if (line.startsWith('DROP SCHEMA')) {
+                                procFnSchemas.push(line);
+                        } else {
+                                everythingElse.push(line);
                         }
-
-                        if (pks.length > 0) {
-                                lowerChuck.push(`    PRIMARY KEY ( ${pks.join(', ')} )`);
-                        }
-
-                        let fkGroupings = [...table.uniqueFkGroups().entries()];
-                        for (let i = 0; i < fkGroupings.length; i++) {
-                                const fkGroup = fkGroupings[i];
-                                const fkAttrs = fkGroup[1];
-                                const fkTable = fkGroup[0];
-                                lowerChuck.push(
-                                        `    FOREIGN KEY ( ${fkAttrs.map((e) => e.value).join(', ')} ) REFERENCES ${fkTable.fullName} ( ${fkAttrs
-                                                .map((e) => e.referenceTo?.column.value || '!ERROR!')
-                                                .join(', ')} )`
-                                );
-                        }
-
-                        chunk = [chunk, lowerChuck.join(`,\n`)].join(`,\n`);
-                        chunk += '\n);';
-
-                        sqlLogic += this.GenerateSqlLogic(table);
-
-                        sql += `${chunk}\n`;
                 }
 
-                if (sqlLogic) {
-                        sqlLogic = sqlLogic.replace(/SERIAL/g, 'INT');
-                        sql = `${sql}${sqlLogic}`;
-                }
-
-                sql = sql.trim();
-
-                if (!sql) {
-                        this.output = '-- Nothing to show here';
-                }
-
-                return sql;
+                let drops = [procFnDrops.join('\n'), procFnTables.join('\n'), procFnSchemas.join('\n')];
+                return { drops, everythingElse };
         }
 
         Run() {
                 let schemas = this.input;
                 let schemaStrings: string[] = [];
-
                 for (const schemaName in schemas) {
                         if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
                                 continue;
@@ -439,33 +437,12 @@ CREATE TABLE ${table.fullName} (
 
                 this.output = schemaStrings.join('\n\n');
 
-                let procFnTables = [];
-                let procFnSchemas = [];
-                let procFnDrops = [];
-                let other = [];
-
-                let lines = this.output.split('\n');
-                for (let i = 0; i < lines.length; i++) {
-                        const line = lines[i];
-                        if (line.startsWith('DROP TABLE')) {
-                                console.log('HI');
-
-                                procFnTables.push(line);
-                        } else if (line.startsWith('DROP PROCEDURE') || line.startsWith('DROP FUNCTION')) {
-                                procFnDrops.push(line);
-                        } else if (line.startsWith('DROP SCHEMA')) {
-                                procFnSchemas.push(line);
-                        } else {
-                                other.push(line);
-                        }
-                }
-
-                let drops = [procFnDrops.join('\n'), procFnTables.join('\n'), procFnSchemas.join('\n')];
+                let { drops, everythingElse } = this.GenerateDrops();
 
                 if (tableNames.length > 0) {
                         this.output = `${drops.join('\n')}
                         
-${other.join('\n')}`;
+${everythingElse.join('\n')}`;
                 }
 
                 return this;

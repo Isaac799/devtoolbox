@@ -1,5 +1,5 @@
 import { SnakeToTitle } from '../core/formatting';
-import { CodeGenerator, CodeLogic, Types } from '../core/structure';
+import { CodeGenerator, CodeLogic } from '../core/structure';
 
 export class HtmlCodeGenerator extends CodeGenerator {
         GenerateHtmlBody(): string {
@@ -14,26 +14,6 @@ export class HtmlCodeGenerator extends CodeGenerator {
                         return value.replace(/read_|create_|update_|delete_/g, '').replace(/_/g, '-');
                 }
 
-                const SQL_TO_HTML_INPUT_TYPE = {
-                        [Types.BIT]: 'checkbox',
-                        [Types.DATE]: 'date',
-                        [Types.CHAR]: 'text',
-                        [Types.TIME]: 'time',
-                        [Types.TIMESTAMP]: 'datetime-local',
-                        [Types.SERIAL]: 'number',
-                        [Types.DECIMAL]: 'number',
-                        [Types.FLOAT]: 'number',
-                        [Types.REAL]: 'number',
-                        [Types.INT]: 'number',
-                        [Types.BOOLEAN]: 'checkbox',
-                        [Types.xs]: 'text',
-                        [Types.s]: 'text',
-                        [Types.m]: 'text',
-                        [Types.l]: 'text',
-                        [Types.xl]: 'text',
-                        [Types.xxl]: 'text',
-                };
-
                 /**
                  *
                  * @param {CodeLogic} logic
@@ -43,10 +23,10 @@ export class HtmlCodeGenerator extends CodeGenerator {
                         let placeholders: string[] = [];
                         for (let i = 0; i < logic.inputs.length; i++) {
                                 const element = logic.inputs[i];
-                                let type: string = SQL_TO_HTML_INPUT_TYPE[element.type];
+                                const id = `${logic.name}_${element.sql.name}`;
                                 placeholders.push(`            <div class="flex-column">
-                    <label for="${element.name}">${SnakeToTitle(element.name)}</label>
-                    <input type="${type}" name="${element.name}" id="${logic.name}_${element.name}" />
+                    <label for="${id}">${element.html.name}</label>
+                    <input type="${element.html.type}" name="${element.html.name}" id="${id}" />
             </div>`);
                         }
                         let placeholderStr = placeholders.join('\n');

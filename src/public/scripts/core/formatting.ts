@@ -5,6 +5,20 @@ export const SnakeToPascal = (value: string) => {
                 .join('');
 };
 
+export const SnakeToCamel = (snakeStr: string): string => {
+        return snakeStr
+                .toLowerCase()
+                .split('_')
+                .map((word, index) => {
+                        // Capitalize the first letter of each word except the first one
+                        if (index === 0) {
+                                return word;
+                        }
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                })
+                .join('');
+};
+
 export const SnakeToTitle = (value: string) => {
         let val = value.split('_');
         let answer: string[] = [];

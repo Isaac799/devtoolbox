@@ -1,3 +1,5 @@
+import { SnakeToCamel, SnakeToPascal, SnakeToTitle } from './formatting';
+
 export const PK_PARAM_TAG = 'target_';
 export const PARAM_PREFIX = 'new_';
 export const FK_PREFIX = 'fk';
@@ -53,6 +55,66 @@ export const SQL_TABLE_ATTRIBUTES: {
         REFERENCE: /^\s{2,8}- \^ [a-zA-Z_]{2,16}/, // . & | SEARCHED FOR LATER
 };
 
+export const SQL_TO_TS_TYPE = {
+        [Types.BIT]: 'boolean',
+        [Types.DATE]: 'Date',
+        [Types.CHAR]: 'string',
+        [Types.TIME]: 'Date',
+        [Types.TIMESTAMP]: 'Date',
+        [Types.SERIAL]: 'number',
+        [Types.DECIMAL]: 'number',
+        [Types.FLOAT]: 'number',
+        [Types.REAL]: 'number',
+        [Types.INT]: 'number',
+        [Types.BOOLEAN]: 'boolean',
+        [Types.xs]: 'string',
+        [Types.s]: 'string',
+        [Types.m]: 'string',
+        [Types.l]: 'string',
+        [Types.xl]: 'string',
+        [Types.xxl]: 'string',
+};
+
+export const SQL_TO_GO_TYPE = {
+        [Types.BIT]: 'bool',
+        [Types.DATE]: 'time.Time',
+        [Types.CHAR]: 'string',
+        [Types.TIME]: 'time.Time',
+        [Types.TIMESTAMP]: 'time.Time',
+        [Types.SERIAL]: 'int',
+        [Types.DECIMAL]: 'float64',
+        [Types.FLOAT]: 'float64',
+        [Types.REAL]: 'float64',
+        [Types.INT]: 'int',
+        [Types.BOOLEAN]: 'bool',
+        [Types.xs]: 'string',
+        [Types.s]: 'string',
+        [Types.m]: 'string',
+        [Types.l]: 'string',
+        [Types.xl]: 'string',
+        [Types.xxl]: 'string',
+};
+
+export const SQL_TO_HTML_INPUT_TYPE = {
+        [Types.BIT]: 'checkbox',
+        [Types.DATE]: 'date',
+        [Types.CHAR]: 'text',
+        [Types.TIME]: 'time',
+        [Types.TIMESTAMP]: 'datetime-local',
+        [Types.SERIAL]: 'number',
+        [Types.DECIMAL]: 'number',
+        [Types.FLOAT]: 'number',
+        [Types.REAL]: 'number',
+        [Types.INT]: 'number',
+        [Types.BOOLEAN]: 'checkbox',
+        [Types.xs]: 'text',
+        [Types.s]: 'text',
+        [Types.m]: 'text',
+        [Types.l]: 'text',
+        [Types.xl]: 'text',
+        [Types.xxl]: 'text',
+};
+
 export const ATTRIBUTE_OPTION: {
         [x: string]: RegExp;
 } = {
@@ -101,16 +163,48 @@ export type LeftRightJoinInfo = {
 
 export class CodeLogicField {
         primary: boolean = false;
-        type: Types;
-        name: string;
+
+        typescript: {
+                name: string;
+                type: string;
+        };
+        go: {
+                name: string;
+                type: string;
+        };
+        sql: {
+                name: string;
+                type: string;
+        };
+        html: {
+                name: string;
+                type: string;
+        };
+
         sqlLocation: SqlLocation;
+
         readOnly: boolean = false;
 
         constructor(type: Types, name: string, sqlLocation: SqlLocation, readOnly: boolean) {
-                this.type = type;
-                this.name = name;
                 this.sqlLocation = sqlLocation;
                 this.readOnly = readOnly;
+
+                this.typescript = {
+                        name: SnakeToCamel(name),
+                        type: SQL_TO_TS_TYPE[type],
+                };
+                this.go = {
+                        name: SnakeToPascal(name),
+                        type: SQL_TO_GO_TYPE[type],
+                };
+                this.sql = {
+                        name: name,
+                        type: type,
+                };
+                this.html = {
+                        name: SnakeToTitle(name),
+                        type: SQL_TO_HTML_INPUT_TYPE[type],
+                };
         }
 }
 
@@ -149,12 +243,12 @@ export class CodeLogic {
                         case SQL_INPUT_DISTINCTION.InOut:
                                 return this.inputs
                                         .filter((e) => e.primary)
-                                        .map((e) => `INOUT ${e.name} ${e.type}`)
+                                        .map((e) => `INOUT ${e.sql.name} ${e.sql.type}`)
                                         .join(',\n    ');
                         case SQL_INPUT_DISTINCTION.Normal:
                                 return this.inputs
                                         .filter((e) => !e.primary)
-                                        .map((e) => `${e.type} ${e.name}`)
+                                        .map((e) => `${e.sql.type} ${e.sql.name}`)
                                         .join(',\n    ');
                         default:
                                 console.error(new Error('Unknown inputs distinction'));
@@ -163,11 +257,12 @@ export class CodeLogic {
         }
 
         sqlOutputs() {
-                return this.outputs.map((e) => e.name).join(',\n    ');
+                return this.outputs.map((e) => e.sql.name).join(',\n    ');
         }
 }
 
 export class TableLogic {
+        existsAs: CodeLogicField[] = [];
         create: CodeLogic[] | null = null;
         read: CodeLogic[] | null = null;
         update: CodeLogic[] | null = null;
@@ -295,7 +390,9 @@ export class SqlTable {
         attributes: {
                 [x: string]: SqlTableAttribute;
         } = {};
+
         logic: TableLogic = {
+                existsAs: [],
                 create: null,
                 read: null,
                 update: null,
@@ -426,6 +523,17 @@ export class SqlTable {
                 answer.read = hasRead ? [] : null;
                 answer.update = hasUpdate ? [] : null;
                 answer.delete = hasDelete ? [] : null;
+
+                for (const attr of Object.values(this.attributes)) {
+                        answer.existsAs.push(
+                                new CodeLogicField(
+                                        attr.sqlType,
+                                        attr.value,
+                                        new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value),
+                                        attr.readOnly
+                                )
+                        );
+                }
 
                 this.logic = answer;
         }

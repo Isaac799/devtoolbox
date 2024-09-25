@@ -33,7 +33,7 @@ function Needs(key, where) {
                         let fields: string[] = [];
                         for (let i = 0; i < logic.inputs.length; i++) {
                                 const element = logic.inputs[i];
-                                fields.push(`req.${where}.${element.name}`);
+                                fields.push(`req.${where}.${element.typescript.name}`);
                         }
                         let fieldsStr = fields.join(', ');
                         let input = `[${fieldsStr}]`;
@@ -53,7 +53,7 @@ function Needs(key, where) {
                         let placeholders: string[] = [];
                         for (let i = 0; i < logic.inputs.length; i++) {
                                 const element = logic.inputs[i];
-                                placeholders.push(`Needs("${element.name}", "${where}")`);
+                                placeholders.push(`Needs("${element.typescript.name}", "${where}")`);
                         }
                         let placeholderStr = placeholders.join(',\n    ');
                         let input = `${placeholderStr}`;

@@ -1,14 +1,14 @@
 import { alignKeyword, alignKeywords, SnakeToPascal, SnakeToTitle } from '../core/formatting';
-import { CodeGenerator, SQL_TO_TS_TYPE, SqlTable } from '../core/structure';
+import { CodeGenerator, SQL_TO_GO_TYPE, SqlTable } from '../core/structure';
 
-export class TsTypesCodeGenerator extends CodeGenerator {
+export class GoTypesCodeGenerator extends CodeGenerator {
         FormatStack(stack: string[]) {
-                let colis = alignKeyword(stack, ': ');
-                let types = alignKeywords(colis, Object.values(SQL_TO_TS_TYPE));
-                return types;
+                let types = alignKeywords(stack, Object.values(SQL_TO_GO_TYPE));
+                let jsons = alignKeyword(types, '`json:');
+                return jsons;
         }
 
-        GenerateTsTypes(): string {
+        GenerateGoTypes(): string {
                 let schemas = this.input;
 
                 let outputStack: string[] = [];
@@ -26,7 +26,7 @@ export class TsTypesCodeGenerator extends CodeGenerator {
                                 }
                                 const table = schema.tables[tableName];
 
-                                outputStack.push(`\n// * ${table.label}\n`);
+                                outputStack.push(`// ${table.label}`);
 
                                 let logics: Array<'create' | 'read' | 'update' | 'delete'> = ['create', 'read', 'update', 'delete'];
 
@@ -35,12 +35,11 @@ export class TsTypesCodeGenerator extends CodeGenerator {
                                         outputStack = outputStack.concat(stuff);
                                 }
 
-                                stack.push(`export type ${SnakeToTitle(tableName)} = {`);
+                                stack.push(`type ${SnakeToTitle(tableName)} struct {`);
                                 for (const attr of table.logic.existsAs) {
-                                        stack.push(`    ${attr.typescript.name}: ${attr.typescript.type};`);
+                                        stack.push(`    ${attr.go.name} ${attr.go.type} \`json:"${attr.sql.name}"\``);
                                 }
                                 stack.push('}');
-
                                 outputStack.push(this.FormatStack(stack).join(`\n`));
                                 stack = [];
                         }
@@ -56,9 +55,9 @@ export class TsTypesCodeGenerator extends CodeGenerator {
                 if (table.logic[what]) {
                         for (const logic of table.logic[what]) {
                                 if (logic.inputs.length === 0) continue;
-                                stack.push(`export type ${SnakeToPascal(`request_${logic.name}`)} = {`);
+                                stack.push(`type ${SnakeToPascal(`Request${logic.name}`)} struct {`);
                                 for (const el of logic.inputs) {
-                                        stack.push(`    ${el.typescript.name}: ${el.typescript.type};`);
+                                        stack.push(`    ${el.go.name} ${el.go.type} \`json:"${el.sql.name}"\``);
                                 }
                                 stack.push('}');
                                 outputStack.push(this.FormatStack(stack).join('\n'));
@@ -68,9 +67,9 @@ export class TsTypesCodeGenerator extends CodeGenerator {
                 if (table.logic[what]) {
                         for (const logic of table.logic[what]) {
                                 if (logic.outputs.length === 0) continue;
-                                stack.push(`export type ${SnakeToPascal(`response_${logic.name}`)} = {`);
+                                stack.push(`type ${SnakeToPascal(`Response${logic.name}`)} struct {`);
                                 for (const el of logic.outputs) {
-                                        stack.push(`    ${el.typescript.name}: ${el.typescript.type};`);
+                                        stack.push(`    ${el.go.name} ${el.go.type} \`json:"${el.sql.name}"\``);
                                 }
                                 stack.push('}');
                                 outputStack.push(this.FormatStack(stack).join('\n'));
@@ -81,8 +80,8 @@ export class TsTypesCodeGenerator extends CodeGenerator {
         }
 
         Run() {
-                let tsTypes = this.GenerateTsTypes();
-                this.output = tsTypes;
+                let goTypes = this.GenerateGoTypes();
+                this.output = goTypes;
                 return this;
         }
 }
