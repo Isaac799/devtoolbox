@@ -148,7 +148,7 @@ section div.tabs div {
         gap: 0.5rem;
         cursor: pointer;
         width: min-content;
-        min-width: 8rem;
+        min-width: 7rem;
         height: 1.5rem;
         overflow: hidden;
 }

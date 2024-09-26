@@ -1,8 +1,16 @@
+export const replaceDoubleSpaces = (str: string) => {
+        return str.replace(/\s{2,}/g, ' ');
+};
+
 export const SnakeToPascal = (value: string) => {
         return value
                 .split('_')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
+};
+
+export const SnakeToKebab = (snake: string): string => {
+        return snake.replace(/_/g, '-');
 };
 
 export const SnakeToCamel = (snakeStr: string): string => {

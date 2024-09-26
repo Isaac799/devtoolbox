@@ -1,10 +1,10 @@
-import { alignKeyword, alignKeywords } from '../core/formatting';
-import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, Types } from '../core/structure';
+import { alignKeyword, alignKeywords, replaceDoubleSpaces } from '../core/formatting';
+import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, Types, CodeLogic } from '../core/structure';
 
 const typeKeywords = Object.values(Types).map((e) => ` ${e}`);
 
 export class SqlGenerator extends CodeGenerator {
-        JoinAnd(arr: string[]) {
+        static JoinAnd(arr: string[]) {
                 return arr.join(`${'\n    '}AND `);
         }
 
@@ -61,7 +61,7 @@ export class SqlGenerator extends CodeGenerator {
                 for (let i = 0; i < table.logic.delete.length; i++) {
                         const logic = table.logic.delete[i];
 
-                        let where = this.JoinAnd(
+                        let where = SqlGenerator.JoinAnd(
                                 alignKeyword(
                                         logic.inputs
                                                 .filter((e) => e.primary)
@@ -103,7 +103,7 @@ $$;`;
                                 .filter((e) => e.primary)
                                 .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.sql.name}`);
                         const whereEqualsAligned = alignKeyword(whereEquals, '=');
-                        let where = `\n    ${this.JoinAnd(whereEqualsAligned)}`;
+                        let where = `\n    ${SqlGenerator.JoinAnd(whereEqualsAligned)}`;
                         where = `\n    ${where}`;
 
                         const params = alignKeywords(
@@ -160,7 +160,7 @@ $$;`;
 
                                 return answer.join(' ');
                         });
-                        let where = this.JoinAnd(alignKeyword(whereParts, '='));
+                        let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
                         where = `\n    WHERE ${where}`;
 
                         if (!logic.inputs.length) {
@@ -446,5 +446,135 @@ ${everythingElse.join('\n')}`;
                 }
 
                 return this;
+        }
+
+        static GenerateACreateLogic(logic: CodeLogic, withPlaceholders: boolean = false) {
+                const into = logic.inputs
+                        .filter((e) => !e.primary)
+                        .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`)
+                        .join(',\n    ');
+                const values = logic.inputs
+                        .filter((e) => !e.primary)
+                        .map((e, i) => (withPlaceholders ? `$${i + 1}` : `${e.sql.name}`))
+                        .join(',\n    ');
+                const returning = logic.outputs.map((e) => `${e.sqlLocation.column}`) + ' INTO ' + logic.outputs.map((e) => `${e.sql.name}`);
+
+                let procedure = `
+INSERT INTO ${logic.sqlTableName} (
+    ${into}
+) 
+VALUES (
+    ${values}
+)
+RETURNING 
+    ${returning};`;
+                return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
+        }
+
+        static GenerateADeleteLogic(logic: CodeLogic, withPlaceholders: boolean = false) {
+                let where = SqlGenerator.JoinAnd(
+                        alignKeyword(
+                                logic.inputs
+                                        .filter((e) => e.primary)
+                                        .map(
+                                                (e, i) =>
+                                                        `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${
+                                                                withPlaceholders ? `$${i + 1}` : e.sql.name
+                                                        }`
+                                        ),
+                                '='
+                        )
+                );
+
+                where = `\n    ${where}`;
+
+                let procedure = `DELETE FROM ${logic.sqlTableName}
+WHERE ${where};`;
+                return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
+        }
+
+        static GenerateAUpdateLogic(logic: CodeLogic, withPlaceholders: boolean = false) {
+                const whereEquals = logic.inputs
+                        .filter((e) => e.primary)
+                        .map(
+                                (e, i) =>
+                                        `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${
+                                                withPlaceholders ? `$${i + 1}` : e.sql.name
+                                        }`
+                        );
+                let whereClauses = whereEquals.length + 1;
+
+                const whereEqualsAligned = alignKeyword(whereEquals, '=');
+                let where = `\n    ${SqlGenerator.JoinAnd(whereEqualsAligned)}`;
+                where = `\n    ${where}`;
+
+                let procedure = `SET 
+    ${alignKeyword(
+            logic.inputs
+                    .filter((e) => !e.primary)
+                    .map(
+                            (e, i) =>
+                                    `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${
+                                            withPlaceholders ? `$${whereClauses + i}` : e.sql.name
+                                    }`
+                    ),
+            '='
+    ).join(',\n    ')}
+WHERE ${where};`;
+                return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
+        }
+
+        static GenerateAReadLogic(logic: CodeLogic, table: SqlTable, withPlaceholders: boolean = false) {
+                const whereParts = logic.inputs.map((e, i) => {
+                        let answer = [];
+                        if (e.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
+                        } else {
+                                answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
+                        }
+                        answer.push('=');
+                        answer.push(withPlaceholders ? `$${i + 1}` : e.sql.name);
+                        answer = alignKeywords(answer, typeKeywords);
+
+                        return answer.join(' ');
+                });
+                let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
+                where = `\n    WHERE ${where}`;
+
+                if (!logic.inputs.length) {
+                        where = '';
+                }
+
+                let join = '';
+                let tableName = '';
+                let joinStr = `\n    ${SqlGenerator.GenerateReadLeftJoinString(table)}`;
+
+                if (logic.name.includes('join')) {
+                        join = joinStr;
+                        tableName = `${logic.sqlTableName} ${logic.sqlTableName.slice(0, 3)}_0`;
+                } else {
+                        tableName = `${logic.sqlTableName}`;
+                }
+
+                const selectsNeeded = logic.outputs.map((e) => {
+                        let answer = [];
+
+                        if (e.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
+                        } else {
+                                answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
+                        }
+                        if (e.sqlLocation.columnAliasedAs) {
+                                answer.push(`AS ${e.sqlLocation.tableAliasedAs}_${e.sqlLocation.columnAliasedAs}`);
+                        } else {
+                                answer.push(e.sqlLocation.columnAliasedAs);
+                        }
+                        return answer.join(' ');
+                });
+                const selecting = alignKeyword(selectsNeeded, ' AS ').join(',\n    ');
+                let procedure = `SELECT 
+    ${selecting}     
+FROM ${tableName}${join}${where};`;
+                return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
 }

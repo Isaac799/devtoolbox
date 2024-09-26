@@ -1,9 +1,12 @@
-import { alignKeyword, alignKeywords, SnakeToPascal, SnakeToTitle } from '../core/formatting';
+import { alignKeyword, alignKeywords, SnakeToPascal } from '../core/formatting';
 import { CodeGenerator, SQL_TO_GO_TYPE, SqlTable } from '../core/structure';
 
 export class GoTypesCodeGenerator extends CodeGenerator {
         FormatStack(stack: string[]) {
-                let types = alignKeywords(stack, Object.values(SQL_TO_GO_TYPE));
+                let types = alignKeywords(
+                        stack,
+                        Object.values(SQL_TO_GO_TYPE).map((e) => e.goType)
+                );
                 let jsons = alignKeyword(types, '`json:');
                 return jsons;
         }
@@ -35,9 +38,9 @@ export class GoTypesCodeGenerator extends CodeGenerator {
                                         outputStack = outputStack.concat(stuff);
                                 }
 
-                                stack.push(`type ${SnakeToTitle(tableName)} struct {`);
+                                stack.push(`type ${SnakeToPascal(tableName)} struct {`);
                                 for (const attr of table.logic.existsAs) {
-                                        stack.push(`    ${attr.go.name} ${attr.go.type} \`json:"${attr.sql.name}"\``);
+                                        stack.push(`    ${attr.go.typeName} ${attr.go.typeType} \`json:"${attr.sql.name}"\``);
                                 }
                                 stack.push('}');
                                 outputStack.push(this.FormatStack(stack).join(`\n`));
@@ -55,9 +58,9 @@ export class GoTypesCodeGenerator extends CodeGenerator {
                 if (table.logic[what]) {
                         for (const logic of table.logic[what]) {
                                 if (logic.inputs.length === 0) continue;
-                                stack.push(`type ${SnakeToPascal(`Request${logic.name}`)} struct {`);
+                                stack.push(`type ${logic.go.input.typeName} struct {`);
                                 for (const el of logic.inputs) {
-                                        stack.push(`    ${el.go.name} ${el.go.type} \`json:"${el.sql.name}"\``);
+                                        stack.push(`    ${el.go.typeName} ${el.go.typeType} \`json:"${el.sql.name}"\``);
                                 }
                                 stack.push('}');
                                 outputStack.push(this.FormatStack(stack).join('\n'));
@@ -67,9 +70,9 @@ export class GoTypesCodeGenerator extends CodeGenerator {
                 if (table.logic[what]) {
                         for (const logic of table.logic[what]) {
                                 if (logic.outputs.length === 0) continue;
-                                stack.push(`type ${SnakeToPascal(`Response${logic.name}`)} struct {`);
+                                stack.push(`type ${logic.go.output.typeName} struct {`);
                                 for (const el of logic.outputs) {
-                                        stack.push(`    ${el.go.name} ${el.go.type} \`json:"${el.sql.name}"\``);
+                                        stack.push(`    ${el.go.typeName} ${el.go.typeType} \`json:"${el.sql.name}"\``);
                                 }
                                 stack.push('}');
                                 outputStack.push(this.FormatStack(stack).join('\n'));

@@ -7,7 +7,7 @@ import { CodeGenerator } from './core/structure';
 import '../assets/normalize.css';
 import '../assets/styles.css';
 import { TsTypesCodeGenerator } from './generators/ts_types';
-import { GoTypesCodeGenerator } from './generators/go_struct';
+import { GoApiCodeGenerator } from './generators/go_endpoint';
 
 class AppItem {
         htmlLabel = 'Empty';
@@ -189,48 +189,62 @@ function Main(_: Event) {
                         input.value = previousInput;
                         RunCodeGeneratorForSelectedTabItem(input.value);
                 } else {
-                        input.value = `## creature
+                        input.value = `## person
 
-- person CRUD
-  - s first_name +
-  - s last_name +
-  - ts _birthday ! CURRENT_TIMESTAMP
-  - b alive !
+- person CRUD +
+  - s email *
+  - s username **
+  - b active
+                        
+## catalog
 
-## world
+- category + CRUD
+  - s title *
 
-- kingdom + 
-  - s name *
-  - m description
+- product + CRUD
+  - s title * !
+  - d price !
 
-- village +
-  - ^ kingdom|ruled_by **
-  - ^ creature.person|elder *
-  - s name **
+- product_category
+  - ^ product + !
+  - ^ category + !
 
-- tavern + 
-  - ^ village *
-  - s name *
-  - b has_food
-  - b vacancy
+## shopping_cart
 
-- patron + @ CRUD
-  - ^ _creature.person ! * **
-  - ^ _tavern ! * 
-  - ts departed_on ?
-  - b paid`;
-                        RunCodeGeneratorForSelectedTabItem(input.value);
+- cart + CRUD
+  - ^ _person.person ! *
+  
+- cart_item @ CRUD
+  - ^ _cart +
+  - ^ _catalog.product +
+  - d _price_when_carted !
+
+## orders
+
+- order + @ CRUD
+  - ^ _person.person ! *
+  - b finalized !
+  - d _total_cost !
+  
+- order_item @ CRUD
+  - ^ order + !
+  - ^ catalog.product + !
+
+  
+`;
+                        RunCodeGeneratorForSelectedTabItem(input.value.trim());
                 }
         }
 }
 
 let focusedAppItemIndex = 0;
 const APP_ITEMS = [
-        new AppItem('Postgres SQL', new SqlGenerator()),
+        new AppItem('Postgres', new SqlGenerator()),
+        new AppItem('Go Api', new GoApiCodeGenerator()),
         new AppItem('TS types', new TsTypesCodeGenerator()),
-        new AppItem('Go structs', new GoTypesCodeGenerator()),
         new AppItem('Express JS', new NodeExpressCodeGenerator()),
-        new AppItem('HTML Forms', new HtmlCodeGenerator()),
+        new AppItem('HTML forms', new HtmlCodeGenerator()),
+        // new AppItem('Go structs', new GoTypesCodeGenerator()),
         // new AppItem('GO', undefined),
         // new AppItem('Node/Express', undefined),
         // new AppItem('HTML', undefined),

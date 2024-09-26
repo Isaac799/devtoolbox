@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
         <head>
                 <meta charset="UTF-8" />
@@ -21,42 +21,63 @@
                 <section>
                         <h2>Development Stage</h2>
 
-                        Note this application is currently in early development. Outputs are largely untested. For now a lot of what I have is just proof of
-                        concept. Plus most of the outputs are based on my limited syntax knowledge and off the top of my head; prone to error and not verbose.
+                        <span>
+                                Note this application is currently in early development. Outputs are largely untested. For now a lot of what I have is just
+                                proof of concept. Plus most of the outputs are based on my limited syntax knowledge and off the top of my head; prone to error
+                                and not verbose.
+                        </span>
                 </section>
 
                 <section>
                         <h2>PostgreSQL</h2>
-                        Currently testing the outputs on this one. Lots of good progress, most outputs seem to run and are able to be called. No promises tho.
+                        <span>
+                                Currently testing the outputs on this one. Lots of good progress, most outputs seem to run and are able to be called but testing
+                                it manually is a chore. No promises tho.
+                        </span>
                         <ul>
-                                <li>All aspects (entities, functions, procedures, joins...) take into account a composite primary key</li>
+                                <li>All aspects (entities, functions, procedures) take into account a composite primary key</li>
                                 <li>The update procedure ignores attributes marked as readonly</li>
                                 <li>
-                                        Up to three read functions are generated.
+                                        Two read functions are generated:
                                         <ol>
                                                 <li>Single is basic, letting you read by primary key</li>
                                                 <li>
                                                         Options gives a trimmed down list if things in the table
                                                         <ul>
-                                                                <li>automatically done if an attribute is named: name, label, value, code, or tag.</li>
+                                                                <li>automatically done if an attribute is named: name, label, value, code, title, or tag.</li>
                                                                 <li>aimed to help with dropdown list / selection needs</li>
                                                         </ul>
                                                 </li>
-                                                <li>
+                                                <!-- <li>
                                                         Joined recursively grabs foreign attributes too
                                                         <ul>
                                                                 <li>Automatically generated if a foreign key is present</li>
                                                                 <li>Limited for self references</li>
                                                         </ul>
-                                                </li>
+                                                </li> -->
                                         </ol>
                                 </li>
                         </ul>
 
-                        <h2>Node JS Express</h2>
-                        This is mostly proof of concept, endpoints likely will work, but postgres configuration will need some tweaking.
+                        <h2>Go Api</h2>
+                        <span>
+                                A work in progress too, but most promising. While <code>go vet</code> works, I have no clue if it <em>actually</em> works. For
+                                now I took the sql queries and included them into the Go code to remove the need for stored procedure or functions. Plans to add
+                                a toggle may follow, not sure yet. For now all inputs are passed in via the body, except reads which are attempted to be parsed
+                                from query params. May be looking to utilize the path instead for a more "restful" structure.
+                        </span>
+
                         <ul>
-                                <li>GET, PUT, POST, DELETE endpoints that utilize the PostgreSQL functions and procedures</li>
+                                <li>Endpoints grouped by schema to give it more context</li>
+                                <li>GET, PUT, POST, DELETE mirroring postgresql table structures</li>
+                                <li>GET params are parsed into appropriate type before attempting postgresql call</li>
+                                <li>Error handling for pretty much every step</li>
+                        </ul>
+
+                        <h2>Node JS Express</h2>
+                        <span> This is mostly proof of concept, endpoints likely will work, but postgres configuration will need some tweaking. </span>
+                        <ul>
+                                <li>GET, PUT, POST, DELETE endpoints that utilize the postgresql functions and procedures</li>
                                 <li>Handholding when making requests, checking for things missed that it expects on a request</li>
                                 <li>Error handling for failed queries</li>
                         </ul>

@@ -1,4 +1,4 @@
-import { SnakeToCamel, SnakeToPascal, SnakeToTitle } from './formatting';
+import { SnakeToCamel, SnakeToKebab, SnakeToPascal, SnakeToTitle } from './formatting';
 
 export const PK_PARAM_TAG = 'target_';
 export const PARAM_PREFIX = 'new_';
@@ -75,24 +75,76 @@ export const SQL_TO_TS_TYPE = {
         [Types.xxl]: 'string',
 };
 
-export const SQL_TO_GO_TYPE = {
-        [Types.BIT]: 'bool',
-        [Types.DATE]: 'time.Time',
-        [Types.CHAR]: 'string',
-        [Types.TIME]: 'time.Time',
-        [Types.TIMESTAMP]: 'time.Time',
-        [Types.SERIAL]: 'int',
-        [Types.DECIMAL]: 'float64',
-        [Types.FLOAT]: 'float64',
-        [Types.REAL]: 'float64',
-        [Types.INT]: 'int',
-        [Types.BOOLEAN]: 'bool',
-        [Types.xs]: 'string',
-        [Types.s]: 'string',
-        [Types.m]: 'string',
-        [Types.l]: 'string',
-        [Types.xl]: 'string',
-        [Types.xxl]: 'string',
+export const REPLACE_PHRASE = '#####';
+export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: string }> = {
+        [Types.BIT]: {
+                goType: 'bool',
+                parseFunction: `strconv.ParseBool(${REPLACE_PHRASE})`,
+        },
+        [Types.DATE]: {
+                goType: 'time.Time',
+                parseFunction: `time.Parse("2006-01-02", ${REPLACE_PHRASE})`,
+        },
+        [Types.CHAR]: {
+                goType: 'string',
+                parseFunction: `${REPLACE_PHRASE}`,
+        },
+        [Types.TIME]: {
+                goType: 'time.Time',
+                parseFunction: `time.Parse("15:04:05", ${REPLACE_PHRASE})`,
+        },
+        [Types.TIMESTAMP]: {
+                goType: 'time.Time',
+                parseFunction: `time.Parse("2006-01-02 15:04:05", ${REPLACE_PHRASE})`,
+        },
+        [Types.SERIAL]: {
+                goType: 'int',
+                parseFunction: `strconv.Atoi(${REPLACE_PHRASE})`,
+        },
+        [Types.DECIMAL]: {
+                goType: 'float64',
+                parseFunction: `strconv.ParseFloat(${REPLACE_PHRASE})`,
+        },
+        [Types.FLOAT]: {
+                goType: 'float64',
+                parseFunction: `strconv.ParseFloat(${REPLACE_PHRASE})`,
+        },
+        [Types.REAL]: {
+                goType: 'float64',
+                parseFunction: `strconv.ParseFloat(${REPLACE_PHRASE})`,
+        },
+        [Types.INT]: {
+                goType: 'int',
+                parseFunction: `strconv.Atoi(${REPLACE_PHRASE})`,
+        },
+        [Types.BOOLEAN]: {
+                goType: 'bool',
+                parseFunction: `strconv.ParseBool(${REPLACE_PHRASE})`,
+        },
+        [Types.xs]: {
+                goType: 'string',
+                parseFunction: `${REPLACE_PHRASE}`,
+        },
+        [Types.s]: {
+                goType: 'string',
+                parseFunction: `${REPLACE_PHRASE}`,
+        },
+        [Types.m]: {
+                goType: 'string',
+                parseFunction: `${REPLACE_PHRASE}`,
+        },
+        [Types.l]: {
+                goType: 'string',
+                parseFunction: `${REPLACE_PHRASE}`,
+        },
+        [Types.xl]: {
+                goType: 'string',
+                parseFunction: `${REPLACE_PHRASE}`,
+        },
+        [Types.xxl]: {
+                goType: 'string',
+                parseFunction: `${REPLACE_PHRASE}`,
+        },
 };
 
 export const SQL_TO_HTML_INPUT_TYPE = {
@@ -169,8 +221,10 @@ export class CodeLogicField {
                 type: string;
         };
         go: {
-                name: string;
-                type: string;
+                varName: string;
+                typeName: string;
+                typeType: string;
+                parser: string;
         };
         sql: {
                 name: string;
@@ -194,8 +248,10 @@ export class CodeLogicField {
                         type: SQL_TO_TS_TYPE[type],
                 };
                 this.go = {
-                        name: SnakeToPascal(name),
-                        type: SQL_TO_GO_TYPE[type],
+                        varName: SnakeToCamel(name),
+                        typeName: SnakeToPascal(name),
+                        typeType: SQL_TO_GO_TYPE[type].goType,
+                        parser: SQL_TO_GO_TYPE[type].parseFunction,
                 };
                 this.sql = {
                         name: name,
@@ -233,9 +289,80 @@ export class CodeLogic {
         is_options: boolean = false;
         inputs: CodeLogicField[] = [];
         outputs: CodeLogicField[] = [];
+        sqlTableName: string;
+        sqlSchemaName: string;
 
-        constructor(name: string) {
+        typescript: {
+                fnName: string;
+                input: {
+                        name: string;
+                        type: string;
+                };
+                output: {
+                        name: string;
+                        type: string;
+                };
+                real: {
+                        name: string;
+                        type: string;
+                };
+        };
+        go: {
+                fnName: string;
+                input: {
+                        varName: string;
+                        typeName: string;
+                        typeType: string;
+                };
+                output: {
+                        varName: string;
+                        typeName: string;
+                        typeType: string;
+                };
+                real: {
+                        name: string;
+                        type: string;
+                };
+        };
+
+        constructor(name: string, table: SqlTable) {
                 this.name = name;
+                const tableL = table.label;
+                this.sqlTableName = table.fullName;
+                this.sqlSchemaName = table.parentSchema.name;
+
+                this.typescript = {
+                        fnName: SnakeToCamel(name),
+                        input: {
+                                name: SnakeToCamel(`input_${name}`),
+                                type: SnakeToCamel(`input_${name}`),
+                        },
+                        output: {
+                                name: SnakeToCamel(`output_${name}`),
+                                type: SnakeToCamel(`output_${name}`),
+                        },
+                        real: {
+                                name: SnakeToCamel(tableL),
+                                type: SnakeToCamel(tableL),
+                        },
+                };
+                this.go = {
+                        fnName: SnakeToPascal(name),
+                        input: {
+                                varName: SnakeToCamel(`input_${name}`),
+                                typeName: SnakeToPascal(`input_${name}`),
+                                typeType: SnakeToPascal(`input_${name}`),
+                        },
+                        output: {
+                                varName: SnakeToCamel(`output_${name}`),
+                                typeName: SnakeToPascal(`output_${name}`),
+                                typeType: SnakeToPascal(`output_${name}`),
+                        },
+                        real: {
+                                name: SnakeToKebab(tableL),
+                                type: SnakeToPascal(tableL),
+                        },
+                };
         }
 
         sqlInputs(distinction: SQL_INPUT_DISTINCTION) {
@@ -564,14 +691,16 @@ export class SqlTable {
                                 this.logic.read.push(readDropdownLogic);
                         }
 
-                        let readJoinedLogic = this.GenerateReadJoinedLogic(parameterPrimaryKeys);
-                        if (readJoinedLogic) {
-                                this.logic.read.push(readJoinedLogic);
-                        }
+                        // let readJoinedLogic = this.GenerateReadJoinedLogic(parameterPrimaryKeys);
+                        // if (readJoinedLogic) {
+                        // this.logic.read.push(readJoinedLogic);
+                        // }
                 }
                 if (this.logic.update) {
                         let updateLogic = this.GenerateUpdateLogic(parameterPrimaryKeys, parameterKeys);
-                        this.logic.update.push(updateLogic);
+                        if (updateLogic) {
+                                this.logic.update.push(updateLogic);
+                        }
                 }
                 if (this.logic.delete) {
                         let deleteLogic = this.GenerateDeleteLogic(parameterPrimaryKeys);
@@ -583,22 +712,27 @@ export class SqlTable {
                 let name = `delete_${this.label}`;
                 let inputs: CodeLogicField[] = [];
 
-                let logic = new CodeLogic(name);
+                let logic = new CodeLogic(name, this);
                 inputs = [...parameterPrimaryKeys];
                 logic.inputs = [...inputs];
                 return logic;
         }
 
-        private GenerateUpdateLogic(parameterPrimaryKeys: CodeLogicField[], parameterKeys: CodeLogicField[]): CodeLogic {
+        private GenerateUpdateLogic(parameterPrimaryKeys: CodeLogicField[], parameterKeys: CodeLogicField[]): CodeLogic | null {
                 let name = `update_${this.label}`;
                 let inputs: CodeLogicField[] = [];
 
-                let logic = new CodeLogic(name);
+                let logic = new CodeLogic(name, this);
 
                 inputs = [...parameterPrimaryKeys, ...parameterKeys.filter((e) => !e.readOnly)];
                 // console.log('inputs :>> ', inputs);
                 // todo
                 logic.inputs = [...inputs];
+
+                if (logic.inputs.filter((e) => !e.primary).length === 0) {
+                        return null;
+                }
+
                 return logic;
         }
 
@@ -608,7 +742,7 @@ export class SqlTable {
                 // String keys are ordered in the order they were added
                 let pkList = Object.values(pks);
 
-                let readableLabels = ['name', 'label', 'value', 'code', 'tag'];
+                let readableLabels = ['name', 'label', 'value', 'code', 'tag', 'title'];
                 let simpleAttributeLabel = Object.values(this.attributes).find((x) => readableLabels.includes(x.value.toLowerCase()));
                 if (!simpleAttributeLabel) {
                         return null;
@@ -617,7 +751,7 @@ export class SqlTable {
                         return null;
                 }
                 let name = `read_options_${this.label}`;
-                let dropdownLogic = new CodeLogic(name);
+                let dropdownLogic = new CodeLogic(name, this);
                 dropdownLogic.is_options = true;
                 for (let i = 0; i < pkList.length; i++) {
                         const pk = pkList[i];
@@ -651,7 +785,7 @@ export class SqlTable {
                 inputs = [...parameterPrimaryKeys];
                 outputs = [...returnedKeys];
 
-                let logic = new CodeLogic(name);
+                let logic = new CodeLogic(name, this);
                 logic.inputs = [...inputs];
                 logic.outputs = [...outputs];
                 return logic;
@@ -720,100 +854,100 @@ export class SqlTable {
                 return collection;
         }
 
-        private static ReadAttributes(
-                inputTable: SqlTable,
-                collection: Array<JoinedCodePreLogic> = [],
-                i: number = 0,
-                aliasInput: string | null = '',
-                nestedCount: number = 0
-        ): Array<JoinedCodePreLogic> | null {
-                if (i > MAX_SEARCH_NESTED_COUNT) {
-                        console.error('exceeded max loop count on getting attribute and its referenced attributes');
-                        return null;
-                }
+        // private static ReadAttributes(
+        //         inputTable: SqlTable,
+        //         collection: Array<JoinedCodePreLogic> = [],
+        //         i: number = 0,
+        //         aliasInput: string | null = '',
+        //         nestedCount: number = 0
+        // ): Array<JoinedCodePreLogic> | null {
+        //         if (i > MAX_SEARCH_NESTED_COUNT) {
+        //                 console.error('exceeded max loop count on getting attribute and its referenced attributes');
+        //                 return null;
+        //         }
 
-                if (nestedCount >= JOIN_DEPTH) {
-                        return null;
-                }
+        //         if (nestedCount >= JOIN_DEPTH) {
+        //                 return null;
+        //         }
 
-                let typicalAttrs = Object.values(inputTable.attributes).filter((e) => !e.isForeignKey());
+        //         let typicalAttrs = Object.values(inputTable.attributes).filter((e) => !e.isForeignKey());
 
-                for (let k = 0; k < typicalAttrs.length; k++) {
-                        const typicalAttr = typicalAttrs[k];
-                        let joinAsParts = [typicalAttr.parentTable.label, typicalAttr.value];
-                        if (aliasInput) {
-                                joinAsParts.unshift(aliasInput);
-                        }
-                        let readAttributeAs = joinAsParts.join('_');
-                        let readTableAs = '';
-                        let tableSlicedName = typicalAttr.parentTable.label.slice(0, 3);
-                        readTableAs = `${tableSlicedName}_${i}`;
+        //         for (let k = 0; k < typicalAttrs.length; k++) {
+        //                 const typicalAttr = typicalAttrs[k];
+        //                 let joinAsParts = [typicalAttr.parentTable.label, typicalAttr.value];
+        //                 if (aliasInput) {
+        //                         joinAsParts.unshift(aliasInput);
+        //                 }
+        //                 let readAttributeAs = joinAsParts.join('_');
+        //                 let readTableAs = '';
+        //                 let tableSlicedName = typicalAttr.parentTable.label.slice(0, 3);
+        //                 readTableAs = `${tableSlicedName}_${i}`;
 
-                        let joinedCodePreLogic = new JoinedCodePreLogic(readAttributeAs, readTableAs, typicalAttr);
-                        collection.push(joinedCodePreLogic);
-                }
+        //                 let joinedCodePreLogic = new JoinedCodePreLogic(readAttributeAs, readTableAs, typicalAttr);
+        //                 collection.push(joinedCodePreLogic);
+        //         }
 
-                for (const [table, attrs] of inputTable.uniqueFkGroups()) {
-                        let attr = attrs[0]; // We only care about a single fk, handling composite fk
+        //         for (const [table, attrs] of inputTable.uniqueFkGroups()) {
+        //                 let attr = attrs[0]; // We only care about a single fk, handling composite fk
 
-                        // if (attr.value === 'person_first_name') {
-                        //     console.log('attr :>> ', attr);
-                        // }
+        //                 // if (attr.value === 'person_first_name') {
+        //                 //     console.log('attr :>> ', attr);
+        //                 // }
 
-                        if (attr.referenceToSelf) {
-                                nestedCount += 1;
-                        }
+        //                 if (attr.referenceToSelf) {
+        //                         nestedCount += 1;
+        //                 }
 
-                        let parts = [];
-                        if (nestedCount) {
-                                parts.push(`depth_${nestedCount}`);
-                        }
-                        // parts.push(attr.value)
-                        if (attr.parentTable.id !== table.id) {
-                                // parts.push("via")
-                                parts.push(inputTable.label);
-                        }
+        //                 let parts = [];
+        //                 if (nestedCount) {
+        //                         parts.push(`depth_${nestedCount}`);
+        //                 }
+        //                 // parts.push(attr.value)
+        //                 if (attr.parentTable.id !== table.id) {
+        //                         // parts.push("via")
+        //                         parts.push(inputTable.label);
+        //                 }
 
-                        SqlTable.ReadAttributes(table, collection, i + 1, parts.join('_'), nestedCount);
-                }
+        //                 SqlTable.ReadAttributes(table, collection, i + 1, parts.join('_'), nestedCount);
+        //         }
 
-                return collection;
-        }
+        //         return collection;
+        // }
 
-        private GenerateReadJoinedLogic(parameterPrimaryKeys: CodeLogicField[]): CodeLogic | null {
-                let name = `read_joined_${this.label}`;
-                let logic = new CodeLogic(name);
+        // private GenerateReadJoinedLogic(parameterPrimaryKeys: CodeLogicField[]): CodeLogic | null {
+        //         let name = `read_joined_${this.label}`;
+        //         let logic = new CodeLogic(name, this);
 
-                let inputs: CodeLogicField[] = [];
-                let outputs: CodeLogicField[] = [];
+        //         let inputs: CodeLogicField[] = [];
+        //         let outputs: CodeLogicField[] = [];
 
-                inputs = [...parameterPrimaryKeys];
+        //         inputs = [...parameterPrimaryKeys];
 
-                let attributeToRead = SqlTable.ReadAttributes(this);
+        //         let attributeToRead = SqlTable.ReadAttributes(this);
 
-                if (!attributeToRead || Object.keys(this.attributes).length === attributeToRead.length) {
-                        return null;
-                }
+        //         if (!attributeToRead || Object.keys(this.attributes).length === attributeToRead.length) {
+        //                 return null;
+        //         }
 
-                for (const attrRead of attributeToRead) {
-                        const attr = attrRead.attr;
-                        let sqlLocation = new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value);
-                        if (attrRead.readAttributeAs) {
-                                sqlLocation.columnAliasedAs = attrRead.readAttributeAs;
-                        }
-                        if (attrRead.readTableAs) {
-                                sqlLocation.tableAliasedAs = attrRead.readTableAs;
-                        }
+        //         for (const attrRead of attributeToRead) {
+        //                 const attr = attrRead.attr;
+        //                 let sqlLocation = new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value);
+        //                 if (attrRead.readAttributeAs) {
+        //                         sqlLocation.columnAliasedAs = attrRead.readAttributeAs;
+        //                 }
+        //                 if (attrRead.readTableAs) {
+        //                         sqlLocation.tableAliasedAs = attrRead.readTableAs;
+        //                 }
 
-                        let codeLogic = new CodeLogicField(attr.sqlType, `${PARAM_PREFIX}${attr.value}`, sqlLocation, attr.readOnly);
-                        outputs.push(codeLogic);
-                }
+        //                 let codeLogic = new CodeLogicField(attr.sqlType, `${PARAM_PREFIX}${attr.value}`, sqlLocation, attr.readOnly);
+        //                 outputs.push(codeLogic);
+        //         }
 
-                logic.inputs = [...inputs];
-                logic.outputs = [...outputs];
+        //         logic.inputs = [...inputs];
+        //         logic.outputs = [...outputs];
 
-                return logic;
-        }
+        //         return logic;
+        // }
 
         private GenerateCreateLogic(primaryAttrs: { [x: string]: SqlTableAttribute }, parameterKeys: CodeLogicField[]): CodeLogic {
                 let name = `create_${this.label}`;
@@ -839,7 +973,7 @@ export class SqlTable {
                 inputs = [...inOuts, ...parameterKeys];
                 outputs = [...inOuts];
 
-                let logic = new CodeLogic(name);
+                let logic = new CodeLogic(name, this);
                 logic.inputs = [...inputs];
                 logic.outputs = [...outputs];
                 return logic;
