@@ -82,7 +82,9 @@ export class TsTypesCodeGenerator extends CodeGenerator {
 
         Run() {
                 let tsTypes = this.GenerateTsTypes();
-                this.output = tsTypes;
+                this.output = {
+                        'structure.ts': tsTypes,
+                };
                 return this;
         }
 }

@@ -2,11 +2,10 @@ import { HtmlCodeGenerator } from './generators/html_js';
 import { NodeExpressCodeGenerator } from './generators/node_js_express';
 import { SqlGenerator } from './generators/postgres_sql';
 import { InputParser } from './core/parser';
-import { CodeGenerator } from './core/structure';
+import { CodeGenerator, FileOutputs } from './core/structure';
 
 import '../assets/normalize.css';
 import '../assets/styles.css';
-import { TsTypesCodeGenerator } from './generators/ts_types';
 import { GoApiCodeGenerator } from './generators/go_endpoint';
 
 class AppItem {
@@ -33,6 +32,32 @@ function UpdateSelectedTab() {
                         container.classList.add('selected');
                 } else {
                         container.classList.remove('selected');
+                }
+        }
+}
+
+function UpdateSelectedFile(selectedFileName: string) {
+        selectedFileOutputs = selectedFileName;
+
+        let output = document.getElementById('code-output');
+        if (output === null) {
+                console.error('Missing core html element!');
+                return;
+        }
+        output.innerText = fileOutputs[selectedFileOutputs];
+
+        for (const fileName in fileOutputs) {
+                if (!Object.prototype.hasOwnProperty.call(fileOutputs, fileName)) {
+                        continue;
+                }
+                let el = document.getElementById(fileName);
+                if (!el) {
+                        break;
+                }
+                if (fileName === selectedFileName) {
+                        el.classList.add('selected');
+                } else {
+                        el.classList.remove('selected');
                 }
         }
 }
@@ -70,6 +95,33 @@ function BuildTabMenu() {
 }
 
 /**
+ * @returns {Array.<HTMLElement>}
+ */
+function BuildFileMenu() {
+        let files: HTMLDivElement[] = [];
+
+        for (const fileName in fileOutputs) {
+                if (!Object.prototype.hasOwnProperty.call(fileOutputs, fileName)) {
+                        continue;
+                }
+                const fileContent = fileOutputs[fileName];
+                if (!fileContent) continue;
+
+                let file = document.createElement('div');
+                file.setAttribute('id', fileName);
+                file.innerText = fileName;
+                file.classList.add('primary', 'p-1');
+
+                file.addEventListener('click', () => {
+                        UpdateSelectedFile(fileName);
+                });
+                files.push(file);
+        }
+
+        return files;
+}
+
+/**
  *
  * @param {string} value
  */
@@ -77,6 +129,7 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
         let input = document.getElementById('markdown-input') as HTMLInputElement;
         let errorOut = document.getElementById('error-output');
         let output = document.getElementById('code-output');
+        let files = document.getElementById('files-output');
 
         if (input === null) {
                 console.error('Missing core html element!');
@@ -89,6 +142,11 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
         }
 
         if (output === null) {
+                console.error('Missing core html element!');
+                return;
+        }
+
+        if (files === null) {
                 console.error('Missing core html element!');
                 return;
         }
@@ -106,7 +164,7 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
         }
 
         let parserOutput = parser.SetInput(value).Run().Read();
-        let code = currentAppItem.generator.Clear().SetInput(parserOutput).Run().Read();
+        let generatedFiles = currentAppItem.generator.Clear().SetInput(parserOutput).Run().Read();
 
         let errors = [...parser.errorMessages, ...currentAppItem.generator.errorMessages];
 
@@ -125,7 +183,19 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
                 errorOut.appendChild(errorUl);
         }
 
-        output.innerText = code;
+        fileOutputs = generatedFiles;
+
+        if (!Object.keys(generatedFiles).includes(selectedFileOutputs)) {
+                selectedFileOutputs = Object.keys(generatedFiles)[0];
+        }
+
+        let fileItems = BuildFileMenu();
+        files.innerHTML = '';
+        for (let i = 0; i < fileItems.length; i++) {
+                const tab = fileItems[i];
+                files.appendChild(tab);
+        }
+        UpdateSelectedFile(selectedFileOutputs);
 }
 
 function Main(_: Event) {
@@ -189,7 +259,31 @@ function Main(_: Event) {
                         input.value = previousInput;
                         RunCodeGeneratorForSelectedTabItem(input.value);
                 } else {
-                        input.value = `## person
+                        input.value = DEFAULT_INPUT;
+                        RunCodeGeneratorForSelectedTabItem(input.value.trim());
+                }
+        }
+}
+
+let focusedAppItemIndex = 0;
+let fileOutputs: FileOutputs = {};
+let selectedFileOutputs: string = '';
+
+const APP_ITEMS = [
+        new AppItem('Postgres', new SqlGenerator()),
+        new AppItem('Go Api', new GoApiCodeGenerator()),
+        new AppItem('Node JS', new NodeExpressCodeGenerator()),
+        new AppItem('HTML forms', new HtmlCodeGenerator()),
+        // new AppItem('Go structs', new GoTypesCodeGenerator()),
+        // new AppItem('GO', undefined),
+        // new AppItem('Node/Express', undefined),
+        // new AppItem('HTML', undefined),
+        // new AppItem('Angular', undefined),
+];
+
+window.addEventListener('DOMContentLoaded', Main);
+
+const DEFAULT_INPUT = `## person
 
 - person CRUD +
   - s email *
@@ -229,26 +323,4 @@ function Main(_: Event) {
 - order_item @ CRUD
   - ^ order + !
   - ^ catalog.product + !
-
-  
-`;
-                        RunCodeGeneratorForSelectedTabItem(input.value.trim());
-                }
-        }
-}
-
-let focusedAppItemIndex = 0;
-const APP_ITEMS = [
-        new AppItem('Postgres', new SqlGenerator()),
-        new AppItem('Go Api', new GoApiCodeGenerator()),
-        new AppItem('TS types', new TsTypesCodeGenerator()),
-        new AppItem('Express JS', new NodeExpressCodeGenerator()),
-        new AppItem('HTML forms', new HtmlCodeGenerator()),
-        // new AppItem('Go structs', new GoTypesCodeGenerator()),
-        // new AppItem('GO', undefined),
-        // new AppItem('Node/Express', undefined),
-        // new AppItem('HTML', undefined),
-        // new AppItem('Angular', undefined),
-];
-
-window.addEventListener('DOMContentLoaded', Main);
+`.trim();

@@ -1,10 +1,14 @@
-import { SnakeToCamel, SnakeToKebab, SnakeToPascal, SnakeToTitle } from './formatting';
+import { SnakeToCamel, SnakeToKebab, SnakeToPascal, SnakeToTitle, trimAndRemoveBlankStrings } from './formatting';
 
 export const PK_PARAM_TAG = 'target_';
 export const PARAM_PREFIX = 'new_';
 export const FK_PREFIX = 'fk';
 const IN_OUT_PREFIX = 'in_out_';
 export const UNALIASED_SELF_REFERENCE_ALIAS = 'self_';
+
+export type FileOutputs = {
+        [x: string]: string;
+};
 
 /**
  * Determines the max depth of joins to make for self references
@@ -400,14 +404,14 @@ export class TableLogic {
 
 export class CodeGenerator {
         input: { [x: string]: SqlSchema } = {};
-        output: string = '';
+        output: FileOutputs = {};
         errorMessages: string[] = [];
 
         constructor() {}
 
         Clear() {
                 this.input = {};
-                this.output = '';
+                this.output = {};
                 this.errorMessages = [];
                 return this;
         }
@@ -426,7 +430,7 @@ export class CodeGenerator {
         }
 
         Read() {
-                return this.output;
+                return trimAndRemoveBlankStrings(this.output);
         }
 
         Run() {

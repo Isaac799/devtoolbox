@@ -122,3 +122,16 @@ const constructAlignedPhrase = (phrase: string, position: number, alignTo: numbe
 
         return newPhraseParts.join('');
 };
+
+export const trimAndRemoveBlankStrings = (obj: { [key: string]: string }): { [key: string]: string } => {
+        const trimmedObj: { [key: string]: string } = {};
+
+        for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                        trimmedObj[key] = obj[key].trim();
+                        if (!trimmedObj[key]) delete trimmedObj[key];
+                }
+        }
+
+        return trimmedObj;
+};

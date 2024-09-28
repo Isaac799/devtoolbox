@@ -234,7 +234,9 @@ ${SUBMIT_BUTTON}
 ${this.GenerateHtmlBody()}
 </html>
         `;
-                this.output = html;
+                this.output = {
+                        'index.html': html,
+                };
                 return this;
         }
 }

@@ -303,8 +303,8 @@ $$;`;
         }
 
         ProcessSchema(schema: SqlSchema) {
-                let sql = '';
-                let sqlLogic = '';
+                let tableSql = '';
+                let logicSql = '';
 
                 let tables = schema.tables;
 
@@ -349,23 +349,14 @@ $$;`;
                         const createTableEnd = '\n);';
                         const createTable = dropCreate + createTableBody.join(',\n') + createTableEnd;
 
-                        sql += `${createTable}\n`;
+                        tableSql += `${createTable}\n`;
 
-                        sqlLogic += this.GenerateSqlLogic(table);
+                        logicSql += this.GenerateSqlLogic(table);
                 }
 
-                if (sqlLogic) {
-                        sqlLogic = sqlLogic.replace(/SERIAL/g, 'INT');
-                        sql = `${sql}${sqlLogic}`;
+                if (logicSql) {
+                        logicSql = logicSql.replace(/SERIAL/g, 'INT');
                 }
-
-                sql = sql.trim();
-
-                if (!sql) {
-                        this.output = '-- Nothing to show here';
-                }
-
-                return sql;
 
                 function generateGroupKeyStrings(table: SqlTable) {
                         let allGroupKeysStrings: string[][] = [];
@@ -385,15 +376,23 @@ $$;`;
                         }
                         return allGroupKeysStrings;
                 }
+
+                logicSql = logicSql.trim();
+                tableSql = tableSql.trim();
+
+                return {
+                        logicSql,
+                        tableSql,
+                };
         }
 
-        GenerateDrops() {
+        GenerateDrops(sql: string) {
                 let procFnTables = [];
                 let procFnSchemas = [];
                 let procFnDrops = [];
                 let everythingElse = [];
 
-                let lines = this.output.split('\n');
+                let lines = sql.split('\n');
                 for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
                         if (line.startsWith('DROP TABLE')) {
@@ -409,40 +408,49 @@ $$;`;
                         }
                 }
 
-                let drops = [procFnDrops.join('\n'), procFnTables.join('\n'), procFnSchemas.join('\n')];
+                const alignOn = 'IF EXISTS';
+
+                let drops = [
+                        alignKeyword(procFnDrops, alignOn).join('\n'),
+                        alignKeyword(procFnTables, alignOn).join('\n'),
+                        alignKeyword(procFnSchemas, alignOn).join('\n'),
+                ];
                 return { drops, everythingElse };
         }
 
         Run() {
                 let schemas = this.input;
-                let schemaStrings: string[] = [];
+                let tableStrings: string[] = [];
+                let logicStrings: string[] = [];
                 for (const schemaName in schemas) {
                         if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
                                 continue;
                         }
                         const schema = schemas[schemaName];
-                        schemaStrings.push(`--  -  -  -  ${schema.name} schema  -  -  -  --`);
-                        schemaStrings.push(`DROP SCHEMA IF EXISTS ${schema.name};`);
-                        schemaStrings.push(this.ProcessSchema(schema));
+                        let schemaSql = this.ProcessSchema(schema);
+                        tableStrings.push(schemaSql.tableSql);
+                        logicStrings.push(schemaSql.logicSql);
                 }
 
-                let tableNames = [];
-                let schemaNames = [];
-                for (const schema of Object.values(schemas)) {
-                        schemaNames.push(schema.name);
-                        for (const table of Object.values(schema.tables)) {
-                                tableNames.push(table.fullName);
+                this.output = {};
+
+                {
+                        let { drops, everythingElse } = this.GenerateDrops(tableStrings.join('\n\n'));
+                        if (everythingElse.length > 0) {
+                                this.output['create.table.sql'] = everythingElse.join('\n');
+                        }
+                        if (drops.length > 0) {
+                                this.output['drop.table.sql'] = drops.join('\n');
                         }
                 }
-
-                this.output = schemaStrings.join('\n\n');
-
-                let { drops, everythingElse } = this.GenerateDrops();
-
-                if (tableNames.length > 0) {
-                        this.output = `${drops.join('\n')}
-                        
-${everythingElse.join('\n')}`;
+                {
+                        let { drops, everythingElse } = this.GenerateDrops(logicStrings.join('\n\n'));
+                        if (everythingElse.length > 0) {
+                                this.output['create.logic.sql'] = everythingElse.join('\n');
+                        }
+                        if (drops.length > 0) {
+                                this.output['drop.logic.sql'] = drops.join('\n');
+                        }
                 }
 
                 return this;

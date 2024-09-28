@@ -1,3 +1,4 @@
+import { trimAndRemoveBlankStrings } from '../core/formatting';
 import { CodeGenerator, CodeLogic, REPLACE_PHRASE, SqlTable } from '../core/structure';
 import { GoTypesCodeGenerator } from './go_struct';
 import { SqlGenerator } from './postgres_sql';
@@ -6,8 +7,6 @@ export class GoApiCodeGenerator extends CodeGenerator {
         goStructs = new GoTypesCodeGenerator();
 
         Run() {
-                let goStructs = this.goStructs.Clear().SetInput(this.input).Run().Read();
-
                 let schemas = this.input;
                 let allParts: string[] = [];
                 let headerInfo = `package main
@@ -20,8 +19,6 @@ import (
 
     _ "github.com/lib/pq"
 )
-
-${goStructs}
 
 var db *sql.DB
 
@@ -181,7 +178,19 @@ ${endpointStrs.join('\n')}
 
                 allParts.push(main);
 
-                this.output = allParts.join('\n\n');
+                let goStructs = this.goStructs.Clear().SetInput(this.input).Run().Read();
+                goStructs = trimAndRemoveBlankStrings(goStructs);
+                for (const key in goStructs) {
+                        if (!Object.prototype.hasOwnProperty.call(goStructs, key)) {
+                                continue;
+                        }
+                        goStructs[key] = `package main\n\n${goStructs[key]}`;
+                }
+
+                this.output = {
+                        'main.go': allParts.join('\n\n'),
+                        ...goStructs,
+                };
 
                 return this;
         }

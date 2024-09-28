@@ -1,4 +1,6 @@
+import { trimAndRemoveBlankStrings } from '../core/formatting';
 import { CodeGenerator, CodeLogic } from '../core/structure';
+import { TsTypesCodeGenerator } from './ts_types';
 
 function ConvertNameToEndpoint(value: string) {
         return value.replace(/read_|create_|update_|delete_/g, '').replace(/_/g, '-');
@@ -37,6 +39,8 @@ function CreatePreCheckParams(where: string, logic: CodeLogic) {
 }
 
 export class NodeExpressCodeGenerator extends CodeGenerator {
+        tsTypes = new TsTypesCodeGenerator();
+
         Run() {
                 let schemas = this.input;
                 let allParts: string[] = [];
@@ -120,12 +124,19 @@ function Needs(key, where) {
   console.log(\`Server is running on http://localhost:\${PORT}\`);
 });`);
 
-                if (allParts.length === 0) {
-                        this.output = 'please indicate a CRUD operation besides an entity';
-                        return this;
+                let tsTypes = this.tsTypes.Clear().SetInput(this.input).Run().Read();
+                tsTypes = trimAndRemoveBlankStrings(tsTypes);
+                for (const key in tsTypes) {
+                        if (!Object.prototype.hasOwnProperty.call(tsTypes, key)) {
+                                continue;
+                        }
+                        tsTypes[key] = `package main\n\n${tsTypes[key]}`;
                 }
 
-                this.output = allParts.join('\n');
+                this.output = {
+                        'server.js': allParts.join('\n'),
+                        ...tsTypes,
+                };
 
                 return this;
         }

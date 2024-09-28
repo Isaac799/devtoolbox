@@ -84,7 +84,9 @@ export class GoTypesCodeGenerator extends CodeGenerator {
 
         Run() {
                 let goTypes = this.GenerateGoTypes();
-                this.output = goTypes;
+                this.output = {
+                        'structure.go': goTypes,
+                };
                 return this;
         }
 }

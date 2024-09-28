@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
         <head>
                 <meta charset="UTF-8" />
@@ -23,16 +23,19 @@
                         <div>
                                 <section>
                                         <span class="scroll-box input">
-                                                <button id="copy-input" class="info rounded ml-auto sticky-t-0">Copy</button>
+                                                <button id="copy-input" class="info rounded ml-auto abs-top-right">Copy</button>
                                                 <textarea name="markdown" id="markdown-input" cols="50" rows="35"></textarea>
                                         </span>
                                 </section>
                                 <section>
                                         <div id="app-item-tab-menu" class="tabs"></div>
-                                        <span class="scroll-box output">
-                                                <button id="copy-output" class="info rounded ml-auto sticky-t-1">Copy</button>
-                                                <pre id="code-output"></pre>
-                                        </span>
+                                        <div>
+                                                <div id="files-output" class="files"></div>
+                                                <span class="scroll-box output">
+                                                        <button id="copy-output" class="info rounded ml-auto abs-top-right">Copy</button>
+                                                        <pre id="code-output"></pre>
+                                                </span>
+                                        </div>
                                 </section>
                         </div>
                 </section>
