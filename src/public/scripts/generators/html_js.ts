@@ -10,10 +10,6 @@ export class HtmlCodeGenerator extends CodeGenerator {
 
                 sections.push(`<body class="flex-column">`);
 
-                function ConvertNameToEndpoint(value: string) {
-                        return value.replace(/read_|create_|update_|delete_/g, '').replace(/_/g, '-');
-                }
-
                 /**
                  *
                  * @param {Endpoint} endpoint
@@ -23,7 +19,7 @@ export class HtmlCodeGenerator extends CodeGenerator {
                         let placeholders: string[] = [];
                         for (let i = 0; i < endpoint.http.bodyIn.length; i++) {
                                 const element = endpoint.http.bodyIn[i];
-                                const id = `${endpoint.sql.name}_${element.sql.name}`;
+                                const id = `${endpoint.method}_${element.sql.name}`;
                                 placeholders.push(`            <div class="flex-column">
                     <label for="${id}">${element.html.name}</label>
                     <input type="${element.html.type}" name="${element.html.name}" id="${id}" />
@@ -70,13 +66,12 @@ export class HtmlCodeGenerator extends CodeGenerator {
                                         const htmlSubSection = `    <div class="flex-row"><h4>Create</h4></div>`;
                                         tableSection.push(htmlSubSection);
                                         for (let m = 0; m < table.entityEndpoints.create.length; m++) {
-                                                const create = table.entityEndpoints.create[m];
+                                                const endpoint = table.entityEndpoints.create[m];
 
-                                                let endpoint = ConvertNameToEndpoint(create.sql.name);
-                                                let params = CreateInputFields(create);
+                                                let params = CreateInputFields(endpoint);
                                                 // let where = 'body';
                                                 let str = params;
-                                                let form = `    <form submit="./${endpoint}" method="post">
+                                                let form = `    <form submit="${endpoint.path}" method="post">
         <div class="flex-row">                                                
 ${str}
 ${SUBMIT_BUTTON}
@@ -89,12 +84,10 @@ ${SUBMIT_BUTTON}
                                         const htmlSubSection = `    <div class="flex-row"><h4>Read</h4></div>`;
                                         tableSection.push(htmlSubSection);
                                         for (let m = 0; m < table.entityEndpoints.read.length; m++) {
-                                                const read = table.entityEndpoints.read[m];
+                                                const endpoint = table.entityEndpoints.read[m];
 
-                                                let endpoint = ConvertNameToEndpoint(read.sql.name);
-
-                                                if (read.isOptions) {
-                                                        let form = `    <form submit="./${endpoint}" method="get">
+                                                if (endpoint.isOptions) {
+                                                        let form = `    <form submit="${endpoint.path}" method="get">
         <div class="flex-row">                                                
 ${OPTIONS_SUBMIT_BUTTON}
         </div>     
@@ -103,10 +96,10 @@ ${OPTIONS_SUBMIT_BUTTON}
                                                         continue;
                                                 }
 
-                                                let params = CreateInputFields(read);
+                                                let params = CreateInputFields(endpoint);
                                                 // let where = 'params';
                                                 let str = params;
-                                                let form = `    <form submit="./${endpoint}" method="get">
+                                                let form = `    <form submit="${endpoint.path}" method="get">
         <div class="flex-row">                                                
 ${str}
 ${SUBMIT_BUTTON}
@@ -119,15 +112,13 @@ ${SUBMIT_BUTTON}
                                         const htmlSubSection = `    <div class="flex-row"><h4>Update</h4></div>`;
                                         tableSection.push(htmlSubSection);
                                         for (let m = 0; m < table.entityEndpoints.update.length; m++) {
-                                                const update = table.entityEndpoints.update[m];
+                                                const endpoint = table.entityEndpoints.update[m];
 
-                                                let endpoint = ConvertNameToEndpoint(update.sql.name);
-
-                                                let params = CreateInputFields(update);
+                                                let params = CreateInputFields(endpoint);
                                                 // let where = 'body';
                                                 let str = params;
 
-                                                let form = `    <form submit="./${endpoint}" method="put">
+                                                let form = `    <form submit="${endpoint.path}" method="put">
         <div class="flex-row">                                                
 ${str}
 ${SUBMIT_BUTTON}
@@ -140,13 +131,12 @@ ${SUBMIT_BUTTON}
                                         const htmlSubSection = `    <div class="flex-row"><h4>Delete</h4></div>`;
                                         tableSection.push(htmlSubSection);
                                         for (let m = 0; m < table.entityEndpoints.delete.length; m++) {
-                                                const del = table.entityEndpoints.delete[m];
+                                                const endpoint = table.entityEndpoints.delete[m];
 
-                                                let endpoint = ConvertNameToEndpoint(del.sql.name);
-                                                let params = CreateInputFields(del);
+                                                let params = CreateInputFields(endpoint);
                                                 // let where = 'body';
                                                 let str = params;
-                                                let form = `    <form submit="./${endpoint}" method="delete">
+                                                let form = `    <form submit="${endpoint.path}" method="delete">
         <div class="flex-row">                                                
 ${str}
 ${SUBMIT_BUTTON}

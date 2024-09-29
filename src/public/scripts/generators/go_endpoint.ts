@@ -56,7 +56,7 @@ func initDB() {
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
                                                         method: 'post',
-                                                        path: `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`,
+                                                        path: endpoint.path,
                                                 });
 
                                                 let str = GoApiCodeGenerator.GenerateCreateSnippet(endpoint);
@@ -67,15 +67,10 @@ func initDB() {
                                         for (let m = 0; m < table.entityEndpoints.read.length; m++) {
                                                 const endpoint = table.entityEndpoints.read[m];
 
-                                                let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
-                                                if (!endpoint.many) {
-                                                        endpointPath += `/:${endpoint.primaryKeyName}`;
-                                                }
-
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
                                                         method: 'get',
-                                                        path: endpointPath,
+                                                        path: endpoint.path,
                                                 });
 
                                                 let str = GoApiCodeGenerator.GenerateReadSnippet(endpoint, table);
@@ -85,13 +80,11 @@ func initDB() {
                                 if (table.entityEndpoints.update !== null) {
                                         for (let m = 0; m < table.entityEndpoints.update.length; m++) {
                                                 const endpoint = table.entityEndpoints.update[m];
-                                                let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
-                                                endpointPath += `/:${endpoint.primaryKeyName}`;
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
                                                         method: 'put',
-                                                        path: endpointPath,
+                                                        path: endpoint.path,
                                                 });
 
                                                 let str = GoApiCodeGenerator.GenerateUpdateSnippet(endpoint);
@@ -101,13 +94,11 @@ func initDB() {
                                 if (table.entityEndpoints.delete !== null) {
                                         for (let m = 0; m < table.entityEndpoints.delete.length; m++) {
                                                 const endpoint = table.entityEndpoints.delete[m];
-                                                let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
-                                                endpointPath += `/:${endpoint.primaryKeyName}`;
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
                                                         method: 'delete',
-                                                        path: endpointPath,
+                                                        path: endpoint.path,
                                                 });
 
                                                 let str = GoApiCodeGenerator.GenerateDeleteSnippet(endpoint);

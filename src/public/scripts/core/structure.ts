@@ -359,16 +359,24 @@ export class Endpoint {
                 };
         };
 
-        constructor(method: HttpMethod, name: string, table: SqlTable, returnMany: boolean, primaryKeyName: string) {
+        get path() {
+                let endpointPath = `/${this.sqlSchemaName}/${this.go.real.name}`;
+                if (!this.many && this.method !== HttpMethod.POST) {
+                        endpointPath += `/:${this.primaryKeyName}`;
+                }
+                return endpointPath;
+        }
+
+        constructor(method: HttpMethod, name: string, table: SqlTable, many: boolean, primaryKeyName: string) {
                 this.http.name = name;
                 this.primaryKeyName = primaryKeyName;
 
                 this.sql.name = `${method.toLowerCase()}_${name}`;
-                if (returnMany) {
+                if (many) {
                         this.sql.name += 's';
                 }
                 this.method = method;
-                this.many = returnMany;
+                this.many = many;
                 const tableL = table.label;
                 this.sqlTableName = table.fullName;
                 this.sqlSchemaName = table.parentSchema.name;
