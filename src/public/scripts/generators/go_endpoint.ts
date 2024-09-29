@@ -69,7 +69,7 @@ func initDB() {
 
                                                 let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
                                                 if (!endpoint.many) {
-                                                        endpointPath += '/:id';
+                                                        endpointPath += `/${endpoint.primaryKeyName}`;
                                                 }
 
                                                 goEndpoints.push({
@@ -86,7 +86,7 @@ func initDB() {
                                         for (let m = 0; m < table.entityEndpoints.update.length; m++) {
                                                 const endpoint = table.entityEndpoints.update[m];
                                                 let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
-                                                endpointPath += '/:id';
+                                                endpointPath += `/${endpoint.primaryKeyName}`;
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -102,7 +102,7 @@ func initDB() {
                                         for (let m = 0; m < table.entityEndpoints.delete.length; m++) {
                                                 const endpoint = table.entityEndpoints.delete[m];
                                                 let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
-                                                endpointPath += '/:id';
+                                                endpointPath += `/${endpoint.primaryKeyName}`;
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,

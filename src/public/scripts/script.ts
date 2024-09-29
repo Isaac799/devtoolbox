@@ -283,10 +283,12 @@ const APP_ITEMS = [
 
 window.addEventListener('DOMContentLoaded', Main);
 
-const DEFAULT_INPUT = `## person
+const DEFAULT_INPUT = `
 
-- person CRUD +
-  - s email *
+## person
+
+- person + CRUD
+  - s email * 
   - s username **
   - b active
                         
@@ -308,7 +310,7 @@ const DEFAULT_INPUT = `## person
 - cart + CRUD
   - ^ _person.person ! *
   
-- cart_item @ CRUD
+- cart_item @ 
   - ^ _cart +
   - ^ _catalog.product +
   - d _price_when_carted !
@@ -320,7 +322,8 @@ const DEFAULT_INPUT = `## person
   - b finalized !
   - d _total_cost !
   
-- order_item @ CRUD
+- order_item @ 
   - ^ order + !
   - ^ catalog.product + !
+
 `.trim();

@@ -300,6 +300,7 @@ export class Endpoint {
         many: boolean = false;
         sqlTableName: string;
         sqlSchemaName: string;
+        primaryKeyName: string;
 
         sql: {
                 inout: EndpointParam[];
@@ -358,8 +359,10 @@ export class Endpoint {
                 };
         };
 
-        constructor(method: HttpMethod, name: string, table: SqlTable, returnMany: boolean) {
+        constructor(method: HttpMethod, name: string, table: SqlTable, returnMany: boolean, primaryKeyName: string) {
                 this.http.name = name;
+                this.primaryKeyName = primaryKeyName;
+
                 this.sql.name = `${method.toLowerCase()}_${name}`;
                 if (returnMany) {
                         this.sql.name += 's';
@@ -551,6 +554,10 @@ export class SqlTable {
                 return `${this.parentSchema.name}.${this.label}`;
         }
 
+        get desiresCRUD(): boolean {
+                return !!this.entityEndpoints.create || !!this.entityEndpoints.read || !!this.entityEndpoints.update || !!this.entityEndpoints.delete;
+        }
+
         constructor(parent: SqlSchema, label: string) {
                 this.parentSchema = parent;
                 this.label = label;
@@ -576,7 +583,7 @@ export class SqlTable {
         }
 
         hasCompositePrimaryKey(): boolean {
-                return Object.keys(this.primaryKeys()).length > 0;
+                return Object.keys(this.primaryKeys()).length > 1;
         }
 
         uniqueGroups(): {
@@ -659,34 +666,34 @@ export class SqlTable {
                 return keys;
         }
 
-        generateEmptyEndpoint(): void {
+        generateEmptyEndpoints() {
                 let answer = new EntityEndpoints();
 
                 let hasCreate = this.options.map((option) => /[C][rR][uU][dD]/.test(option)).includes(true);
                 let hasRead = this.options.map((option) => /[cC][R][uU][dD]/.test(option)).includes(true);
                 let hasUpdate = this.options.map((option) => /[cC][rR][U][dD]/.test(option)).includes(true);
                 let hasDelete = this.options.map((option) => /[cC][rR][uU][D]/.test(option)).includes(true);
+                const desireCRUD = hasCreate || hasRead || hasUpdate || hasDelete;
 
-                answer.create = hasCreate ? [] : null;
-                answer.read = hasRead ? [] : null;
-                answer.update = hasUpdate ? [] : null;
-                answer.delete = hasDelete ? [] : null;
+                if (!desireCRUD) return;
 
-                for (const attr of Object.values(this.attributes)) {
-                        answer.existsAs.push(
-                                new EndpointParam(
-                                        attr.sqlType,
-                                        attr.value,
-                                        new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value),
-                                        attr.readOnly
-                                )
-                        );
-                }
+                if (hasCreate) answer.create = [];
+                if (hasRead) answer.read = [];
+                if (hasUpdate) answer.update = [];
+                if (hasDelete) answer.delete = [];
 
                 this.entityEndpoints = answer;
         }
 
-        fillInEmptyEndpoint() {
+        generateEndpoints() {
+                let primaryKeys = Object.values(this.primaryKeys());
+                if (primaryKeys.length !== 1) {
+                        return;
+                }
+                let firstPrimaryKey = primaryKeys[0];
+
+                if (!this.desiresCRUD) return;
+
                 let primaryInOutAttrs = Object.values(this.primaryKeys()).map((e) => {
                         return new EndpointParam(
                                 e.sqlType,
@@ -723,7 +730,7 @@ export class SqlTable {
                         });
 
                 if (this.entityEndpoints.create) {
-                        let o = new Endpoint(HttpMethod.POST, this.label, this, false);
+                        let o = new Endpoint(HttpMethod.POST, this.label, this, false, firstPrimaryKey.value);
                         o.sql.inout = [...primaryInOutAttrs];
                         o.sql.inputs = [...nonPrimaryAttrs];
                         o.http.bodyIn = [...nonPrimaryAttrs];
@@ -732,14 +739,14 @@ export class SqlTable {
                         this.entityEndpoints.create.push(o);
                 }
                 if (this.entityEndpoints.read) {
-                        let readSingle = new Endpoint(HttpMethod.GET, this.label, this, false);
+                        let readSingle = new Endpoint(HttpMethod.GET, this.label, this, false, firstPrimaryKey.value);
                         readSingle.sql.inputs = [...primaryAttrs];
                         readSingle.http.path = [...primaryAttrs];
                         readSingle.sql.outputs = [...allAttrs];
                         readSingle.http.bodyOut = [...allAttrs];
                         this.entityEndpoints.read.push(readSingle);
 
-                        let readOptions = new Endpoint(HttpMethod.GET, this.label, this, true);
+                        let readOptions = new Endpoint(HttpMethod.GET, this.label, this, true, firstPrimaryKey.value);
                         readOptions.sql.inputs = [];
                         readOptions.http.path = [];
                         readOptions.sql.outputs = [...allAttrs];
@@ -747,7 +754,7 @@ export class SqlTable {
                         this.entityEndpoints.read.push(readOptions);
                 }
                 if (this.entityEndpoints.update) {
-                        let o = new Endpoint(HttpMethod.PUT, this.label, this, false);
+                        let o = new Endpoint(HttpMethod.PUT, this.label, this, false, firstPrimaryKey.value);
                         o.sql.inout = [...primaryInOutAttrs];
                         o.sql.inputs = [...nonPrimaryAttrs];
                         o.http.bodyIn = [...nonPrimaryAttrs];
@@ -758,7 +765,7 @@ export class SqlTable {
                         this.entityEndpoints.update.push(o);
                 }
                 if (this.entityEndpoints.delete) {
-                        let o = new Endpoint(HttpMethod.DELETE, this.label, this, false);
+                        let o = new Endpoint(HttpMethod.DELETE, this.label, this, false, firstPrimaryKey.value);
                         o.sql.inputs = [...primaryAttrs];
                         o.http.path = [...primaryAttrs];
                         this.entityEndpoints.delete.push(o);

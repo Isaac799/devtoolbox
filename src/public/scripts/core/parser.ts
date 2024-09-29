@@ -10,6 +10,8 @@ import {
         STATE_CHANGE_TRIGGERS,
         SqlType,
         UNALIASED_SELF_REFERENCE_ALIAS,
+        EndpointParam,
+        SqlLocation,
 } from './structure';
 
 /**
@@ -170,21 +172,26 @@ export class InputParser {
                                 }
                                 const table = schema.tables[tableName];
 
-                                table.generateEmptyEndpoint();
+                                table.generateEmptyEndpoints();
 
-                                if (
-                                        !table.hasPrimaryKey() &&
-                                        (table.entityEndpoints.create !== null ||
-                                                table.entityEndpoints.read !== null ||
-                                                table.entityEndpoints.update !== null ||
-                                                table.entityEndpoints.delete !== null)
-                                ) {
-                                        this.SaveErrorMessage(
-                                                `Cannot generate endpoint for '${table.parentSchema.name}.${table.label}' without a primary key.`
+                                for (const attr of Object.values(table.attributes)) {
+                                        table.entityEndpoints.existsAs.push(
+                                                new EndpointParam(
+                                                        attr.sqlType,
+                                                        attr.value,
+                                                        new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value),
+                                                        attr.readOnly
+                                                )
                                         );
                                 }
 
-                                table.fillInEmptyEndpoint();
+                                if (table.desiresCRUD && Object.keys(table.primaryKeys()).length !== 1) {
+                                        this.SaveErrorMessage(
+                                                `Cannot generate endpoint for '${table.parentSchema.name}.${table.label}' without a single primary key.`
+                                        );
+                                }
+
+                                table.generateEndpoints();
                                 // sqlEndpoint.push( `\n--  -  cru)d operations for ${table.schemaName}.${table.label}\n`;
                         }
                 }
