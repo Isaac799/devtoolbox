@@ -718,6 +718,16 @@ export class SqlTable {
                                 e.readOnly
                         );
                 });
+                // let simpleAttrs = Object.values(this.attributes)
+                //         .filter((e) => ['name', 'label', 'value', 'code', 'title', 'tag'].includes(e.value))
+                //         .map((e) => {
+                //                 return new EndpointParam(
+                //                         e.sqlType,
+                //                         e.value,
+                //                         new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
+                //                         e.readOnly
+                //                 );
+                //         });
                 let nonPrimaryAttrs = Object.values(this.attributes)
                         .filter((e) => !e.isPrimaryKey())
                         .map((e) => {
@@ -746,12 +756,21 @@ export class SqlTable {
                         readSingle.http.bodyOut = [...allAttrs];
                         this.entityEndpoints.read.push(readSingle);
 
-                        let readOptions = new Endpoint(HttpMethod.GET, this.label, this, true, firstPrimaryKey.value);
-                        readOptions.sql.inputs = [];
-                        readOptions.http.path = [];
-                        readOptions.sql.outputs = [...allAttrs];
-                        readOptions.http.bodyOut = [...allAttrs];
-                        this.entityEndpoints.read.push(readOptions);
+                        // if (simpleAttrs.length > 0) {
+                        //         let readOptions = new Endpoint(HttpMethod.GET, `options_${this.label}`, this, true, firstPrimaryKey.value);
+                        //         readOptions.sql.inputs = [];
+                        //         readOptions.http.path = [];
+                        //         readOptions.sql.outputs = [...primaryAttrs, ...simpleAttrs];
+                        //         readOptions.http.bodyOut = [...primaryAttrs, ...simpleAttrs];
+                        //         this.entityEndpoints.read.push(readOptions);
+                        // }
+
+                        let readEverything = new Endpoint(HttpMethod.GET, this.label, this, true, firstPrimaryKey.value);
+                        readEverything.sql.inputs = [];
+                        readEverything.http.path = [];
+                        readEverything.sql.outputs = [...allAttrs];
+                        readEverything.http.bodyOut = [...allAttrs];
+                        this.entityEndpoints.read.push(readEverything);
                 }
                 if (this.entityEndpoints.update) {
                         let o = new Endpoint(HttpMethod.PUT, this.label, this, false, firstPrimaryKey.value);

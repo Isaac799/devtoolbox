@@ -1,21 +1,30 @@
 :root {
         --white: rgb(255, 255, 255);
         --black: rgb(0, 0, 0);
-
         --primary: rgb(0, 114, 178);
         --accent: rgb(204, 121, 167);
-
         --warn: rgb(230, 159, 0);
         --success: rgb(0, 158, 115);
         --error: rgb(213, 94, 0);
-
         --info: rgb(86, 180, 233);
         --highlight: rgb(240, 228, 66);
 
-        --space: 0.5rem;
-        --space-sm: 0.35rem;
+        --transparency: 0.2;
 
-        --border-radius: 0.35rem;
+        --white-transparent: rgba(255, 255, 255, var(--transparency));
+        --black-transparent: rgba(0, 0, 0, var(--transparency));
+        --primary-transparent: rgba(0, 114, 178, var(--transparency));
+        --accent-transparent: rgba(204, 121, 167, var(--transparency));
+        --warn-transparent: rgba(230, 159, 0, var(--transparency));
+        --success-transparent: rgba(0, 158, 115, var(--transparency));
+        --error-transparent: rgba(213, 94, 0, var(--transparency));
+        --info-transparent: rgba(86, 180, 233, var(--transparency));
+        --highlight-transparent: rgba(240, 228, 66, var(--transparency));
+
+        --space: 0.5rem;
+        --space-sm: 0.2rem;
+
+        --border-radius: 0.5rem;
 }
 
 .sql-keyword {
@@ -45,6 +54,25 @@ a {
         letter-spacing: 0.1rem;
 }
 
+body {
+        position: relative;
+}
+
+#error-output {
+        position: fixed;
+        top: var(--space);
+        right: var(--space);
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        background-color: var(--white);
+        border: 0;
+        margin: 0;
+        padding: 0;
+        cursor: default;
+        box-shadow: rgba(100, 100, 111, 0.2) 0 0.5rem 2rem 0px;
+}
+
 header {
         background-color: var(--primary);
         color: var(--white);
@@ -68,15 +96,16 @@ footer nav a {
         text-decoration: none;
         height: 1.5rem;
         border-bottom: 0.1rem solid var(--white);
+        padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
+        display: flex;
+        justify-content: center;
+        align-items: center;
 }
 
 header nav a.routedTo,
 footer nav a.routedTo {
         border-bottom: 0.2rem solid var(--white);
-}
-
-header nav a:hover,
-footer nav a:hover {
+        cursor: default;
         color: var(--white);
 }
 
@@ -140,9 +169,6 @@ section div.tabs {
 }
 
 section div.tabs div {
-        border-top-left-radius: var(--border-radius);
-        border-top-right-radius: var(--border-radius);
-        border: 0;
         padding: var(--space-sm) var(--space) 0 var(--space);
         display: flex;
         flex-direction: row;
@@ -155,36 +181,17 @@ section div.tabs div {
         overflow: hidden;
 }
 
-section div.tabs div.selected {
-        background-color: var(--primary);
-        color: var(--white);
-}
-
-section div.tabs div:not(.selected) {
-        background-color: var(--white);
-        color: var(--primary);
-        border: 0.1rem solid var(--primary);
-        border: 0;
-        border-bottom: 0;
-}
-section div.tabs div:hover:not(.selected) {
-        color: var(--accent);
-        transition: background-color 0.25s ease;
-        cursor: pointer;
-}
-
 section div.files {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: flex-start;
         gap: 0;
-        padding-top: var(--space);
+        /* padding-top: var(--space); */
         width: auto;
 }
 
 section div.files div {
-        border: 0;
         padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
         display: flex;
         flex-direction: row;
@@ -194,29 +201,32 @@ section div.files div {
         width: 10rem;
         max-width: 10rem;
         overflow: hidden;
-        border-top-width: 0.1rem;
-        border-top-style: solid;
-        border-bottom-width: 0.1rem;
-        border-bottom-style: solid;
-        border-left-width: 0.2rem;
-        border-left-style: solid;
         word-break: break-all;
 }
-section div.files div.selected {
-        background-color: var(--white);
-        border-color: var(--primary);
+
+.hover-highlight:hover,
+button:hover {
+        transition: all 0.1s ease-in-out;
+        cursor: pointer;
+        background-color: var(--warn-transparent);
+        border-left: 0.1rem solid var(--warn);
+        border-left-width: 0.2rem;
         color: var(--black);
+        box-shadow: rgba(100, 100, 111, 0.2) 0 0.5rem 2rem 0px;
 }
 
-section div.files div:not(.selected) {
-        background-color: var(--white);
-        border-color: var(--white);
-        color: var(--black);
-}
-section div.files div:hover:not(.selected) {
-        color: var(--accent);
-        transition: background-color 0.25s ease;
+header nav a:not(.routedTo):hover,
+footer nav a:not(.routedTo):hover {
+        transition: all 0.1s ease-in-out;
         cursor: pointer;
+        background-color: var(--white);
+        border: 0;
+        color: var(--black);
+        box-shadow: rgba(100, 100, 111, 0.2) 0 0.5rem 2rem 0px;
+}
+
+.hover-none {
+        cursor: default;
 }
 
 hr {
@@ -244,7 +254,10 @@ textarea {
 
 pre,
 textarea {
-        padding: var(--space-sm);
+        padding: var(--space);
+        background-color: var(--white);
+        border-left: 0.1rem solid var(--primary);
+        border-left-width: 0.2rem;
 }
 
 code {
@@ -254,7 +267,6 @@ code {
 
 code {
         padding: 0.1rem var(--space-sm) 0.1rem var(--space-sm);
-        border-radius: var(--border-radius);
 }
 
 button {
@@ -267,16 +279,11 @@ button {
         align-items: center;
         gap: var(--space-sm);
 }
-button:hover {
-        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-        cursor: pointer;
-}
 
 table {
         width: 100%;
         border-collapse: collapse;
         border: 0.1rem solid var(--primary);
-        border-radius: var(--border-radius);
         overflow: auto;
         padding: var(--space);
         margin-top: 1rem;
@@ -297,11 +304,9 @@ tr {
 }
 
 .scroll-box {
-        border: 0.1rem solid var(--primary);
+        /* border-left: 0.1rem solid var(--primary); */
         overflow: auto;
-        border-radius: var(--border-radius);
         max-width: 90vw;
-        box-shadow: rgba(0, 0, 0, 0.1) 0 0.2rem 0.2rem 0 inset;
 }
 
 .scroll-box.input {
@@ -317,10 +322,6 @@ tr {
         min-height: 70vh;
         max-width: 50vw;
         min-width: 50vw;
-        border-top: 0;
-        padding-top: 0;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
 }
 
 #copy-input {
@@ -334,42 +335,52 @@ tr {
         right: calc(var(--space) * 2);
 }
 
-.rounded {
-        border-radius: var(--border-radius);
-}
-
 .warn {
-        background-color: var(--warn);
+        background-color: var(--warn-transparent);
+        border-left: 0.1rem solid var(--warn);
+        border-left-width: 0.2rem;
         color: var(--black);
 }
 
 .error {
-        background-color: var(--error);
-        color: var(--white);
+        background-color: var(--error-transparent);
+        border-left: 0.1rem solid var(--error);
+        border-left-width: 0.2rem;
+        color: var(--black);
 }
 
 .info {
-        background-color: var(--info);
+        background-color: var(--info-transparent);
+        border-left: 0.1rem solid var(--info);
+        border-left-width: 0.2rem;
         color: var(--black);
 }
 
 .success {
-        background-color: var(--success);
+        background-color: var(--success-transparent);
+        border-left: 0.1rem solid var(--success);
+        border-left-width: 0.2rem;
         color: var(--black);
 }
 
 .highlight {
-        background-color: var(--highlight);
+        background-color: var(--highlight-transparent);
+        border-left: 0.1rem solid var(--highlight);
+        border-left-width: 0.2rem;
         color: var(--black);
 }
 
 .primary {
-        background-color: var(--primary);
-        color: var(--white);
+        background-color: var(--primary-transparent);
+        border-left: 0.1rem solid var(--primary);
+        border-left-width: 0.2rem;
+        color: var(--black);
 }
 
 .accent {
-        background-color: var(--accent);
+        background-color: var(--accent-transparent);
+        border-left: 0.1rem solid var(--accent);
+        border-left-width: 0.2rem;
         color: var(--black);
 }
 
@@ -391,22 +402,22 @@ tr {
 } */
 
 .g-2 {
-        gap: var(--space);
+        gap: var(--space) var(--space) var(--space) var(--space);
 }
 .g-1 {
-        gap: var(--space-sm);
+        gap: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
 .p-2 {
-        padding: 1rem;
+        padding: var(--space) var(--space) var(--space) var(--space);
 }
 .m-2 {
-        margin: 1rem;
+        margin: var(--space) var(--space) var(--space) var(--space);
 }
 .p-1 {
-        padding: var(--space);
+        padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
 .m-1 {
-        margin: var(--space);
+        margin: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
 
 .fade-in {

@@ -1,5 +1,3 @@
-import { HtmlCodeGenerator } from './generators/html_js';
-import { NodeExpressCodeGenerator } from './generators/node_js_express';
 import { SqlGenerator } from './generators/postgres_sql';
 import { InputParser } from './core/parser';
 import { CodeGenerator, FileOutputs } from './core/structure';
@@ -7,6 +5,8 @@ import { CodeGenerator, FileOutputs } from './core/structure';
 import '../assets/normalize.css';
 import '../assets/styles.css';
 import { GoApiCodeGenerator } from './generators/go_endpoint';
+import { TsTypesCodeGenerator } from './generators/ts_types';
+import { HtmlCodeGenerator } from './generators/html_js';
 
 class AppItem {
         htmlLabel = 'Empty';
@@ -24,14 +24,22 @@ function UpdateSelectedTab() {
         for (let i = 0; i < APP_ITEMS.length; i++) {
                 const appItem = APP_ITEMS[i];
                 let currentAppItem = APP_ITEMS[focusedAppItemIndex];
-                let container = document.getElementById(appItem.htmlLabel);
-                if (!container) {
+                let el = document.getElementById(appItem.htmlLabel);
+                if (!el) {
                         break;
                 }
                 if (appItem.htmlLabel === currentAppItem.htmlLabel) {
-                        container.classList.add('selected');
+                        el.classList.add('selected');
+                        el.classList.add('primary');
+                        // el.classList.remove('gray');
+                        el.classList.add('hover-none');
+                        el.classList.remove('hover-highlight');
                 } else {
-                        container.classList.remove('selected');
+                        el.classList.remove('selected');
+                        el.classList.remove('primary');
+                        // el.classList.add('gray');
+                        el.classList.remove('hover-none');
+                        el.classList.add('hover-highlight');
                 }
         }
 }
@@ -56,8 +64,16 @@ function UpdateSelectedFile(selectedFileName: string) {
                 }
                 if (fileName === selectedFileName) {
                         el.classList.add('selected');
+                        el.classList.add('primary');
+                        // el.classList.remove('gray');
+                        el.classList.add('hover-none');
+                        el.classList.remove('hover-highlight');
                 } else {
                         el.classList.remove('selected');
+                        el.classList.remove('primary');
+                        // el.classList.add('gray');
+                        el.classList.remove('hover-none');
+                        el.classList.add('hover-highlight');
                 }
         }
 }
@@ -81,7 +97,7 @@ function BuildTabMenu() {
                 let container = document.createElement('div');
                 container.setAttribute('id', appItem.htmlLabel);
                 container.innerText = appItem.htmlLabel;
-                container.classList.add('primary', 'p-1');
+                container.classList.add('p-1');
 
                 container.addEventListener('click', () => {
                         focusedAppItemIndex = i;
@@ -171,16 +187,17 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
         if (errors.length === 0) {
                 errorOut.style.display = 'none';
         } else {
-                let errorUl = document.createElement('ul');
+                errorOut.innerHTML = '';
+
                 for (let i = 0; i < errors.length; i++) {
                         const error = errors[i];
-                        let errorLi = document.createElement('li');
-                        errorLi.innerText = error;
-                        errorUl.appendChild(errorLi);
+                        let errorItem = document.createElement('div');
+                        errorItem.classList.add('warn');
+                        errorItem.classList.add('p-1');
+                        errorItem.innerText = error;
+                        errorOut.appendChild(errorItem);
                 }
                 errorOut.style.display = 'block';
-                errorOut.innerHTML = '';
-                errorOut.appendChild(errorUl);
         }
 
         fileOutputs = generatedFiles;
@@ -270,10 +287,12 @@ let fileOutputs: FileOutputs = {};
 let selectedFileOutputs: string = '';
 
 const APP_ITEMS = [
-        new AppItem('Go Api', new GoApiCodeGenerator()),
         new AppItem('Postgres', new SqlGenerator()),
-        new AppItem('Node JS', new NodeExpressCodeGenerator()),
+        new AppItem('Go Api', new GoApiCodeGenerator()),
+        // new AppItem('Node JS', new NodeExpressCodeGenerator()),
+        new AppItem('TS Types', new TsTypesCodeGenerator()),
         new AppItem('HTML forms', new HtmlCodeGenerator()),
+
         // new AppItem('Go structs', new GoTypesCodeGenerator()),
         // new AppItem('GO', undefined),
         // new AppItem('Node/Express', undefined),

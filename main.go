@@ -11,6 +11,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var db *sql.DB
+
 type Person struct {
 	Id       int    `json:"id"`
 	Email    string `json:"email"`
@@ -52,8 +54,6 @@ type OrderItem struct {
 	OrderId         int       `json:"order_id"`
 	ProductId       int       `json:"product_id"`
 }
-
-var db *sql.DB
 
 func initDB() {
 	var err error
@@ -235,7 +235,7 @@ func GetCategory(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(category)
 }
 
-func GetCategories(w http.ResponseWriter, r *http.Request) {
+func GetCategorys(w http.ResponseWriter, r *http.Request) {
 	query := `SELECT catalog.category.id , catalog.category.title FROM catalog.category;`
 	rows, err := db.Query(query)
 	if err != nil {
@@ -1012,6 +1012,15 @@ func main() {
 			GetPersons(w, r)
 		case http.MethodPost:
 			PostPerson(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/person/person/:id", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			GetPerson(w, r)
 		case http.MethodPut:
 			PutPerson(w, r)
 		case http.MethodDelete:
@@ -1024,9 +1033,18 @@ func main() {
 	http.HandleFunc("/catalog/category", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			GetCategories(w, r)
+			GetCategorys(w, r)
 		case http.MethodPost:
 			PostCategory(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/catalog/category/:id", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			GetCategory(w, r)
 		case http.MethodPut:
 			PutCategory(w, r)
 		case http.MethodDelete:
@@ -1042,6 +1060,15 @@ func main() {
 			GetProducts(w, r)
 		case http.MethodPost:
 			PostProduct(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/catalog/product/:id", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			GetProduct(w, r)
 		case http.MethodPut:
 			PutProduct(w, r)
 		case http.MethodDelete:
@@ -1057,6 +1084,15 @@ func main() {
 			GetCarts(w, r)
 		case http.MethodPost:
 			PostCart(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/shopping_cart/cart/:id", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			GetCart(w, r)
 		case http.MethodPut:
 			PutCart(w, r)
 		case http.MethodDelete:
@@ -1072,6 +1108,15 @@ func main() {
 			GetCartItems(w, r)
 		case http.MethodPost:
 			PostCartItem(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/shopping_cart/cart-item/:id", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			GetCartItem(w, r)
 		case http.MethodPut:
 			PutCartItem(w, r)
 		case http.MethodDelete:
@@ -1087,6 +1132,15 @@ func main() {
 			GetOrders(w, r)
 		case http.MethodPost:
 			PostOrder(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/orders/order/:id", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			GetOrder(w, r)
 		case http.MethodPut:
 			PutOrder(w, r)
 		case http.MethodDelete:
@@ -1102,6 +1156,15 @@ func main() {
 			GetOrderItems(w, r)
 		case http.MethodPost:
 			PostOrderItem(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/orders/order-item/:id", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			GetOrderItem(w, r)
 		case http.MethodPut:
 			PutOrderItem(w, r)
 		case http.MethodDelete:

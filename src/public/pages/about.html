@@ -26,28 +26,40 @@
                                 proof of concept. Plus most of the outputs are based on my limited syntax knowledge and off the top of my head; prone to error
                                 and not verbose.
                         </span>
+
+                        <span> This project is constantly being updated and undergoing near daily changes. </span>
+                </section>
+
+                <section>
+                        <h2>Restrictions & Removals</h2>
+                        <ul>
+                                <li>
+                                        Endpoint generation is restricted to single primary keys. For best results use <code>+</code> option with the table.
+                                        This helps me make a RESTful api.
+                                </li>
+                                <li>Previously attempted join logic is removed and on pause while I lock down the easier stuff.</li>
+                                <li>The NodeJS Express endpoints are temporary removed as I focus my time on the Go api.</li>
+                                <li>Removed the "read options" for now in favor of the full read.</li>
+                        </ul>
                 </section>
 
                 <section>
                         <h2>PostgreSQL</h2>
-                        <span>
-                                Currently testing the outputs on this one. Lots of good progress, most outputs seem to run and are able to be called but testing
-                                it manually is a chore. No promises tho.
-                        </span>
+                        <span> Lots of good progress, recently added unique indexes on foreign keys. Its been a while since I tested its outputs. </span>
                         <ul>
-                                <li>All aspects (entities, functions, procedures) take into account a composite primary key</li>
                                 <li>The update procedure ignores attributes marked as readonly</li>
                                 <li>
                                         Two read functions are generated:
                                         <ol>
                                                 <li>Single is basic, letting you read by primary key</li>
-                                                <li>
-                                                        Options gives a trimmed down list if things in the table
+                                                <li>Many (plural form) gives all the data</li>
+                                                <!-- <li>
+                                                        Many gives a trimmed down list if things in the table
                                                         <ul>
                                                                 <li>automatically done if an attribute is named: name, label, value, code, title, or tag.</li>
                                                                 <li>aimed to help with dropdown list / selection needs</li>
                                                         </ul>
-                                                </li>
+                                                </li> -->
                                                 <!-- <li>
                                                         Joined recursively grabs foreign attributes too
                                                         <ul>
@@ -61,32 +73,24 @@
 
                         <h2>Go Api</h2>
                         <span>
-                                A work in progress too, but most promising. While <code>go vet</code> works, I have no clue if it <em>actually</em> works. For
-                                now I took the sql queries and included them into the Go code to remove the need for stored procedure or functions. Plans to add
-                                a toggle may follow, not sure yet. For now all inputs are passed in via the body, except reads which are attempted to be parsed
-                                from query params. May be looking to utilize the path instead for a more "restful" structure.
+                                A work in progress too, but most promising. As of testing the code runs, but thats as far as my testing has gone. For now I took
+                                the sql queries and included them into the Go code to remove the need for stored procedure or functions. Plans to add a toggle
+                                may follow, not sure yet.
                         </span>
 
                         <ul>
+                                <li>RESTful api design</li>
                                 <li>Endpoints grouped by schema to give it more context</li>
                                 <li>GET, PUT, POST, DELETE mirroring postgresql table structures</li>
                                 <li>GET params are parsed into appropriate type before attempting postgresql call</li>
                                 <li>Error handling for pretty much every step</li>
                         </ul>
 
-                        <h2>Node JS Express</h2>
-                        <span> This is mostly proof of concept, endpoints likely will work, but postgres configuration will need some tweaking. </span>
-                        <ul>
-                                <li>GET, PUT, POST, DELETE endpoints that utilize the postgresql functions and procedures</li>
-                                <li>Handholding when making requests, checking for things missed that it expects on a request</li>
-                                <li>Error handling for failed queries</li>
-                        </ul>
-
                         <h2>Html</h2>
-                        This is mostly proof of concept too, very little time spent so far.
-                        <ul>
-                                <li>Form for each CRUD operation needed that aligns with all endpoints created by Node JS Express</li>
-                        </ul>
+                        <span>
+                                This is mostly proof of concept, and very little time spent so far. I plan to make a proper implementation with Go templates and
+                                SSR.
+                        </span>
                 </section>
                 <footer>
                         <nav>

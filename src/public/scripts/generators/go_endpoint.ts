@@ -69,7 +69,7 @@ func initDB() {
 
                                                 let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
                                                 if (!endpoint.many) {
-                                                        endpointPath += `/${endpoint.primaryKeyName}`;
+                                                        endpointPath += `/:${endpoint.primaryKeyName}`;
                                                 }
 
                                                 goEndpoints.push({
@@ -86,7 +86,7 @@ func initDB() {
                                         for (let m = 0; m < table.entityEndpoints.update.length; m++) {
                                                 const endpoint = table.entityEndpoints.update[m];
                                                 let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
-                                                endpointPath += `/${endpoint.primaryKeyName}`;
+                                                endpointPath += `/:${endpoint.primaryKeyName}`;
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -102,7 +102,7 @@ func initDB() {
                                         for (let m = 0; m < table.entityEndpoints.delete.length; m++) {
                                                 const endpoint = table.entityEndpoints.delete[m];
                                                 let endpointPath = `/${endpoint.sqlSchemaName}/${endpoint.go.real.name}`;
-                                                endpointPath += `/${endpoint.primaryKeyName}`;
+                                                endpointPath += `/:${endpoint.primaryKeyName}`;
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -243,7 +243,7 @@ ${endpointStrs.join('\n')}
                 if (endpoint.many) {
                         let str = `func ${endpoint.go.fnName}(w http.ResponseWriter, r *http.Request) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
-    rows, err := db.Query(query, ${inputs})
+    rows, err := db.Query(query)
      if err != nil {
          http.Error(w, err.Error(), http.StatusInternalServerError)
          return
