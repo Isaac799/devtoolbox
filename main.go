@@ -11,158 +11,28 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// person
-type InputCreatePerson struct {
-	InOutId     int    `json:"in_out_id"`
-	NewEmail    string `json:"new_email"`
-	NewUsername string `json:"new_username"`
-	NewActive   bool   `json:"new_active"`
-}
-type OutputCreatePerson struct {
-	InOutId int `json:"in_out_id"`
-}
-type InputReadSinglePerson struct {
-	TargetId int `json:"target_id"`
-}
-type OutputReadSinglePerson struct {
-	NewEmail    string `json:"new_email"`
-	NewUsername string `json:"new_username"`
-	NewActive   bool   `json:"new_active"`
-}
-type InputUpdatePerson struct {
-	TargetId    int    `json:"target_id"`
-	NewEmail    string `json:"new_email"`
-	NewUsername string `json:"new_username"`
-	NewActive   bool   `json:"new_active"`
-}
-type InputDeletePerson struct {
-	TargetId int `json:"target_id"`
-}
 type Person struct {
 	Id       int    `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Active   bool   `json:"active"`
 }
-
-// category
-type InputCreateCategory struct {
-	InOutId  int    `json:"in_out_id"`
-	NewTitle string `json:"new_title"`
-}
-type OutputCreateCategory struct {
-	InOutId int `json:"in_out_id"`
-}
-type InputReadSingleCategory struct {
-	TargetId int `json:"target_id"`
-}
-type OutputReadSingleCategory struct {
-	NewTitle string `json:"new_title"`
-}
-type OutputReadOptionsCategory struct {
-	TargetId    int    `json:"target_id"`
-	TargetTitle string `json:"target_title"`
-}
-type InputUpdateCategory struct {
-	TargetId int    `json:"target_id"`
-	NewTitle string `json:"new_title"`
-}
-type InputDeleteCategory struct {
-	TargetId int `json:"target_id"`
-}
 type Category struct {
 	Id    int    `json:"id"`
 	Title string `json:"title"`
-}
-
-// product
-type InputCreateProduct struct {
-	InOutId  int     `json:"in_out_id"`
-	NewTitle string  `json:"new_title"`
-	NewPrice float64 `json:"new_price"`
-}
-type OutputCreateProduct struct {
-	InOutId int `json:"in_out_id"`
-}
-type InputReadSingleProduct struct {
-	TargetId int `json:"target_id"`
-}
-type OutputReadSingleProduct struct {
-	NewTitle string  `json:"new_title"`
-	NewPrice float64 `json:"new_price"`
-}
-type OutputReadOptionsProduct struct {
-	TargetId    int    `json:"target_id"`
-	TargetTitle string `json:"target_title"`
-}
-type InputUpdateProduct struct {
-	TargetId int     `json:"target_id"`
-	NewTitle string  `json:"new_title"`
-	NewPrice float64 `json:"new_price"`
-}
-type InputDeleteProduct struct {
-	TargetId int `json:"target_id"`
 }
 type Product struct {
 	Id    int     `json:"id"`
 	Title string  `json:"title"`
 	Price float64 `json:"price"`
 }
-
-// product_category
 type ProductCategory struct {
 	ProductId  int `json:"product_id"`
 	CategoryId int `json:"category_id"`
 }
-
-// cart
-type InputCreateCart struct {
-	InOutId     int `json:"in_out_id"`
-	NewPersonId int `json:"new_person_id"`
-}
-type OutputCreateCart struct {
-	InOutId int `json:"in_out_id"`
-}
-type InputReadSingleCart struct {
-	TargetId int `json:"target_id"`
-}
-type OutputReadSingleCart struct {
-	NewPersonId int `json:"new_person_id"`
-}
-type InputDeleteCart struct {
-	TargetId int `json:"target_id"`
-}
 type Cart struct {
 	Id       int `json:"id"`
 	PersonId int `json:"person_id"`
-}
-
-// cart_item
-type InputCreateCartItem struct {
-	InOutCartId        int       `json:"in_out_cart_id"`
-	InOutProductId     int       `json:"in_out_product_id"`
-	NewRecordCreatedOn time.Time `json:"new_record_created_on"`
-	NewCartId          int       `json:"new_cart_id"`
-	NewProductId       int       `json:"new_product_id"`
-	NewPriceWhenCarted float64   `json:"new_price_when_carted"`
-}
-type OutputCreateCartItem struct {
-	InOutCartId    int `json:"in_out_cart_id"`
-	InOutProductId int `json:"in_out_product_id"`
-}
-type InputReadSingleCartItem struct {
-	TargetCartId    int `json:"target_cart_id"`
-	TargetProductId int `json:"target_product_id"`
-}
-type OutputReadSingleCartItem struct {
-	NewRecordCreatedOn time.Time `json:"new_record_created_on"`
-	NewCartId          int       `json:"new_cart_id"`
-	NewProductId       int       `json:"new_product_id"`
-	NewPriceWhenCarted float64   `json:"new_price_when_carted"`
-}
-type InputDeleteCartItem struct {
-	TargetCartId    int `json:"target_cart_id"`
-	TargetProductId int `json:"target_product_id"`
 }
 type CartItem struct {
 	RecordCreatedOn time.Time `json:"record_created_on"`
@@ -170,72 +40,12 @@ type CartItem struct {
 	ProductId       int       `json:"product_id"`
 	PriceWhenCarted float64   `json:"price_when_carted"`
 }
-
-// order
-type InputCreateOrder struct {
-	InOutId            int       `json:"in_out_id"`
-	NewRecordCreatedOn time.Time `json:"new_record_created_on"`
-	NewPersonId        int       `json:"new_person_id"`
-	NewFinalized       bool      `json:"new_finalized"`
-	NewTotalCost       float64   `json:"new_total_cost"`
-}
-type OutputCreateOrder struct {
-	InOutId int `json:"in_out_id"`
-}
-type InputReadSingleOrder struct {
-	TargetId int `json:"target_id"`
-}
-type OutputReadSingleOrder struct {
-	NewRecordCreatedOn time.Time `json:"new_record_created_on"`
-	NewPersonId        int       `json:"new_person_id"`
-	NewFinalized       bool      `json:"new_finalized"`
-	NewTotalCost       float64   `json:"new_total_cost"`
-}
-type InputUpdateOrder struct {
-	TargetId     int  `json:"target_id"`
-	NewFinalized bool `json:"new_finalized"`
-}
-type InputDeleteOrder struct {
-	TargetId int `json:"target_id"`
-}
 type Order struct {
 	RecordCreatedOn time.Time `json:"record_created_on"`
 	Id              int       `json:"id"`
 	PersonId        int       `json:"person_id"`
 	Finalized       bool      `json:"finalized"`
 	TotalCost       float64   `json:"total_cost"`
-}
-
-// order_item
-type InputCreateOrderItem struct {
-	InOutOrderId       int       `json:"in_out_order_id"`
-	InOutProductId     int       `json:"in_out_product_id"`
-	NewRecordCreatedOn time.Time `json:"new_record_created_on"`
-	NewOrderId         int       `json:"new_order_id"`
-	NewProductId       int       `json:"new_product_id"`
-}
-type OutputCreateOrderItem struct {
-	InOutOrderId   int `json:"in_out_order_id"`
-	InOutProductId int `json:"in_out_product_id"`
-}
-type InputReadSingleOrderItem struct {
-	TargetOrderId   int `json:"target_order_id"`
-	TargetProductId int `json:"target_product_id"`
-}
-type OutputReadSingleOrderItem struct {
-	NewRecordCreatedOn time.Time `json:"new_record_created_on"`
-	NewOrderId         int       `json:"new_order_id"`
-	NewProductId       int       `json:"new_product_id"`
-}
-type InputUpdateOrderItem struct {
-	TargetOrderId   int `json:"target_order_id"`
-	TargetProductId int `json:"target_product_id"`
-	NewOrderId      int `json:"new_order_id"`
-	NewProductId    int `json:"new_product_id"`
-}
-type InputDeleteOrderItem struct {
-	TargetOrderId   int `json:"target_order_id"`
-	TargetProductId int `json:"target_product_id"`
 }
 type OrderItem struct {
 	RecordCreatedOn time.Time `json:"record_created_on"`
@@ -254,39 +64,37 @@ func initDB() {
 	}
 }
 
-func CreatePerson(w http.ResponseWriter, r *http.Request) {
-	var inputCreatePerson InputCreatePerson
-	if err := json.NewDecoder(r.Body).Decode(&inputCreatePerson); err != nil {
+func PostPerson(w http.ResponseWriter, r *http.Request) {
+	var person Person
+	if err := json.NewDecoder(r.Body).Decode(&person); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `INSERT INTO person.person ( person.person.email, person.person.username, person.person.active ) VALUES ( $1, $2, $3 ) RETURNING id INTO in_out_id;`
+	query := `INSERT INTO person.person ( person.person.email, person.person.username, person.person.active ) VALUES ( $1, $2, $3 ) RETURNING id;`
 
-	var outputCreatePerson OutputCreatePerson
-
-	err := db.QueryRow(query, inputCreatePerson.InOutId, inputCreatePerson.NewEmail, inputCreatePerson.NewUsername, inputCreatePerson.NewActive).Scan(&outputCreatePerson)
+	err := db.QueryRow(query, person.Email, person.Username, person.Active).Scan(&person.Id)
 	if err != nil {
 		http.Error(w, "Error inserting: person"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(outputCreatePerson)
+	json.NewEncoder(w).Encode(person)
 }
 
-func ReadSinglePerson(w http.ResponseWriter, r *http.Request) {
-	targetIdStr := r.URL.Query().Get("target_id")
-	targetId, err := strconv.Atoi(targetIdStr)
+func GetPerson(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid target_id", http.StatusBadRequest)
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
-	query := `SELECT person.person.email , person.person.username , person.person.active FROM person.person WHERE person.person.id = $1;`
+	query := `SELECT person.person.id , person.person.email , person.person.username , person.person.active FROM person.person WHERE person.person.id = $1;`
 
-	var outputReadSinglePerson OutputReadSinglePerson
-	err = db.QueryRow(query, targetId).Scan(&outputReadSinglePerson)
+	var person Person
+	err = db.QueryRow(query, id).Scan(&person.Id, &person.Email, &person.Username, &person.Active)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "Record not found for this person", http.StatusNotFound)
@@ -296,19 +104,55 @@ func ReadSinglePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadSinglePerson)
+	json.NewEncoder(w).Encode(person)
 }
 
-func UpdatePerson(w http.ResponseWriter, r *http.Request) {
-	var inputUpdatePerson InputUpdatePerson
-	if err := json.NewDecoder(r.Body).Decode(&inputUpdatePerson); err != nil {
+func GetPersons(w http.ResponseWriter, r *http.Request) {
+	query := `SELECT person.person.id , person.person.email , person.person.username , person.person.active FROM person.person;`
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var persons []Person
+	for rows.Next() {
+		var person Person
+		err := rows.Scan(&person.Id, &person.Email, &person.Username, &person.Active)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		persons = append(persons, person)
+	}
+
+	if err = rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(persons)
+}
+
+func PutPerson(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var person Person
+	if err := json.NewDecoder(r.Body).Decode(&person); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	query := `SET person.person.email = $2, person.person.username = $3, person.person.active = $4 WHERE person.person.id = $1;`
 
-	res, err := db.Exec(query, inputUpdatePerson.TargetId, inputUpdatePerson.NewEmail, inputUpdatePerson.NewUsername, inputUpdatePerson.NewActive)
+	res, err := db.Exec(query, id, person.Email, person.Username, person.Active)
 	if err != nil {
 		http.Error(w, "Error updating person: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -324,62 +168,61 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePerson(w http.ResponseWriter, r *http.Request) {
-	var inputDeletePerson InputDeletePerson
-	if err := json.NewDecoder(r.Body).Decode(&inputDeletePerson); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
 	query := `DELETE FROM person.person WHERE person.person.id = $1;`
 
-	res, err := db.Exec(query, inputDeletePerson.TargetId)
+	res, err := db.Exec(query, id)
 	if err != nil {
-		http.Error(w, "Error deleting: person"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error deleting person: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		http.Error(w, "Record not found", http.StatusNotFound)
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func CreateCategory(w http.ResponseWriter, r *http.Request) {
-	var inputCreateCategory InputCreateCategory
-	if err := json.NewDecoder(r.Body).Decode(&inputCreateCategory); err != nil {
+func PostCategory(w http.ResponseWriter, r *http.Request) {
+	var category Category
+	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `INSERT INTO catalog.category ( catalog.category.title ) VALUES ( $1 ) RETURNING id INTO in_out_id;`
+	query := `INSERT INTO catalog.category ( catalog.category.title ) VALUES ( $1 ) RETURNING id;`
 
-	var outputCreateCategory OutputCreateCategory
-
-	err := db.QueryRow(query, inputCreateCategory.InOutId, inputCreateCategory.NewTitle).Scan(&outputCreateCategory)
+	err := db.QueryRow(query, category.Title).Scan(&category.Id)
 	if err != nil {
 		http.Error(w, "Error inserting: category"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(outputCreateCategory)
+	json.NewEncoder(w).Encode(category)
 }
 
-func ReadSingleCategory(w http.ResponseWriter, r *http.Request) {
-	targetIdStr := r.URL.Query().Get("target_id")
-	targetId, err := strconv.Atoi(targetIdStr)
+func GetCategory(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid target_id", http.StatusBadRequest)
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
-	query := `SELECT catalog.category.title FROM catalog.category WHERE catalog.category.id = $1;`
+	query := `SELECT catalog.category.id , catalog.category.title FROM catalog.category WHERE catalog.category.id = $1;`
 
-	var outputReadSingleCategory OutputReadSingleCategory
-	err = db.QueryRow(query, targetId).Scan(&outputReadSingleCategory)
+	var category Category
+	err = db.QueryRow(query, id).Scan(&category.Id, &category.Title)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "Record not found for this category", http.StatusNotFound)
@@ -389,36 +232,55 @@ func ReadSingleCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadSingleCategory)
+	json.NewEncoder(w).Encode(category)
 }
 
-func ReadOptionsCategory(w http.ResponseWriter, r *http.Request) {
+func GetCategories(w http.ResponseWriter, r *http.Request) {
 	query := `SELECT catalog.category.id , catalog.category.title FROM catalog.category;`
-
-	var outputReadOptionsCategory OutputReadOptionsCategory
-	err := db.QueryRow(query).Scan(&outputReadOptionsCategory)
-
-	if err == sql.ErrNoRows {
-		http.Error(w, "Record not found for this category", http.StatusNotFound)
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	} else if err != nil {
-		http.Error(w, "Error fetching category: "+err.Error(), http.StatusInternalServerError)
+	}
+	defer rows.Close()
+
+	var categorys []Category
+	for rows.Next() {
+		var category Category
+		err := rows.Scan(&category.Id, &category.Title)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		categorys = append(categorys, category)
+	}
+
+	if err = rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadOptionsCategory)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categorys)
 }
 
-func UpdateCategory(w http.ResponseWriter, r *http.Request) {
-	var inputUpdateCategory InputUpdateCategory
-	if err := json.NewDecoder(r.Body).Decode(&inputUpdateCategory); err != nil {
+func PutCategory(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var category Category
+	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	query := `SET catalog.category.title = $2 WHERE catalog.category.id = $1;`
 
-	res, err := db.Exec(query, inputUpdateCategory.TargetId, inputUpdateCategory.NewTitle)
+	res, err := db.Exec(query, id, category.Title)
 	if err != nil {
 		http.Error(w, "Error updating category: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -434,62 +296,61 @@ func UpdateCategory(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteCategory(w http.ResponseWriter, r *http.Request) {
-	var inputDeleteCategory InputDeleteCategory
-	if err := json.NewDecoder(r.Body).Decode(&inputDeleteCategory); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
 	query := `DELETE FROM catalog.category WHERE catalog.category.id = $1;`
 
-	res, err := db.Exec(query, inputDeleteCategory.TargetId)
+	res, err := db.Exec(query, id)
 	if err != nil {
-		http.Error(w, "Error deleting: category"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error deleting category: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		http.Error(w, "Record not found", http.StatusNotFound)
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func CreateProduct(w http.ResponseWriter, r *http.Request) {
-	var inputCreateProduct InputCreateProduct
-	if err := json.NewDecoder(r.Body).Decode(&inputCreateProduct); err != nil {
+func PostProduct(w http.ResponseWriter, r *http.Request) {
+	var product Product
+	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `INSERT INTO catalog.product ( catalog.product.title, catalog.product.price ) VALUES ( $1, $2 ) RETURNING id INTO in_out_id;`
+	query := `INSERT INTO catalog.product ( catalog.product.title, catalog.product.price ) VALUES ( $1, $2 ) RETURNING id;`
 
-	var outputCreateProduct OutputCreateProduct
-
-	err := db.QueryRow(query, inputCreateProduct.InOutId, inputCreateProduct.NewTitle, inputCreateProduct.NewPrice).Scan(&outputCreateProduct)
+	err := db.QueryRow(query, product.Title, product.Price).Scan(&product.Id)
 	if err != nil {
 		http.Error(w, "Error inserting: product"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(outputCreateProduct)
+	json.NewEncoder(w).Encode(product)
 }
 
-func ReadSingleProduct(w http.ResponseWriter, r *http.Request) {
-	targetIdStr := r.URL.Query().Get("target_id")
-	targetId, err := strconv.Atoi(targetIdStr)
+func GetProduct(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid target_id", http.StatusBadRequest)
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
-	query := `SELECT catalog.product.title , catalog.product.price FROM catalog.product WHERE catalog.product.id = $1;`
+	query := `SELECT catalog.product.id , catalog.product.title , catalog.product.price FROM catalog.product WHERE catalog.product.id = $1;`
 
-	var outputReadSingleProduct OutputReadSingleProduct
-	err = db.QueryRow(query, targetId).Scan(&outputReadSingleProduct)
+	var product Product
+	err = db.QueryRow(query, id).Scan(&product.Id, &product.Title, &product.Price)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "Record not found for this product", http.StatusNotFound)
@@ -499,36 +360,55 @@ func ReadSingleProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadSingleProduct)
+	json.NewEncoder(w).Encode(product)
 }
 
-func ReadOptionsProduct(w http.ResponseWriter, r *http.Request) {
-	query := `SELECT catalog.product.id , catalog.product.title FROM catalog.product;`
-
-	var outputReadOptionsProduct OutputReadOptionsProduct
-	err := db.QueryRow(query).Scan(&outputReadOptionsProduct)
-
-	if err == sql.ErrNoRows {
-		http.Error(w, "Record not found for this product", http.StatusNotFound)
+func GetProducts(w http.ResponseWriter, r *http.Request) {
+	query := `SELECT catalog.product.id , catalog.product.title , catalog.product.price FROM catalog.product;`
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	} else if err != nil {
-		http.Error(w, "Error fetching product: "+err.Error(), http.StatusInternalServerError)
+	}
+	defer rows.Close()
+
+	var products []Product
+	for rows.Next() {
+		var product Product
+		err := rows.Scan(&product.Id, &product.Title, &product.Price)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		products = append(products, product)
+	}
+
+	if err = rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadOptionsProduct)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(products)
 }
 
-func UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	var inputUpdateProduct InputUpdateProduct
-	if err := json.NewDecoder(r.Body).Decode(&inputUpdateProduct); err != nil {
+func PutProduct(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var product Product
+	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	query := `SET catalog.product.title = $2, catalog.product.price = $3 WHERE catalog.product.id = $1;`
 
-	res, err := db.Exec(query, inputUpdateProduct.TargetId, inputUpdateProduct.NewTitle, inputUpdateProduct.NewPrice)
+	res, err := db.Exec(query, id, product.Title, product.Price)
 	if err != nil {
 		http.Error(w, "Error updating product: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -544,62 +424,61 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteProduct(w http.ResponseWriter, r *http.Request) {
-	var inputDeleteProduct InputDeleteProduct
-	if err := json.NewDecoder(r.Body).Decode(&inputDeleteProduct); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
 	query := `DELETE FROM catalog.product WHERE catalog.product.id = $1;`
 
-	res, err := db.Exec(query, inputDeleteProduct.TargetId)
+	res, err := db.Exec(query, id)
 	if err != nil {
-		http.Error(w, "Error deleting: product"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error deleting product: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		http.Error(w, "Record not found", http.StatusNotFound)
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func CreateCart(w http.ResponseWriter, r *http.Request) {
-	var inputCreateCart InputCreateCart
-	if err := json.NewDecoder(r.Body).Decode(&inputCreateCart); err != nil {
+func PostCart(w http.ResponseWriter, r *http.Request) {
+	var cart Cart
+	if err := json.NewDecoder(r.Body).Decode(&cart); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `INSERT INTO shopping_cart.cart ( shopping_cart.cart.person_id ) VALUES ( $1 ) RETURNING id INTO in_out_id;`
+	query := `INSERT INTO shopping_cart.cart ( shopping_cart.cart.person_id ) VALUES ( $1 ) RETURNING id;`
 
-	var outputCreateCart OutputCreateCart
-
-	err := db.QueryRow(query, inputCreateCart.InOutId, inputCreateCart.NewPersonId).Scan(&outputCreateCart)
+	err := db.QueryRow(query, cart.PersonId).Scan(&cart.Id)
 	if err != nil {
 		http.Error(w, "Error inserting: cart"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(outputCreateCart)
+	json.NewEncoder(w).Encode(cart)
 }
 
-func ReadSingleCart(w http.ResponseWriter, r *http.Request) {
-	targetIdStr := r.URL.Query().Get("target_id")
-	targetId, err := strconv.Atoi(targetIdStr)
+func GetCart(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid target_id", http.StatusBadRequest)
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
-	query := `SELECT shopping_cart.cart.person_id FROM shopping_cart.cart WHERE shopping_cart.cart.id = $1;`
+	query := `SELECT shopping_cart.cart.id , shopping_cart.cart.person_id FROM shopping_cart.cart WHERE shopping_cart.cart.id = $1;`
 
-	var outputReadSingleCart OutputReadSingleCart
-	err = db.QueryRow(query, targetId).Scan(&outputReadSingleCart)
+	var cart Cart
+	err = db.QueryRow(query, id).Scan(&cart.Id, &cart.PersonId)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "Record not found for this cart", http.StatusNotFound)
@@ -609,73 +488,132 @@ func ReadSingleCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadSingleCart)
+	json.NewEncoder(w).Encode(cart)
 }
 
-func DeleteCart(w http.ResponseWriter, r *http.Request) {
-	var inputDeleteCart InputDeleteCart
-	if err := json.NewDecoder(r.Body).Decode(&inputDeleteCart); err != nil {
+func GetCarts(w http.ResponseWriter, r *http.Request) {
+	query := `SELECT shopping_cart.cart.id , shopping_cart.cart.person_id FROM shopping_cart.cart;`
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var carts []Cart
+	for rows.Next() {
+		var cart Cart
+		err := rows.Scan(&cart.Id, &cart.PersonId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		carts = append(carts, cart)
+	}
+
+	if err = rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(carts)
+}
+
+func PutCart(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var cart Cart
+	if err := json.NewDecoder(r.Body).Decode(&cart); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `DELETE FROM shopping_cart.cart WHERE shopping_cart.cart.id = $1;`
+	query := `SET shopping_cart.cart.person_id = $2 WHERE shopping_cart.cart.id = $1;`
 
-	res, err := db.Exec(query, inputDeleteCart.TargetId)
+	res, err := db.Exec(query, id, cart.PersonId)
 	if err != nil {
-		http.Error(w, "Error deleting: cart"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error updating cart: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		http.Error(w, "Record not found", http.StatusNotFound)
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func CreateCartItem(w http.ResponseWriter, r *http.Request) {
-	var inputCreateCartItem InputCreateCartItem
-	if err := json.NewDecoder(r.Body).Decode(&inputCreateCartItem); err != nil {
+func DeleteCart(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	query := `DELETE FROM shopping_cart.cart WHERE shopping_cart.cart.id = $1;`
+
+	res, err := db.Exec(query, id)
+	if err != nil {
+		http.Error(w, "Error deleting cart: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil || rowsAffected == 0 {
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func PostCartItem(w http.ResponseWriter, r *http.Request) {
+	var cartItem CartItem
+	if err := json.NewDecoder(r.Body).Decode(&cartItem); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `INSERT INTO shopping_cart.cart_item ( shopping_cart.cart_item.record_created_on, shopping_cart.cart_item.cart_id, shopping_cart.cart_item.product_id, shopping_cart.cart_item.price_when_carted ) VALUES ( $1, $2, $3, $4 ) RETURNING cart_id,product_id INTO in_out_cart_id,in_out_product_id;`
+	query := `INSERT INTO shopping_cart.cart_item ( shopping_cart.cart_item.record_created_on, shopping_cart.cart_item.price_when_carted ) VALUES ( $1, $2 ) RETURNING cart_id, product_id;`
 
-	var outputCreateCartItem OutputCreateCartItem
-
-	err := db.QueryRow(query, inputCreateCartItem.InOutCartId, inputCreateCartItem.InOutProductId, inputCreateCartItem.NewRecordCreatedOn, inputCreateCartItem.NewCartId, inputCreateCartItem.NewProductId, inputCreateCartItem.NewPriceWhenCarted).Scan(&outputCreateCartItem)
+	err := db.QueryRow(query, cartItem.RecordCreatedOn, cartItem.PriceWhenCarted).Scan(&cartItem.CartId, &cartItem.ProductId)
 	if err != nil {
 		http.Error(w, "Error inserting: cart-item"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(outputCreateCartItem)
+	json.NewEncoder(w).Encode(cartItem)
 }
 
-func ReadSingleCartItem(w http.ResponseWriter, r *http.Request) {
-	targetCartIdStr := r.URL.Query().Get("target_cart_id")
-	targetCartId, err := strconv.Atoi(targetCartIdStr)
+func GetCartItem(w http.ResponseWriter, r *http.Request) {
+	cartIdStr := r.URL.Query().Get("cart_id")
+	cartId, err := strconv.Atoi(cartIdStr)
 	if err != nil {
-		http.Error(w, "Invalid target_cart_id", http.StatusBadRequest)
+		http.Error(w, "Invalid cart_id", http.StatusBadRequest)
 		return
 	}
 
-	targetProductIdStr := r.URL.Query().Get("target_product_id")
-	targetProductId, err := strconv.Atoi(targetProductIdStr)
+	productIdStr := r.URL.Query().Get("product_id")
+	productId, err := strconv.Atoi(productIdStr)
 	if err != nil {
-		http.Error(w, "Invalid target_product_id", http.StatusBadRequest)
+		http.Error(w, "Invalid product_id", http.StatusBadRequest)
 		return
 	}
 
 	query := `SELECT shopping_cart.cart_item.record_created_on , shopping_cart.cart_item.cart_id , shopping_cart.cart_item.product_id , shopping_cart.cart_item.price_when_carted FROM shopping_cart.cart_item WHERE shopping_cart.cart_item.cart_id = $1 AND shopping_cart.cart_item.product_id = $2;`
 
-	var outputReadSingleCartItem OutputReadSingleCartItem
-	err = db.QueryRow(query, targetCartId, targetProductId).Scan(&outputReadSingleCartItem)
+	var cartItem CartItem
+	err = db.QueryRow(query, cartId, productId).Scan(&cartItem.RecordCreatedOn, &cartItem.CartId, &cartItem.ProductId, &cartItem.PriceWhenCarted)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "Record not found for this cart-item", http.StatusNotFound)
@@ -685,66 +623,139 @@ func ReadSingleCartItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadSingleCartItem)
+	json.NewEncoder(w).Encode(cartItem)
 }
 
-func DeleteCartItem(w http.ResponseWriter, r *http.Request) {
-	var inputDeleteCartItem InputDeleteCartItem
-	if err := json.NewDecoder(r.Body).Decode(&inputDeleteCartItem); err != nil {
+func GetCartItems(w http.ResponseWriter, r *http.Request) {
+	query := `SELECT shopping_cart.cart_item.record_created_on , shopping_cart.cart_item.cart_id , shopping_cart.cart_item.product_id , shopping_cart.cart_item.price_when_carted FROM shopping_cart.cart_item;`
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var cartItems []CartItem
+	for rows.Next() {
+		var cartItem CartItem
+		err := rows.Scan(&cartItem.RecordCreatedOn, &cartItem.CartId, &cartItem.ProductId, &cartItem.PriceWhenCarted)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		cartItems = append(cartItems, cartItem)
+	}
+
+	if err = rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(cartItems)
+}
+
+func PutCartItem(w http.ResponseWriter, r *http.Request) {
+	cartIdStr := r.URL.Query().Get("cart_id")
+	cartId, err := strconv.Atoi(cartIdStr)
+	if err != nil {
+		http.Error(w, "Invalid cart_id", http.StatusBadRequest)
+		return
+	}
+
+	productIdStr := r.URL.Query().Get("product_id")
+	productId, err := strconv.Atoi(productIdStr)
+	if err != nil {
+		http.Error(w, "Invalid product_id", http.StatusBadRequest)
+		return
+	}
+
+	var cartItem CartItem
+	if err := json.NewDecoder(r.Body).Decode(&cartItem); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `DELETE FROM shopping_cart.cart_item WHERE shopping_cart.cart_item.cart_id = $1 AND shopping_cart.cart_item.product_id = $2;`
+	query := `SET shopping_cart.cart_item.record_created_on = $3, shopping_cart.cart_item.price_when_carted = $4 WHERE shopping_cart.cart_item.cart_id = $1 AND shopping_cart.cart_item.product_id = $2;`
 
-	res, err := db.Exec(query, inputDeleteCartItem.TargetCartId, inputDeleteCartItem.TargetProductId)
+	res, err := db.Exec(query, cartId, productId, cartItem.RecordCreatedOn, cartItem.PriceWhenCarted)
 	if err != nil {
-		http.Error(w, "Error deleting: cart-item"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error updating cart-item: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		http.Error(w, "Record not found", http.StatusNotFound)
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func CreateOrder(w http.ResponseWriter, r *http.Request) {
-	var inputCreateOrder InputCreateOrder
-	if err := json.NewDecoder(r.Body).Decode(&inputCreateOrder); err != nil {
+func DeleteCartItem(w http.ResponseWriter, r *http.Request) {
+	cartIdStr := r.URL.Query().Get("cart_id")
+	cartId, err := strconv.Atoi(cartIdStr)
+	if err != nil {
+		http.Error(w, "Invalid cart_id", http.StatusBadRequest)
+		return
+	}
+
+	productIdStr := r.URL.Query().Get("product_id")
+	productId, err := strconv.Atoi(productIdStr)
+	if err != nil {
+		http.Error(w, "Invalid product_id", http.StatusBadRequest)
+		return
+	}
+
+	query := `DELETE FROM shopping_cart.cart_item WHERE shopping_cart.cart_item.cart_id = $1 AND shopping_cart.cart_item.product_id = $2;`
+
+	res, err := db.Exec(query, cartId, productId)
+	if err != nil {
+		http.Error(w, "Error deleting cart-item: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil || rowsAffected == 0 {
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func PostOrder(w http.ResponseWriter, r *http.Request) {
+	var order Order
+	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `INSERT INTO orders.order ( orders.order.record_created_on, orders.order.person_id, orders.order.finalized, orders.order.total_cost ) VALUES ( $1, $2, $3, $4 ) RETURNING id INTO in_out_id;`
+	query := `INSERT INTO orders.order ( orders.order.record_created_on, orders.order.person_id, orders.order.finalized, orders.order.total_cost ) VALUES ( $1, $2, $3, $4 ) RETURNING id;`
 
-	var outputCreateOrder OutputCreateOrder
-
-	err := db.QueryRow(query, inputCreateOrder.InOutId, inputCreateOrder.NewRecordCreatedOn, inputCreateOrder.NewPersonId, inputCreateOrder.NewFinalized, inputCreateOrder.NewTotalCost).Scan(&outputCreateOrder)
+	err := db.QueryRow(query, order.RecordCreatedOn, order.PersonId, order.Finalized, order.TotalCost).Scan(&order.Id)
 	if err != nil {
 		http.Error(w, "Error inserting: order"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(outputCreateOrder)
+	json.NewEncoder(w).Encode(order)
 }
 
-func ReadSingleOrder(w http.ResponseWriter, r *http.Request) {
-	targetIdStr := r.URL.Query().Get("target_id")
-	targetId, err := strconv.Atoi(targetIdStr)
+func GetOrder(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid target_id", http.StatusBadRequest)
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
-	query := `SELECT orders.order.record_created_on , orders.order.person_id , orders.order.finalized , orders.order.total_cost FROM orders.order WHERE orders.order.id = $1;`
+	query := `SELECT orders.order.record_created_on , orders.order.id , orders.order.person_id , orders.order.finalized , orders.order.total_cost FROM orders.order WHERE orders.order.id = $1;`
 
-	var outputReadSingleOrder OutputReadSingleOrder
-	err = db.QueryRow(query, targetId).Scan(&outputReadSingleOrder)
+	var order Order
+	err = db.QueryRow(query, id).Scan(&order.RecordCreatedOn, &order.Id, &order.PersonId, &order.Finalized, &order.TotalCost)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "Record not found for this order", http.StatusNotFound)
@@ -754,19 +765,55 @@ func ReadSingleOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadSingleOrder)
+	json.NewEncoder(w).Encode(order)
 }
 
-func UpdateOrder(w http.ResponseWriter, r *http.Request) {
-	var inputUpdateOrder InputUpdateOrder
-	if err := json.NewDecoder(r.Body).Decode(&inputUpdateOrder); err != nil {
+func GetOrders(w http.ResponseWriter, r *http.Request) {
+	query := `SELECT orders.order.record_created_on , orders.order.id , orders.order.person_id , orders.order.finalized , orders.order.total_cost FROM orders.order;`
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var orders []Order
+	for rows.Next() {
+		var order Order
+		err := rows.Scan(&order.RecordCreatedOn, &order.Id, &order.PersonId, &order.Finalized, &order.TotalCost)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		orders = append(orders, order)
+	}
+
+	if err = rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(orders)
+}
+
+func PutOrder(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var order Order
+	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `SET orders.order.finalized = $2 WHERE orders.order.id = $1;`
+	query := `SET orders.order.record_created_on = $2, orders.order.person_id = $3, orders.order.finalized = $4, orders.order.total_cost = $5 WHERE orders.order.id = $1;`
 
-	res, err := db.Exec(query, inputUpdateOrder.TargetId, inputUpdateOrder.NewFinalized)
+	res, err := db.Exec(query, id, order.RecordCreatedOn, order.PersonId, order.Finalized, order.TotalCost)
 	if err != nil {
 		http.Error(w, "Error updating order: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -782,69 +829,68 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteOrder(w http.ResponseWriter, r *http.Request) {
-	var inputDeleteOrder InputDeleteOrder
-	if err := json.NewDecoder(r.Body).Decode(&inputDeleteOrder); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
 	query := `DELETE FROM orders.order WHERE orders.order.id = $1;`
 
-	res, err := db.Exec(query, inputDeleteOrder.TargetId)
+	res, err := db.Exec(query, id)
 	if err != nil {
-		http.Error(w, "Error deleting: order"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error deleting order: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		http.Error(w, "Record not found", http.StatusNotFound)
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func CreateOrderItem(w http.ResponseWriter, r *http.Request) {
-	var inputCreateOrderItem InputCreateOrderItem
-	if err := json.NewDecoder(r.Body).Decode(&inputCreateOrderItem); err != nil {
+func PostOrderItem(w http.ResponseWriter, r *http.Request) {
+	var orderItem OrderItem
+	if err := json.NewDecoder(r.Body).Decode(&orderItem); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `INSERT INTO orders.order_item ( orders.order_item.record_created_on, orders.order_item.order_id, orders.order_item.product_id ) VALUES ( $1, $2, $3 ) RETURNING order_id,product_id INTO in_out_order_id,in_out_product_id;`
+	query := `INSERT INTO orders.order_item ( orders.order_item.record_created_on ) VALUES ( $1 ) RETURNING order_id, product_id;`
 
-	var outputCreateOrderItem OutputCreateOrderItem
-
-	err := db.QueryRow(query, inputCreateOrderItem.InOutOrderId, inputCreateOrderItem.InOutProductId, inputCreateOrderItem.NewRecordCreatedOn, inputCreateOrderItem.NewOrderId, inputCreateOrderItem.NewProductId).Scan(&outputCreateOrderItem)
+	err := db.QueryRow(query, orderItem.RecordCreatedOn).Scan(&orderItem.OrderId, &orderItem.ProductId)
 	if err != nil {
 		http.Error(w, "Error inserting: order-item"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(outputCreateOrderItem)
+	json.NewEncoder(w).Encode(orderItem)
 }
 
-func ReadSingleOrderItem(w http.ResponseWriter, r *http.Request) {
-	targetOrderIdStr := r.URL.Query().Get("target_order_id")
-	targetOrderId, err := strconv.Atoi(targetOrderIdStr)
+func GetOrderItem(w http.ResponseWriter, r *http.Request) {
+	orderIdStr := r.URL.Query().Get("order_id")
+	orderId, err := strconv.Atoi(orderIdStr)
 	if err != nil {
-		http.Error(w, "Invalid target_order_id", http.StatusBadRequest)
+		http.Error(w, "Invalid order_id", http.StatusBadRequest)
 		return
 	}
 
-	targetProductIdStr := r.URL.Query().Get("target_product_id")
-	targetProductId, err := strconv.Atoi(targetProductIdStr)
+	productIdStr := r.URL.Query().Get("product_id")
+	productId, err := strconv.Atoi(productIdStr)
 	if err != nil {
-		http.Error(w, "Invalid target_product_id", http.StatusBadRequest)
+		http.Error(w, "Invalid product_id", http.StatusBadRequest)
 		return
 	}
 
 	query := `SELECT orders.order_item.record_created_on , orders.order_item.order_id , orders.order_item.product_id FROM orders.order_item WHERE orders.order_item.order_id = $1 AND orders.order_item.product_id = $2;`
 
-	var outputReadSingleOrderItem OutputReadSingleOrderItem
-	err = db.QueryRow(query, targetOrderId, targetProductId).Scan(&outputReadSingleOrderItem)
+	var orderItem OrderItem
+	err = db.QueryRow(query, orderId, productId).Scan(&orderItem.RecordCreatedOn, &orderItem.OrderId, &orderItem.ProductId)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "Record not found for this order-item", http.StatusNotFound)
@@ -854,19 +900,62 @@ func ReadSingleOrderItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(outputReadSingleOrderItem)
+	json.NewEncoder(w).Encode(orderItem)
 }
 
-func UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
-	var inputUpdateOrderItem InputUpdateOrderItem
-	if err := json.NewDecoder(r.Body).Decode(&inputUpdateOrderItem); err != nil {
+func GetOrderItems(w http.ResponseWriter, r *http.Request) {
+	query := `SELECT orders.order_item.record_created_on , orders.order_item.order_id , orders.order_item.product_id FROM orders.order_item;`
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var orderItems []OrderItem
+	for rows.Next() {
+		var orderItem OrderItem
+		err := rows.Scan(&orderItem.RecordCreatedOn, &orderItem.OrderId, &orderItem.ProductId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		orderItems = append(orderItems, orderItem)
+	}
+
+	if err = rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(orderItems)
+}
+
+func PutOrderItem(w http.ResponseWriter, r *http.Request) {
+	orderIdStr := r.URL.Query().Get("order_id")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		http.Error(w, "Invalid order_id", http.StatusBadRequest)
+		return
+	}
+
+	productIdStr := r.URL.Query().Get("product_id")
+	productId, err := strconv.Atoi(productIdStr)
+	if err != nil {
+		http.Error(w, "Invalid product_id", http.StatusBadRequest)
+		return
+	}
+
+	var orderItem OrderItem
+	if err := json.NewDecoder(r.Body).Decode(&orderItem); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	query := `SET orders.order_item.order_id = $3, orders.order_item.product_id = $4 WHERE orders.order_item.order_id = $1 AND orders.order_item.product_id = $2;`
+	query := `SET orders.order_item.record_created_on = $3 WHERE orders.order_item.order_id = $1 AND orders.order_item.product_id = $2;`
 
-	res, err := db.Exec(query, inputUpdateOrderItem.TargetOrderId, inputUpdateOrderItem.TargetProductId, inputUpdateOrderItem.NewOrderId, inputUpdateOrderItem.NewProductId)
+	res, err := db.Exec(query, orderId, productId, orderItem.RecordCreatedOn)
 	if err != nil {
 		http.Error(w, "Error updating order-item: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -882,23 +971,31 @@ func UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteOrderItem(w http.ResponseWriter, r *http.Request) {
-	var inputDeleteOrderItem InputDeleteOrderItem
-	if err := json.NewDecoder(r.Body).Decode(&inputDeleteOrderItem); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	orderIdStr := r.URL.Query().Get("order_id")
+	orderId, err := strconv.Atoi(orderIdStr)
+	if err != nil {
+		http.Error(w, "Invalid order_id", http.StatusBadRequest)
+		return
+	}
+
+	productIdStr := r.URL.Query().Get("product_id")
+	productId, err := strconv.Atoi(productIdStr)
+	if err != nil {
+		http.Error(w, "Invalid product_id", http.StatusBadRequest)
 		return
 	}
 
 	query := `DELETE FROM orders.order_item WHERE orders.order_item.order_id = $1 AND orders.order_item.product_id = $2;`
 
-	res, err := db.Exec(query, inputDeleteOrderItem.TargetOrderId, inputDeleteOrderItem.TargetProductId)
+	res, err := db.Exec(query, orderId, productId)
 	if err != nil {
-		http.Error(w, "Error deleting: order-item"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error deleting order-item: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		http.Error(w, "Record not found", http.StatusNotFound)
+		http.Error(w, "Record not found or no changes made", http.StatusNotFound)
 		return
 	}
 
@@ -912,11 +1009,11 @@ func main() {
 	http.HandleFunc("/person/person", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			ReadSinglePerson(w, r)
+			GetPersons(w, r)
 		case http.MethodPost:
-			CreatePerson(w, r)
+			PostPerson(w, r)
 		case http.MethodPut:
-			UpdatePerson(w, r)
+			PutPerson(w, r)
 		case http.MethodDelete:
 			DeletePerson(w, r)
 		default:
@@ -927,11 +1024,11 @@ func main() {
 	http.HandleFunc("/catalog/category", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			ReadOptionsCategory(w, r)
+			GetCategories(w, r)
 		case http.MethodPost:
-			CreateCategory(w, r)
+			PostCategory(w, r)
 		case http.MethodPut:
-			UpdateCategory(w, r)
+			PutCategory(w, r)
 		case http.MethodDelete:
 			DeleteCategory(w, r)
 		default:
@@ -942,11 +1039,11 @@ func main() {
 	http.HandleFunc("/catalog/product", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			ReadOptionsProduct(w, r)
+			GetProducts(w, r)
 		case http.MethodPost:
-			CreateProduct(w, r)
+			PostProduct(w, r)
 		case http.MethodPut:
-			UpdateProduct(w, r)
+			PutProduct(w, r)
 		case http.MethodDelete:
 			DeleteProduct(w, r)
 		default:
@@ -957,9 +1054,11 @@ func main() {
 	http.HandleFunc("/shopping_cart/cart", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			ReadSingleCart(w, r)
+			GetCarts(w, r)
 		case http.MethodPost:
-			CreateCart(w, r)
+			PostCart(w, r)
+		case http.MethodPut:
+			PutCart(w, r)
 		case http.MethodDelete:
 			DeleteCart(w, r)
 		default:
@@ -970,9 +1069,11 @@ func main() {
 	http.HandleFunc("/shopping_cart/cart-item", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			ReadSingleCartItem(w, r)
+			GetCartItems(w, r)
 		case http.MethodPost:
-			CreateCartItem(w, r)
+			PostCartItem(w, r)
+		case http.MethodPut:
+			PutCartItem(w, r)
 		case http.MethodDelete:
 			DeleteCartItem(w, r)
 		default:
@@ -983,11 +1084,11 @@ func main() {
 	http.HandleFunc("/orders/order", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			ReadSingleOrder(w, r)
+			GetOrders(w, r)
 		case http.MethodPost:
-			CreateOrder(w, r)
+			PostOrder(w, r)
 		case http.MethodPut:
-			UpdateOrder(w, r)
+			PutOrder(w, r)
 		case http.MethodDelete:
 			DeleteOrder(w, r)
 		default:
@@ -998,11 +1099,11 @@ func main() {
 	http.HandleFunc("/orders/order-item", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			ReadSingleOrderItem(w, r)
+			GetOrderItems(w, r)
 		case http.MethodPost:
-			CreateOrderItem(w, r)
+			PostOrderItem(w, r)
 		case http.MethodPut:
-			UpdateOrderItem(w, r)
+			PutOrderItem(w, r)
 		case http.MethodDelete:
 			DeleteOrderItem(w, r)
 		default:

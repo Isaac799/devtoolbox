@@ -15,7 +15,7 @@ export type FileOutputs = {
  */
 export const JOIN_DEPTH = 2 as const;
 
-export enum Types {
+export enum SqlType {
         BIT = 'BIT',
         DATE = 'DATE',
         CHAR = 'CHARACTER',
@@ -40,135 +40,134 @@ export const MAX_SEARCH_NESTED_COUNT = 100 as const;
 export const SQL_TABLE_ATTRIBUTES: {
         [x: string]: RegExp;
 } = {
-        [Types.BIT]: /^\s{2,8}- bit [a-zA-Z_]{2,16}/,
-        [Types.DECIMAL]: /^\s{2,8}- (d|dec|decimal) [a-zA-Z_]{2,16}/,
-        [Types.DATE]: /^\s{2,8}- (dt|date) [a-zA-Z_]{2,16}/,
-        [Types.CHAR]: /^\s{2,8}- (c|char|character) [a-zA-Z_]{2,16}/,
-        [Types.TIME]: /^\s{2,8}- (t|time) [a-zA-Z_]{2,16}/,
-        [Types.TIMESTAMP]: /^\s{2,8}- (ts|timestamp) [a-zA-Z_]{2,16}/,
-        [Types.FLOAT]: /^\s{2,8}- (f|float) [a-zA-Z_]{2,16}/,
-        [Types.REAL]: /^\s{2,8}- (r|real) [a-zA-Z_]{2,16}/,
-        [Types.INT]: /^\s{2,8}- (i|int|integer) [a-zA-Z_]{2,16}/,
-        [Types.BOOLEAN]: /^\s{2,8}- (b|boolean|bool) [a-zA-Z_]{2,16}/,
-        [Types.xs]: /^\s{2,8}- xs [a-zA-Z_]{2,16}/,
-        [Types.s]: /^\s{2,8}- s [a-zA-Z_]{2,16}/,
-        [Types.m]: /^\s{2,8}- m [a-zA-Z_]{2,16}/,
-        [Types.l]: /^\s{2,8}- l [a-zA-Z_]{2,16}/,
-        [Types.xl]: /^\s{2,8}- xl [a-zA-Z_]{2,16}/,
-        [Types.xxl]: /^\s{2,8}- xxl [a-zA-Z_]{2,16}/,
+        [SqlType.BIT]: /^\s{2,8}- bit [a-zA-Z_]{2,16}/,
+        [SqlType.DECIMAL]: /^\s{2,8}- (d|dec|decimal) [a-zA-Z_]{2,16}/,
+        [SqlType.DATE]: /^\s{2,8}- (dt|date) [a-zA-Z_]{2,16}/,
+        [SqlType.CHAR]: /^\s{2,8}- (c|char|character) [a-zA-Z_]{2,16}/,
+        [SqlType.TIME]: /^\s{2,8}- (t|time) [a-zA-Z_]{2,16}/,
+        [SqlType.TIMESTAMP]: /^\s{2,8}- (ts|timestamp) [a-zA-Z_]{2,16}/,
+        [SqlType.FLOAT]: /^\s{2,8}- (f|float) [a-zA-Z_]{2,16}/,
+        [SqlType.REAL]: /^\s{2,8}- (r|real) [a-zA-Z_]{2,16}/,
+        [SqlType.INT]: /^\s{2,8}- (i|int|integer) [a-zA-Z_]{2,16}/,
+        [SqlType.BOOLEAN]: /^\s{2,8}- (b|boolean|bool) [a-zA-Z_]{2,16}/,
+        [SqlType.xs]: /^\s{2,8}- xs [a-zA-Z_]{2,16}/,
+        [SqlType.s]: /^\s{2,8}- s [a-zA-Z_]{2,16}/,
+        [SqlType.m]: /^\s{2,8}- m [a-zA-Z_]{2,16}/,
+        [SqlType.l]: /^\s{2,8}- l [a-zA-Z_]{2,16}/,
+        [SqlType.xl]: /^\s{2,8}- xl [a-zA-Z_]{2,16}/,
+        [SqlType.xxl]: /^\s{2,8}- xxl [a-zA-Z_]{2,16}/,
         REFERENCE: /^\s{2,8}- \^ [a-zA-Z_]{2,16}/, // . & | SEARCHED FOR LATER
 };
 
 export const SQL_TO_TS_TYPE = {
-        [Types.BIT]: 'boolean',
-        [Types.DATE]: 'Date',
-        [Types.CHAR]: 'string',
-        [Types.TIME]: 'Date',
-        [Types.TIMESTAMP]: 'Date',
-        [Types.SERIAL]: 'number',
-        [Types.DECIMAL]: 'number',
-        [Types.FLOAT]: 'number',
-        [Types.REAL]: 'number',
-        [Types.INT]: 'number',
-        [Types.BOOLEAN]: 'boolean',
-        [Types.xs]: 'string',
-        [Types.s]: 'string',
-        [Types.m]: 'string',
-        [Types.l]: 'string',
-        [Types.xl]: 'string',
-        [Types.xxl]: 'string',
+        [SqlType.BIT]: 'boolean',
+        [SqlType.DATE]: 'Date',
+        [SqlType.CHAR]: 'string',
+        [SqlType.TIME]: 'Date',
+        [SqlType.TIMESTAMP]: 'Date',
+        [SqlType.SERIAL]: 'number',
+        [SqlType.DECIMAL]: 'number',
+        [SqlType.FLOAT]: 'number',
+        [SqlType.REAL]: 'number',
+        [SqlType.INT]: 'number',
+        [SqlType.BOOLEAN]: 'boolean',
+        [SqlType.xs]: 'string',
+        [SqlType.s]: 'string',
+        [SqlType.m]: 'string',
+        [SqlType.l]: 'string',
+        [SqlType.xl]: 'string',
+        [SqlType.xxl]: 'string',
 };
 
-export const REPLACE_PHRASE = '#####';
-export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: string }> = {
-        [Types.BIT]: {
+export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x: string) => string }> = {
+        [SqlType.BIT]: {
                 goType: 'bool',
-                parseFunction: `strconv.ParseBool(${REPLACE_PHRASE})`,
+                parseFunction: (x) => `strconv.ParseBool(${x})`,
         },
-        [Types.DATE]: {
+        [SqlType.DATE]: {
                 goType: 'time.Time',
-                parseFunction: `time.Parse("2006-01-02", ${REPLACE_PHRASE})`,
+                parseFunction: (x) => `time.Parse("2006-01-02", ${x})`,
         },
-        [Types.CHAR]: {
+        [SqlType.CHAR]: {
                 goType: 'string',
-                parseFunction: `${REPLACE_PHRASE}`,
+                parseFunction: (x) => `${x}`,
         },
-        [Types.TIME]: {
+        [SqlType.TIME]: {
                 goType: 'time.Time',
-                parseFunction: `time.Parse("15:04:05", ${REPLACE_PHRASE})`,
+                parseFunction: (x) => `time.Parse("15:04:05", ${x})`,
         },
-        [Types.TIMESTAMP]: {
+        [SqlType.TIMESTAMP]: {
                 goType: 'time.Time',
-                parseFunction: `time.Parse("2006-01-02 15:04:05", ${REPLACE_PHRASE})`,
+                parseFunction: (x) => `time.Parse("2006-01-02 15:04:05", ${x})`,
         },
-        [Types.SERIAL]: {
+        [SqlType.SERIAL]: {
                 goType: 'int',
-                parseFunction: `strconv.Atoi(${REPLACE_PHRASE})`,
+                parseFunction: (x) => `strconv.Atoi(${x})`,
         },
-        [Types.DECIMAL]: {
+        [SqlType.DECIMAL]: {
                 goType: 'float64',
-                parseFunction: `strconv.ParseFloat(${REPLACE_PHRASE})`,
+                parseFunction: (x) => `strconv.ParseFloat(${x})`,
         },
-        [Types.FLOAT]: {
+        [SqlType.FLOAT]: {
                 goType: 'float64',
-                parseFunction: `strconv.ParseFloat(${REPLACE_PHRASE})`,
+                parseFunction: (x) => `strconv.ParseFloat(${x})`,
         },
-        [Types.REAL]: {
+        [SqlType.REAL]: {
                 goType: 'float64',
-                parseFunction: `strconv.ParseFloat(${REPLACE_PHRASE})`,
+                parseFunction: (x) => `strconv.ParseFloat(${x})`,
         },
-        [Types.INT]: {
+        [SqlType.INT]: {
                 goType: 'int',
-                parseFunction: `strconv.Atoi(${REPLACE_PHRASE})`,
+                parseFunction: (x) => `strconv.Atoi(${x})`,
         },
-        [Types.BOOLEAN]: {
+        [SqlType.BOOLEAN]: {
                 goType: 'bool',
-                parseFunction: `strconv.ParseBool(${REPLACE_PHRASE})`,
+                parseFunction: (x) => `strconv.ParseBool(${x})`,
         },
-        [Types.xs]: {
+        [SqlType.xs]: {
                 goType: 'string',
-                parseFunction: `${REPLACE_PHRASE}`,
+                parseFunction: (x) => `${x}`,
         },
-        [Types.s]: {
+        [SqlType.s]: {
                 goType: 'string',
-                parseFunction: `${REPLACE_PHRASE}`,
+                parseFunction: (x) => `${x}`,
         },
-        [Types.m]: {
+        [SqlType.m]: {
                 goType: 'string',
-                parseFunction: `${REPLACE_PHRASE}`,
+                parseFunction: (x) => `${x}`,
         },
-        [Types.l]: {
+        [SqlType.l]: {
                 goType: 'string',
-                parseFunction: `${REPLACE_PHRASE}`,
+                parseFunction: (x) => `${x}`,
         },
-        [Types.xl]: {
+        [SqlType.xl]: {
                 goType: 'string',
-                parseFunction: `${REPLACE_PHRASE}`,
+                parseFunction: (x) => `${x}`,
         },
-        [Types.xxl]: {
+        [SqlType.xxl]: {
                 goType: 'string',
-                parseFunction: `${REPLACE_PHRASE}`,
+                parseFunction: (x) => `${x}`,
         },
 };
 
 export const SQL_TO_HTML_INPUT_TYPE = {
-        [Types.BIT]: 'checkbox',
-        [Types.DATE]: 'date',
-        [Types.CHAR]: 'text',
-        [Types.TIME]: 'time',
-        [Types.TIMESTAMP]: 'datetime-local',
-        [Types.SERIAL]: 'number',
-        [Types.DECIMAL]: 'number',
-        [Types.FLOAT]: 'number',
-        [Types.REAL]: 'number',
-        [Types.INT]: 'number',
-        [Types.BOOLEAN]: 'checkbox',
-        [Types.xs]: 'text',
-        [Types.s]: 'text',
-        [Types.m]: 'text',
-        [Types.l]: 'text',
-        [Types.xl]: 'text',
-        [Types.xxl]: 'text',
+        [SqlType.BIT]: 'checkbox',
+        [SqlType.DATE]: 'date',
+        [SqlType.CHAR]: 'text',
+        [SqlType.TIME]: 'time',
+        [SqlType.TIMESTAMP]: 'datetime-local',
+        [SqlType.SERIAL]: 'number',
+        [SqlType.DECIMAL]: 'number',
+        [SqlType.FLOAT]: 'number',
+        [SqlType.REAL]: 'number',
+        [SqlType.INT]: 'number',
+        [SqlType.BOOLEAN]: 'checkbox',
+        [SqlType.xs]: 'text',
+        [SqlType.s]: 'text',
+        [SqlType.m]: 'text',
+        [SqlType.l]: 'text',
+        [SqlType.xl]: 'text',
+        [SqlType.xxl]: 'text',
 };
 
 export const ATTRIBUTE_OPTION: {
@@ -217,9 +216,7 @@ export type LeftRightJoinInfo = {
         };
 };
 
-export class CodeLogicField {
-        primary: boolean = false;
-
+export class EndpointParam {
         typescript: {
                 name: string;
                 type: string;
@@ -228,9 +225,14 @@ export class CodeLogicField {
                 varName: string;
                 typeName: string;
                 typeType: string;
-                parser: string;
+                parser: (x: string) => string;
         };
         sql: {
+                name: string;
+                type: string;
+                sqlLocation: SqlLocation;
+        };
+        json: {
                 name: string;
                 type: string;
         };
@@ -239,12 +241,9 @@ export class CodeLogicField {
                 type: string;
         };
 
-        sqlLocation: SqlLocation;
-
         readOnly: boolean = false;
 
-        constructor(type: Types, name: string, sqlLocation: SqlLocation, readOnly: boolean) {
-                this.sqlLocation = sqlLocation;
+        constructor(type: SqlType, name: string, sqlLocation: SqlLocation, readOnly: boolean) {
                 this.readOnly = readOnly;
 
                 this.typescript = {
@@ -257,9 +256,14 @@ export class CodeLogicField {
                         typeType: SQL_TO_GO_TYPE[type].goType,
                         parser: SQL_TO_GO_TYPE[type].parseFunction,
                 };
+                this.json = {
+                        name: name,
+                        type: type,
+                };
                 this.sql = {
                         name: name,
                         type: type,
+                        sqlLocation: sqlLocation,
                 };
                 this.html = {
                         name: SnakeToTitle(name),
@@ -268,12 +272,7 @@ export class CodeLogicField {
         }
 }
 
-export enum SQL_INPUT_DISTINCTION {
-        Normal,
-        InOut,
-}
-
-export class JoinedCodePreLogic {
+export class JoinedCodePreEndpoint {
         readTableAs: string | null;
         readAttributeAs: string | null;
         attr: SqlTableAttribute;
@@ -285,17 +284,47 @@ export class JoinedCodePreLogic {
         }
 }
 
-export class CodeLogic {
-        name: string;
+export enum HttpMethod {
+        GET = 'get',
+        POST = 'post',
+        PUT = 'put',
+        DELETE = 'delete',
+}
+
+export class Endpoint {
+        method: HttpMethod;
         /**
          * if something can be used as select options, ad a drop down list so to speak
          */
-        is_options: boolean = false;
-        inputs: CodeLogicField[] = [];
-        outputs: CodeLogicField[] = [];
+        isOptions: boolean = false;
+        many: boolean = false;
         sqlTableName: string;
         sqlSchemaName: string;
 
+        sql: {
+                inout: EndpointParam[];
+                inputs: EndpointParam[];
+                outputs: EndpointParam[];
+                name: string;
+        } = {
+                inout: [],
+                inputs: [],
+                outputs: [],
+                name: '',
+        };
+        http: {
+                query: EndpointParam[];
+                path: EndpointParam[];
+                bodyIn: EndpointParam[];
+                bodyOut: EndpointParam[];
+                name: string;
+        } = {
+                query: [],
+                path: [],
+                bodyIn: [],
+                bodyOut: [],
+                name: '',
+        };
         typescript: {
                 fnName: string;
                 input: {
@@ -329,21 +358,27 @@ export class CodeLogic {
                 };
         };
 
-        constructor(name: string, table: SqlTable) {
-                this.name = name;
+        constructor(method: HttpMethod, name: string, table: SqlTable, returnMany: boolean) {
+                this.http.name = name;
+                this.sql.name = `${method.toLowerCase()}_${name}`;
+                if (returnMany) {
+                        this.sql.name += 's';
+                }
+                this.method = method;
+                this.many = returnMany;
                 const tableL = table.label;
                 this.sqlTableName = table.fullName;
                 this.sqlSchemaName = table.parentSchema.name;
 
                 this.typescript = {
-                        fnName: SnakeToCamel(name),
+                        fnName: SnakeToCamel(this.sql.name),
                         input: {
-                                name: SnakeToCamel(`input_${name}`),
-                                type: SnakeToCamel(`input_${name}`),
+                                name: SnakeToCamel(`${name}`),
+                                type: SnakeToCamel(`${name}`),
                         },
                         output: {
-                                name: SnakeToCamel(`output_${name}`),
-                                type: SnakeToCamel(`output_${name}`),
+                                name: SnakeToCamel(`${name}`),
+                                type: SnakeToCamel(`${name}`),
                         },
                         real: {
                                 name: SnakeToCamel(tableL),
@@ -351,16 +386,16 @@ export class CodeLogic {
                         },
                 };
                 this.go = {
-                        fnName: SnakeToPascal(name),
+                        fnName: SnakeToPascal(this.sql.name),
                         input: {
-                                varName: SnakeToCamel(`input_${name}`),
-                                typeName: SnakeToPascal(`input_${name}`),
-                                typeType: SnakeToPascal(`input_${name}`),
+                                varName: SnakeToCamel(`${name}`),
+                                typeName: SnakeToPascal(`${name}`),
+                                typeType: SnakeToPascal(`${name}`),
                         },
                         output: {
-                                varName: SnakeToCamel(`output_${name}`),
-                                typeName: SnakeToPascal(`output_${name}`),
-                                typeType: SnakeToPascal(`output_${name}`),
+                                varName: SnakeToCamel(`${name}`),
+                                typeName: SnakeToPascal(`${name}`),
+                                typeType: SnakeToPascal(`${name}`),
                         },
                         real: {
                                 name: SnakeToKebab(tableL),
@@ -369,35 +404,17 @@ export class CodeLogic {
                 };
         }
 
-        sqlInputs(distinction: SQL_INPUT_DISTINCTION) {
-                switch (distinction) {
-                        case SQL_INPUT_DISTINCTION.InOut:
-                                return this.inputs
-                                        .filter((e) => e.primary)
-                                        .map((e) => `INOUT ${e.sql.name} ${e.sql.type}`)
-                                        .join(',\n    ');
-                        case SQL_INPUT_DISTINCTION.Normal:
-                                return this.inputs
-                                        .filter((e) => !e.primary)
-                                        .map((e) => `${e.sql.type} ${e.sql.name}`)
-                                        .join(',\n    ');
-                        default:
-                                console.error(new Error('Unknown inputs distinction'));
-                                return [];
-                }
-        }
-
         sqlOutputs() {
-                return this.outputs.map((e) => e.sql.name).join(',\n    ');
+                return this.sql.outputs.map((e) => e.sql.name).join(',\n    ');
         }
 }
 
-export class TableLogic {
-        existsAs: CodeLogicField[] = [];
-        create: CodeLogic[] | null = null;
-        read: CodeLogic[] | null = null;
-        update: CodeLogic[] | null = null;
-        delete: CodeLogic[] | null = null;
+export class EntityEndpoints {
+        existsAs: EndpointParam[] = [];
+        create: Endpoint[] | null = null;
+        read: Endpoint[] | null = null;
+        update: Endpoint[] | null = null;
+        delete: Endpoint[] | null = null;
 
         constructor() {}
 }
@@ -467,13 +484,13 @@ export class SqlTableAttribute {
         value: string = '';
         schemaName: string = '';
         shortHandType: string = '';
-        sqlType: Types;
+        sqlType: SqlType;
         defaultValue?: string | null = null;
         options = new Set<string>();
         referenceTo: SqlReferenceTo | null = null;
         parentTable: SqlTable;
 
-        constructor(parent: SqlTable, type: Types) {
+        constructor(parent: SqlTable, type: SqlType) {
                 this.id = Math.random();
                 this.parentTable = parent;
                 this.sqlType = type;
@@ -505,7 +522,7 @@ export class SqlTableAttribute {
                 return this.options.has('?');
         }
         isModifiable(): boolean {
-                let isSerial = this.sqlType === Types.SERIAL;
+                let isSerial = this.sqlType === SqlType.SERIAL;
                 return (
                         // !this.isPrimaryKey() ||
                         !isSerial || (isSerial && this.isForeignKey())
@@ -522,7 +539,7 @@ export class SqlTable {
                 [x: string]: SqlTableAttribute;
         } = {};
 
-        logic: TableLogic = {
+        entityEndpoints: EntityEndpoints = {
                 existsAs: [],
                 create: null,
                 read: null,
@@ -642,8 +659,8 @@ export class SqlTable {
                 return keys;
         }
 
-        generateEmptyLogic(): void {
-                let answer = new TableLogic();
+        generateEmptyEndpoint(): void {
+                let answer = new EntityEndpoints();
 
                 let hasCreate = this.options.map((option) => /[C][rR][uU][dD]/.test(option)).includes(true);
                 let hasRead = this.options.map((option) => /[cC][R][uU][dD]/.test(option)).includes(true);
@@ -657,7 +674,7 @@ export class SqlTable {
 
                 for (const attr of Object.values(this.attributes)) {
                         answer.existsAs.push(
-                                new CodeLogicField(
+                                new EndpointParam(
                                         attr.sqlType,
                                         attr.value,
                                         new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value),
@@ -666,133 +683,86 @@ export class SqlTable {
                         );
                 }
 
-                this.logic = answer;
+                this.entityEndpoints = answer;
         }
 
-        fillInEmptyLogic() {
-                let {
-                        primaryAttrs,
-                        parameterKeys,
-                        parameterPrimaryKeys,
-                        returnedKeys,
-                }: {
-                        primaryAttrs: { [x: string]: SqlTableAttribute };
-                        parameterKeys: CodeLogicField[];
-                        parameterPrimaryKeys: CodeLogicField[];
-                        returnedKeys: CodeLogicField[];
-                } = this.GenerateCommonLogicFields();
-
-                if (this.logic.create) {
-                        let createLogic = this.GenerateCreateLogic(primaryAttrs, parameterKeys);
-                        this.logic.create.push(createLogic);
-                }
-                if (this.logic.read) {
-                        let readSingleLogic = this.GenerateReadSingleLogic(parameterPrimaryKeys, returnedKeys);
-                        this.logic.read.push(readSingleLogic);
-
-                        let readDropdownLogic = this.GenerateReadOptionsLogic();
-                        if (readDropdownLogic) {
-                                this.logic.read.push(readDropdownLogic);
-                        }
-
-                        // let readJoinedLogic = this.GenerateReadJoinedLogic(parameterPrimaryKeys);
-                        // if (readJoinedLogic) {
-                        // this.logic.read.push(readJoinedLogic);
-                        // }
-                }
-                if (this.logic.update) {
-                        let updateLogic = this.GenerateUpdateLogic(parameterPrimaryKeys, parameterKeys);
-                        if (updateLogic) {
-                                this.logic.update.push(updateLogic);
-                        }
-                }
-                if (this.logic.delete) {
-                        let deleteLogic = this.GenerateDeleteLogic(parameterPrimaryKeys);
-                        this.logic.delete.push(deleteLogic);
-                }
-        }
-
-        private GenerateDeleteLogic(parameterPrimaryKeys: CodeLogicField[]): CodeLogic {
-                let name = `delete_${this.label}`;
-                let inputs: CodeLogicField[] = [];
-
-                let logic = new CodeLogic(name, this);
-                inputs = [...parameterPrimaryKeys];
-                logic.inputs = [...inputs];
-                return logic;
-        }
-
-        private GenerateUpdateLogic(parameterPrimaryKeys: CodeLogicField[], parameterKeys: CodeLogicField[]): CodeLogic | null {
-                let name = `update_${this.label}`;
-                let inputs: CodeLogicField[] = [];
-
-                let logic = new CodeLogic(name, this);
-
-                inputs = [...parameterPrimaryKeys, ...parameterKeys.filter((e) => !e.readOnly)];
-                // console.log('inputs :>> ', inputs);
-                // todo
-                logic.inputs = [...inputs];
-
-                if (logic.inputs.filter((e) => !e.primary).length === 0) {
-                        return null;
-                }
-
-                return logic;
-        }
-
-        private GenerateReadOptionsLogic(): CodeLogic | null {
-                let pks = this.primaryKeys();
-
-                // String keys are ordered in the order they were added
-                let pkList = Object.values(pks);
-
-                let readableLabels = ['name', 'label', 'value', 'code', 'tag', 'title'];
-                let simpleAttributeLabel = Object.values(this.attributes).find((x) => readableLabels.includes(x.value.toLowerCase()));
-                if (!simpleAttributeLabel) {
-                        return null;
-                }
-                if (pkList.map((e) => e.id).includes(simpleAttributeLabel.id)) {
-                        return null;
-                }
-                let name = `read_options_${this.label}`;
-                let dropdownLogic = new CodeLogic(name, this);
-                dropdownLogic.is_options = true;
-                for (let i = 0; i < pkList.length; i++) {
-                        const pk = pkList[i];
-                        let outIdentifier = new CodeLogicField(
-                                pk.sqlType,
-                                `${PK_PARAM_TAG}${pk.value}`,
-                                new SqlLocation(this.parentSchema.name, this.label, pk.value),
-                                false
+        fillInEmptyEndpoint() {
+                let primaryInOutAttrs = Object.values(this.primaryKeys()).map((e) => {
+                        return new EndpointParam(
+                                e.sqlType,
+                                `${IN_OUT_PREFIX}${e.value}`,
+                                new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
+                                e.readOnly
                         );
-                        outIdentifier.primary = true;
-                        dropdownLogic.outputs.push(outIdentifier);
+                });
+                let primaryAttrs = Object.values(this.primaryKeys()).map((e) => {
+                        return new EndpointParam(
+                                e.sqlType,
+                                e.value,
+                                new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
+                                e.readOnly
+                        );
+                });
+                let allAttrs = Object.values(this.attributes).map((e) => {
+                        return new EndpointParam(
+                                e.sqlType,
+                                e.value,
+                                new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
+                                e.readOnly
+                        );
+                });
+                let nonPrimaryAttrs = Object.values(this.attributes)
+                        .filter((e) => !e.isPrimaryKey())
+                        .map((e) => {
+                                return new EndpointParam(
+                                        e.sqlType,
+                                        e.value,
+                                        new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
+                                        e.readOnly
+                                );
+                        });
+
+                if (this.entityEndpoints.create) {
+                        let o = new Endpoint(HttpMethod.POST, this.label, this, false);
+                        o.sql.inout = [...primaryInOutAttrs];
+                        o.sql.inputs = [...nonPrimaryAttrs];
+                        o.http.bodyIn = [...nonPrimaryAttrs];
+                        o.sql.outputs = [...primaryInOutAttrs];
+                        o.http.bodyOut = [...allAttrs];
+                        this.entityEndpoints.create.push(o);
                 }
+                if (this.entityEndpoints.read) {
+                        let readSingle = new Endpoint(HttpMethod.GET, this.label, this, false);
+                        readSingle.sql.inputs = [...primaryAttrs];
+                        readSingle.http.path = [...primaryAttrs];
+                        readSingle.sql.outputs = [...allAttrs];
+                        readSingle.http.bodyOut = [...allAttrs];
+                        this.entityEndpoints.read.push(readSingle);
 
-                let outLabel = new CodeLogicField(
-                        simpleAttributeLabel.sqlType,
-                        `${PK_PARAM_TAG}${simpleAttributeLabel.value}`,
-                        new SqlLocation(this.parentSchema.name, this.label, simpleAttributeLabel.value),
-                        false
-                );
-                dropdownLogic.inputs = [];
-                dropdownLogic.outputs.push(outLabel);
+                        let readOptions = new Endpoint(HttpMethod.GET, this.label, this, true);
+                        readOptions.sql.inputs = [];
+                        readOptions.http.path = [];
+                        readOptions.sql.outputs = [...allAttrs];
+                        readOptions.http.bodyOut = [...allAttrs];
+                        this.entityEndpoints.read.push(readOptions);
+                }
+                if (this.entityEndpoints.update) {
+                        let o = new Endpoint(HttpMethod.PUT, this.label, this, false);
+                        o.sql.inout = [...primaryInOutAttrs];
+                        o.sql.inputs = [...nonPrimaryAttrs];
+                        o.http.bodyIn = [...nonPrimaryAttrs];
+                        o.http.path = [...primaryAttrs];
 
-                return dropdownLogic;
-        }
-
-        private GenerateReadSingleLogic(parameterPrimaryKeys: CodeLogicField[], returnedKeys: CodeLogicField[]): CodeLogic {
-                let name = `read_single_${this.label}`;
-                let inputs: CodeLogicField[] = [];
-                let outputs: CodeLogicField[] = [];
-
-                inputs = [...parameterPrimaryKeys];
-                outputs = [...returnedKeys];
-
-                let logic = new CodeLogic(name, this);
-                logic.inputs = [...inputs];
-                logic.outputs = [...outputs];
-                return logic;
+                        o.sql.outputs = [];
+                        o.http.bodyOut = [];
+                        this.entityEndpoints.update.push(o);
+                }
+                if (this.entityEndpoints.delete) {
+                        let o = new Endpoint(HttpMethod.DELETE, this.label, this, false);
+                        o.sql.inputs = [...primaryAttrs];
+                        o.http.path = [...primaryAttrs];
+                        this.entityEndpoints.delete.push(o);
+                }
         }
 
         static ReadJoins(
@@ -860,11 +830,11 @@ export class SqlTable {
 
         // private static ReadAttributes(
         //         inputTable: SqlTable,
-        //         collection: Array<JoinedCodePreLogic> = [],
+        //         collection: Array<JoinedCodePreEndpoint> = [],
         //         i: number = 0,
         //         aliasInput: string | null = '',
         //         nestedCount: number = 0
-        // ): Array<JoinedCodePreLogic> | null {
+        // ): Array<JoinedCodePreEndpoint> | null {
         //         if (i > MAX_SEARCH_NESTED_COUNT) {
         //                 console.error('exceeded max loop count on getting attribute and its referenced attributes');
         //                 return null;
@@ -887,8 +857,8 @@ export class SqlTable {
         //                 let tableSlicedName = typicalAttr.parentTable.label.slice(0, 3);
         //                 readTableAs = `${tableSlicedName}_${i}`;
 
-        //                 let joinedCodePreLogic = new JoinedCodePreLogic(readAttributeAs, readTableAs, typicalAttr);
-        //                 collection.push(joinedCodePreLogic);
+        //                 let joinedCodePreEndpoint = new JoinedCodePreEndpoint(readAttributeAs, readTableAs, typicalAttr);
+        //                 collection.push(joinedCodePreEndpoint);
         //         }
 
         //         for (const [table, attrs] of inputTable.uniqueFkGroups()) {
@@ -918,12 +888,12 @@ export class SqlTable {
         //         return collection;
         // }
 
-        // private GenerateReadJoinedLogic(parameterPrimaryKeys: CodeLogicField[]): CodeLogic | null {
+        // private GenerateReadJoinedEndpoint(parameterPrimaryKeys: CodeEndpointField[]): CodeEndpoint | null {
         //         let name = `read_joined_${this.label}`;
-        //         let logic = new CodeLogic(name, this);
+        //         let endpoint = new CodeEndpoint(name, this);
 
-        //         let inputs: CodeLogicField[] = [];
-        //         let outputs: CodeLogicField[] = [];
+        //         let inputs: CodeEndpointField[] = [];
+        //         let outputs: CodeEndpointField[] = [];
 
         //         inputs = [...parameterPrimaryKeys];
 
@@ -943,100 +913,15 @@ export class SqlTable {
         //                         sqlLocation.tableAliasedAs = attrRead.readTableAs;
         //                 }
 
-        //                 let codeLogic = new CodeLogicField(attr.sqlType, `${PARAM_PREFIX}${attr.value}`, sqlLocation, attr.readOnly);
-        //                 outputs.push(codeLogic);
+        //                 let codeEndpoint = new CodeEndpointField(attr.sqlType, `${PARAM_PREFIX}${attr.value}`, sqlLocation, attr.readOnly);
+        //                 outputs.push(codeEndpoint);
         //         }
 
-        //         logic.inputs = [...inputs];
-        //         logic.outputs = [...outputs];
+        //         endpoint.inputs = [...inputs];
+        //         endpoint.outputs = [...outputs];
 
-        //         return logic;
+        //         return endpoint;
         // }
-
-        private GenerateCreateLogic(primaryAttrs: { [x: string]: SqlTableAttribute }, parameterKeys: CodeLogicField[]): CodeLogic {
-                let name = `create_${this.label}`;
-                let inputs: CodeLogicField[] = [];
-                let outputs: CodeLogicField[] = [];
-
-                let inOuts: Array<CodeLogicField> = [];
-                for (const attributeName in primaryAttrs) {
-                        if (!Object.prototype.hasOwnProperty.call(primaryAttrs, attributeName)) {
-                                continue;
-                        }
-                        const primaryKey = primaryAttrs[attributeName];
-                        let pk = new CodeLogicField(
-                                primaryKey.sqlType,
-                                `${IN_OUT_PREFIX}${primaryKey.value}`,
-                                new SqlLocation(this.parentSchema.name, this.label, primaryKey.value),
-                                primaryKey.readOnly
-                        );
-                        pk.primary = true;
-                        inOuts.push(pk);
-                }
-
-                inputs = [...inOuts, ...parameterKeys];
-                outputs = [...inOuts];
-
-                let logic = new CodeLogic(name, this);
-                logic.inputs = [...inputs];
-                logic.outputs = [...outputs];
-                return logic;
-        }
-
-        private GenerateCommonLogicFields() {
-                let parameterPrimaryKeys: CodeLogicField[] = [];
-                let parameterKeys: CodeLogicField[] = [];
-                let returnedKeys: CodeLogicField[] = [];
-
-                let primaryAttrs = this.primaryKeys();
-
-                for (const attributeName in primaryAttrs) {
-                        if (!Object.prototype.hasOwnProperty.call(primaryAttrs, attributeName)) {
-                                continue;
-                        }
-                        const primaryKey = primaryAttrs[attributeName];
-                        let pk = new CodeLogicField(
-                                primaryKey.sqlType,
-                                `${PK_PARAM_TAG}${primaryKey.value}`,
-                                new SqlLocation(this.parentSchema.name, this.label, primaryKey.value),
-                                primaryKey.readOnly
-                        );
-                        pk.primary = true;
-                        parameterPrimaryKeys.push(pk);
-                }
-
-                let modifiableAttrs = this.getModifiableAttributes();
-                for (const attributeName in modifiableAttrs) {
-                        if (!Object.prototype.hasOwnProperty.call(modifiableAttrs, attributeName)) {
-                                continue;
-                        }
-                        const attr = modifiableAttrs[attributeName];
-                        if (!attr.sqlType) {
-                                continue;
-                        }
-                        let param = new CodeLogicField(
-                                attr.sqlType,
-                                `${PARAM_PREFIX}${attr.value}`,
-                                new SqlLocation(this.parentSchema.name, this.label, attr.value),
-                                attr.readOnly
-                        );
-                        parameterKeys.push(param);
-                        let returned = new CodeLogicField(
-                                attr.sqlType,
-                                `${PARAM_PREFIX}${attr.value}`,
-                                new SqlLocation(this.parentSchema.name, this.label, attr.value),
-                                attr.readOnly
-                        );
-                        returnedKeys.push(returned);
-                }
-
-                return {
-                        primaryAttrs,
-                        parameterKeys,
-                        parameterPrimaryKeys,
-                        returnedKeys,
-                };
-        }
 
         hasPrimaryKey(): boolean {
                 return Object.keys(this.primaryKeys()).length > 0;

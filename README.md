@@ -71,12 +71,12 @@ Here are some general features of the application. The [syntax guide](#syntax-gu
 
 `- identifier [...FLAG]`
 
-| Category | Symbol                | Description                                                                           | Example         |
-| -------- | --------------------- | ------------------------------------------------------------------------------------- | --------------- |
-|          | `-`                   | creates an entity                                                                     | `- dragon`      |
-| flag     | `+`                   | auto generate a id                                                                    | `- dragon +`    |
-| flag     | `@`                   | auto generate a creation timestamp                                                    | `- dragon @`    |
-| flag     | `crud` various casing | generates logic for capitalized letters. C = Create, R = Read, U = Update, D = Delete | `- dragon cRud` |
+| Category | Symbol                | Description                                                                              | Example         |
+| -------- | --------------------- | ---------------------------------------------------------------------------------------- | --------------- |
+|          | `-`                   | creates an entity                                                                        | `- dragon`      |
+| flag     | `+`                   | auto generate a id                                                                       | `- dragon +`    |
+| flag     | `@`                   | auto generate a creation timestamp                                                       | `- dragon @`    |
+| flag     | `crud` various casing | generates endpoint for capitalized letters. C = Create, R = Read, U = Update, D = Delete | `- dragon cRud` |
 
 ### Columns / Attributes
 

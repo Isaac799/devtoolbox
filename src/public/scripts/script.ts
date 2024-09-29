@@ -270,8 +270,8 @@ let fileOutputs: FileOutputs = {};
 let selectedFileOutputs: string = '';
 
 const APP_ITEMS = [
-        new AppItem('Postgres', new SqlGenerator()),
         new AppItem('Go Api', new GoApiCodeGenerator()),
+        new AppItem('Postgres', new SqlGenerator()),
         new AppItem('Node JS', new NodeExpressCodeGenerator()),
         new AppItem('HTML forms', new HtmlCodeGenerator()),
         // new AppItem('Go structs', new GoTypesCodeGenerator()),

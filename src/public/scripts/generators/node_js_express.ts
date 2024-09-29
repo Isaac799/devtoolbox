@@ -1,15 +1,15 @@
 import { trimAndRemoveBlankStrings } from '../core/formatting';
-import { CodeGenerator, CodeLogic } from '../core/structure';
+import { CodeGenerator, Endpoint } from '../core/structure';
 import { TsTypesCodeGenerator } from './ts_types';
 
 function ConvertNameToEndpoint(value: string) {
         return value.replace(/read_|create_|update_|delete_/g, '').replace(/_/g, '-');
 }
 
-function CreateQueryParams2(where: string, logic: CodeLogic) {
+function CreateQueryParams2(where: string, endpoint: Endpoint) {
         let fields: string[] = [];
-        for (let i = 0; i < logic.inputs.length; i++) {
-                const element = logic.inputs[i];
+        for (let i = 0; i < endpoint.http.path.length; i++) {
+                const element = endpoint.http.path[i];
                 fields.push(`req.${where}.${element.typescript.name}`);
         }
         let fieldsStr = fields.join(', ');
@@ -17,20 +17,20 @@ function CreateQueryParams2(where: string, logic: CodeLogic) {
         return input;
 }
 
-function CreateQueryParams(logic: CodeLogic) {
+function CreateQueryParams(endpoint: Endpoint) {
         let placeholders: string[] = [];
-        for (let i = 0; i < logic.inputs.length; i++) {
-                // const element = logic.inputs[i];
+        for (let i = 0; i < endpoint.http.path.length; i++) {
+                // const element = endpoint.inputs[i];
                 placeholders.push(`$${i + 1}`);
         }
         let placeholderStr = placeholders.join(', ');
         let input = `(${placeholderStr})`;
         return input;
 }
-function CreatePreCheckParams(where: string, logic: CodeLogic) {
+function CreatePreCheckParams(where: string, endpoint: Endpoint) {
         let placeholders: string[] = [];
-        for (let i = 0; i < logic.inputs.length; i++) {
-                const element = logic.inputs[i];
+        for (let i = 0; i < endpoint.http.path.length; i++) {
+                const element = endpoint.http.path[i];
                 placeholders.push(`Needs("${element.typescript.name}", "${where}")`);
         }
         let placeholderStr = placeholders.join(',\n    ');
@@ -85,33 +85,33 @@ function Needs(key, where) {
                                 }
                                 const table = schema.tables[tableName];
 
-                                if (table.logic.create !== null) {
-                                        for (let m = 0; m < table.logic.create.length; m++) {
-                                                const create = table.logic.create[m];
+                                if (table.entityEndpoints.create !== null) {
+                                        for (let m = 0; m < table.entityEndpoints.create.length; m++) {
+                                                const create = table.entityEndpoints.create[m];
 
                                                 let str = NodeExpressCodeGenerator.GenerateCreateSnippet(create);
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.logic.read !== null) {
-                                        for (let m = 0; m < table.logic.read.length; m++) {
-                                                const read = table.logic.read[m];
+                                if (table.entityEndpoints.read !== null) {
+                                        for (let m = 0; m < table.entityEndpoints.read.length; m++) {
+                                                const read = table.entityEndpoints.read[m];
 
                                                 let str = NodeExpressCodeGenerator.GenerateReadSnippet(read);
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.logic.update !== null) {
-                                        for (let m = 0; m < table.logic.update.length; m++) {
-                                                const update = table.logic.update[m];
+                                if (table.entityEndpoints.update !== null) {
+                                        for (let m = 0; m < table.entityEndpoints.update.length; m++) {
+                                                const update = table.entityEndpoints.update[m];
 
                                                 let str = NodeExpressCodeGenerator.GenerateUpdateSnippet(update);
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.logic.delete !== null) {
-                                        for (let m = 0; m < table.logic.delete.length; m++) {
-                                                const del = table.logic.delete[m];
+                                if (table.entityEndpoints.delete !== null) {
+                                        for (let m = 0; m < table.entityEndpoints.delete.length; m++) {
+                                                const del = table.entityEndpoints.delete[m];
 
                                                 let str = NodeExpressCodeGenerator.GenerateDeleteSnippet(del);
                                                 allParts.push(str);
@@ -141,14 +141,14 @@ function Needs(key, where) {
                 return this;
         }
 
-        private static GenerateDeleteSnippet(del: CodeLogic) {
-                let endpoint = ConvertNameToEndpoint(del.name);
+        private static GenerateDeleteSnippet(del: Endpoint) {
+                let endpoint = ConvertNameToEndpoint(del.http.name);
                 let params = CreateQueryParams(del);
                 let where = 'body';
                 let str = `app.delete("/${endpoint}",
     ${CreatePreCheckParams(where, del)}, 
     (req, res) => {                                                     
-    let query = \`call ${del.name}${params}\`;                                                        
+    let query = \`call ${del.http.name}${params}\`;                                                        
     pool.query(query, ${CreateQueryParams2(where, del)})
         .then((postgresResponse) => {
             res.status(200).json(postgresResponse.rows);
@@ -164,20 +164,20 @@ function Needs(key, where) {
                 return str;
         }
 
-        private static GenerateReadSnippet(read: CodeLogic) {
-                let endpoint = ConvertNameToEndpoint(read.name);
+        private static GenerateReadSnippet(read: Endpoint) {
+                let endpoint = ConvertNameToEndpoint(read.http.name);
                 let params = CreateQueryParams(read);
                 let where = 'query';
 
                 let preCheckParams =
-                        read.inputs.length > 0
+                        read.http.path.length > 0
                                 ? `
 ${CreatePreCheckParams(where, read)},`
                                 : '';
 
                 let str = `app.get("/${endpoint}", ${preCheckParams}
 (req, res) => {                                                 
-let query = \`select * from ${read.name}${params}\`;                                                        
+let query = \`select * from ${read.http.name}${params}\`;                                                        
 pool.query(query, ${CreateQueryParams2(where, read)})
     .then((postgresResponse) => {
         res.status(200).json(postgresResponse.rows);
@@ -193,14 +193,14 @@ return;
                 return str;
         }
 
-        private static GenerateCreateSnippet(create: CodeLogic) {
-                let endpoint = ConvertNameToEndpoint(create.name);
+        private static GenerateCreateSnippet(create: Endpoint) {
+                let endpoint = ConvertNameToEndpoint(create.http.name);
                 let params = CreateQueryParams(create);
                 let where = 'body';
                 let str = `app.post("/${endpoint}",
 ${CreatePreCheckParams(where, create)}, 
 (req, res) => {
-let query = \`call ${create.name}${params}\`;                                                        
+let query = \`call ${create.http.name}${params}\`;                                                        
 pool.query(query, ${CreateQueryParams2(where, create)})
     .then((postgresResponse) => {
         res.status(200).json(postgresResponse.rows);
@@ -216,14 +216,14 @@ return;
                 return str;
         }
 
-        private static GenerateUpdateSnippet(update: CodeLogic) {
-                let endpoint = ConvertNameToEndpoint(update.name);
+        private static GenerateUpdateSnippet(update: Endpoint) {
+                let endpoint = ConvertNameToEndpoint(update.http.name);
                 let params = CreateQueryParams(update);
                 let where = 'body';
                 let str = `app.put("/${endpoint}",
     ${CreatePreCheckParams(where, update)}, 
     (req, res) => {                                                  
-    let query = \`call ${update.name}${params}\`;                                                        
+    let query = \`call ${update.http.name}${params}\`;                                                        
     pool.query(query, ${CreateQueryParams2(where, update)})
         .then((postgresResponse) => {
             res.status(200).json(postgresResponse.rows);

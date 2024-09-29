@@ -8,7 +8,7 @@ import {
         SqlTable,
         SqlTableAttribute,
         STATE_CHANGE_TRIGGERS,
-        Types,
+        SqlType,
         UNALIASED_SELF_REFERENCE_ALIAS,
 } from './structure';
 
@@ -157,7 +157,7 @@ export class InputParser {
                 return answer;
         }
 
-        GenerateLogic(schemas: { [x: string]: SqlSchema }) {
+        GenerateEndpoint(schemas: { [x: string]: SqlSchema }) {
                 for (const schemaName in schemas) {
                         if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
                                 continue;
@@ -170,17 +170,22 @@ export class InputParser {
                                 }
                                 const table = schema.tables[tableName];
 
-                                table.generateEmptyLogic();
+                                table.generateEmptyEndpoint();
 
                                 if (
                                         !table.hasPrimaryKey() &&
-                                        (table.logic.create !== null || table.logic.read !== null || table.logic.update !== null || table.logic.delete !== null)
+                                        (table.entityEndpoints.create !== null ||
+                                                table.entityEndpoints.read !== null ||
+                                                table.entityEndpoints.update !== null ||
+                                                table.entityEndpoints.delete !== null)
                                 ) {
-                                        this.SaveErrorMessage(`Cannot generate logic for '${table.parentSchema.name}.${table.label}' without a primary key.`);
+                                        this.SaveErrorMessage(
+                                                `Cannot generate endpoint for '${table.parentSchema.name}.${table.label}' without a primary key.`
+                                        );
                                 }
 
-                                table.fillInEmptyLogic();
-                                // sqlLogic.push( `\n--  -  cru)d operations for ${table.schemaName}.${table.label}\n`;
+                                table.fillInEmptyEndpoint();
+                                // sqlEndpoint.push( `\n--  -  cru)d operations for ${table.schemaName}.${table.label}\n`;
                         }
                 }
         }
@@ -188,7 +193,7 @@ export class InputParser {
         Run() {
                 let lines: Array<string> = this.input.split('\n').filter((e) => !!e);
                 let schemas = this.ProcessLines(lines);
-                this.GenerateLogic(schemas);
+                this.GenerateEndpoint(schemas);
                 this.output = schemas;
                 return this;
         }
@@ -225,7 +230,7 @@ export class InputParser {
                 return schema;
         }
 
-        ParseSqlAttribute(line: string, sqlType: Types, parentTable: SqlTable): SqlTableAttribute {
+        ParseSqlAttribute(line: string, sqlType: SqlType, parentTable: SqlTable): SqlTableAttribute {
                 let splitSqlAttribute: Array<string> = line.trim().split(' ');
                 // Because matching regex gets us this far re grantee items in these positions
                 let shortHandType = splitSqlAttribute[1];
@@ -319,7 +324,7 @@ export class InputParser {
                 newTable.options = options;
 
                 if (newTable.options.includes('@')) {
-                        let attr = new SqlTableAttribute(newTable, Types.TIMESTAMP);
+                        let attr = new SqlTableAttribute(newTable, SqlType.TIMESTAMP);
                         attr.shortHandType = 'ts';
                         attr.defaultValue = 'CURRENT_TIMESTAMP';
                         attr.value = 'record_created_on';
@@ -328,7 +333,7 @@ export class InputParser {
                         newTable.attributes[attr.value] = attr;
                 }
                 if (newTable.options.includes('+')) {
-                        let attr = new SqlTableAttribute(newTable, Types.SERIAL);
+                        let attr = new SqlTableAttribute(newTable, SqlType.SERIAL);
                         attr.shortHandType = 'i';
                         attr.defaultValue = undefined;
                         attr.value = 'id';
@@ -434,8 +439,8 @@ export class InputParser {
                         let type = key.sqlType;
 
                         // take the type and make a value based on referenced table
-                        if (type === Types.SERIAL) {
-                                type = Types.INT;
+                        if (type === SqlType.SERIAL) {
+                                type = SqlType.INT;
                         }
 
                         let newAttribute = new SqlTableAttribute(attr.parentTable, type);
@@ -520,7 +525,7 @@ export class InputParser {
                         if (!sqlTypeCheck.test(line)) {
                                 continue;
                         }
-                        let typicalAttribute = this.ParseSqlAttribute(line, sqlType as Types, table);
+                        let typicalAttribute = this.ParseSqlAttribute(line, sqlType as SqlType, table);
                         if (typicalAttribute.isForeignKey()) {
                                 let foreignAttributes = this.CreateReferenceAttributes(typicalAttribute, schemas);
                                 return foreignAttributes;

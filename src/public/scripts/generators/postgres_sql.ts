@@ -1,7 +1,7 @@
 import { alignKeyword, alignKeywords, replaceDoubleSpaces } from '../core/formatting';
-import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, Types, CodeLogic } from '../core/structure';
+import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, SqlType, Endpoint } from '../core/structure';
 
-const typeKeywords = Object.values(Types).map((e) => ` ${e}`);
+const typeKeywords = Object.values(SqlType).map((e) => ` ${e}`);
 
 export class SqlGenerator extends CodeGenerator {
         static JoinAnd(arr: string[]) {
@@ -35,50 +35,46 @@ export class SqlGenerator extends CodeGenerator {
                 return `    ${attrStr}`;
         }
 
-        GenerateSqlLogic(table: SqlTable): string {
-                let sqlLogic: string[] = [];
+        GenerateSqlEndpoint(table: SqlTable): string {
+                let sqlEndpoint: string[] = [];
 
-                if (!table.logic.create && !table.logic.read && !table.logic.update && !table.logic.delete) {
+                if (!table.entityEndpoints.create && !table.entityEndpoints.read && !table.entityEndpoints.update && !table.entityEndpoints.delete) {
                         return '';
                 }
 
-                sqlLogic.push(`\n\n-- crud operations for ${table.fullName}`);
+                sqlEndpoint.push(`\n\n-- crud operations for ${table.fullName}`);
 
-                this.GenerateCreateLogic(table, sqlLogic);
-                this.GenerateReadLogic(table, sqlLogic);
-                this.GenerateUpdateLogic(table, sqlLogic);
-                this.GenerateDeleteLogic(table, sqlLogic);
+                this.GenerateCreateEndpoint(table, sqlEndpoint);
+                this.GenerateReadEndpoint(table, sqlEndpoint);
+                this.GenerateUpdateEndpoint(table, sqlEndpoint);
+                this.GenerateDeleteEndpoint(table, sqlEndpoint);
 
-                return sqlLogic.join('\n\n');
+                return sqlEndpoint.join('\n\n');
         }
 
-        private GenerateDeleteLogic(table: SqlTable, sqlLogic: string[]) {
-                if (!table.logic.delete) {
+        private GenerateDeleteEndpoint(table: SqlTable, sqlEndpoint: string[]) {
+                if (!table.entityEndpoints.delete) {
                         return;
                 }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.logic.delete.length; i++) {
-                        const logic = table.logic.delete[i];
+                for (let i = 0; i < table.entityEndpoints.delete.length; i++) {
+                        const endpoint = table.entityEndpoints.delete[i];
 
-                        let where = SqlGenerator.JoinAnd(
-                                alignKeyword(
-                                        logic.inputs
-                                                .filter((e) => e.primary)
-                                                .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.sql.name}`),
-                                        '='
-                                )
+                        const primaryInputsEqualing = endpoint.sql.inputs.map(
+                                (e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`
                         );
+                        let where = SqlGenerator.JoinAnd(alignKeyword(primaryInputsEqualing, '='));
 
                         where = `\n    ${where}`;
 
                         const params = alignKeywords(
-                                logic.inputs.filter((e) => e.primary).map((e) => `${e.sql.name} ${e.sql.type}`),
+                                endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
                                 typeKeywords
                         ).join(',\n    ');
 
-                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${logic.name};
-CREATE PROCEDURE ${table.parentSchema.name}.${logic.name} (
+                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+CREATE PROCEDURE ${table.parentSchema.name}.${endpoint.sql.name} (
     ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
 DELETE FROM ${table.fullName}
@@ -88,37 +84,37 @@ $$;`;
                         code.push(procedure);
                 }
 
-                sqlLogic.push(code.join('\n\n'));
+                sqlEndpoint.push(code.join('\n\n'));
         }
 
-        private GenerateUpdateLogic(table: SqlTable, sqlLogic: string[]) {
-                if (!table.logic.update) {
+        private GenerateUpdateEndpoint(table: SqlTable, sqlEndpoint: string[]) {
+                if (!table.entityEndpoints.update) {
                         return;
                 }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.logic.update.length; i++) {
-                        const logic = table.logic.update[i];
-                        const whereEquals = logic.inputs
-                                .filter((e) => e.primary)
-                                .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.sql.name}`);
+                for (let i = 0; i < table.entityEndpoints.update.length; i++) {
+                        const endpoint = table.entityEndpoints.update[i];
+                        const whereEquals = endpoint.sql.inputs.map(
+                                (e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`
+                        );
                         const whereEqualsAligned = alignKeyword(whereEquals, '=');
                         let where = `\n    ${SqlGenerator.JoinAnd(whereEqualsAligned)}`;
                         where = `\n    ${where}`;
 
                         const params = alignKeywords(
-                                logic.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
+                                endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
                                 typeKeywords
                         ).join(',\n    ');
 
-                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${logic.name};
-CREATE PROCEDURE ${table.parentSchema.name}.${logic.name} ( 
+                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+CREATE PROCEDURE ${table.parentSchema.name}.${endpoint.sql.name} ( 
     ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
     UPDATE ${table.fullName} 
 SET 
     ${alignKeyword(
-            logic.inputs.map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${e.sql.name}`),
+            endpoint.sql.inputs.map((e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`),
             '='
     ).join(',\n    ')}
 WHERE ${where};
@@ -128,31 +124,31 @@ $$;`;
                         code.push(procedure);
                 }
 
-                sqlLogic.push(code.join('\n\n'));
+                sqlEndpoint.push(code.join('\n\n'));
         }
 
-        private GenerateReadLogic(table: SqlTable, sqlLogic: string[]) {
-                if (!table.logic.read) {
+        private GenerateReadEndpoint(table: SqlTable, sqlEndpoint: string[]) {
+                if (!table.entityEndpoints.read) {
                         return;
                 }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.logic.read.length; i++) {
-                        const logic = table.logic.read[i];
+                for (let i = 0; i < table.entityEndpoints.read.length; i++) {
+                        const endpoint = table.entityEndpoints.read[i];
 
-                        let inputs = logic.inputs.length
-                                ? `\n    ${alignKeywords(
-                                          logic.inputs.filter((e) => e.primary).map((e) => `${e.sql.name} ${e.sql.type}`),
-                                          typeKeywords
-                                  ).join(',\n    ')}\n`
-                                : ``;
+                        const inputStr = alignKeywords(
+                                endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
+                                typeKeywords
+                        ).join(',\n    ');
 
-                        const whereParts = logic.inputs.map((e) => {
+                        let inputs = endpoint.sql.inputs.length ? `\n    ${inputStr}\n` : ``;
+
+                        const whereParts = endpoint.sql.inputs.map((e) => {
                                 let answer = [];
-                                if (e.sqlLocation.tableAliasedAs) {
-                                        answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
+                                if (e.sql.sqlLocation.tableAliasedAs) {
+                                        answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
                                 } else {
-                                        answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
+                                        answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
                                 }
                                 answer.push('=');
                                 answer.push(e.sql.name);
@@ -163,7 +159,7 @@ $$;`;
                         let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
                         where = `\n    WHERE ${where}`;
 
-                        if (!logic.inputs.length) {
+                        if (!endpoint.sql.inputs.length) {
                                 where = '';
                         }
 
@@ -171,24 +167,24 @@ $$;`;
                         let tableName = '';
                         let joinStr = `\n    ${SqlGenerator.GenerateReadLeftJoinString(table)}`;
 
-                        if (logic.name.includes('join')) {
+                        if (endpoint.sql.name.includes('join')) {
                                 join = joinStr;
                                 tableName = `${table.fullName} ${table.label.slice(0, 3)}_0`;
                         } else {
                                 tableName = `${table.fullName}`;
                         }
 
-                        const paramsNeeded = logic.outputs.map((e) => {
+                        const paramsNeeded = endpoint.sql.outputs.map((e) => {
                                 let answer = [];
 
-                                if (e.sqlLocation.columnAliasedAs) {
-                                        if (e.sqlLocation.tableAliasedAs) {
-                                                answer.push(`${e.sqlLocation.tableAliasedAs}_${e.sqlLocation.columnAliasedAs}`);
+                                if (e.sql.sqlLocation.columnAliasedAs) {
+                                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
                                         } else {
                                                 answer.push();
                                         }
                                 } else {
-                                        answer.push(e.sqlLocation.column);
+                                        answer.push(e.sql.sqlLocation.column);
                                 }
 
                                 answer.push(e.sql.type);
@@ -196,24 +192,24 @@ $$;`;
                                 return answer.join(' ');
                         });
                         const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
-                        const selectsNeeded = logic.outputs.map((e) => {
+                        const selectsNeeded = endpoint.sql.outputs.map((e) => {
                                 let answer = [];
 
-                                if (e.sqlLocation.tableAliasedAs) {
-                                        answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
+                                if (e.sql.sqlLocation.tableAliasedAs) {
+                                        answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
                                 } else {
-                                        answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
+                                        answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
                                 }
-                                if (e.sqlLocation.columnAliasedAs) {
-                                        answer.push(`AS ${e.sqlLocation.tableAliasedAs}_${e.sqlLocation.columnAliasedAs}`);
+                                if (e.sql.sqlLocation.columnAliasedAs) {
+                                        answer.push(`AS ${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
                                 } else {
-                                        answer.push(e.sqlLocation.columnAliasedAs);
+                                        answer.push(e.sql.sqlLocation.columnAliasedAs);
                                 }
                                 return answer.join(' ');
                         });
                         const selecting = alignKeyword(selectsNeeded, ' AS ').join(',\n    ');
-                        let procedure = `DROP FUNCTION IF EXISTS ${table.parentSchema.name}.${logic.name};
-CREATE FUNCTION ${table.parentSchema.name}.${logic.name} (${inputs}) RETURNS TABLE ( 
+                        let procedure = `DROP FUNCTION IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+CREATE FUNCTION ${table.parentSchema.name}.${endpoint.sql.name} (${inputs}) RETURNS TABLE ( 
     ${params}        
 ) LANGUAGE plpgsql AS $$ BEGIN
 RETURN QUERY
@@ -225,7 +221,7 @@ $$;`;
                         code.push(procedure);
                 }
 
-                sqlLogic.push(code.join('\n\n'));
+                sqlEndpoint.push(code.join('\n\n'));
         }
 
         private static GenerateReadLeftJoinString(table: SqlTable): string {
@@ -258,31 +254,27 @@ $$;`;
                 return alignKeyword(allJoinParts, ' ON ').join('\n    ');
         }
 
-        private GenerateCreateLogic(table: SqlTable, sqlLogic: string[]) {
-                if (!table.logic.create) {
+        private GenerateCreateEndpoint(table: SqlTable, sqlEndpoint: string[]) {
+                if (!table.entityEndpoints.create) {
                         return;
                 }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.logic.create.length; i++) {
-                        const logic = table.logic.create[i];
-                        const paramsNeeded = logic.inputs
-                                .filter((e) => e.primary)
+                for (let i = 0; i < table.entityEndpoints.create.length; i++) {
+                        const endpoint = table.entityEndpoints.create[i];
+                        const paramsNeeded = endpoint.sql.inout
                                 .map((e) => `INOUT ${e.sql.name} ${e.sql.type}`)
-                                .concat(logic.inputs.filter((e) => !e.primary).map((e) => `${e.sql.name} ${e.sql.type}`));
+                                .concat(endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`));
                         const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
-                        const into = logic.inputs
-                                .filter((e) => !e.primary)
-                                .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`)
+                        const into = endpoint.sql.inputs
+                                .map((e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`)
                                 .join(',\n    ');
-                        const values = logic.inputs
-                                .filter((e) => !e.primary)
-                                .map((e) => `${e.sql.name}`)
-                                .join(',\n    ');
-                        const returning = logic.outputs.map((e) => `${e.sqlLocation.column}`) + ' INTO ' + logic.outputs.map((e) => `${e.sql.name}`);
+                        const values = endpoint.sql.inputs.map((e) => `${e.sql.name}`).join(',\n    ');
+                        const returning =
+                                endpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`) + ' INTO ' + endpoint.sql.outputs.map((e) => `${e.sql.name}`);
 
-                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${logic.name};
-CREATE PROCEDURE ${table.parentSchema.name}.${logic.name} ( 
+                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+CREATE PROCEDURE ${table.parentSchema.name}.${endpoint.sql.name} ( 
     ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
 INSERT INTO ${table.fullName} (
@@ -299,12 +291,12 @@ $$;`;
                         code.push(procedure);
                 }
 
-                sqlLogic.push(code.join('\n\n'));
+                sqlEndpoint.push(code.join('\n\n'));
         }
 
         ProcessSchema(schema: SqlSchema) {
                 let tableSql = '';
-                let logicSql = '';
+                let endpointSql = '';
 
                 let tables = schema.tables;
 
@@ -351,11 +343,11 @@ $$;`;
 
                         tableSql += `${createTable}\n`;
 
-                        logicSql += this.GenerateSqlLogic(table);
+                        endpointSql += this.GenerateSqlEndpoint(table);
                 }
 
-                if (logicSql) {
-                        logicSql = logicSql.replace(/SERIAL/g, 'INT');
+                if (endpointSql) {
+                        endpointSql = endpointSql.replace(/SERIAL/g, 'INT');
                 }
 
                 function generateGroupKeyStrings(table: SqlTable) {
@@ -377,11 +369,11 @@ $$;`;
                         return allGroupKeysStrings;
                 }
 
-                logicSql = logicSql.trim();
+                endpointSql = endpointSql.trim();
                 tableSql = tableSql.trim();
 
                 return {
-                        logicSql,
+                        endpointSql,
                         tableSql,
                 };
         }
@@ -421,7 +413,7 @@ $$;`;
         Run() {
                 let schemas = this.input;
                 let tableStrings: string[] = [];
-                let logicStrings: string[] = [];
+                let endpointStrings: string[] = [];
                 for (const schemaName in schemas) {
                         if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
                                 continue;
@@ -429,7 +421,7 @@ $$;`;
                         const schema = schemas[schemaName];
                         let schemaSql = this.ProcessSchema(schema);
                         tableStrings.push(schemaSql.tableSql);
-                        logicStrings.push(schemaSql.logicSql);
+                        endpointStrings.push(schemaSql.endpointSql);
                 }
 
                 this.output = {};
@@ -444,7 +436,7 @@ $$;`;
                         }
                 }
                 {
-                        let { drops, everythingElse } = this.GenerateDrops(logicStrings.join('\n\n'));
+                        let { drops, everythingElse } = this.GenerateDrops(endpointStrings.join('\n\n'));
                         if (everythingElse.length > 0) {
                                 this.output['create.logic.sql'] = everythingElse.join('\n');
                         }
@@ -456,19 +448,15 @@ $$;`;
                 return this;
         }
 
-        static GenerateACreateLogic(logic: CodeLogic, withPlaceholders: boolean = false) {
-                const into = logic.inputs
-                        .filter((e) => !e.primary)
-                        .map((e) => `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`)
+        static GenerateACreateEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {
+                const into = endpoint.sql.inputs
+                        .map((e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`)
                         .join(',\n    ');
-                const values = logic.inputs
-                        .filter((e) => !e.primary)
-                        .map((e, i) => (withPlaceholders ? `$${i + 1}` : `${e.sql.name}`))
-                        .join(',\n    ');
-                const returning = logic.outputs.map((e) => `${e.sqlLocation.column}`) + ' INTO ' + logic.outputs.map((e) => `${e.sql.name}`);
+                const values = endpoint.sql.inputs.map((e, i) => (withPlaceholders ? `$${i + 1}` : `${e.sql.name}`)).join(',\n    ');
+                const returning = endpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`).join(', ');
 
                 let procedure = `
-INSERT INTO ${logic.sqlTableName} (
+INSERT INTO ${endpoint.sqlTableName} (
     ${into}
 ) 
 VALUES (
@@ -479,37 +467,33 @@ RETURNING
                 return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
 
-        static GenerateADeleteLogic(logic: CodeLogic, withPlaceholders: boolean = false) {
+        static GenerateADeleteEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {
                 let where = SqlGenerator.JoinAnd(
                         alignKeyword(
-                                logic.inputs
-                                        .filter((e) => e.primary)
-                                        .map(
-                                                (e, i) =>
-                                                        `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${
-                                                                withPlaceholders ? `$${i + 1}` : e.sql.name
-                                                        }`
-                                        ),
+                                endpoint.sql.inputs.map(
+                                        (e, i) =>
+                                                `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${
+                                                        withPlaceholders ? `$${i + 1}` : e.sql.name
+                                                }`
+                                ),
                                 '='
                         )
                 );
 
                 where = `\n    ${where}`;
 
-                let procedure = `DELETE FROM ${logic.sqlTableName}
+                let procedure = `DELETE FROM ${endpoint.sqlTableName}
 WHERE ${where};`;
                 return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
 
-        static GenerateAUpdateLogic(logic: CodeLogic, withPlaceholders: boolean = false) {
-                const whereEquals = logic.inputs
-                        .filter((e) => e.primary)
-                        .map(
-                                (e, i) =>
-                                        `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${
-                                                withPlaceholders ? `$${i + 1}` : e.sql.name
-                                        }`
-                        );
+        static GenerateAUpdateEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {
+                const whereEquals = endpoint.sql.inout.map(
+                        (e, i) =>
+                                `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${
+                                        withPlaceholders ? `$${i + 1}` : e.sql.name
+                                }`
+                );
                 let whereClauses = whereEquals.length + 1;
 
                 const whereEqualsAligned = alignKeyword(whereEquals, '=');
@@ -518,27 +502,25 @@ WHERE ${where};`;
 
                 let procedure = `SET 
     ${alignKeyword(
-            logic.inputs
-                    .filter((e) => !e.primary)
-                    .map(
-                            (e, i) =>
-                                    `${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column} = ${
-                                            withPlaceholders ? `$${whereClauses + i}` : e.sql.name
-                                    }`
-                    ),
+            endpoint.sql.inputs.map(
+                    (e, i) =>
+                            `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${
+                                    withPlaceholders ? `$${whereClauses + i}` : e.sql.name
+                            }`
+            ),
             '='
     ).join(',\n    ')}
 WHERE ${where};`;
                 return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
 
-        static GenerateAReadLogic(logic: CodeLogic, table: SqlTable, withPlaceholders: boolean = false) {
-                const whereParts = logic.inputs.map((e, i) => {
+        static GenerateAReadEndpoint(endpoint: Endpoint, table: SqlTable, withPlaceholders: boolean = false) {
+                const whereParts = endpoint.sql.inputs.map((e, i) => {
                         let answer = [];
-                        if (e.sqlLocation.tableAliasedAs) {
-                                answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
+                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
                         } else {
-                                answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
+                                answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
                         }
                         answer.push('=');
                         answer.push(withPlaceholders ? `$${i + 1}` : e.sql.name);
@@ -549,7 +531,7 @@ WHERE ${where};`;
                 let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
                 where = `\n    WHERE ${where}`;
 
-                if (!logic.inputs.length) {
+                if (!endpoint.sql.inputs.length) {
                         where = '';
                 }
 
@@ -557,25 +539,25 @@ WHERE ${where};`;
                 let tableName = '';
                 let joinStr = `\n    ${SqlGenerator.GenerateReadLeftJoinString(table)}`;
 
-                if (logic.name.includes('join')) {
+                if (endpoint.sql.name.includes('join')) {
                         join = joinStr;
-                        tableName = `${logic.sqlTableName} ${logic.sqlTableName.slice(0, 3)}_0`;
+                        tableName = `${endpoint.sqlTableName} ${endpoint.sqlTableName.slice(0, 3)}_0`;
                 } else {
-                        tableName = `${logic.sqlTableName}`;
+                        tableName = `${endpoint.sqlTableName}`;
                 }
 
-                const selectsNeeded = logic.outputs.map((e) => {
+                const selectsNeeded = endpoint.sql.outputs.map((e) => {
                         let answer = [];
 
-                        if (e.sqlLocation.tableAliasedAs) {
-                                answer.push(`${e.sqlLocation.tableAliasedAs}.${e.sqlLocation.column}`);
+                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
                         } else {
-                                answer.push(`${e.sqlLocation.schema}.${e.sqlLocation.table}.${e.sqlLocation.column}`);
+                                answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
                         }
-                        if (e.sqlLocation.columnAliasedAs) {
-                                answer.push(`AS ${e.sqlLocation.tableAliasedAs}_${e.sqlLocation.columnAliasedAs}`);
+                        if (e.sql.sqlLocation.columnAliasedAs) {
+                                answer.push(`AS ${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
                         } else {
-                                answer.push(e.sqlLocation.columnAliasedAs);
+                                answer.push(e.sql.sqlLocation.columnAliasedAs);
                         }
                         return answer.join(' ');
                 });
