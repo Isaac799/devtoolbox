@@ -175,7 +175,7 @@ export class InputParser {
                                 table.generateEmptyEndpoints();
 
                                 for (const attr of Object.values(table.attributes)) {
-                                        table.entityEndpoints.existsAs.push(
+                                        table.endpoints.existsAs.push(
                                                 new EndpointParam(
                                                         attr.sqlType,
                                                         attr.value,
@@ -186,9 +186,10 @@ export class InputParser {
                                 }
 
                                 if (table.desiresCRUD && Object.keys(table.primaryKeys()).length !== 1) {
-                                        this.SaveErrorMessage(
-                                                `Cannot generate endpoint for '${table.parentSchema.name}.${table.label}' without a single primary key.`
-                                        );
+                                        // this.SaveErrorMessage(
+                                        //         `Cannot generate endpoint for '${table.parentSchema.name}.${table.label}' without a single primary key.`
+                                        // );
+                                        continue;
                                 }
 
                                 table.generateEndpoints();

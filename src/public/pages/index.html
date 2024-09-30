@@ -21,15 +21,20 @@
                 <section>
                         <div>
                                 <section>
+                                        <button id="copy-input" class="info ml-auto abs-top-right">Copy</button>
                                         <span class="scroll-box input">
-                                                <button id="copy-input" class="info ml-auto abs-top-right">Copy</button>
                                                 <textarea name="markdown" id="markdown-input" cols="50" rows="35"></textarea>
                                         </span>
                                 </section>
+
+                                <section>
+                                        <button id="download-output" class="success abs-top-right2">Download Files</button>
+                                        <div id="files-output" class="files scroll-box"></div>
+                                </section>
+
                                 <section>
                                         <div id="app-item-tab-menu" class="tabs"></div>
                                         <div>
-                                                <div id="files-output" class="files"></div>
                                                 <span class="scroll-box output">
                                                         <button id="copy-output" class="info ml-auto abs-top-right">Copy</button>
                                                         <pre id="code-output"></pre>

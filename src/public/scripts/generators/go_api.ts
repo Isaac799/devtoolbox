@@ -1,36 +1,13 @@
-import { SnakeToPascal, trimAndRemoveBlankStrings } from '../core/formatting';
-import { CodeGenerator, Endpoint, EndpointParam, SqlTable } from '../core/structure';
-import { GoTypesCodeGenerator } from './go_struct';
+import { SnakeToPascal } from '../core/formatting';
+import { CodeGenerator, Endpoint, SqlTable } from '../core/structure';
 import { SqlGenerator } from './postgres_sql';
 
 export class GoApiCodeGenerator extends CodeGenerator {
-        goStructs = new GoTypesCodeGenerator();
-
         Run() {
                 let schemas = this.input;
                 let allParts: string[] = [];
-                let headerInfo = `package main
 
-import (
-    "database/sql"
-    "encoding/json"
-    "log"
-    "net/http"
-
-    _ "github.com/lib/pq"
-)
-
-var db *sql.DB
-
-func initDB() {
-    var err error
-    connStr := "user=username dbname=mydb sslmode=disable"
-    db, err = sql.Open("postgres", connStr)
-    if err != nil {
-        log.Fatal(err)
-    }
-}`;
-                allParts.push(headerInfo);
+                allParts.push('package main\n');
 
                 let goEndpoints: {
                         name: string;
@@ -49,9 +26,9 @@ func initDB() {
                                 }
                                 const table = schema.tables[tableName];
 
-                                if (table.entityEndpoints.create !== null) {
-                                        for (let m = 0; m < table.entityEndpoints.create.length; m++) {
-                                                const endpoint = table.entityEndpoints.create[m];
+                                if (table.endpoints.create !== null) {
+                                        for (let m = 0; m < table.endpoints.create.length; m++) {
+                                                const endpoint = table.endpoints.create[m];
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -63,9 +40,9 @@ func initDB() {
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.entityEndpoints.read !== null) {
-                                        for (let m = 0; m < table.entityEndpoints.read.length; m++) {
-                                                const endpoint = table.entityEndpoints.read[m];
+                                if (table.endpoints.read !== null) {
+                                        for (let m = 0; m < table.endpoints.read.length; m++) {
+                                                const endpoint = table.endpoints.read[m];
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -77,9 +54,9 @@ func initDB() {
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.entityEndpoints.update !== null) {
-                                        for (let m = 0; m < table.entityEndpoints.update.length; m++) {
-                                                const endpoint = table.entityEndpoints.update[m];
+                                if (table.endpoints.update !== null) {
+                                        for (let m = 0; m < table.endpoints.update.length; m++) {
+                                                const endpoint = table.endpoints.update[m];
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -91,9 +68,9 @@ func initDB() {
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.entityEndpoints.delete !== null) {
-                                        for (let m = 0; m < table.entityEndpoints.delete.length; m++) {
-                                                const endpoint = table.entityEndpoints.delete[m];
+                                if (table.endpoints.delete !== null) {
+                                        for (let m = 0; m < table.endpoints.delete.length; m++) {
+                                                const endpoint = table.endpoints.delete[m];
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -169,28 +146,8 @@ func initDB() {
                         endpointStrs.push(endpointsStr);
                 }
 
-                const main = `func main() {
-    initDB()
-    defer db.Close()
-${endpointStrs.join('\n')}
-    
-    log.Fatal(http.ListenAndServe(":8080", nil))
-}`;
-
-                allParts.push(main);
-
-                let goStructs = this.goStructs.Clear().SetInput(this.input).Run().Read();
-                goStructs = trimAndRemoveBlankStrings(goStructs);
-                for (const key in goStructs) {
-                        if (!Object.prototype.hasOwnProperty.call(goStructs, key)) {
-                                continue;
-                        }
-                        goStructs[key] = `package main\n\n${goStructs[key]}`;
-                }
-
                 this.output = {
-                        'main.go': allParts.join('\n\n'),
-                        ...goStructs,
+                        'api.go': allParts.join('\n'),
                 };
 
                 return this;
@@ -199,7 +156,7 @@ ${endpointStrs.join('\n')}
         private static GenerateCreateSnippet(endpoint: Endpoint) {
                 let inputsForQuery = endpoint.http.bodyIn.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`).join(', ');
                 let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.output.varName}.${SnakeToPascal(e.sql.sqlLocation.column)}`).join(', ');
-                let str = `func ${endpoint.go.fnName}(w http.ResponseWriter, r *http.Request) {
+                let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request) {
     var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
     if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -222,8 +179,7 @@ ${endpointStrs.join('\n')}
 
         private static GenerateReadSnippet(endpoint: Endpoint, table: SqlTable) {
                 let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.output.varName}.${SnakeToPascal(e.sql.sqlLocation.column)}`).join(', ');
-
-                let variablesFromPath = GoApiCodeGenerator.ParseFromPath(endpoint.http.path);
+                let paramFromRouter = `${endpoint.primaryKeyEndpointParam.go.varName} ${endpoint.primaryKeyEndpointParam.go.typeType}`;
 
                 let inputsForQuery = endpoint.http.path.map((e) => `${e.go.varName}`);
                 let inputsForQuery2 = endpoint.http.bodyIn.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`);
@@ -232,7 +188,7 @@ ${endpointStrs.join('\n')}
                 // let inputs = endpoint.inputs.map((e) => `${endpoint.go.input.name}.${e.go.name}`);
 
                 if (endpoint.many) {
-                        let str = `func ${endpoint.go.fnName}(w http.ResponseWriter, r *http.Request) {
+                        let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
     rows, err := db.Query(query)
      if err != nil {
@@ -264,7 +220,7 @@ ${endpointStrs.join('\n')}
                 }
 
                 if (inputs.length === 0) {
-                        let str = `func ${endpoint.go.fnName}(w http.ResponseWriter, r *http.Request) {
+                        let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
     
     var ${endpoint.go.output.varName} ${endpoint.go.output.typeType}
@@ -285,9 +241,7 @@ ${endpointStrs.join('\n')}
 
                 // var ${endpoint.go.input.name} ${endpoint.go.input.type}
 
-                let str = `func ${endpoint.go.fnName}(w http.ResponseWriter, r *http.Request) {
-    ${variablesFromPath}
-
+                let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
     
     var ${endpoint.go.output.varName} ${endpoint.go.output.typeType}
@@ -310,11 +264,9 @@ ${endpointStrs.join('\n')}
                 let pathAttrs = endpoint.http.path.map((e) => `${e.go.varName}`);
                 let bodyAttrs = endpoint.http.bodyIn.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`);
                 let inputs = [...pathAttrs, ...bodyAttrs].join(', ');
-                let variablesFromPath = GoApiCodeGenerator.ParseFromPath(endpoint.http.path);
+                let paramFromRouter = `${endpoint.primaryKeyEndpointParam.go.varName} ${endpoint.primaryKeyEndpointParam.go.typeType}`;
 
-                let str = `func ${endpoint.go.fnName}(w http.ResponseWriter, r *http.Request) {
-    ${variablesFromPath}
-
+                let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
     var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
     if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -342,10 +294,9 @@ ${endpointStrs.join('\n')}
 
         private static GenerateDeleteSnippet(endpoint: Endpoint) {
                 let inputs = endpoint.http.path.map((e) => `${e.go.varName}`).join(', ');
-                let variablesFromPath = GoApiCodeGenerator.ParseFromPath(endpoint.http.path);
+                let paramFromRouter = `${endpoint.primaryKeyEndpointParam.go.varName} ${endpoint.primaryKeyEndpointParam.go.typeType}`;
 
-                let str = `func ${endpoint.go.fnName}(w http.ResponseWriter, r *http.Request) {
-    ${variablesFromPath}
+                let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
 
     query := \`${SqlGenerator.GenerateADeleteEndpoint(endpoint, true)}\`
     
@@ -364,20 +315,5 @@ ${endpointStrs.join('\n')}
     w.WriteHeader(http.StatusNoContent)
 }`;
                 return str.trim();
-        }
-
-        private static ParseFromPath(value: EndpointParam[]) {
-                return value
-                        .map((e) =>
-                                e.go.typeType === 'string'
-                                        ? `${e.go.varName} := r.URL.Query().Get("${e.sql.name}");`
-                                        : `${e.go.varName}Str := r.URL.Query().Get("${e.sql.name}")
-    ${e.go.varName}, err := ${e.go.parser(`${e.go.varName}Str`)}
-        if err != nil {
-        http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
-        return
-    }`
-                        )
-                        .join('\n\n    ');
         }
 }

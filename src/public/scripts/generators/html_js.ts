@@ -48,10 +48,10 @@ export class HtmlCodeGenerator extends CodeGenerator {
                                 let tableSection: string[] = [];
 
                                 if (
-                                        table.entityEndpoints.create === null &&
-                                        table.entityEndpoints.read === null &&
-                                        table.entityEndpoints.update === null &&
-                                        table.entityEndpoints.delete === null
+                                        table.endpoints.create === null &&
+                                        table.endpoints.read === null &&
+                                        table.endpoints.update === null &&
+                                        table.endpoints.delete === null
                                 ) {
                                         continue;
                                 }
@@ -62,11 +62,11 @@ export class HtmlCodeGenerator extends CodeGenerator {
                                 const SUBMIT_BUTTON = `            <input type="submit" value="Submit" />`;
                                 const OPTIONS_SUBMIT_BUTTON = `            <input type="submit" value="Read Options" />`;
 
-                                if (table.entityEndpoints.create !== null) {
+                                if (table.endpoints.create !== null) {
                                         const htmlSubSection = `    <div class="flex-row"><h4>Create</h4></div>`;
                                         tableSection.push(htmlSubSection);
-                                        for (let m = 0; m < table.entityEndpoints.create.length; m++) {
-                                                const endpoint = table.entityEndpoints.create[m];
+                                        for (let m = 0; m < table.endpoints.create.length; m++) {
+                                                const endpoint = table.endpoints.create[m];
 
                                                 let params = CreateInputFields(endpoint);
                                                 // let where = 'body';
@@ -80,11 +80,11 @@ ${SUBMIT_BUTTON}
                                                 tableSection.push(form);
                                         }
                                 }
-                                if (table.entityEndpoints.read !== null) {
+                                if (table.endpoints.read !== null) {
                                         const htmlSubSection = `    <div class="flex-row"><h4>Read</h4></div>`;
                                         tableSection.push(htmlSubSection);
-                                        for (let m = 0; m < table.entityEndpoints.read.length; m++) {
-                                                const endpoint = table.entityEndpoints.read[m];
+                                        for (let m = 0; m < table.endpoints.read.length; m++) {
+                                                const endpoint = table.endpoints.read[m];
 
                                                 if (endpoint.isOptions) {
                                                         let form = `    <form submit="${endpoint.path}" method="get">
@@ -108,11 +108,11 @@ ${SUBMIT_BUTTON}
                                                 tableSection.push(form);
                                         }
                                 }
-                                if (table.entityEndpoints.update !== null) {
+                                if (table.endpoints.update !== null) {
                                         const htmlSubSection = `    <div class="flex-row"><h4>Update</h4></div>`;
                                         tableSection.push(htmlSubSection);
-                                        for (let m = 0; m < table.entityEndpoints.update.length; m++) {
-                                                const endpoint = table.entityEndpoints.update[m];
+                                        for (let m = 0; m < table.endpoints.update.length; m++) {
+                                                const endpoint = table.endpoints.update[m];
 
                                                 let params = CreateInputFields(endpoint);
                                                 // let where = 'body';
@@ -127,11 +127,11 @@ ${SUBMIT_BUTTON}
                                                 tableSection.push(form);
                                         }
                                 }
-                                if (table.entityEndpoints.delete !== null) {
+                                if (table.endpoints.delete !== null) {
                                         const htmlSubSection = `    <div class="flex-row"><h4>Delete</h4></div>`;
                                         tableSection.push(htmlSubSection);
-                                        for (let m = 0; m < table.entityEndpoints.delete.length; m++) {
-                                                const endpoint = table.entityEndpoints.delete[m];
+                                        for (let m = 0; m < table.endpoints.delete.length; m++) {
+                                                const endpoint = table.endpoints.delete[m];
 
                                                 let params = CreateInputFields(endpoint);
                                                 // let where = 'body';

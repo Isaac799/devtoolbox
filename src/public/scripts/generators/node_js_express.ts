@@ -85,33 +85,33 @@ function Needs(key, where) {
                                 }
                                 const table = schema.tables[tableName];
 
-                                if (table.entityEndpoints.create !== null) {
-                                        for (let m = 0; m < table.entityEndpoints.create.length; m++) {
-                                                const create = table.entityEndpoints.create[m];
+                                if (table.endpoints.create !== null) {
+                                        for (let m = 0; m < table.endpoints.create.length; m++) {
+                                                const create = table.endpoints.create[m];
 
                                                 let str = NodeExpressCodeGenerator.GenerateCreateSnippet(create);
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.entityEndpoints.read !== null) {
-                                        for (let m = 0; m < table.entityEndpoints.read.length; m++) {
-                                                const read = table.entityEndpoints.read[m];
+                                if (table.endpoints.read !== null) {
+                                        for (let m = 0; m < table.endpoints.read.length; m++) {
+                                                const read = table.endpoints.read[m];
 
                                                 let str = NodeExpressCodeGenerator.GenerateReadSnippet(read);
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.entityEndpoints.update !== null) {
-                                        for (let m = 0; m < table.entityEndpoints.update.length; m++) {
-                                                const update = table.entityEndpoints.update[m];
+                                if (table.endpoints.update !== null) {
+                                        for (let m = 0; m < table.endpoints.update.length; m++) {
+                                                const update = table.endpoints.update[m];
 
                                                 let str = NodeExpressCodeGenerator.GenerateUpdateSnippet(update);
                                                 allParts.push(str);
                                         }
                                 }
-                                if (table.entityEndpoints.delete !== null) {
-                                        for (let m = 0; m < table.entityEndpoints.delete.length; m++) {
-                                                const del = table.entityEndpoints.delete[m];
+                                if (table.endpoints.delete !== null) {
+                                        for (let m = 0; m < table.endpoints.delete.length; m++) {
+                                                const del = table.endpoints.delete[m];
 
                                                 let str = NodeExpressCodeGenerator.GenerateDeleteSnippet(del);
                                                 allParts.push(str);

@@ -10,6 +10,10 @@ export type FileOutputs = {
         [x: string]: string;
 };
 
+// export interface NestedFileOutputs {
+//         [key: string]: NestedFileOutputs | FileOutputs[];
+// }
+
 /**
  * Determines the max depth of joins to make for self references
  */
@@ -79,74 +83,215 @@ export const SQL_TO_TS_TYPE = {
         [SqlType.xxl]: 'string',
 };
 
-export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x: string) => string }> = {
+type goHtmlInputFunction = (x: SqlTableAttribute, setValueToThisAttribute?: string) => string;
+
+const stringHtmlInputFunctionForGo: goHtmlInputFunction = (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.s]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`;
+
+export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x: string) => string; htmlInputFunction: goHtmlInputFunction }> = {
         [SqlType.BIT]: {
                 goType: 'bool',
                 parseFunction: (x) => `strconv.ParseBool(${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.BIT]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.DATE]: {
                 goType: 'time.Time',
                 parseFunction: (x) => `time.Parse("2006-01-02", ${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.DATE]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.CHAR]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.CHAR]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.TIME]: {
                 goType: 'time.Time',
                 parseFunction: (x) => `time.Parse("15:04:05", ${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.TIME]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.TIMESTAMP]: {
                 goType: 'time.Time',
                 parseFunction: (x) => `time.Parse("2006-01-02 15:04:05", ${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.TIMESTAMP]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.SERIAL]: {
                 goType: 'int',
                 parseFunction: (x) => `strconv.Atoi(${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.SERIAL]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.DECIMAL]: {
                 goType: 'float64',
                 parseFunction: (x) => `strconv.ParseFloat(${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.DECIMAL]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.FLOAT]: {
                 goType: 'float64',
                 parseFunction: (x) => `strconv.ParseFloat(${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.FLOAT]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.REAL]: {
                 goType: 'float64',
                 parseFunction: (x) => `strconv.ParseFloat(${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.REAL]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.INT]: {
                 goType: 'int',
                 parseFunction: (x) => `strconv.Atoi(${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.INT]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.BOOLEAN]: {
                 goType: 'bool',
                 parseFunction: (x) => `strconv.ParseBool(${x})`,
+                htmlInputFunction: (x, y) => `<div class="field">
+            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.BOOLEAN]}"
+                    id="${x.value}"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
+                />
+            </div>
+        </div>`,
         },
         [SqlType.xs]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                htmlInputFunction: stringHtmlInputFunctionForGo,
         },
         [SqlType.s]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                htmlInputFunction: stringHtmlInputFunctionForGo,
         },
         [SqlType.m]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                htmlInputFunction: stringHtmlInputFunctionForGo,
         },
         [SqlType.l]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                htmlInputFunction: stringHtmlInputFunctionForGo,
         },
         [SqlType.xl]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                htmlInputFunction: stringHtmlInputFunctionForGo,
         },
         [SqlType.xxl]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                htmlInputFunction: stringHtmlInputFunctionForGo,
         },
 };
 
@@ -285,11 +430,28 @@ export class JoinedCodePreEndpoint {
 }
 
 export enum HttpMethod {
-        GET = 'get',
-        POST = 'post',
-        PUT = 'put',
-        DELETE = 'delete',
+        GET = 'GET',
+        POST = 'POST',
+        PUT = 'PUT',
+        DELETE = 'DELETE',
 }
+
+export const HttpMethodToHtmlName = (x: HttpMethod, many: boolean) => {
+        switch (x) {
+                case HttpMethod.GET:
+                        if (many) {
+                                return 'index';
+                        } else {
+                                return 'show';
+                        }
+                case HttpMethod.POST:
+                        return 'new';
+                case HttpMethod.PUT:
+                        return 'edit';
+                case HttpMethod.DELETE:
+                        return 'delete';
+        }
+};
 
 export class Endpoint {
         method: HttpMethod;
@@ -301,6 +463,9 @@ export class Endpoint {
         sqlTableName: string;
         sqlSchemaName: string;
         primaryKeyName: string;
+        primaryKeyEndpointParam: EndpointParam;
+        routerFuncName: string;
+        routerFuncApiName: string;
 
         sql: {
                 inout: EndpointParam[];
@@ -367,9 +532,15 @@ export class Endpoint {
                 return endpointPath;
         }
 
-        constructor(method: HttpMethod, name: string, table: SqlTable, many: boolean, primaryKeyName: string) {
+        constructor(method: HttpMethod, name: string, table: SqlTable, many: boolean, sqlTableAttribute: SqlTableAttribute) {
                 this.http.name = name;
-                this.primaryKeyName = primaryKeyName;
+                this.primaryKeyName = sqlTableAttribute.value;
+                this.primaryKeyEndpointParam = new EndpointParam(
+                        sqlTableAttribute.sqlType,
+                        sqlTableAttribute.value,
+                        new SqlLocation(sqlTableAttribute.parentTable.parentSchema.name, sqlTableAttribute.parentTable.label, sqlTableAttribute.value),
+                        sqlTableAttribute.readOnly
+                );
 
                 this.sql.name = `${method.toLowerCase()}_${name}`;
                 if (many) {
@@ -378,8 +549,10 @@ export class Endpoint {
                 this.method = method;
                 this.many = many;
                 const tableL = table.label;
-                this.sqlTableName = table.fullName;
+                this.sqlTableName = table.label + 's';
                 this.sqlSchemaName = table.parentSchema.name;
+                this.routerFuncName = SnakeToPascal(`${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
+                this.routerFuncApiName = SnakeToPascal(`api_${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
 
                 this.typescript = {
                         fnName: SnakeToCamel(this.sql.name),
@@ -418,10 +591,50 @@ export class Endpoint {
         sqlOutputs() {
                 return this.sql.outputs.map((e) => e.sql.name).join(',\n    ');
         }
+
+        get url() {
+                // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
+                let endpointPath = `/${SnakeToKebab(this.sqlTableName)}`;
+                return endpointPath;
+        }
+}
+
+export class EndpointGoShow {
+        readonly method: HttpMethod = HttpMethod.GET;
+
+        routerFuncName: string;
+        sqlTableName: string;
+        sqlSchemaName: string;
+        primaryKeyName: string;
+        propertyNames: string[];
+        sqlAttributes: SqlTableAttribute[];
+
+        get url() {
+                // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
+                let endpointPath = `/${SnakeToKebab(this.sqlTableName)}`;
+                return endpointPath;
+        }
+
+        filePath(kind: 'show' | 'new' | 'edit' | 'index') {
+                let endpointPath = `/templates/${this.sqlTableName}/${kind}.html`;
+                // let endpointPath = `/templates/${this.sqlSchemaName}/${this.sqlTableName}/${kind}.html`;
+                return endpointPath;
+        }
+
+        constructor(table: SqlTable, primaryKeyName: string, propertyNames: string[]) {
+                this.propertyNames = propertyNames.map((e) => SnakeToPascal(e));
+                this.sqlAttributes = Object.values(table.attributes);
+                this.primaryKeyName = SnakeToPascal(primaryKeyName);
+                this.routerFuncName = SnakeToPascal(`${HttpMethodToHtmlName(this.method, false)}_${table.label}`);
+                this.sqlTableName = table.label + 's';
+                this.sqlSchemaName = table.parentSchema.name;
+        }
 }
 
 export class EntityEndpoints {
         existsAs: EndpointParam[] = [];
+
+        goShow: EndpointGoShow | null = null;
         create: Endpoint[] | null = null;
         read: Endpoint[] | null = null;
         update: Endpoint[] | null = null;
@@ -550,7 +763,8 @@ export class SqlTable {
                 [x: string]: SqlTableAttribute;
         } = {};
 
-        entityEndpoints: EntityEndpoints = {
+        endpoints: EntityEndpoints = {
+                goShow: null,
                 existsAs: [],
                 create: null,
                 read: null,
@@ -563,7 +777,7 @@ export class SqlTable {
         }
 
         get desiresCRUD(): boolean {
-                return !!this.entityEndpoints.create || !!this.entityEndpoints.read || !!this.entityEndpoints.update || !!this.entityEndpoints.delete;
+                return !!this.endpoints.create || !!this.endpoints.read || !!this.endpoints.update || !!this.endpoints.delete;
         }
 
         constructor(parent: SqlSchema, label: string) {
@@ -677,20 +891,25 @@ export class SqlTable {
         generateEmptyEndpoints() {
                 let answer = new EntityEndpoints();
 
-                let hasCreate = this.options.map((option) => /[C][rR][uU][dD]/.test(option)).includes(true);
-                let hasRead = this.options.map((option) => /[cC][R][uU][dD]/.test(option)).includes(true);
-                let hasUpdate = this.options.map((option) => /[cC][rR][U][dD]/.test(option)).includes(true);
-                let hasDelete = this.options.map((option) => /[cC][rR][uU][D]/.test(option)).includes(true);
-                const desireCRUD = hasCreate || hasRead || hasUpdate || hasDelete;
+                // let hasCreate = this.options.map((option) => /[C][rR][uU][dD]/.test(option)).includes(true);
+                // let hasRead = this.options.map((option) => /[cC][R][uU][dD]/.test(option)).includes(true);
+                // let hasUpdate = this.options.map((option) => /[cC][rR][U][dD]/.test(option)).includes(true);
+                // let hasDelete = this.options.map((option) => /[cC][rR][uU][D]/.test(option)).includes(true);
+                // const desireCRUD = hasCreate || hasRead || hasUpdate || hasDelete;
 
-                if (!desireCRUD) return;
+                // if (!desireCRUD) return;
 
-                if (hasCreate) answer.create = [];
-                if (hasRead) answer.read = [];
-                if (hasUpdate) answer.update = [];
-                if (hasDelete) answer.delete = [];
+                // if (hasCreate) answer.create = [];
+                // if (hasRead) answer.read = [];
+                // if (hasUpdate) answer.update = [];
+                // if (hasDelete) answer.delete = [];
 
-                this.entityEndpoints = answer;
+                answer.create = [];
+                answer.read = [];
+                answer.update = [];
+                answer.delete = [];
+
+                this.endpoints = answer;
         }
 
         generateEndpoints() {
@@ -747,25 +966,27 @@ export class SqlTable {
                                 );
                         });
 
-                if (this.entityEndpoints.create) {
-                        let o = new Endpoint(HttpMethod.POST, this.label, this, false, firstPrimaryKey.value);
+                let goAttributeNames = allAttrs.map((e) => e.go.varName);
+                this.endpoints.goShow = new EndpointGoShow(this, firstPrimaryKey.value, goAttributeNames);
+                if (this.endpoints.create) {
+                        let o = new Endpoint(HttpMethod.POST, this.label, this, false, firstPrimaryKey);
                         o.sql.inout = [...primaryInOutAttrs];
                         o.sql.inputs = [...nonPrimaryAttrs];
                         o.http.bodyIn = [...nonPrimaryAttrs];
                         o.sql.outputs = [...primaryInOutAttrs];
                         o.http.bodyOut = [...allAttrs];
-                        this.entityEndpoints.create.push(o);
+                        this.endpoints.create.push(o);
                 }
-                if (this.entityEndpoints.read) {
-                        let readSingle = new Endpoint(HttpMethod.GET, this.label, this, false, firstPrimaryKey.value);
+                if (this.endpoints.read) {
+                        let readSingle = new Endpoint(HttpMethod.GET, this.label, this, false, firstPrimaryKey);
                         readSingle.sql.inputs = [...primaryAttrs];
                         readSingle.http.path = [...primaryAttrs];
                         readSingle.sql.outputs = [...allAttrs];
                         readSingle.http.bodyOut = [...allAttrs];
-                        this.entityEndpoints.read.push(readSingle);
+                        this.endpoints.read.push(readSingle);
 
                         // if (simpleAttrs.length > 0) {
-                        //         let readOptions = new Endpoint(HttpMethod.GET, `options_${this.label}`, this, true, firstPrimaryKey.value);
+                        //         let readOptions = new Endpoint(HttpMethod.GET, `options_${this.label}`, this, true, firstPrimaryKey);
                         //         readOptions.sql.inputs = [];
                         //         readOptions.http.path = [];
                         //         readOptions.sql.outputs = [...primaryAttrs, ...simpleAttrs];
@@ -773,15 +994,15 @@ export class SqlTable {
                         //         this.entityEndpoints.read.push(readOptions);
                         // }
 
-                        let readEverything = new Endpoint(HttpMethod.GET, this.label, this, true, firstPrimaryKey.value);
+                        let readEverything = new Endpoint(HttpMethod.GET, this.label, this, true, firstPrimaryKey);
                         readEverything.sql.inputs = [];
                         readEverything.http.path = [];
                         readEverything.sql.outputs = [...allAttrs];
                         readEverything.http.bodyOut = [...allAttrs];
-                        this.entityEndpoints.read.push(readEverything);
+                        this.endpoints.read.push(readEverything);
                 }
-                if (this.entityEndpoints.update) {
-                        let o = new Endpoint(HttpMethod.PUT, this.label, this, false, firstPrimaryKey.value);
+                if (this.endpoints.update) {
+                        let o = new Endpoint(HttpMethod.PUT, this.label, this, false, firstPrimaryKey);
                         o.sql.inout = [...primaryInOutAttrs];
                         o.sql.inputs = [...nonPrimaryAttrs];
                         o.http.bodyIn = [...nonPrimaryAttrs];
@@ -789,13 +1010,13 @@ export class SqlTable {
 
                         o.sql.outputs = [];
                         o.http.bodyOut = [];
-                        this.entityEndpoints.update.push(o);
+                        this.endpoints.update.push(o);
                 }
-                if (this.entityEndpoints.delete) {
-                        let o = new Endpoint(HttpMethod.DELETE, this.label, this, false, firstPrimaryKey.value);
+                if (this.endpoints.delete) {
+                        let o = new Endpoint(HttpMethod.DELETE, this.label, this, false, firstPrimaryKey);
                         o.sql.inputs = [...primaryAttrs];
                         o.http.path = [...primaryAttrs];
-                        this.entityEndpoints.delete.push(o);
+                        this.endpoints.delete.push(o);
                 }
         }
 

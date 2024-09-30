@@ -135,3 +135,73 @@ export const trimAndRemoveBlankStrings = (obj: { [key: string]: string }): { [ke
 
         return trimmedObj;
 };
+
+// export const groupData = (data: FileOutputs): NestedFileOutputs => {
+//         function addToNestedDict(nestedDict: NestedFileOutputs, keys: string[], item: FileOutputs) {
+//                 let current = nestedDict;
+
+//                 if (keys.length === 1) {
+//                         (current as any) = item;
+//                         return;
+//                 }
+//                 for (const key of keys) {
+//                         if (!current[key]) {
+//                                 current[key] = {}; // Create a new object if the key doesn't exist
+//                         }
+//                         current = current[key] as NestedFileOutputs; // Move deeper into the nested structure
+//                 }
+//         }
+
+//         const groupedData: any = {};
+
+//         // Populate the nested dictionary
+//         for (const key in data) {
+//                 if (data.hasOwnProperty(key)) {
+//                         const item = { [key]: data[key] }; // Create item from key-value pair
+//                         const keys = key.split('/'); // Split the key into parts
+
+//                         if (keys.length === 1) {
+//                                 groupData[key] = item[key];
+//                                 continue;
+//                         }
+
+//                         // Add to the nested dictionary
+//                         addToNestedDict(groupedData, keys, item);
+//                 }
+//         }
+
+//         return groupedData;
+// };
+// export const groupData = (data: Record<string, any>): Record<string, any> => {
+//         const grouped: Record<string, any> = {};
+
+//         const keys = Object.keys(data);
+//         for (const key of keys) {
+//                 const parts = key.split('/');
+//                 const PartA = parts[0];
+//                 const PartB = parts[1];
+//                 const PartC = parts[2];
+
+//                 // Initialize group structure if it doesn't exist
+//                 if (!grouped[PartA]) {
+//                         grouped[PartA] = [];
+//                 }
+//                 if (!grouped[PartA][PartB]) {
+//                         grouped[PartA][PartB] = {};
+//                 }
+//                 if (!grouped[PartA][PartB][PartC]) {
+//                         grouped[PartA][PartB][PartC] = {};
+//                 }
+
+//                 // Push the data into the correct group
+//                 if (PartC) {
+//                         grouped[PartA][PartB][PartC] = data[key];
+//                 } else if (PartB) {
+//                         grouped[PartA][PartB] = data[key];
+//                 } else {
+//                         grouped[PartA].push(data[key]);
+//                 }
+//         }
+
+//         return grouped;
+// };

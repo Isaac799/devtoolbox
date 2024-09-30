@@ -4,9 +4,12 @@ import { CodeGenerator, FileOutputs } from './core/structure';
 
 import '../assets/normalize.css';
 import '../assets/styles.css';
-import { GoApiCodeGenerator } from './generators/go_endpoint';
 import { TsTypesCodeGenerator } from './generators/ts_types';
 import { HtmlCodeGenerator } from './generators/html_js';
+import { GoCodeGenerator } from './generators/go';
+import { downloadZip } from './core/download';
+
+let toDownload: any = {};
 
 class AppItem {
         htmlLabel = 'Empty';
@@ -206,6 +209,8 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
                 selectedFileOutputs = Object.keys(generatedFiles)[0];
         }
 
+        toDownload = generatedFiles;
+
         let fileItems = BuildFileMenu();
         files.innerHTML = '';
         for (let i = 0; i < fileItems.length; i++) {
@@ -218,6 +223,7 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
 function Main(_: Event) {
         let inputCopy = document.getElementById('copy-input');
         let outputCopy = document.getElementById('copy-output');
+        let outputDownload = document.getElementById('download-output');
         let input = document.getElementById('markdown-input') as HTMLInputElement;
         let tabItemMenu = document.getElementById('app-item-tab-menu');
         let output = document.getElementById('code-output');
@@ -227,6 +233,10 @@ function Main(_: Event) {
                 return;
         }
         if (outputCopy === null) {
+                console.error('Missing core html element!');
+                return;
+        }
+        if (outputDownload === null) {
                 console.error('Missing core html element!');
                 return;
         }
@@ -248,6 +258,9 @@ function Main(_: Event) {
         });
         outputCopy.addEventListener('click', (_) => {
                 navigator.clipboard.writeText(output.innerText);
+        });
+        outputDownload.addEventListener('click', (_) => {
+                downloadZip(toDownload, `${APP_ITEMS[focusedAppItemIndex].htmlLabel}-${Date.now().toString().slice(5, 11)}`);
         });
 
         let tabItems = BuildTabMenu();
@@ -287,8 +300,8 @@ let fileOutputs: FileOutputs = {};
 let selectedFileOutputs: string = '';
 
 const APP_ITEMS = [
+        new AppItem('Go', new GoCodeGenerator()),
         new AppItem('Postgres', new SqlGenerator()),
-        new AppItem('Go Api', new GoApiCodeGenerator()),
         // new AppItem('Node JS', new NodeExpressCodeGenerator()),
         new AppItem('TS Types', new TsTypesCodeGenerator()),
         new AppItem('HTML forms', new HtmlCodeGenerator()),
@@ -304,19 +317,19 @@ window.addEventListener('DOMContentLoaded', Main);
 
 const DEFAULT_INPUT = `
 
-## person
+## customer
 
-- person + CRUD
+- customer +
   - s email * 
   - s username **
   - b active
-                        
+
 ## catalog
 
-- category + CRUD
+- category + 
   - s title *
 
-- product + CRUD
+- product + 
   - s title * !
   - d price !
 
@@ -326,8 +339,8 @@ const DEFAULT_INPUT = `
 
 ## shopping_cart
 
-- cart + CRUD
-  - ^ _person.person ! *
+- cart + 
+  - ^ customer.customer ! *
   
 - cart_item @ 
   - ^ _cart +
@@ -336,8 +349,8 @@ const DEFAULT_INPUT = `
 
 ## orders
 
-- order + @ CRUD
-  - ^ _person.person ! *
+- order + @ 
+  - ^ _customer.customer ! *
   - b finalized !
   - d _total_cost !
   

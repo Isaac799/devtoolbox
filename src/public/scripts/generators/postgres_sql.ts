@@ -38,7 +38,7 @@ export class SqlGenerator extends CodeGenerator {
         GenerateSqlEndpoint(table: SqlTable): string {
                 let sqlEndpoint: string[] = [];
 
-                if (!table.entityEndpoints.create && !table.entityEndpoints.read && !table.entityEndpoints.update && !table.entityEndpoints.delete) {
+                if (!table.endpoints.create && !table.endpoints.read && !table.endpoints.update && !table.endpoints.delete) {
                         return '';
                 }
 
@@ -53,13 +53,13 @@ export class SqlGenerator extends CodeGenerator {
         }
 
         private GenerateDeleteEndpoint(table: SqlTable, sqlEndpoint: string[]) {
-                if (!table.entityEndpoints.delete) {
+                if (!table.endpoints.delete) {
                         return;
                 }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.entityEndpoints.delete.length; i++) {
-                        const endpoint = table.entityEndpoints.delete[i];
+                for (let i = 0; i < table.endpoints.delete.length; i++) {
+                        const endpoint = table.endpoints.delete[i];
 
                         const primaryInputsEqualing = endpoint.sql.inputs.map(
                                 (e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`
@@ -88,13 +88,13 @@ $$;`;
         }
 
         private GenerateUpdateEndpoint(table: SqlTable, sqlEndpoint: string[]) {
-                if (!table.entityEndpoints.update) {
+                if (!table.endpoints.update) {
                         return;
                 }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.entityEndpoints.update.length; i++) {
-                        const endpoint = table.entityEndpoints.update[i];
+                for (let i = 0; i < table.endpoints.update.length; i++) {
+                        const endpoint = table.endpoints.update[i];
                         const whereEquals = endpoint.sql.inputs.map(
                                 (e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`
                         );
@@ -128,13 +128,13 @@ $$;`;
         }
 
         private GenerateReadEndpoint(table: SqlTable, sqlEndpoint: string[]) {
-                if (!table.entityEndpoints.read) {
+                if (!table.endpoints.read) {
                         return;
                 }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.entityEndpoints.read.length; i++) {
-                        const endpoint = table.entityEndpoints.read[i];
+                for (let i = 0; i < table.endpoints.read.length; i++) {
+                        const endpoint = table.endpoints.read[i];
 
                         const inputStr = alignKeywords(
                                 endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
@@ -255,13 +255,13 @@ $$;`;
         }
 
         private GenerateCreateEndpoint(table: SqlTable, sqlEndpoint: string[]) {
-                if (!table.entityEndpoints.create) {
+                if (!table.endpoints.create) {
                         return;
                 }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.entityEndpoints.create.length; i++) {
-                        const endpoint = table.entityEndpoints.create[i];
+                for (let i = 0; i < table.endpoints.create.length; i++) {
+                        const endpoint = table.endpoints.create[i];
                         const paramsNeeded = endpoint.sql.inout
                                 .map((e) => `INOUT ${e.sql.name} ${e.sql.type}`)
                                 .concat(endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`));

@@ -27,7 +27,7 @@ export class TsTypesCodeGenerator extends CodeGenerator {
                                 const table = schema.tables[tableName];
 
                                 stack.push(`export type ${SnakeToTitle(tableName)} = {`);
-                                for (const attr of table.entityEndpoints.existsAs) {
+                                for (const attr of table.endpoints.existsAs) {
                                         stack.push(`    ${attr.typescript.name}: ${attr.typescript.type};`);
                                 }
                                 stack.push('}');

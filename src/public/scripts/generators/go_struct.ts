@@ -30,7 +30,7 @@ export class GoTypesCodeGenerator extends CodeGenerator {
                                 const table = schema.tables[tableName];
 
                                 stack.push(`type ${SnakeToPascal(tableName)} struct {`);
-                                for (const attr of table.entityEndpoints.existsAs) {
+                                for (const attr of table.endpoints.existsAs) {
                                         stack.push(`    ${attr.go.typeName} ${attr.go.typeType} \`json:"${attr.sql.name}"\``);
                                 }
 
@@ -46,7 +46,7 @@ export class GoTypesCodeGenerator extends CodeGenerator {
         Run() {
                 let goTypes = this.GenerateGoTypes();
                 this.output = {
-                        'structure.go': goTypes,
+                        'structure.go': `package main\n\n${goTypes}`,
                 };
                 return this;
         }

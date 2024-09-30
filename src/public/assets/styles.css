@@ -1,13 +1,13 @@
 :root {
         --white: rgb(255, 255, 255);
         --black: rgb(0, 0, 0);
-        --primary: rgb(0, 114, 178);
-        --accent: rgb(204, 121, 167);
-        --warn: rgb(230, 159, 0);
-        --success: rgb(0, 158, 115);
-        --error: rgb(213, 94, 0);
-        --info: rgb(86, 180, 233);
-        --highlight: rgb(240, 228, 66);
+        --primary: #0072b2;
+        --accent: #cc79a7;
+        --warn: #e69f00;
+        --success: #009e73;
+        --error: #d55e00;
+        --info: #56b4e9;
+        --highlight: #f0e442;
 
         --transparency: 0.2;
 
@@ -25,6 +25,24 @@
         --space-sm: 0.2rem;
 
         --border-radius: 0.5rem;
+
+        --bulma-primary-h: 202deg;
+        --bulma-primary-l: 35%;
+        --bulma-link-h: 327deg;
+        --bulma-link-s: 45%;
+        --bulma-link-l: 64%;
+        --bulma-info-h: 202deg;
+        --bulma-info-s: 77%;
+        --bulma-info-l: 63%;
+        --bulma-success-h: 164deg;
+        --bulma-success-s: 100%;
+        --bulma-success-l: 31%;
+        --bulma-warning-h: 56deg;
+        --bulma-warning-s: 85%;
+        --bulma-warning-l: 60%;
+        --bulma-danger-h: 327deg;
+        --bulma-danger-s: 45%;
+        --bulma-danger-l: 64%;
 }
 
 .sql-keyword {
@@ -184,7 +202,7 @@ section div.tabs div {
 section div.files {
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: flex-start;
         gap: 0;
         /* padding-top: var(--space); */
@@ -198,10 +216,8 @@ section div.files div {
         justify-content: flex-start;
         align-items: center;
         gap: var(--space-sm);
-        width: 10rem;
-        max-width: 10rem;
-        overflow: hidden;
-        word-break: break-all;
+        width: max-content;
+        max-height: 1.5rem;
 }
 
 .hover-highlight:hover,
@@ -253,7 +269,8 @@ textarea {
 }
 
 pre,
-textarea {
+textarea,
+.files {
         padding: var(--space);
         background-color: var(--white);
         border-left: 0.1rem solid var(--primary);
@@ -306,22 +323,21 @@ tr {
 .scroll-box {
         /* border-left: 0.1rem solid var(--primary); */
         overflow: auto;
-        max-width: 90vw;
+}
+
+.scroll-box.files {
+        height: calc(70vh - 1rem);
+        width: 10rem;
 }
 
 .scroll-box.input {
-        max-height: calc(70vh + 1rem);
-        min-width: 30vw;
-        max-width: 30vw;
-        min-width: 20rem;
-        min-height: 70vh;
+        height: calc(70vh + 1.5rem);
+        width: 25vw;
 }
 
 .scroll-box.output {
-        max-height: 70vh;
-        min-height: 70vh;
-        max-width: 50vw;
-        min-width: 50vw;
+        width: 58vw;
+        height: 70vh;
 }
 
 #copy-input {
@@ -442,6 +458,13 @@ tr {
         top: var(--space);
 }
 
+#download-output {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        left: 0;
+}
+
 section > h2 {
         position: -webkit-sticky;
         position: sticky;
@@ -456,14 +479,14 @@ section > h2 {
 }
 
 @media (max-width: 1080px) {
-        .scroll-box.input {
+        /* .scroll-box.input {
                 width: calc(100vw - 3rem);
         }
 
         .scroll-box.output {
                 max-width: calc(100vw - 3rem);
                 min-width: unset;
-        }
+        } */
 }
 @media (max-width: 640px) {
         table,
