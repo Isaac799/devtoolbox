@@ -327,16 +327,16 @@ tr {
 
 .scroll-box.files {
         height: calc(70vh - 1rem);
-        width: 10rem;
+        width: 29rem;
 }
 
 .scroll-box.input {
         height: calc(70vh + 1.5rem);
-        width: 25vw;
+        width: 20vw;
 }
 
 .scroll-box.output {
-        width: 58vw;
+        width: 40vw;
         height: 70vh;
 }
 

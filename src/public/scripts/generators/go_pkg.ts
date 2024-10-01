@@ -1,7 +1,7 @@
 import { alignKeyword, alignKeywords, SnakeToPascal } from '../core/formatting';
 import { CodeGenerator, SQL_TO_GO_TYPE } from '../core/structure';
 
-export class GoTypesCodeGenerator extends CodeGenerator {
+export class GoPkg extends CodeGenerator {
         FormatStack(stack: string[]) {
                 let types = alignKeywords(
                         stack,
@@ -11,11 +11,8 @@ export class GoTypesCodeGenerator extends CodeGenerator {
                 return jsons;
         }
 
-        GenerateGoTypes(): string {
+        Run() {
                 let schemas = this.input;
-
-                let outputStack: string[] = [];
-                let stack: string[] = [];
 
                 for (const schemaName in schemas) {
                         if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
@@ -27,6 +24,9 @@ export class GoTypesCodeGenerator extends CodeGenerator {
                                 if (!Object.prototype.hasOwnProperty.call(schema.tables, tableName)) {
                                         continue;
                                 }
+                                let outputStack: string[] = [];
+                                let stack: string[] = [];
+
                                 const table = schema.tables[tableName];
 
                                 stack.push(`type ${SnakeToPascal(tableName)} struct {`);
@@ -37,17 +37,12 @@ export class GoTypesCodeGenerator extends CodeGenerator {
                                 stack.push('}');
                                 outputStack.push(this.FormatStack(stack).join(`\n`));
                                 stack = [];
+
+                                let fileContent = outputStack.join('\n').trim();
+                                this.output[`/pkg/${table.label}s/${table.label}.go`] = `package models\n\n${fileContent}`;
                         }
                 }
 
-                return outputStack.join('\n').trim();
-        }
-
-        Run() {
-                let goTypes = this.GenerateGoTypes();
-                this.output = {
-                        'structure.go': `package main\n\n${goTypes}`,
-                };
                 return this;
         }
 }

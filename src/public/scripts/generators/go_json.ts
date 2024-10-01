@@ -2,12 +2,17 @@ import { SnakeToPascal } from '../core/formatting';
 import { CodeGenerator, Endpoint, SqlTable } from '../core/structure';
 import { SqlGenerator } from './postgres_sql';
 
-export class GoApiCodeGenerator extends CodeGenerator {
+export class GoJSON extends CodeGenerator {
         Run() {
                 let schemas = this.input;
-                let allParts: string[] = [];
 
-                allParts.push('package main\n');
+                let pkg = `package main
+
+import (
+    "database/sql"
+    "encoding/json"
+    "net/http"
+)`;
 
                 let goEndpoints: {
                         name: string;
@@ -24,6 +29,8 @@ export class GoApiCodeGenerator extends CodeGenerator {
                                 if (!Object.prototype.hasOwnProperty.call(schema.tables, tableName)) {
                                         continue;
                                 }
+                                let allParts: string[] = [pkg];
+
                                 const table = schema.tables[tableName];
 
                                 if (table.endpoints.create !== null) {
@@ -36,7 +43,7 @@ export class GoApiCodeGenerator extends CodeGenerator {
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoApiCodeGenerator.GenerateCreateSnippet(endpoint);
+                                                let str = GoJSON.GenerateCreateSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
@@ -50,7 +57,7 @@ export class GoApiCodeGenerator extends CodeGenerator {
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoApiCodeGenerator.GenerateReadSnippet(endpoint, table);
+                                                let str = GoJSON.GenerateReadSnippet(endpoint, table);
                                                 allParts.push(str);
                                         }
                                 }
@@ -64,7 +71,7 @@ export class GoApiCodeGenerator extends CodeGenerator {
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoApiCodeGenerator.GenerateUpdateSnippet(endpoint);
+                                                let str = GoJSON.GenerateUpdateSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
@@ -78,10 +85,12 @@ export class GoApiCodeGenerator extends CodeGenerator {
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoApiCodeGenerator.GenerateDeleteSnippet(endpoint);
+                                                let str = GoJSON.GenerateDeleteSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
+                                let tableStr = allParts.join('\n\n');
+                                this.output['/internal/handlers/' + table.label + '/json.go'] = tableStr;
                         }
                 }
 
@@ -146,17 +155,13 @@ export class GoApiCodeGenerator extends CodeGenerator {
                         endpointStrs.push(endpointsStr);
                 }
 
-                this.output = {
-                        'api.go': allParts.join('\n'),
-                };
-
                 return this;
         }
 
         private static GenerateCreateSnippet(endpoint: Endpoint) {
                 let inputsForQuery = endpoint.http.bodyIn.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`).join(', ');
                 let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.output.varName}.${SnakeToPascal(e.sql.sqlLocation.column)}`).join(', ');
-                let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request) {
+                let str = `func (a *App) ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request) {
     var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
     if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -188,7 +193,7 @@ export class GoApiCodeGenerator extends CodeGenerator {
                 // let inputs = endpoint.inputs.map((e) => `${endpoint.go.input.name}.${e.go.name}`);
 
                 if (endpoint.many) {
-                        let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
+                        let str = `func (a *App) ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
     rows, err := db.Query(query)
      if err != nil {
@@ -220,7 +225,7 @@ export class GoApiCodeGenerator extends CodeGenerator {
                 }
 
                 if (inputs.length === 0) {
-                        let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request) {
+                        let str = `func (a *App) ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
     
     var ${endpoint.go.output.varName} ${endpoint.go.output.typeType}
@@ -241,7 +246,7 @@ export class GoApiCodeGenerator extends CodeGenerator {
 
                 // var ${endpoint.go.input.name} ${endpoint.go.input.type}
 
-                let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
+                let str = `func (a *App) ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
     
     var ${endpoint.go.output.varName} ${endpoint.go.output.typeType}
@@ -266,7 +271,7 @@ export class GoApiCodeGenerator extends CodeGenerator {
                 let inputs = [...pathAttrs, ...bodyAttrs].join(', ');
                 let paramFromRouter = `${endpoint.primaryKeyEndpointParam.go.varName} ${endpoint.primaryKeyEndpointParam.go.typeType}`;
 
-                let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
+                let str = `func (a *App) ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
     var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
     if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -296,7 +301,7 @@ export class GoApiCodeGenerator extends CodeGenerator {
                 let inputs = endpoint.http.path.map((e) => `${e.go.varName}`).join(', ');
                 let paramFromRouter = `${endpoint.primaryKeyEndpointParam.go.varName} ${endpoint.primaryKeyEndpointParam.go.typeType}`;
 
-                let str = `func ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
+                let str = `func (a *App) ${endpoint.routerFuncApiName}(w http.ResponseWriter, r *http.Request, ${paramFromRouter}) {
 
     query := \`${SqlGenerator.GenerateADeleteEndpoint(endpoint, true)}\`
     

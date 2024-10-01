@@ -525,9 +525,10 @@ export class Endpoint {
         };
 
         get path() {
-                let endpointPath = `/${this.sqlSchemaName}/${this.go.real.name}`;
+                // let endpointPath = `/${this.sqlSchemaName}/${this.go.real.name}`;
+                let endpointPath = `/${this.go.real.name}`;
                 if (!this.many && this.method !== HttpMethod.POST) {
-                        endpointPath += `/:${this.primaryKeyName}`;
+                        endpointPath += `/{${this.primaryKeyName}}`;
                 }
                 return endpointPath;
         }
@@ -616,7 +617,7 @@ export class EndpointGoShow {
         }
 
         filePath(kind: 'show' | 'new' | 'edit' | 'index') {
-                let endpointPath = `/templates/${this.sqlTableName}/${kind}.html`;
+                let endpointPath = `/web/templates/${this.sqlTableName}/${kind}.html`;
                 // let endpointPath = `/templates/${this.sqlSchemaName}/${this.sqlTableName}/${kind}.html`;
                 return endpointPath;
         }

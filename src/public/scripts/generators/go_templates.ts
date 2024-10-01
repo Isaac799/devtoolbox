@@ -1,14 +1,14 @@
 import { SnakeToTitle } from '../core/formatting';
 import { CodeGenerator } from '../core/structure';
 
-export class GoSsrAssets extends CodeGenerator {
+export class GoTemplates extends CodeGenerator {
         Run() {
                 this.output = {
-                        '/templates/base.html': GoSsrAssets.baseHtml,
-                        '/templates/footer.html': GoSsrAssets.footerHtml,
-                        '/templates/navbar.html': this.GenerateNavigationBar(),
-                        '/templates/show.home.html': GoSsrAssets.homeHtml,
-                        '/assets/js/bulma.js': GoSsrAssets.bulmaJs,
+                        '/web/templates/base.html': GoTemplates.baseHtml,
+                        '/web/templates/footer.html': GoTemplates.footerHtml,
+                        '/web/templates/navbar.html': this.GenerateNavigationBar(),
+                        '/web/templates/show.home.html': GoTemplates.homeHtml,
+                        '/web/static/bulma.js': GoTemplates.bulmaJs,
                 };
                 return this;
         }
