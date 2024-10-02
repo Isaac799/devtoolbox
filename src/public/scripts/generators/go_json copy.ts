@@ -1,10 +1,19 @@
-import { SnakeToCamel } from '../core/formatting';
+import { SnakeToCamel, SnakeToPascal } from '../core/formatting';
 import { CodeGenerator, Endpoint } from '../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoJSON extends CodeGenerator {
         Run() {
                 let schemas = this.input;
+
+                let pkg = `package customer
+
+import (
+    "encoding/json"
+    "net/http"
+    "myapp/pkg/models"
+    "myapp/pkg/repositories"
+)`;
 
                 let goEndpoints: {
                         name: string;
@@ -21,20 +30,9 @@ export class GoJSON extends CodeGenerator {
                                 if (!Object.prototype.hasOwnProperty.call(schema.tables, tableName)) {
                                         continue;
                                 }
-                                const table = schema.tables[tableName];
-
-                                let pkg = `package ${table.goPackageName}
-
-import (
-    "encoding/json"
-    "myapp/pkg/models"
-    "myapp/pkg/repositories"
-    "net/http"
-    "strconv"
-
-    "github.com/gorilla/mux"
-)`;
                                 let allParts: string[] = [pkg];
+
+                                const table = schema.tables[tableName];
 
                                 if (table.endpoints.create !== null) {
                                         for (let m = 0; m < table.endpoints.create.length; m++) {
@@ -46,7 +44,7 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoJSON.GenerateCreateUpdateSnippet(endpoint);
+                                                let str = GoJSON.GenerateCreateSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
@@ -74,7 +72,7 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoJSON.GenerateCreateUpdateSnippet(endpoint);
+                                                let str = GoJSON.GenerateUpdateSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
@@ -88,7 +86,7 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoJSON.CreateDeleteSnippet(endpoint);
+                                                let str = GoJSON.GenerateDeleteSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
@@ -161,10 +159,10 @@ import (
                 return this;
         }
 
-        private static GenerateCreateUpdateSnippet(endpoint: Endpoint) {
+        private static GenerateCreateSnippet(endpoint: Endpoint) {
                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var ${endpoint.go.input.varName} models.${endpoint.go.input.typeType}
+        var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
         if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
             http.Error(w, err.Error(), http.StatusBadRequest)
             return
@@ -178,42 +176,6 @@ import (
         w.WriteHeader(http.StatusCreated)
     }
 }`;
-                return str;
-        }
-        private static CreateDeleteSnippet(endpoint: Endpoint) {
-                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
-                variablesFromPath = '    ' + variablesFromPath;
-
-                let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-${variablesFromPath}    
-
-        if err := repo.${endpoint.routerRepoName}(${SnakeToCamel(endpoint.primaryKeyName)}); err != nil {
-            http.Error(w, "Error inserting: "+err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        w.WriteHeader(http.StatusCreated)
-    }
-}`;
-
-                //         private static GenerateCreateSnippet(endpoint: Endpoint) {
-                //                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-                //     return func(w http.ResponseWriter, r *http.Request) {
-                //         var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
-                //         if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
-                //             http.Error(w, err.Error(), http.StatusBadRequest)
-                //             return
-                //         }
-
-                //         if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
-                //             http.Error(w, "Error inserting: "+err.Error(), http.StatusInternalServerError)
-                //             return
-                //         }
-
-                //         w.WriteHeader(http.StatusCreated)
-                //     }
-                // }`;
                 return str.trim();
         }
 
@@ -223,11 +185,9 @@ ${variablesFromPath}
 
                 if (endpoint.many) {
                         let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-    ${variablesFromPath}
     return func(w http.ResponseWriter, r *http.Request) {
-        ${endpoint.go.input.varName}s, err := repo.${endpoint.routerRepoName}(); 
-        
-        if err != nil {
+${variablesFromPath}
+        if err := repo.${endpoint.routerRepoName}(); err != nil {
             http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
             return
         }
@@ -241,8 +201,7 @@ ${variablesFromPath}
                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
 ${variablesFromPath}
-        ${endpoint.go.input.varName}, err := repo.${endpoint.routerRepoName}(${SnakeToCamel(endpoint.primaryKeyName)}); 
-        if err != nil {
+        if err := repo.${endpoint.routerRepoName}(&${SnakeToCamel(endpoint.primaryKeyName)}); err != nil {
             http.Error(w, "Error reading: "+err.Error(), http.StatusInternalServerError)
             return
         }
@@ -253,43 +212,56 @@ ${variablesFromPath}
                 return str.trim();
         }
 
-        //         private static GenerateUpdateSnippet(endpoint: Endpoint) {
-        //                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-        //     return func(w http.ResponseWriter, r *http.Request) {
-        //         var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
-        //         if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
-        //             http.Error(w, err.Error(), http.StatusBadRequest)
-        //             return
-        //         }
+        private static GenerateUpdateSnippet(endpoint: Endpoint) {
+                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
+                variablesFromPath = '    ' + variablesFromPath;
 
-        //         if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
-        //             http.Error(w, "Error updating: "+err.Error(), http.StatusInternalServerError)
-        //             return
-        //         }
+                let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+${variablesFromPath}
+        var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
+        if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }
 
-        //         w.WriteHeader(http.StatusNoContent)
-        //     }
-        // }`;
-        //                 return str.trim();
-        //         }
+        ${endpoint.go.input.varName}.${SnakeToPascal(endpoint.primaryKeyName)} = ${SnakeToCamel(endpoint.primaryKeyName)}
 
-        //         private static GenerateDeleteSnippet(endpoint: Endpoint) {
-        //                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-        //     return func(w http.ResponseWriter, r *http.Request) {
-        //         var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
-        //         if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
-        //             http.Error(w, err.Error(), http.StatusBadRequest)
-        //             return
-        //         }
+        if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
+            http.Error(w, "Error updating: "+err.Error(), http.StatusInternalServerError)
+            return
+        }
 
-        //         if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
-        //             http.Error(w, "Error deleting: "+err.Error(), http.StatusInternalServerError)
-        //             return
-        //         }
+        w.WriteHeader(http.StatusNoContent)
+    }
+}`;
+                return str.trim();
+        }
 
-        //         w.WriteHeader(http.StatusNoContent)
-        //     }
-        // }`;
-        //                 return str.trim();
-        //         }
+        private static GenerateDeleteSnippet(endpoint: Endpoint) {
+                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
+                variablesFromPath = '    ' + variablesFromPath;
+
+                let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+${variablesFromPath}
+        var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
+        if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }
+
+        ${endpoint.go.input.varName}.${SnakeToPascal(endpoint.primaryKeyName)} = ${SnakeToCamel(endpoint.primaryKeyName)}
+
+        if err := repo.${endpoint.routerRepoName}(&${
+                        endpoint.go.input.varName
+                }); err != nil {            http.Error(w, "Error deleting: "+err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        w.WriteHeader(http.StatusNoContent)
+    }
+}`;
+                return str.trim();
+        }
 }

@@ -462,7 +462,7 @@ $$;`;
                 const returning = endpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`).join(', ');
 
                 let procedure = `
-INSERT INTO ${endpoint.sqlTableName} (
+INSERT INTO ${endpoint.sqlTableFullName} (
     ${into}
 ) 
 VALUES (
@@ -488,7 +488,7 @@ RETURNING
 
                 where = `\n    ${where}`;
 
-                let procedure = `DELETE FROM ${endpoint.sqlTableName}
+                let procedure = `DELETE FROM ${endpoint.sqlTableFullName}
 WHERE ${where};`;
                 return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
@@ -547,9 +547,9 @@ WHERE ${where};`;
 
                 if (endpoint.sql.name.includes('join')) {
                         join = joinStr;
-                        tableName = `${endpoint.sqlTableName} ${endpoint.sqlTableName.slice(0, 3)}_0`;
+                        tableName = `${endpoint.sqlTableFullName} ${endpoint.sqlTableName.slice(0, 3)}_0`;
                 } else {
-                        tableName = `${endpoint.sqlTableName}`;
+                        tableName = `${endpoint.sqlTableFullName}`;
                 }
 
                 const selectsNeeded = endpoint.sql.outputs.map((e) => {

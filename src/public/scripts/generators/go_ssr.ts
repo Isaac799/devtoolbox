@@ -137,7 +137,7 @@ export class GoSSR extends CodeGenerator {
             <a href="${show.url}">${title}</a>
         </li>
         <li>
-            <a href="${show.url}/{{ .Data.${show.primaryKeyName} }}">${show.primaryKeyName}</a>
+            <a href="${show.url}/{{ .Data.${show.primaryKeyName} }}"> {{ .Data.${show.primaryKeyName} }}</a>
         </li>
         <li class="is-active">
             <a href="${show.url}/{{ .Data.${show.primaryKeyName} }}/edit" aria-current="page">Edit</a>

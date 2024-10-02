@@ -1,4 +1,4 @@
-import { alignKeyword } from '../core/formatting';
+import { alignKeyword, alignKeywords } from '../core/formatting';
 import { CodeGenerator, EndpointParam, HttpMethod } from '../core/structure';
 
 export class GoRouter extends CodeGenerator {
@@ -11,6 +11,7 @@ export class GoRouter extends CodeGenerator {
 
         GenerateRouter(): string {
                 let routes: string[] = [];
+                let repositories: string[] = [];
 
                 let schemas = this.input;
                 for (const schemaName in schemas) {
@@ -24,73 +25,113 @@ export class GoRouter extends CodeGenerator {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
+                                if (!table.endpoints.goShow) {
+                                        console.error('what?! no show on router gen for table');
+                                        continue;
+                                }
+                                let u = table.endpoints.goShow;
+                                repositories.push(`${u.repo.var} := &repositories.${u.repo.type}{DB: db}`);
+
                                 if (table.endpoints.create) {
                                         for (const endpoint of table.endpoints.create) {
                                                 routes.push(
-                                                        `a.Router.HandleFunc("${endpoint.path + '/new'}", a.${endpoint.routerFuncName}).Methods("${
-                                                                HttpMethod.GET
-                                                        }")`
+                                                        `r.HandleFunc("${endpoint.path + '/new'}", ${table.goPackageName}.${
+                                                                endpoint.routerFuncName
+                                                        }).Methods("${HttpMethod.GET}")`
                                                 );
                                                 routes.push(
-                                                        `a.Router.HandleFunc("/api${endpoint.path}", a.${endpoint.routerFuncApiName}).Methods("${endpoint.method}")`
+                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
                                                 );
                                         }
                                 }
                                 if (table.endpoints.read) {
                                         for (const endpoint of table.endpoints.read) {
                                                 routes.push(
-                                                        `a.Router.HandleFunc("${endpoint.path}", a.${endpoint.routerFuncName}).Methods("${HttpMethod.GET}")`
+                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncName}(${u.repo.var})).Methods("${HttpMethod.GET}")`
                                                 );
                                                 routes.push(
-                                                        `a.Router.HandleFunc("/api${endpoint.path}", a.${endpoint.routerFuncApiName}).Methods("${endpoint.method}")`
+                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
                                                 );
                                         }
                                 }
                                 if (table.endpoints.update) {
                                         for (const endpoint of table.endpoints.update) {
                                                 routes.push(
-                                                        `a.Router.HandleFunc("${endpoint.path}", a.${endpoint.routerFuncName}).Methods("${HttpMethod.GET}")`
+                                                        `r.HandleFunc("${endpoint.path + '/edit'}", ${table.goPackageName}.${endpoint.routerFuncName}(${
+                                                                u.repo.var
+                                                        })).Methods("${HttpMethod.GET}")`
                                                 );
                                                 routes.push(
-                                                        `a.Router.HandleFunc("/api${endpoint.path}", a.${endpoint.routerFuncApiName}).Methods("${endpoint.method}")`
+                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
                                                 );
                                         }
                                 }
                                 if (table.endpoints.delete) {
                                         for (const endpoint of table.endpoints.delete) {
+                                                // no delete view
+                                                // routes.push(
+                                                //         `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncName}(${u.repo.var})).Methods("${HttpMethod.GET}")`
+                                                // );
                                                 routes.push(
-                                                        `a.Router.HandleFunc("${endpoint.path}", a.${endpoint.routerFuncName}).Methods("${HttpMethod.GET}")`
-                                                );
-                                                routes.push(
-                                                        `a.Router.HandleFunc("/api${endpoint.path}", a.${endpoint.routerFuncApiName}).Methods("${endpoint.method}")`
+                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
                                                 );
                                         }
                                 }
                         }
                 }
 
-                let routeStr = alignKeyword(alignKeyword(routes, ' a.'), ').M')
+                let allPackages: string[] = [];
+                for (const key in schemas) {
+                        if (!Object.prototype.hasOwnProperty.call(schemas, key)) {
+                                continue;
+                        }
+                        const schema = schemas[key];
+
+                        for (const key2 in schema.tables) {
+                                if (Object.prototype.hasOwnProperty.call(schema.tables, key2)) {
+                                        const table = schema.tables[key2];
+                                        allPackages.push(table.goPackageName);
+                                }
+                        }
+                }
+
+                let routeStr = alignKeyword(
+                        alignKeywords(
+                                alignKeyword(routes, ' r.'),
+                                allPackages.map((e) => ' ' + e + '.')
+                        ),
+                        ').Methods'
+                )
+                        .sort((a, b) => a.localeCompare(b))
+                        .join('\n    ');
+                let repositoriesStr = alignKeyword(repositories, ' :=')
                         .sort((a, b) => a.localeCompare(b))
                         .join('\n    ');
 
-                let str = `package main
+                let imports = allPackages.map((e) => `"myapp/internal/handlers/${e}"`).join('\n    ');
+
+                let str = `package routes
 
 import (
     "database/sql"
-    "encoding/json"
-    "log"
+    "myapp/internal/middleware"
+    "myapp/pkg/repositories"
     "net/http"
+    "path/filepath"
+
+    ${imports}    
 
     "github.com/gorilla/mux"
     _ "github.com/lib/pq"
 )
 
-func (a *App) InitializeRoutes() {
-    a.Router.Use(MethodOverrideMiddleware)
+func SetupRoutes(r *mux.Router, db *sql.DB) {
+    ${repositoriesStr}
+
+    r.Use(middleware.MethodOverrideMiddleware)
+    r.HandleFunc("/assets/{filename}", serveAsset).Methods("GET")
 
     ${routeStr}
-
-    a.Router.HandleFunc("/assets/{filename}", serveAsset).Methods("GET")
 }
 
 func serveAsset(w http.ResponseWriter, r *http.Request) {

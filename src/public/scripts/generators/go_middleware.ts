@@ -8,7 +8,7 @@ export class GoMiddleware extends CodeGenerator {
                 return this;
         }
 
-        private static readonly methodSwap = `package main
+        private static readonly methodSwap = `package middleware
 
 import (
     "net/http"

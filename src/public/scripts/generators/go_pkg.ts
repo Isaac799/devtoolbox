@@ -39,7 +39,10 @@ export class GoPkg extends CodeGenerator {
                                 stack = [];
 
                                 let fileContent = outputStack.join('\n').trim();
-                                this.output[`/pkg/${table.label}s/${table.label}.go`] = `package models\n\n${fileContent}`;
+                                // this.output[`/pkg/${table.label}/${table.label}.go`] = `package models\n\n${fileContent}`;
+                                this.output[`/pkg/models/${table.label}.go`] = `package models\n\n${fileContent}`;
+
+                                this.output[`/pkg/services/${table.label}.go`] = `package services\n\n// add business logic here`;
                         }
                 }
 

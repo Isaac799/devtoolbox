@@ -8,35 +8,37 @@ import { GoTemplates } from './go_templates';
 import { GoHTML } from './go_html';
 import { GoRouter } from './go_router';
 import { GoPkg } from './go_pkg';
+import { GoPkgRepositories } from './go_pkg_repositories';
 
 export class GoCodeGenerator extends CodeGenerator {
-        goApi = new GoJSON();
-        goStructs = new GoPkg();
+        goJSON = new GoJSON();
+        goPkg = new GoPkg();
         goSSR = new GoSSR();
         goDatabase = new GoDatabase();
-        goSsrAssets = new GoTemplates();
-        goSsrRouter = new GoRouter();
-        goSsrRender = new GoHTML();
+        goTemplates = new GoTemplates();
+        goRouter = new GoRouter();
+        goHTML = new GoHTML();
         goMiddleware = new GoMiddleware();
+        goPkgRepositories = new GoPkgRepositories();
 
         Run() {
-                let goApi = this.goApi.Clear().SetInput(this.input).Run().Read();
-                goApi = trimAndRemoveBlankStrings(goApi);
+                let goJSON = this.goJSON.Clear().SetInput(this.input).Run().Read();
+                goJSON = trimAndRemoveBlankStrings(goJSON);
 
-                let goStructs = this.goStructs.Clear().SetInput(this.input).Run().Read();
-                goStructs = trimAndRemoveBlankStrings(goStructs);
+                let goPkg = this.goPkg.Clear().SetInput(this.input).Run().Read();
+                goPkg = trimAndRemoveBlankStrings(goPkg);
 
                 let goSSR = this.goSSR.Clear().SetInput(this.input).Run().Read();
                 goSSR = trimAndRemoveBlankStrings(goSSR);
 
-                let goSsrAssets = this.goSsrAssets.Clear().SetInput(this.input).Run().Read();
-                goSsrAssets = trimAndRemoveBlankStrings(goSsrAssets);
+                let goTemplates = this.goTemplates.Clear().SetInput(this.input).Run().Read();
+                goTemplates = trimAndRemoveBlankStrings(goTemplates);
 
-                let goSsrRouter = this.goSsrRouter.Clear().SetInput(this.input).Run().Read();
-                goSsrRouter = trimAndRemoveBlankStrings(goSsrRouter);
+                let goRouter = this.goRouter.Clear().SetInput(this.input).Run().Read();
+                goRouter = trimAndRemoveBlankStrings(goRouter);
 
-                let goSsrRender = this.goSsrRender.Clear().SetInput(this.input).Run().Read();
-                goSsrRender = trimAndRemoveBlankStrings(goSsrRender);
+                let goHTML = this.goHTML.Clear().SetInput(this.input).Run().Read();
+                goHTML = trimAndRemoveBlankStrings(goHTML);
 
                 let goDatabase = this.goDatabase.Clear().SetInput(this.input).Run().Read();
                 goDatabase = trimAndRemoveBlankStrings(goDatabase);
@@ -44,41 +46,10 @@ export class GoCodeGenerator extends CodeGenerator {
                 let goMiddleware = this.goMiddleware.Clear().SetInput(this.input).Run().Read();
                 goMiddleware = trimAndRemoveBlankStrings(goMiddleware);
 
-                //                 let headerInfo = `package main
+                let goPkgRepositories = this.goPkgRepositories.Clear().SetInput(this.input).Run().Read();
+                goPkgRepositories = trimAndRemoveBlankStrings(goPkgRepositories);
 
-                // import (
-                //     "database/sql"
-                //     "encoding/json"
-                //     "log"
-                //     "net/http"
-
-                //     _ "github.com/lib/pq"
-                // )
-
-                // var db *sql.DB
-
-                // func initDB() {
-                //     var err error
-                //     connStr := "user=username dbname=mydb sslmode=disable"
-                //     db, err = sql.Open("postgres", connStr)
-                //     if err != nil {
-                //         log.Fatal(err)
-                //     }
-                // }`;
-
-                //                 allParts.push(headerInfo);
-
-                //                 const main = `func main() {
-                //                         initDB()
-                //                         defer db.Close()
-                //                     ${endpointStrs.join('\n')}
-
-                //                         log.Fatal(http.ListenAndServe(":8080", nil))
-                //                     }`;
-
-                //                                     allParts.push(main);
-
-                let goMod = `module mysite
+                let goMod = `module myapp
 
 go 1.21.13
 `;
@@ -92,14 +63,16 @@ github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 import (
     "log"
     "net/http"
+
+    "myapp/internal/config"
+    "myapp/internal/routes"
+
+    "github.com/gorilla/mux"
+    _ "github.com/lib/pq"
 )
 
-func (a *App) Run(addr string) {
-    log.Fatal(http.ListenAndServe(addr, a.Router))
-}
-
 func main() {
-    dbConfig := DBConfig{
+    dbConfig := config.DBConfig{
         User:     "postgres",
         Password: "postgres",
         DBName:   "postgres",
@@ -107,34 +80,66 @@ func main() {
         Port:     "5432",
     }
 
-    db, err := NewDB(dbConfig)
+    db, err := config.NewDB(dbConfig)
     if err != nil {
         log.Fatal(err)
     }
     defer db.Close()
 
-    app := &App{
+    app := &config.App{
         Router: mux.NewRouter(),
         DB:     db,
     }
 
-    app.InitializeRoutes()
-    app.Run(":8080")
+    routes.SetupRoutes(app.Router, db)
+    if err := http.ListenAndServe(":8080", app.Router); err != nil {
+        log.Fatal(err)
+    }
+}
+
+`;
+
+                let appModel = `package config
+
+import (
+    "database/sql"
+    "log"
+    "net/http"
+
+    "github.com/gorilla/mux"
+)
+
+type App struct {
+    Router *mux.Router
+    DB     *sql.DB
+}
+
+func (a *App) Run(addr string) {
+    log.Fatal(http.ListenAndServe(addr, a.Router))
 }
 `;
+
+                let migration = 'package migration\n\n// todo ';
+                let test = 'package test\n\n// todo ';
+                let readme = 'todo';
 
                 this.output = {
                         'go.mod': goMod,
                         'go.sum': goSum,
                         '/cmd/mysite/main.go': mainGo,
+                        '/internal/config/app.go': appModel,
                         ...goDatabase,
-                        ...goSsrRouter,
                         ...goMiddleware,
-                        ...goApi,
-                        ...goSsrRender,
-                        ...goStructs,
+                        ...goRouter,
+                        ...goPkgRepositories,
+                        ...goJSON,
+                        ...goHTML,
+                        ...goPkg,
                         ...goSSR,
-                        ...goSsrAssets,
+                        ...goTemplates,
+                        '/scripts/migrate.go': migration,
+                        '/test/test_handler_x.go': test,
+                        'readme.md': readme,
                 };
 
                 // console.log('this.output :>> ', Object.keys(this.output));

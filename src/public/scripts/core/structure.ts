@@ -461,11 +461,17 @@ export class Endpoint {
         isOptions: boolean = false;
         many: boolean = false;
         sqlTableName: string;
+        sqlTableFullName: string;
         sqlSchemaName: string;
         primaryKeyName: string;
         primaryKeyEndpointParam: EndpointParam;
         routerFuncName: string;
         routerFuncApiName: string;
+        routerRepoName: string;
+        repo: {
+                type: string;
+                var: string;
+        };
 
         sql: {
                 inout: EndpointParam[];
@@ -528,7 +534,7 @@ export class Endpoint {
                 // let endpointPath = `/${this.sqlSchemaName}/${this.go.real.name}`;
                 let endpointPath = `/${this.go.real.name}`;
                 if (!this.many && this.method !== HttpMethod.POST) {
-                        endpointPath += `/{${this.primaryKeyName}}`;
+                        endpointPath += `/{${SnakeToCamel(this.primaryKeyName)}}`;
                 }
                 return endpointPath;
         }
@@ -543,17 +549,25 @@ export class Endpoint {
                         sqlTableAttribute.readOnly
                 );
 
+                this.repo = {
+                        type: `${SnakeToPascal(table.label + '_repository')}`,
+                        var: `${SnakeToCamel(table.label + '_repository')}`,
+                };
+
                 this.sql.name = `${method.toLowerCase()}_${name}`;
                 if (many) {
-                        this.sql.name += 's';
+                        // this.sql.name += 's';
                 }
                 this.method = method;
                 this.many = many;
                 const tableL = table.label;
-                this.sqlTableName = table.label + 's';
+                this.sqlTableName = table.label;
+                this.sqlTableFullName = table.fullName;
                 this.sqlSchemaName = table.parentSchema.name;
                 this.routerFuncName = SnakeToPascal(`${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
-                this.routerFuncApiName = SnakeToPascal(`api_${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
+                // this.routerFuncApiName = SnakeToPascal(`api_${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
+                this.routerFuncApiName = SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}`) + (many ? 's' : '');
+                this.routerRepoName = SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}`) + (many ? 's' : '');
 
                 this.typescript = {
                         fnName: SnakeToCamel(this.sql.name),
@@ -605,14 +619,20 @@ export class EndpointGoShow {
 
         routerFuncName: string;
         sqlTableName: string;
+        sqlTableFullName: string;
         sqlSchemaName: string;
+        routerRepoName: string;
+        repo: {
+                type: string;
+                var: string;
+        };
         primaryKeyName: string;
         propertyNames: string[];
         sqlAttributes: SqlTableAttribute[];
 
         get url() {
                 // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
-                let endpointPath = `/${SnakeToKebab(this.sqlTableName)}`;
+                let endpointPath = `/api/${SnakeToKebab(this.sqlTableName)}`;
                 return endpointPath;
         }
 
@@ -627,8 +647,14 @@ export class EndpointGoShow {
                 this.sqlAttributes = Object.values(table.attributes);
                 this.primaryKeyName = SnakeToPascal(primaryKeyName);
                 this.routerFuncName = SnakeToPascal(`${HttpMethodToHtmlName(this.method, false)}_${table.label}`);
-                this.sqlTableName = table.label + 's';
+                this.sqlTableName = table.label;
+                this.sqlTableFullName = table.fullName;
                 this.sqlSchemaName = table.parentSchema.name;
+                this.repo = {
+                        type: `${SnakeToPascal(table.label + '_repository')}`,
+                        var: `${SnakeToCamel(table.label + '_repository')}`,
+                };
+                this.routerRepoName = SnakeToPascal(`${this.method.toLowerCase()}_${table.label}`);
         }
 }
 
@@ -758,6 +784,7 @@ export class SqlTableAttribute {
 export class SqlTable {
         id: number;
         label: string;
+        goPackageName: string;
         parentSchema: SqlSchema;
         options: string[] = [];
         attributes: {
@@ -785,6 +812,7 @@ export class SqlTable {
                 this.parentSchema = parent;
                 this.label = label;
                 this.id = Math.random();
+                this.goPackageName = label.toLowerCase();
         }
 
         primaryKeys(): {
