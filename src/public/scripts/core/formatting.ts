@@ -136,6 +136,19 @@ export const trimAndRemoveBlankStrings = (obj: { [key: string]: string }): { [ke
         return trimmedObj;
 };
 
+export const organizeObjectByKeys = (obj: any) => {
+        // Get the keys of the object and sort them
+        const sortedKeys = Object.keys(obj).sort();
+
+        // Create a new object with sorted keys
+        const sortedObject: any = {};
+        for (const key of sortedKeys) {
+                sortedObject[key] = obj[key];
+        }
+
+        return sortedObject;
+};
+
 // export const groupData = (data: FileOutputs): NestedFileOutputs => {
 //         function addToNestedDict(nestedDict: NestedFileOutputs, keys: string[], item: FileOutputs) {
 //                 let current = nestedDict;

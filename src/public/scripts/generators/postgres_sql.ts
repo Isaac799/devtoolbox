@@ -455,9 +455,7 @@ $$;`;
         }
 
         static GenerateACreateEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {
-                const into = endpoint.sql.inputs
-                        .map((e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`)
-                        .join(',\n    ');
+                const into = endpoint.sql.inputs.map((e) => `${e.sql.sqlLocation.column}`).join(',\n    ');
                 const values = endpoint.sql.inputs.map((e, i) => (withPlaceholders ? `$${i + 1}` : `${e.sql.name}`)).join(',\n    ');
                 const returning = endpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`).join(', ');
 

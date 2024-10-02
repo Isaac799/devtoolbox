@@ -11,6 +11,8 @@ export class GoRouter extends CodeGenerator {
 
         GenerateRouter(): string {
                 let routes: string[] = [];
+                let routesApi: string[] = [];
+                let routesForm: string[] = [];
                 let repositories: string[] = [];
 
                 let schemas = this.input;
@@ -39,18 +41,12 @@ export class GoRouter extends CodeGenerator {
                                                                 endpoint.routerFuncName
                                                         }).Methods("${HttpMethod.GET}")`
                                                 );
-                                                routes.push(
+                                                routesApi.push(
                                                         `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
                                                 );
-                                        }
-                                }
-                                if (table.endpoints.read) {
-                                        for (const endpoint of table.endpoints.read) {
-                                                routes.push(
-                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncName}(${u.repo.var})).Methods("${HttpMethod.GET}")`
-                                                );
-                                                routes.push(
-                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
+
+                                                routesForm.push(
+                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("POST")`
                                                 );
                                         }
                                 }
@@ -61,8 +57,12 @@ export class GoRouter extends CodeGenerator {
                                                                 u.repo.var
                                                         })).Methods("${HttpMethod.GET}")`
                                                 );
-                                                routes.push(
+                                                routesApi.push(
                                                         `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
+                                                );
+
+                                                routesForm.push(
+                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("PUT")`
                                                 );
                                         }
                                 }
@@ -72,7 +72,24 @@ export class GoRouter extends CodeGenerator {
                                                 // routes.push(
                                                 //         `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncName}(${u.repo.var})).Methods("${HttpMethod.GET}")`
                                                 // );
+                                                routesApi.push(
+                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
+                                                );
+
+                                                routesForm.push(
+                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("DELETE")`
+                                                );
+                                        }
+                                }
+
+                                // * important that read is last as it will match before the edit and delete
+
+                                if (table.endpoints.read) {
+                                        for (const endpoint of table.endpoints.read) {
                                                 routes.push(
+                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncName}(${u.repo.var})).Methods("${HttpMethod.GET}")`
+                                                );
+                                                routesApi.push(
                                                         `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
                                                 );
                                         }
@@ -101,12 +118,25 @@ export class GoRouter extends CodeGenerator {
                                 allPackages.map((e) => ' ' + e + '.')
                         ),
                         ').Methods'
-                )
-                        .sort((a, b) => a.localeCompare(b))
-                        .join('\n    ');
-                let repositoriesStr = alignKeyword(repositories, ' :=')
-                        .sort((a, b) => a.localeCompare(b))
-                        .join('\n    ');
+                ).join('\n    ');
+
+                let routeApiStr = alignKeyword(
+                        alignKeywords(
+                                alignKeyword(routesApi, ' r.'),
+                                allPackages.map((e) => ' ' + e + '.')
+                        ),
+                        ').Methods'
+                ).join('\n    ');
+
+                let routesFormStr = alignKeyword(
+                        alignKeywords(
+                                alignKeyword(routesForm, ' r.'),
+                                allPackages.map((e) => ' ' + e + '.')
+                        ),
+                        ').Methods'
+                ).join('\n    ');
+
+                let repositoriesStr = alignKeyword(repositories, ' :=').join('\n    ');
 
                 let imports = allPackages.map((e) => `"myapp/internal/handlers/${e}"`).join('\n    ');
 
@@ -128,10 +158,18 @@ import (
 func SetupRoutes(r *mux.Router, db *sql.DB) {
     ${repositoriesStr}
 
-    r.Use(middleware.MethodOverrideMiddleware)
+    r.Use(middleware.MethodOverride)
     r.HandleFunc("/assets/{filename}", serveAsset).Methods("GET")
 
     ${routeStr}
+
+    ${routesFormStr}
+
+    ${routeApiStr}
+
+    // note: a path to match must match for our form submission to run through
+    //       the middleware for necessary method modification 
+    http.Handle("/", middleware.MethodOverride(r))
 }
 
 func serveAsset(w http.ResponseWriter, r *http.Request) {

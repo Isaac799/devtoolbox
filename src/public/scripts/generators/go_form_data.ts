@@ -1,8 +1,8 @@
-import { SnakeToCamel } from '../core/formatting';
-import { CodeGenerator, Endpoint } from '../core/structure';
+import { alignKeyword, alignKeywords, SnakeToCamel } from '../core/formatting';
+import { CodeGenerator, Endpoint, EndpointParam, HttpMethod, SQL_TO_GO_TYPE, SqlTable } from '../core/structure';
 import { GoRouter } from './go_router';
 
-export class GoJSON extends CodeGenerator {
+export class GoFormData extends CodeGenerator {
         Run() {
                 let schemas = this.input;
 
@@ -26,7 +26,6 @@ export class GoJSON extends CodeGenerator {
                                 let pkg = `package ${table.goPackageName}
 
 import (
-    "encoding/json"
     "myapp/pkg/models"
     "myapp/pkg/repositories"
     "net/http"
@@ -46,21 +45,7 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoJSON.GenerateCreateUpdateSnippet(endpoint);
-                                                allParts.push(str);
-                                        }
-                                }
-                                if (table.endpoints.read !== null) {
-                                        for (let m = 0; m < table.endpoints.read.length; m++) {
-                                                const endpoint = table.endpoints.read[m];
-
-                                                goEndpoints.push({
-                                                        name: endpoint.go.fnName,
-                                                        method: 'get',
-                                                        path: endpoint.path,
-                                                });
-
-                                                let str = GoJSON.GenerateReadSnippet(endpoint);
+                                                let str = GoFormData.GenerateCreateUpdateSnippet(table, endpoint);
                                                 allParts.push(str);
                                         }
                                 }
@@ -74,7 +59,7 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoJSON.GenerateCreateUpdateSnippet(endpoint);
+                                                let str = GoFormData.GenerateCreateUpdateSnippet(table, endpoint);
                                                 allParts.push(str);
                                         }
                                 }
@@ -88,12 +73,12 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoJSON.CreateDeleteSnippet(endpoint);
+                                                let str = GoFormData.CreateDeleteSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
                                 let tableStr = allParts.join('\n\n');
-                                this.output['/internal/handlers/' + table.label + '/json.go'] = tableStr;
+                                this.output['/internal/handlers/' + table.label + '/form.go'] = tableStr;
                         }
                 }
 
@@ -161,14 +146,20 @@ import (
                 return this;
         }
 
-        private static GenerateCreateUpdateSnippet(endpoint: Endpoint) {
-                let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        var ${endpoint.go.input.varName} models.${endpoint.go.input.typeType}
-        if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
+        private static GenerateCreateUpdateSnippet(table: SqlTable, endpoint: Endpoint) {
+                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
+                variablesFromPath = '\n    ' + variablesFromPath;
+
+                let str = `func ${endpoint.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {${variablesFromPath}    
+        if err := r.ParseForm(); err != nil {
             http.Error(w, err.Error(), http.StatusBadRequest)
             return
-        }
+        }      
+
+        ${GoFormData.ParseFromForm(endpoint.http.bodyIn)}
+
+        ${GoFormData.BuildVarFromTheForm(table, endpoint)}
 
         if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
             http.Error(w, "Error processing: "+err.Error(), http.StatusInternalServerError)
@@ -180,11 +171,12 @@ import (
 }`;
                 return str;
         }
+
         private static CreateDeleteSnippet(endpoint: Endpoint) {
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '    ' + variablesFromPath;
 
-                let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+                let str = `func ${endpoint.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
 ${variablesFromPath}    
 
@@ -197,99 +189,69 @@ ${variablesFromPath}
     }
 }`;
 
-                //         private static GenerateCreateSnippet(endpoint: Endpoint) {
-                //                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-                //     return func(w http.ResponseWriter, r *http.Request) {
-                //         var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
-                //         if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
-                //             http.Error(w, err.Error(), http.StatusBadRequest)
-                //             return
-                //         }
-
-                //         if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
-                //             http.Error(w, "Error inserting: "+err.Error(), http.StatusInternalServerError)
-                //             return
-                //         }
-
-                //         w.WriteHeader(http.StatusCreated)
-                //     }
-                // }`;
                 return str.trim();
         }
 
-        private static GenerateReadSnippet(endpoint: Endpoint) {
-                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
-                variablesFromPath = '    ' + variablesFromPath;
-
-                if (endpoint.many) {
-                        let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-    ${variablesFromPath}
-    return func(w http.ResponseWriter, r *http.Request) {
-        ${endpoint.go.input.varName}s, err := repo.${endpoint.routerRepoName}(); 
-        
-        if err != nil {
-            http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        json.NewEncoder(w).Encode(${endpoint.go.input.varName}s)
-    }
-}`;
-                        return str.trim();
+        private static BuildVarFromTheForm(table: SqlTable, endpoint: Endpoint) {
+                function FormatStack(stack: string[]) {
+                        let types = alignKeywords(
+                                stack,
+                                Object.values(SQL_TO_GO_TYPE).map((e) => e.goType)
+                        );
+                        let jsons = alignKeyword(types, '`json:');
+                        return jsons;
                 }
 
-                let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-${variablesFromPath}
-        ${endpoint.go.input.varName}, err := repo.${endpoint.routerRepoName}(${SnakeToCamel(endpoint.primaryKeyName)}); 
-        if err != nil {
-            http.Error(w, "Error reading: "+err.Error(), http.StatusInternalServerError)
-            return
+                let outputStack: string[] = [];
+                let stack: string[] = [];
+
+                let pk = endpoint.primaryKeyName;
+
+                stack.push(`${endpoint.go.input.varName} := models.${endpoint.go.input.typeType} {`);
+
+                // let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
+                // variablesFromPath = '\n    ' + variablesFromPath;
+
+                for (const attr of table.endpoints.existsAs) {
+                        if (attr.sql.name === pk) {
+                                if (endpoint.method !== HttpMethod.POST) {
+                                        stack.push(`    ${attr.go.typeName}: ${attr.go.varName},`);
+                                }
+                        } else {
+                                // stack.push(`    ${attr.go.typeName}: r.FormValue("${attr.sql.name}"),`);
+                                stack.push(`    ${attr.go.typeName}: ${attr.go.varName},`);
+                        }
+                }
+
+                stack.push('}');
+                outputStack.push(FormatStack(stack).join(`\n        `));
+                stack = [];
+
+                let fileContent = outputStack.join('\n        ').trim();
+
+                return fileContent;
         }
 
-        json.NewEncoder(w).Encode(${endpoint.go.input.varName})
-    }
-}`;
-                return str.trim();
+        private static ParseFromForm(value: EndpointParam[]) {
+                return value
+                        .map(
+                                (e) =>
+                                        e.go.typeType === 'string'
+                                                ? `${e.go.varName} := r.FormValue("${e.sql.name}")`
+                                                : `    ${e.go.varName}Str := r.FormValue("${e.sql.name}") 
+        ${e.go.varName}, err := ${e.go.parser(`${e.go.varName}Str`)}
+           if err != nil {
+           http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
+           return
+        }`
+
+                                //     `${e.go.varName}Str := r.URL.Query().Get("${e.sql.name}")
+                                //     ${e.go.varName}, err := ${e.go.parser(`${e.go.varName}Str`)}
+                                //         if err != nil {
+                                //         http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
+                                //         return
+                                //     }`
+                        )
+                        .join('\n\n    ');
         }
-
-        //         private static GenerateUpdateSnippet(endpoint: Endpoint) {
-        //                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-        //     return func(w http.ResponseWriter, r *http.Request) {
-        //         var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
-        //         if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
-        //             http.Error(w, err.Error(), http.StatusBadRequest)
-        //             return
-        //         }
-
-        //         if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
-        //             http.Error(w, "Error updating: "+err.Error(), http.StatusInternalServerError)
-        //             return
-        //         }
-
-        //         w.WriteHeader(http.StatusNoContent)
-        //     }
-        // }`;
-        //                 return str.trim();
-        //         }
-
-        //         private static GenerateDeleteSnippet(endpoint: Endpoint) {
-        //                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-        //     return func(w http.ResponseWriter, r *http.Request) {
-        //         var ${endpoint.go.input.varName} ${endpoint.go.input.typeType}
-        //         if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
-        //             http.Error(w, err.Error(), http.StatusBadRequest)
-        //             return
-        //         }
-
-        //         if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
-        //             http.Error(w, "Error deleting: "+err.Error(), http.StatusInternalServerError)
-        //             return
-        //         }
-
-        //         w.WriteHeader(http.StatusNoContent)
-        //     }
-        // }`;
-        //                 return str.trim();
-        //         }
 }

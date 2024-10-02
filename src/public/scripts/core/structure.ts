@@ -190,7 +190,7 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
         },
         [SqlType.DECIMAL]: {
                 goType: 'float64',
-                parseFunction: (x) => `strconv.ParseFloat(${x})`,
+                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -205,7 +205,7 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
         },
         [SqlType.FLOAT]: {
                 goType: 'float64',
-                parseFunction: (x) => `strconv.ParseFloat(${x})`,
+                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -220,7 +220,7 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
         },
         [SqlType.REAL]: {
                 goType: 'float64',
-                parseFunction: (x) => `strconv.ParseFloat(${x})`,
+                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -467,6 +467,7 @@ export class Endpoint {
         primaryKeyEndpointParam: EndpointParam;
         routerFuncName: string;
         routerFuncApiName: string;
+        routerFuncFormName: string;
         routerRepoName: string;
         repo: {
                 type: string;
@@ -567,6 +568,7 @@ export class Endpoint {
                 this.routerFuncName = SnakeToPascal(`${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
                 // this.routerFuncApiName = SnakeToPascal(`api_${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
                 this.routerFuncApiName = SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}`) + (many ? 's' : '');
+                this.routerFuncFormName = SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}_form`) + (many ? 's' : '');
                 this.routerRepoName = SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}`) + (many ? 's' : '');
 
                 this.typescript = {
@@ -630,9 +632,19 @@ export class EndpointGoShow {
         propertyNames: string[];
         sqlAttributes: SqlTableAttribute[];
 
-        get url() {
+        get urlForm() {
+                // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
+                let endpointPath = `/form/${SnakeToKebab(this.sqlTableName)}`;
+                return endpointPath;
+        }
+        get urlJSON() {
                 // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
                 let endpointPath = `/api/${SnakeToKebab(this.sqlTableName)}`;
+                return endpointPath;
+        }
+        get urlHTML() {
+                // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
+                let endpointPath = `/${SnakeToKebab(this.sqlTableName)}`;
                 return endpointPath;
         }
 

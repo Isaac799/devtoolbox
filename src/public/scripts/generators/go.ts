@@ -1,4 +1,4 @@
-import { trimAndRemoveBlankStrings } from '../core/formatting';
+import { organizeObjectByKeys, trimAndRemoveBlankStrings } from '../core/formatting';
 import { CodeGenerator } from '../core/structure';
 import { GoJSON } from './go_json';
 import { GoDatabase } from './go_db';
@@ -9,6 +9,7 @@ import { GoHTML } from './go_html';
 import { GoRouter } from './go_router';
 import { GoPkg } from './go_pkg';
 import { GoPkgRepositories } from './go_pkg_repositories';
+import { GoFormData } from './go_form_data';
 
 export class GoCodeGenerator extends CodeGenerator {
         goJSON = new GoJSON();
@@ -20,6 +21,7 @@ export class GoCodeGenerator extends CodeGenerator {
         goHTML = new GoHTML();
         goMiddleware = new GoMiddleware();
         goPkgRepositories = new GoPkgRepositories();
+        goFormData = new GoFormData();
 
         Run() {
                 let goJSON = this.goJSON.Clear().SetInput(this.input).Run().Read();
@@ -48,6 +50,9 @@ export class GoCodeGenerator extends CodeGenerator {
 
                 let goPkgRepositories = this.goPkgRepositories.Clear().SetInput(this.input).Run().Read();
                 goPkgRepositories = trimAndRemoveBlankStrings(goPkgRepositories);
+
+                let goFormData = this.goFormData.Clear().SetInput(this.input).Run().Read();
+                goFormData = trimAndRemoveBlankStrings(goFormData);
 
                 let goMod = `module myapp
 
@@ -123,11 +128,10 @@ func (a *App) Run(addr string) {
                 let test = 'package test\n\n// todo ';
                 let readme = 'todo';
 
-                this.output = {
-                        'go.mod': goMod,
-                        'go.sum': goSum,
+                let lowerFiles = {
                         '/cmd/mysite/main.go': mainGo,
                         '/internal/config/app.go': appModel,
+                        ...goFormData,
                         ...goDatabase,
                         ...goMiddleware,
                         ...goRouter,
@@ -140,6 +144,14 @@ func (a *App) Run(addr string) {
                         '/scripts/migrate.go': migration,
                         '/test/test_handler_x.go': test,
                         'readme.md': readme,
+                };
+
+                lowerFiles = organizeObjectByKeys(lowerFiles);
+
+                this.output = {
+                        'go.mod': goMod,
+                        'go.sum': goSum,
+                        ...lowerFiles,
                 };
 
                 // console.log('this.output :>> ', Object.keys(this.output));

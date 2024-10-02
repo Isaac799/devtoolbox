@@ -36,7 +36,7 @@ export class GoTemplates extends CodeGenerator {
                                 }
                                 linksToAppIndexes.push({
                                         name: table.endpoints.goShow.sqlTableName,
-                                        path: table.endpoints.goShow.url,
+                                        path: table.endpoints.goShow.urlHTML,
                                 });
                         }
                 }

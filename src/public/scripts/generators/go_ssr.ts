@@ -80,10 +80,10 @@ export class GoSSR extends CodeGenerator {
 <nav class="breadcrumb is-centered" aria-label="breadcrumbs">
     <ul>
         <li>
-            <a href="${show.url}">${title}</a>
+            <a href="${show.urlHTML}">${title}</a>
         </li>
         <li class="is-active">
-            <a href="${show.url}/new" aria-current="page">New</a>
+            <a href="${show.urlHTML}/new" aria-current="page">New</a>
         </li>
     </ul>
 </nav>
@@ -92,7 +92,7 @@ export class GoSSR extends CodeGenerator {
 
 <div class="container">
     <h1 class="title">${title} Form</h1>
-    <form action="${show.url}" method="POST">
+    <form action="${show.urlForm}" method="POST">
         
         ${attrInputsStr}
 
@@ -134,20 +134,21 @@ export class GoSSR extends CodeGenerator {
 <nav class="breadcrumb is-centered" aria-label="breadcrumbs">
     <ul>
         <li>
-            <a href="${show.url}">${title}</a>
+            <a href="${show.urlHTML}">${title}</a>
         </li>
         <li>
-            <a href="${show.url}/{{ .Data.${show.primaryKeyName} }}"> {{ .Data.${show.primaryKeyName} }}</a>
+            <a href="${show.urlHTML}/{{ .Data.${show.primaryKeyName} }}"> {{ .Data.${show.primaryKeyName} }}</a>
         </li>
         <li class="is-active">
-            <a href="${show.url}/{{ .Data.${show.primaryKeyName} }}/edit" aria-current="page">Edit</a>
+            <a href="${show.urlHTML}/{{ .Data.${show.primaryKeyName} }}/edit" aria-current="page">Edit</a>
         </li>
     </ul>
 </nav>
 
 <div class="container">
     <h1 class="title">Edit ${title}</h1>
-    <form action="${show.url}/{{ .Data.${show.primaryKeyName} }}" method="POST">
+    <form action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}" method="POST">
+        <input type="hidden" name="_method" value="PUT" />
        
         ${attrInputsStr}
 
@@ -159,7 +160,7 @@ export class GoSSR extends CodeGenerator {
     <div class="pt-3">
         <form
             id="deleteForm"
-            action="${show.url}/{{ .Data.${show.primaryKeyName} }}"
+            action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}"
             method="POST"
             style="display: inline"
         >
@@ -197,7 +198,7 @@ export class GoSSR extends CodeGenerator {
                         Cancel
                     </button>
                     <form
-                        action="${show.url}/{{ .Data.${show.primaryKeyName} }}"
+                        action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}"
                         method="POST"
                         style="display: inline"
                     >
@@ -229,7 +230,7 @@ export class GoSSR extends CodeGenerator {
                                 // <td>{{if .IsActive}}Yes{{else}}No{{end}}</td>
 
                                 if (e === show.primaryKeyName) {
-                                        return ` <td><a href="${show.url}/{{.${show.primaryKeyName}}}"> {{.${e}}} </a></td>`;
+                                        return ` <td><a href="${show.urlHTML}/{{.${show.primaryKeyName}}}"> {{.${e}}} </a></td>`;
                                 } else {
                                         return ` <td>{{.${e}}}</td>`;
                                 }
@@ -252,7 +253,7 @@ export class GoSSR extends CodeGenerator {
 <nav class="breadcrumb is-centered" aria-label="breadcrumbs">
     <ul>
         <li class="is-active">
-            <a href="${show.url}" aria-current="page">${title}</a>
+            <a href="${show.urlHTML}" aria-current="page">${title}</a>
         </li>
     </ul>
 </nav>
@@ -271,7 +272,7 @@ export class GoSSR extends CodeGenerator {
 
     <div class="field">
         <div class="control">
-            <a class="button is-info" href="${show.url}/new">New ${title}</a>
+            <a class="button is-info" href="${show.urlHTML}/new">New ${title}</a>
         </div>
     </div>
 </div>
@@ -305,10 +306,10 @@ export class GoSSR extends CodeGenerator {
 <nav class="breadcrumb is-centered" aria-label="breadcrumbs">
     <ul>
         <li>
-            <a href="${show.url}">${title}</a>
+            <a href="${show.urlHTML}">${title}</a>
         </li>
         <li class="is-active">
-            <a href="${show.url}/{{ .Data.${show.primaryKeyName} }}" aria-current="page">
+            <a href="${show.urlHTML}/{{ .Data.${show.primaryKeyName} }}" aria-current="page">
                 {{ .Data.${show.primaryKeyName} }}
             </a>
         </li>
@@ -322,7 +323,7 @@ export class GoSSR extends CodeGenerator {
     </div>
     <div class="field">
         <div class="control">
-            <a class="button is-info" href="${show.url}/{{ .Data.${show.primaryKeyName} }}/edit">
+            <a class="button is-info" href="${show.urlHTML}/{{ .Data.${show.primaryKeyName} }}/edit">
                 Edit ${title}
             </a>
         </div>
