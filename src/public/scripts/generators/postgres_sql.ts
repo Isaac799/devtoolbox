@@ -340,12 +340,12 @@ $$;`;
                         const dropCreate = `DROP TABLE IF EXISTS ${table.fullName};\nCREATE TABLE ${table.fullName} (\n`;
                         const createTableEnd = ['\n);'];
 
+                        let createTable = dropCreate + createTableBody.join(',\n') + createTableEnd.join(',\n');
+
                         const fks = Object.values(table.foreignKeys());
                         for (const fk of fks) {
-                                createTableEnd.push(`CREATE INDEX idx_${fk.value} ON ${fk.parentTable.fullName}(${fk.value});`);
+                                createTable += `\nCREATE INDEX idx_${fk.value} ON ${fk.parentTable.fullName}(${fk.value});`;
                         }
-
-                        const createTable = dropCreate + createTableBody.join(',\n') + createTableEnd.join(',\n');
 
                         tableSql += `${createTable}\n`;
 
