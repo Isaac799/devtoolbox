@@ -1,5 +1,5 @@
-import { SnakeToCamel } from '../core/formatting';
-import { CodeGenerator, Endpoint } from '../core/structure';
+import { SnakeToCamel } from '../../core/formatting';
+import { CodeGenerator, Endpoint } from '../../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoJSON extends CodeGenerator {

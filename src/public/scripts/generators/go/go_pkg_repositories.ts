@@ -1,6 +1,6 @@
-import { SnakeToPascal } from '../core/formatting';
-import { CodeGenerator, Endpoint, SqlTable } from '../core/structure';
-import { SqlGenerator } from './postgres_sql';
+import { SnakeToPascal } from '../../core/formatting';
+import { CodeGenerator, Endpoint, SqlTable } from '../../core/structure';
+import { SqlGenerator } from './../sql/postgres_sql';
 
 export class GoPkgRepositories extends CodeGenerator {
         Run() {

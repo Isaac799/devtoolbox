@@ -1,5 +1,5 @@
-import { alignKeyword, alignKeywords, SnakeToPascal, SnakeToTitle } from '../core/formatting';
-import { CodeGenerator, FileOutputs, SQL_TO_GO_TYPE, SqlTable } from '../core/structure';
+import { alignKeyword, alignKeywords, SnakeToPascal, SnakeToTitle } from '../../core/formatting';
+import { CodeGenerator, FileOutputs, SQL_TO_GO_TYPE, SqlTable } from '../../core/structure';
 
 export class GoSSR extends CodeGenerator {
         FormatStack(stack: string[]) {

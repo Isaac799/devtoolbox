@@ -1,5 +1,5 @@
-import { alignKeyword, alignKeywords, SnakeToCamel } from '../core/formatting';
-import { CodeGenerator, Endpoint, EndpointParam, HttpMethod, SQL_TO_GO_TYPE, SqlTable } from '../core/structure';
+import { alignKeyword, alignKeywords, SnakeToCamel } from '../../core/formatting';
+import { CodeGenerator, Endpoint, EndpointParam, HttpMethod, SQL_TO_GO_TYPE, SqlTable } from '../../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoFormData extends CodeGenerator {

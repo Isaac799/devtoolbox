@@ -1,5 +1,5 @@
-import { SnakeToTitle } from '../core/formatting';
-import { CodeGenerator } from '../core/structure';
+import { SnakeToTitle } from '../../core/formatting';
+import { CodeGenerator } from '../../core/structure';
 
 export class GoTemplates extends CodeGenerator {
         Run() {

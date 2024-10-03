@@ -1,11 +1,11 @@
-import { SqlGenerator } from './generators/postgres_sql';
+import { SqlGenerator } from './generators/sql/postgres_sql';
 import { InputParser } from './core/parser';
 import { CodeGenerator, FileOutputs } from './core/structure';
 
 import '../assets/normalize.css';
 import '../assets/styles.css';
-import { TsTypesCodeGenerator } from './generators/ts_types';
-import { GoCodeGenerator } from './generators/go';
+import { TsTypesCodeGenerator } from './generators/js/ts_types';
+import { GoCodeGenerator } from './generators/go/go';
 import { downloadZip } from './core/download';
 
 let toDownload: any = {};
@@ -299,8 +299,8 @@ let fileOutputs: FileOutputs = {};
 let selectedFileOutputs: string = '';
 
 const APP_ITEMS = [
-        new AppItem('Go', new GoCodeGenerator()),
         new AppItem('Postgres', new SqlGenerator()),
+        new AppItem('Go', new GoCodeGenerator()),
         // new AppItem('Node JS', new NodeExpressCodeGenerator()),
         new AppItem('TS Types', new TsTypesCodeGenerator()),
         // new AppItem('HTML forms', new HtmlCodeGenerator()),

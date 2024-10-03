@@ -1,5 +1,5 @@
-import { alignKeyword, alignKeywords, SnakeToPascal } from '../core/formatting';
-import { CodeGenerator, SQL_TO_GO_TYPE } from '../core/structure';
+import { alignKeyword, alignKeywords, SnakeToPascal } from '../../core/formatting';
+import { CodeGenerator, SQL_TO_GO_TYPE } from '../../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoPkg extends CodeGenerator {

@@ -1,5 +1,5 @@
-import { alignKeyword, alignKeywords } from '../core/formatting';
-import { CodeGenerator, EndpointParam, HttpMethod } from '../core/structure';
+import { alignKeyword, alignKeywords } from '../../core/formatting';
+import { CodeGenerator, EndpointParam, HttpMethod } from '../../core/structure';
 
 export class GoRouter extends CodeGenerator {
         Run() {

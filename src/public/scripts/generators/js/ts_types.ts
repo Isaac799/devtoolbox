@@ -1,5 +1,5 @@
-import { alignKeyword, alignKeywords, SnakeToTitle } from '../core/formatting';
-import { CodeGenerator, SQL_TO_TS_TYPE } from '../core/structure';
+import { alignKeyword, alignKeywords, SnakeToTitle } from '../../core/formatting';
+import { CodeGenerator, SQL_TO_TS_TYPE } from '../../core/structure';
 
 export class TsTypesCodeGenerator extends CodeGenerator {
         FormatStack(stack: string[]) {

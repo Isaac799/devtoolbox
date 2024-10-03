@@ -1,5 +1,5 @@
-import { organizeObjectByKeys, trimAndRemoveBlankStrings } from '../core/formatting';
-import { CodeGenerator } from '../core/structure';
+import { organizeObjectByKeys, trimAndRemoveBlankStrings } from '../../core/formatting';
+import { CodeGenerator } from '../../core/structure';
 import { GoJSON } from './go_json';
 import { GoDatabase } from './go_db';
 import { GoMiddleware } from './go_middleware';

@@ -1,5 +1,5 @@
-import { SnakeToCamel, SnakeToTitle } from '../core/formatting';
-import { CodeGenerator, Endpoint, EndpointGoShow, HttpMethodToHtmlName } from '../core/structure';
+import { SnakeToCamel, SnakeToTitle } from '../../core/formatting';
+import { CodeGenerator, Endpoint, EndpointGoShow, HttpMethodToHtmlName } from '../../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoHTML extends CodeGenerator {

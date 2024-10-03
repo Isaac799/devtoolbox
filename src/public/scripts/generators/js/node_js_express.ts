@@ -1,5 +1,5 @@
-import { trimAndRemoveBlankStrings } from '../core/formatting';
-import { CodeGenerator, Endpoint } from '../core/structure';
+import { trimAndRemoveBlankStrings } from '../../core/formatting';
+import { CodeGenerator, Endpoint } from '../../core/structure';
 import { TsTypesCodeGenerator } from './ts_types';
 
 function ConvertNameToEndpoint(value: string) {

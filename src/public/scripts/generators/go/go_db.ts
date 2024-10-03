@@ -1,4 +1,4 @@
-import { CodeGenerator } from '../core/structure';
+import { CodeGenerator } from '../../core/structure';
 
 export class GoDatabase extends CodeGenerator {
         Run() {

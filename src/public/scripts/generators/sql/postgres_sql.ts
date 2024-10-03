@@ -1,5 +1,5 @@
-import { alignKeyword, alignKeywords, replaceDoubleSpaces } from '../core/formatting';
-import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, SqlType, Endpoint } from '../core/structure';
+import { alignKeyword, alignKeywords, replaceDoubleSpaces } from '../../core/formatting';
+import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, SqlType, Endpoint } from '../../core/structure';
 
 const typeKeywords = Object.values(SqlType).map((e) => ` ${e}`);
 
