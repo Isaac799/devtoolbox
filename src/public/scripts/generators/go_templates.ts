@@ -154,13 +154,9 @@ ${htmlLinks}
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
         />
-        <link rel="stylesheet" href="/assets/css/style.css" />
-        <script src="/assets/js/bulma.js"></script>
-        <link
-            rel="icon"
-            href="/assets/images/favicon.ico"
-            type="image/x-icon"
-        />
+        <link rel="stylesheet" href="/assets/style.css" />
+        <script src="/assets/bulma.js"></script>
+        <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
     </head>
     <body>
         {{ block "content" . }}{{ end }}

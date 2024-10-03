@@ -110,13 +110,14 @@ import (
         private static GenerateCreateSnippet(endpoint: Endpoint) {
                 let inputsForQuery = endpoint.http.bodyIn.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`).join(', ');
                 let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.output.varName}.${SnakeToPascal(e.sql.sqlLocation.column)}`).join(', ');
+                let returnStuff = endpoint.sql.outputs.map((e) => `${endpoint.go.output.varName}.${SnakeToPascal(e.sql.sqlLocation.column)}`).join(', ');
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.routerRepoName}(${endpoint.go.input.varName} *models.${
-                        endpoint.go.input.typeName
-                }) error {
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.routerRepoName}(${endpoint.go.input.varName} *models.${endpoint.go.input.typeName}) (${
+                        endpoint.sql.outputs[0].go.typeType
+                }, error) {
     query := \`${SqlGenerator.GenerateACreateEndpoint(endpoint, true)}\`
     err := repo.DB.QueryRow(query, ${inputsForQuery}).Scan(${scanInto})
-    return err
+    return ${returnStuff}, err
 }`;
                 return str.trim();
         }

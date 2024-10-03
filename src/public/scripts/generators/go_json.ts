@@ -11,6 +11,7 @@ export class GoJSON extends CodeGenerator {
                         method: 'get' | 'put' | 'post' | 'delete';
                         path: string;
                 }[] = [];
+                let importsParts: string[] = [];
 
                 for (const schemaName in schemas) {
                         if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
@@ -22,23 +23,14 @@ export class GoJSON extends CodeGenerator {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
+                                if (table.hasCompositePrimaryKey()) continue;
 
-                                let pkg = `package ${table.goPackageName}
-
-import (
-    "encoding/json"
-    "myapp/pkg/models"
-    "myapp/pkg/repositories"
-    "net/http"
-    "strconv"
-
-    "github.com/gorilla/mux"
-)`;
-                                let allParts: string[] = [pkg];
+                                let allParts: string[] = [];
 
                                 if (table.endpoints.create !== null) {
                                         for (let m = 0; m < table.endpoints.create.length; m++) {
                                                 const endpoint = table.endpoints.create[m];
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -46,13 +38,14 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoJSON.GenerateCreateUpdateSnippet(endpoint);
+                                                let str = GoJSON.GenerateCreateSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
                                 if (table.endpoints.read !== null) {
                                         for (let m = 0; m < table.endpoints.read.length; m++) {
                                                 const endpoint = table.endpoints.read[m];
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -67,6 +60,7 @@ import (
                                 if (table.endpoints.update !== null) {
                                         for (let m = 0; m < table.endpoints.update.length; m++) {
                                                 const endpoint = table.endpoints.update[m];
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, false));
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -74,13 +68,14 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoJSON.GenerateCreateUpdateSnippet(endpoint);
+                                                let str = GoJSON.GenerateUpdateSnippet(endpoint);
                                                 allParts.push(str);
                                         }
                                 }
                                 if (table.endpoints.delete !== null) {
                                         for (let m = 0; m < table.endpoints.delete.length; m++) {
                                                 const endpoint = table.endpoints.delete[m];
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -92,6 +87,28 @@ import (
                                                 allParts.push(str);
                                         }
                                 }
+
+                                importsParts = [...new Set(importsParts)];
+                                let imports = importsParts
+                                        .filter((e) => !!e)
+                                        .map((e) => `"${e}"`)
+                                        .join('\n');
+
+                                let pkg = `package ${table.goPackageName}
+                
+                                import (
+                                    "encoding/json"
+                                    "myapp/pkg/models"
+                                    "myapp/pkg/repositories"
+                                    "net/http"
+                                    "strings"
+                                    ${imports}
+                                
+                                    "github.com/gorilla/mux"
+                                )`;
+
+                                allParts.unshift(pkg);
+
                                 let tableStr = allParts.join('\n\n');
                                 this.output['/internal/handlers/' + table.label + '/json.go'] = tableStr;
                         }
@@ -161,7 +178,32 @@ import (
                 return this;
         }
 
-        private static GenerateCreateUpdateSnippet(endpoint: Endpoint) {
+        private static GenerateCreateSnippet(endpoint: Endpoint) {
+                let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        var ${endpoint.go.input.varName} models.${endpoint.go.input.typeType}
+        if err := json.NewDecoder(r.Body).Decode(&${endpoint.go.input.varName}); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }
+
+        ${endpoint.primaryKeyEndpointParam.go.varName}, err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); 
+        
+        if err != nil {
+            http.Error(w, "Error processing: "+err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        redirectPath := strings.Join([]string{"${endpoint.path}", ${endpoint.primaryKeyEndpointParam.go.toString(
+                        endpoint.primaryKeyEndpointParam.go.varName
+                )}}, "/")
+        http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+    }
+}`;
+                return str;
+        }
+
+        private static GenerateUpdateSnippet(endpoint: Endpoint) {
                 let str = `func ${endpoint.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var ${endpoint.go.input.varName} models.${endpoint.go.input.typeType}

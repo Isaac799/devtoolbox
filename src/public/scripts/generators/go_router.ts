@@ -62,7 +62,8 @@ export class GoRouter extends CodeGenerator {
                                                 );
 
                                                 routesForm.push(
-                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("PUT")`
+                                                        // `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("PUT")`
+                                                        `r.HandleFunc("${endpoint.path}/update", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("POST")`
                                                 );
                                         }
                                 }
@@ -77,7 +78,8 @@ export class GoRouter extends CodeGenerator {
                                                 );
 
                                                 routesForm.push(
-                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("DELETE")`
+                                                        // `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("DELETE")`
+                                                        `r.HandleFunc("${endpoint.path}/delete", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("POST")`
                                                 );
                                         }
                                 }
@@ -107,6 +109,7 @@ export class GoRouter extends CodeGenerator {
                         for (const key2 in schema.tables) {
                                 if (Object.prototype.hasOwnProperty.call(schema.tables, key2)) {
                                         const table = schema.tables[key2];
+                                        if (table.hasCompositePrimaryKey()) continue;
                                         allPackages.push(table.goPackageName);
                                 }
                         }
@@ -140,11 +143,18 @@ export class GoRouter extends CodeGenerator {
 
                 let imports = allPackages.map((e) => `"myapp/internal/handlers/${e}"`).join('\n    ');
 
+                let methodOverrideStr = ``;
+                //                 let methodOverrideStr = `
+
+                //     // note: a path to match must match for our form submission to run through
+                //     //       the middleware for necessary method modification
+                //     http.Handle("/", middleware.MethodOverride(r))`;
+
+                //    "myapp/internal/middleware"
                 let str = `package routes
 
 import (
     "database/sql"
-    "myapp/internal/middleware"
     "myapp/pkg/repositories"
     "net/http"
     "path/filepath"
@@ -158,7 +168,6 @@ import (
 func SetupRoutes(r *mux.Router, db *sql.DB) {
     ${repositoriesStr}
 
-    r.Use(middleware.MethodOverride)
     r.HandleFunc("/assets/{filename}", serveAsset).Methods("GET")
 
     ${routeStr}
@@ -166,15 +175,12 @@ func SetupRoutes(r *mux.Router, db *sql.DB) {
     ${routesFormStr}
 
     ${routeApiStr}
-
-    // note: a path to match must match for our form submission to run through
-    //       the middleware for necessary method modification 
-    http.Handle("/", middleware.MethodOverride(r))
+    ${methodOverrideStr}
 }
 
 func serveAsset(w http.ResponseWriter, r *http.Request) {
     filename := mux.Vars(r)["filename"]
-    path := filepath.Join("assets", filename)
+    path := filepath.Join("../../web/static", filename)
 
     contentType := "text/plain"
 
@@ -229,5 +235,18 @@ func serveAsset(w http.ResponseWriter, r *http.Request) {
                                 //     }`
                         )
                         .join('\n\n    ');
+        }
+
+        static GenerateImports(value: EndpointParam[], includeReadonly: boolean) {
+                let input = [...value];
+                if (!includeReadonly) {
+                        input = input.filter((e) => e.readOnly);
+                }
+                let imports = value.filter((e) => !e.readOnly).map((e) => e.go.importPackage);
+                return imports;
+        }
+        static GenerateImportsFormStruct(value: EndpointParam[]) {
+                let imports = value.map((e) => e.go.importPackageForStruct);
+                return imports;
         }
 }

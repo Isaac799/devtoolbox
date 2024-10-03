@@ -13,6 +13,7 @@ export class GoHTML extends CodeGenerator {
 
         GenerateRenderer() {
                 let schemas = this.input;
+                let importsParts: string[] = [];
                 let allParts: string[] = [];
 
                 for (const schemaName in schemas) {
@@ -26,6 +27,7 @@ export class GoHTML extends CodeGenerator {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
+                                if (table.hasCompositePrimaryKey()) continue;
 
                                 if (!table.endpoints.goShow) {
                                         console.error('missing table.endpoints.goShow on generate render');
@@ -34,6 +36,7 @@ export class GoHTML extends CodeGenerator {
 
                                 if (table.endpoints.create) {
                                         for (const endpoint of table.endpoints.create) {
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
                                                 let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, endpoint.many)}_${table.label}`);
                                                 let filePath = '/web/templates' + endpoint.url + '/new.html';
                                                 allParts.push(GoHTML.GenerateNewSnippet(endpoint, title, filePath));
@@ -42,6 +45,7 @@ export class GoHTML extends CodeGenerator {
 
                                 if (table.endpoints.read) {
                                         for (const endpoint of table.endpoints.read) {
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
                                                 let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, endpoint.many)}_${table.label}`);
                                                 if (endpoint.many) {
                                                         let filePath = '/web/templates' + endpoint.url + '/index.html';
@@ -55,6 +59,7 @@ export class GoHTML extends CodeGenerator {
 
                                 if (table.endpoints.update) {
                                         for (const endpoint of table.endpoints.update) {
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, false));
                                                 let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, endpoint.many)}_${table.label}`);
                                                 let filePath = '/web/templates' + endpoint.url + '/edit.html';
                                                 allParts.push(GoHTML.GenerateShowEditSnippet(endpoint, title, filePath, table.endpoints.goShow));
@@ -63,15 +68,21 @@ export class GoHTML extends CodeGenerator {
 
                                 let renderFunctions = allParts.join('\n\n');
 
+                                importsParts = [...new Set(importsParts)];
+                                let imports = importsParts
+                                        .filter((e) => !!e)
+                                        .map((e) => `"${e}"`)
+                                        .join('\n');
+
                                 let str = `package ${table.goPackageName}
 
 import (
     "log"
     "myapp/pkg/repositories"
     "net/http"
-    "strconv"
     "text/template"
     "time"
+    ${imports}
 
     "github.com/gorilla/mux"
 )

@@ -63,7 +63,10 @@ export class GoSSR extends CodeGenerator {
                         return 'error: missing show';
                 }
 
-                let attrInputsStr = show.sqlAttributes.map((e) => SQL_TO_GO_TYPE[e.sqlType].htmlInputFunction(e)).join('\n        ');
+                let attrInputsStr = show.sqlAttributes
+                        .filter((e) => !e.isPrimaryKey())
+                        .map((e) => SQL_TO_GO_TYPE[e.sqlType].htmlInputFunction(e))
+                        .join('\n        ');
 
                 let str = `{{ define "content" }}
 
@@ -88,8 +91,6 @@ export class GoSSR extends CodeGenerator {
     </ul>
 </nav>
 
-{{ template "navbar" . }}
-
 <div class="container">
     <h1 class="title">${title} Form</h1>
     <form action="${show.urlForm}" method="POST">
@@ -109,6 +110,11 @@ export class GoSSR extends CodeGenerator {
                 return str;
         }
         private static GenerateHtmlEdit(table: SqlTable): string {
+                // let inputPUT = `<input type="hidden" name="_method" value="PUT" />`;
+                // let inputDELETE = `<input type="hidden" name="_method" value="DELETE" />`;
+                let inputPUT = ``;
+                let inputDELETE = ``;
+
                 let title = SnakeToTitle(table.label);
                 let show = table.endpoints.goShow;
                 if (!show) {
@@ -116,7 +122,13 @@ export class GoSSR extends CodeGenerator {
                 }
 
                 let attrInputsStr = show.sqlAttributes
-                        .map((e) => SQL_TO_GO_TYPE[e.sqlType].htmlInputFunction(e, `{{ .Data.${SnakeToPascal(e.value)} }}`))
+                        .map((e) => {
+                                if (e.isPrimaryKey() || e.readOnly) {
+                                        return ` <p><strong>${SnakeToTitle(e.value)}:</strong> {{.Data.${SnakeToPascal(e.value)}}}</p>`;
+                                } else {
+                                        return SQL_TO_GO_TYPE[e.sqlType].htmlInputFunction(e, `{{ .Data.${SnakeToPascal(e.value)} }}`);
+                                }
+                        })
                         .join('\n        ');
 
                 let str = `{{ define "content" }}
@@ -147,8 +159,8 @@ export class GoSSR extends CodeGenerator {
 
 <div class="container">
     <h1 class="title">Edit ${title}</h1>
-    <form action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}" method="POST">
-        <input type="hidden" name="_method" value="PUT" />
+    <form action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}/update" method="POST">
+        ${inputPUT}
        
         ${attrInputsStr}
 
@@ -158,21 +170,13 @@ export class GoSSR extends CodeGenerator {
     </form>
 
     <div class="pt-3">
-        <form
-            id="deleteForm"
-            action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}"
-            method="POST"
-            style="display: inline"
+        <button
+            type="button"
+            class="button is-danger"
+            onclick="openConfirmDeleteModal()"
         >
-            <input type="hidden" name="_method" value="DELETE" />
-            <button
-                type="button"
-                class="button is-danger"
-                onclick="openConfirmDeleteModal()"
-            >
-                Delete ${title}
-            </button>
-        </form>
+            Delete ${title}
+        </button>
     </div>
 
     <div class="modal" id="confirmModal">
@@ -198,11 +202,11 @@ export class GoSSR extends CodeGenerator {
                         Cancel
                     </button>
                     <form
-                        action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}"
+                        action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}/delete"
                         method="POST"
                         style="display: inline"
                     >
-                        <input type="hidden" name="_method" value="DELETE" />
+                        ${inputDELETE}
                         <button type="submit" class="button is-danger">
                             Delete ${title}
                         </button>

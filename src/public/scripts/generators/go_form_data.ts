@@ -5,6 +5,7 @@ import { GoRouter } from './go_router';
 export class GoFormData extends CodeGenerator {
         Run() {
                 let schemas = this.input;
+                let importsParts: string[] = [];
 
                 let goEndpoints: {
                         name: string;
@@ -22,22 +23,14 @@ export class GoFormData extends CodeGenerator {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
+                                if (table.hasCompositePrimaryKey()) continue;
 
-                                let pkg = `package ${table.goPackageName}
-
-import (
-    "myapp/pkg/models"
-    "myapp/pkg/repositories"
-    "net/http"
-    "strconv"
-
-    "github.com/gorilla/mux"
-)`;
-                                let allParts: string[] = [pkg];
+                                let allParts: string[] = [];
 
                                 if (table.endpoints.create !== null) {
                                         for (let m = 0; m < table.endpoints.create.length; m++) {
                                                 const endpoint = table.endpoints.create[m];
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -45,13 +38,14 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoFormData.GenerateCreateUpdateSnippet(table, endpoint);
+                                                let str = GoFormData.GenerateCreateSnippet(table, endpoint);
                                                 allParts.push(str);
                                         }
                                 }
                                 if (table.endpoints.update !== null) {
                                         for (let m = 0; m < table.endpoints.update.length; m++) {
                                                 const endpoint = table.endpoints.update[m];
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, false));
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -59,13 +53,14 @@ import (
                                                         path: endpoint.path,
                                                 });
 
-                                                let str = GoFormData.GenerateCreateUpdateSnippet(table, endpoint);
+                                                let str = GoFormData.GenerateUpdateSnippet(table, endpoint);
                                                 allParts.push(str);
                                         }
                                 }
                                 if (table.endpoints.delete !== null) {
                                         for (let m = 0; m < table.endpoints.delete.length; m++) {
                                                 const endpoint = table.endpoints.delete[m];
+                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
 
                                                 goEndpoints.push({
                                                         name: endpoint.go.fnName,
@@ -77,6 +72,26 @@ import (
                                                 allParts.push(str);
                                         }
                                 }
+
+                                importsParts = [...new Set(importsParts)];
+                                let imports = importsParts
+                                        .filter((e) => !!e)
+                                        .map((e) => `"${e}"`)
+                                        .join('\n');
+
+                                let pkg = `package ${table.goPackageName}
+
+import (
+    "myapp/pkg/models"
+    "myapp/pkg/repositories"
+    "net/http"
+    "strings"
+    ${imports}
+
+    "github.com/gorilla/mux"
+)`;
+
+                                allParts.unshift(pkg);
                                 let tableStr = allParts.join('\n\n');
                                 this.output['/internal/handlers/' + table.label + '/form.go'] = tableStr;
                         }
@@ -146,7 +161,7 @@ import (
                 return this;
         }
 
-        private static GenerateCreateUpdateSnippet(table: SqlTable, endpoint: Endpoint) {
+        private static GenerateCreateSnippet(table: SqlTable, endpoint: Endpoint) {
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '\n    ' + variablesFromPath;
 
@@ -157,16 +172,48 @@ import (
             return
         }      
 
-        ${GoFormData.ParseFromForm(endpoint.http.bodyIn)}
+        ${GoFormData.ParseFromForm(endpoint.http.bodyIn, true)}
 
-        ${GoFormData.BuildVarFromTheForm(table, endpoint)}
+        ${GoFormData.BuildVarFromTheForm(table, endpoint, true)}
+
+        ${endpoint.primaryKeyEndpointParam.go.varName}, err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); 
+        
+        if err != nil {
+            http.Error(w, "Error processing: "+err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        redirectPath := strings.Join([]string{"${endpoint.redirectPath}", ${endpoint.primaryKeyEndpointParam.go.toString(
+                        endpoint.primaryKeyEndpointParam.go.varName
+                )}}, "/")
+        http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+    }
+}`;
+                return str;
+        }
+
+        private static GenerateUpdateSnippet(table: SqlTable, endpoint: Endpoint) {
+                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
+                variablesFromPath = '\n    ' + variablesFromPath;
+
+                let str = `func ${endpoint.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {${variablesFromPath}    
+        if err := r.ParseForm(); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }      
+
+        ${GoFormData.ParseFromForm(endpoint.http.bodyIn, false)}
+
+        ${GoFormData.BuildVarFromTheForm(table, endpoint, false)}
 
         if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
             http.Error(w, "Error processing: "+err.Error(), http.StatusInternalServerError)
             return
         }
 
-        w.WriteHeader(http.StatusCreated)
+        redirectPath := strings.Join([]string{"${endpoint.redirectPath}", ${endpoint.primaryKeyEndpointParam.go.varName}Str}, "/")
+        http.Redirect(w, r, redirectPath, http.StatusSeeOther)
     }
 }`;
                 return str;
@@ -185,14 +232,14 @@ ${variablesFromPath}
             return
         }
 
-        w.WriteHeader(http.StatusCreated)
+        http.Redirect(w, r, "${endpoint.redirectPath}", http.StatusSeeOther)
     }
 }`;
 
                 return str.trim();
         }
 
-        private static BuildVarFromTheForm(table: SqlTable, endpoint: Endpoint) {
+        private static BuildVarFromTheForm(table: SqlTable, endpoint: Endpoint, forCreate: boolean) {
                 function FormatStack(stack: string[]) {
                         let types = alignKeywords(
                                 stack,
@@ -213,6 +260,7 @@ ${variablesFromPath}
                 // variablesFromPath = '\n    ' + variablesFromPath;
 
                 for (const attr of table.endpoints.existsAs) {
+                        if (!forCreate && attr.readOnly) continue;
                         if (attr.sql.name === pk) {
                                 if (endpoint.method !== HttpMethod.POST) {
                                         stack.push(`    ${attr.go.typeName}: ${attr.go.varName},`);
@@ -232,8 +280,12 @@ ${variablesFromPath}
                 return fileContent;
         }
 
-        private static ParseFromForm(value: EndpointParam[]) {
-                return value
+        private static ParseFromForm(value: EndpointParam[], forCreate: boolean) {
+                let items = [...value];
+                if (!forCreate) {
+                        items = items.filter((e) => !e.readOnly);
+                }
+                return items
                         .map(
                                 (e) =>
                                         e.go.typeType === 'string'

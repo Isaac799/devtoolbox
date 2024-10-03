@@ -492,12 +492,7 @@ WHERE ${where};`;
         }
 
         static GenerateAUpdateEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {
-                const whereEquals = endpoint.sql.inout.map(
-                        (e, i) =>
-                                `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${
-                                        withPlaceholders ? `$${i + 1}` : e.sql.name
-                                }`
-                );
+                const whereEquals = endpoint.sql.inout.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${i + 1}` : e.sql.name}`);
                 let whereClauses = whereEquals.length + 1;
 
                 const whereEqualsAligned = alignKeyword(whereEquals, '=');
@@ -506,16 +501,13 @@ WHERE ${where};`;
 
                 let procedure = `SET 
     ${alignKeyword(
-            endpoint.sql.inputs.map(
-                    (e, i) =>
-                            `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${
-                                    withPlaceholders ? `$${whereClauses + i}` : e.sql.name
-                            }`
-            ),
+            endpoint.sql.inputs.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${whereClauses + i}` : e.sql.name}`),
             '='
     ).join(',\n    ')}
 WHERE ${where};`;
-                return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
+
+                let start = `UPDATE ${endpoint.sqlTableFullName} `;
+                return start + replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
 
         static GenerateAReadEndpoint(endpoint: Endpoint, table: SqlTable, withPlaceholders: boolean = false) {

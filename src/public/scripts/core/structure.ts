@@ -83,6 +83,46 @@ export const SQL_TO_TS_TYPE = {
         [SqlType.xxl]: 'string',
 };
 
+export const SQL_TO_GO_PACKAGE = {
+        [SqlType.BIT]: 'strconv',
+        [SqlType.DATE]: 'strconv',
+        [SqlType.CHAR]: 'strconv',
+        [SqlType.TIME]: 'time',
+        [SqlType.TIMESTAMP]: 'time',
+        [SqlType.SERIAL]: 'strconv',
+        [SqlType.DECIMAL]: 'strconv',
+        [SqlType.FLOAT]: 'strconv',
+        [SqlType.REAL]: 'strconv',
+        [SqlType.INT]: 'strconv',
+        [SqlType.BOOLEAN]: 'strconv',
+        [SqlType.xs]: 'strconv',
+        [SqlType.s]: 'strconv',
+        [SqlType.m]: 'strconv',
+        [SqlType.l]: 'strconv',
+        [SqlType.xl]: 'strconv',
+        [SqlType.xxl]: 'strconv',
+};
+
+export const SQL_TO_GO_PACKAGE_FOR_STRUCT = {
+        [SqlType.BIT]: '',
+        [SqlType.DATE]: '',
+        [SqlType.CHAR]: '',
+        [SqlType.TIME]: 'time',
+        [SqlType.TIMESTAMP]: 'time',
+        [SqlType.SERIAL]: '',
+        [SqlType.DECIMAL]: '',
+        [SqlType.FLOAT]: '',
+        [SqlType.REAL]: '',
+        [SqlType.INT]: '',
+        [SqlType.BOOLEAN]: '',
+        [SqlType.xs]: '',
+        [SqlType.s]: '',
+        [SqlType.m]: '',
+        [SqlType.l]: '',
+        [SqlType.xl]: '',
+        [SqlType.xxl]: '',
+};
+
 type goHtmlInputFunction = (x: SqlTableAttribute, setValueToThisAttribute?: string) => string;
 
 const stringHtmlInputFunctionForGo: goHtmlInputFunction = (x, y) => `<div class="field">
@@ -97,10 +137,21 @@ const stringHtmlInputFunctionForGo: goHtmlInputFunction = (x, y) => `<div class=
             </div>
         </div>`;
 
-export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x: string) => string; htmlInputFunction: goHtmlInputFunction }> = {
+export const SQL_TO_GO_TYPE: Record<
+        string,
+        {
+                goType: string;
+                parseFunction: (x: string) => string;
+                toStringFunction: (x: string) => string;
+                htmlInputFunction: goHtmlInputFunction;
+                importPackageForConversion: string;
+                importPackageForStruct: string;
+        }
+> = {
         [SqlType.BIT]: {
                 goType: 'bool',
                 parseFunction: (x) => `strconv.ParseBool(${x})`,
+                toStringFunction: (x) => `strconv.FormatBool(${x})`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -112,10 +163,17 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.BIT],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.BIT],
         },
         [SqlType.DATE]: {
+                // TODO
+                //t := time.Now()
+                // str := t.Format("2006-01-02 15:04:05") // Example format
                 goType: 'time.Time',
                 parseFunction: (x) => `time.Parse("2006-01-02", ${x})`,
+                toStringFunction: (x) => `TODO ${x}`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -127,10 +185,14 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.DATE],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.DATE],
         },
         [SqlType.CHAR]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -142,10 +204,18 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.CHAR],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.CHAR],
         },
         [SqlType.TIME]: {
+                // TODO
+                //t := time.Now()
+                // str := t.Format("2006-01-02 15:04:05") // Example format
+
                 goType: 'time.Time',
                 parseFunction: (x) => `time.Parse("15:04:05", ${x})`,
+                toStringFunction: (x) => `TODO ${x}`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -157,10 +227,18 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.TIME],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.TIME],
         },
         [SqlType.TIMESTAMP]: {
+                // TODO
+                //t := time.Now()
+                // str := t.Format("2006-01-02 15:04:05") // Example format
+
                 goType: 'time.Time',
                 parseFunction: (x) => `time.Parse("2006-01-02 15:04:05", ${x})`,
+                toStringFunction: (x) => `TODO ${x}`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -172,10 +250,14 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.TIMESTAMP],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.TIMESTAMP],
         },
         [SqlType.SERIAL]: {
                 goType: 'int',
                 parseFunction: (x) => `strconv.Atoi(${x})`,
+                toStringFunction: (x) => `strconv.Itoa(${x})`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -187,10 +269,14 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.SERIAL],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.SERIAL],
         },
         [SqlType.DECIMAL]: {
                 goType: 'float64',
                 parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
+                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -202,10 +288,14 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.DECIMAL],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.DECIMAL],
         },
         [SqlType.FLOAT]: {
                 goType: 'float64',
                 parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
+                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -217,10 +307,14 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.FLOAT],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.FLOAT],
         },
         [SqlType.REAL]: {
                 goType: 'float64',
                 parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
+                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -232,10 +326,14 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.REAL],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.REAL],
         },
         [SqlType.INT]: {
                 goType: 'int',
                 parseFunction: (x) => `strconv.Atoi(${x})`,
+                toStringFunction: (x) => `strconv.Itoa(${x})`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -247,10 +345,14 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.INT],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.INT],
         },
         [SqlType.BOOLEAN]: {
                 goType: 'bool',
                 parseFunction: (x) => `strconv.ParseBool(${x})`,
+                toStringFunction: (x) => `strconv.FormatBool(${x})`,
                 htmlInputFunction: (x, y) => `<div class="field">
             <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
             <div class="control">
@@ -262,36 +364,63 @@ export const SQL_TO_GO_TYPE: Record<string, { goType: string; parseFunction: (x:
                 />
             </div>
         </div>`,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.BOOLEAN],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.BOOLEAN],
         },
         [SqlType.xs]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
                 htmlInputFunction: stringHtmlInputFunctionForGo,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xs],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xs],
         },
         [SqlType.s]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
                 htmlInputFunction: stringHtmlInputFunctionForGo,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.s],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.s],
         },
         [SqlType.m]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
                 htmlInputFunction: stringHtmlInputFunctionForGo,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.m],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.m],
         },
         [SqlType.l]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
                 htmlInputFunction: stringHtmlInputFunctionForGo,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.l],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.l],
         },
         [SqlType.xl]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
                 htmlInputFunction: stringHtmlInputFunctionForGo,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xl],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xl],
         },
         [SqlType.xxl]: {
                 goType: 'string',
                 parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
                 htmlInputFunction: stringHtmlInputFunctionForGo,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xxl],
+
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xxl],
         },
 };
 
@@ -370,7 +499,10 @@ export class EndpointParam {
                 varName: string;
                 typeName: string;
                 typeType: string;
+                importPackage: string;
+                importPackageForStruct: string;
                 parser: (x: string) => string;
+                toString: (x: string) => string;
         };
         sql: {
                 name: string;
@@ -400,6 +532,9 @@ export class EndpointParam {
                         typeName: SnakeToPascal(name),
                         typeType: SQL_TO_GO_TYPE[type].goType,
                         parser: SQL_TO_GO_TYPE[type].parseFunction,
+                        toString: SQL_TO_GO_TYPE[type].toStringFunction,
+                        importPackage: SQL_TO_GO_TYPE[type].importPackageForConversion,
+                        importPackageForStruct: SQL_TO_GO_TYPE[type].importPackageForStruct,
                 };
                 this.json = {
                         name: name,
@@ -540,6 +675,11 @@ export class Endpoint {
                 return endpointPath;
         }
 
+        get redirectPath() {
+                let endpointPath = `/${this.go.real.name}`;
+                return endpointPath;
+        }
+
         constructor(method: HttpMethod, name: string, table: SqlTable, many: boolean, sqlTableAttribute: SqlTableAttribute) {
                 this.http.name = name;
                 this.primaryKeyName = sqlTableAttribute.value;
@@ -634,7 +774,7 @@ export class EndpointGoShow {
 
         get urlForm() {
                 // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
-                let endpointPath = `/form/${SnakeToKebab(this.sqlTableName)}`;
+                let endpointPath = `/${SnakeToKebab(this.sqlTableName)}`;
                 return endpointPath;
         }
         get urlJSON() {
@@ -939,6 +1079,8 @@ export class SqlTable {
                 // const desireCRUD = hasCreate || hasRead || hasUpdate || hasDelete;
 
                 // if (!desireCRUD) return;
+
+                if (this.hasCompositePrimaryKey()) return;
 
                 // if (hasCreate) answer.create = [];
                 // if (hasRead) answer.read = [];
