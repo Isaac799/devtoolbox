@@ -1,101 +1,176 @@
-<!DOCTYPE html>
-<html lang="en">
-        <head>
-                <meta charset="UTF-8" />
-                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />
-                <title>About</title>
-        </head>
-        <body>
-                <header>
-                        <h1>About</h1>
-                        <span> Wanted to know a little more? Here it is, and some less obvious features too! </span>
-                        <nav>
-                                <a href="/"> Boilerplate </a>
-                                <a href="/about.html" class="routedTo">About</a>
-                                <a href="/syntax.html">Syntax</a>
-                        </nav>
-                </header>
+<header>
+        <h1>About</h1>
+        <span>Want to know more? Here's a glimpse into my journey, along with some less obvious features!</span>
+        <nav>
+                <a href="/">Boilerplate</a>
+                <a href="/about.html" class="routedTo">About</a>
+                <a href="/syntax.html">Syntax</a>
+        </nav>
+</header>
 
-                <section>
-                        <h2>Development Stage</h2>
+<section>
+        <h2>My Journey</h2>
+        <p>
+                This project began on a road trip, where I discovered the joy of generating SQL queries. It was fun, but after a few months, I set it aside.
+                Recently, a colleague introduced me to the Phoenix Framework, and I was instantly intrigued. Its extensive built-in features felt like a breath
+                of fresh air, crafted by developers tired of repetitive web development challenges. I dove into the startup documentation and gained a solid
+                foundational understanding—not just of Phoenix, but of web design as a whole and its best practices. Much of this content was new to me, and it
+                sparked a desire to create something of my own using these insights.
+        </p>
+        <p>However, I faced a few obstacles:</p>
+        <ul>
+                <li>
+                        I can't implement it at work since my team primarily uses JavaScript and, more recently, Go. This makes it challenging to translate what
+                        I learn into practical skills for my day-to-day job.
+                </li>
+                <li>While I find Elixir's atoms and macros fascinating, I struggle to "just trust" them, feeling that it was too arbitrary.</li>
+                <li>
+                        I wanted to shift away from JavaScript in my free time, and the lack of a strict type system in Elixir is similar to JavaScript. For
+                        example, I spent a frustrating 30 minutes debugging
+                        <strong>xyzHtml</strong> versus <strong>xyzHTML</strong>.
+                </li>
+        </ul>
+        <p>
+                Despite these challenges, my interest in the Phoenix Framework remains, particularly in its approach to web design and problem-solving.
+                Ultimately, I aim to create something unique that reflects the knowledge I've gained.
+        </p>
+</section>
 
-                        <span>
-                                Note this application is currently in early development. Outputs are largely untested. For now a lot of what I have is just
-                                proof of concept. Plus most of the outputs are based on my limited syntax knowledge and off the top of my head; prone to error
-                                and not verbose.
-                        </span>
+<section>
+        <h2>Development Stage</h2>
+        <p>
+                Please note that this application is currently in early development. Many outputs are untested and primarily serve as proof of concept. The
+                current functionality is based on my limited syntax knowledge and quick ideas, which means it's prone to errors and lacks detail.
+        </p>
+        <p>This project is continuously evolving, with updates approximately every week.</p>
+        <p>Much of the current work is exploratory, focused on getting the application up and running. I plan to perform a cleanup pass soon.</p>
+</section>
 
-                        <span> This project is constantly being updated and undergoing near daily changes. </span>
-                </section>
+<section>
+        <h2>Restrictions &amp; Removals</h2>
+        <ul>
+                <li>
+                        Endpoint generation is currently limited to single primary keys. For optimal results, please use the <strong>+</strong> option with the
+                        table, as it helps in creating a RESTful API.
+                </li>
+                <li>I have paused attempts at join logic while I focus on more straightforward implementations.</li>
+                <li>NodeJS Express endpoints have been temporarily removed as I prioritize development on the Go API.</li>
+                <li>The "read options" feature has been set aside in favor of a full read functionality for now.</li>
+        </ul>
+</section>
 
-                <section>
-                        <h2>Restrictions & Removals</h2>
+<section>
+        <h2>Go API</h2>
+        <p>
+                This project aims to develop a robust application boilerplate to facilitate larger projects. Initial manual testing indicates that it works well
+                with simple tables, though I still need to address some missing imports.
+        </p>
+
+        <pre>
+    cd cmd/mysite/
+    go get
+    go vet
+    # fix issues
+    go run .
+        </pre>
+
+        <h3>Pros</h3>
+        <p>
+                The clear organization of the Go app structure facilitates easy navigation and efficient code maintenance. Code reuse across different
+                components enhances productivity by saving time during feature development. This setup supports scalability, allowing for the addition of new
+                functionalities without disrupting existing code.
+        </p>
+
+        <h3>Cons</h3>
+        <p>
+                Despite its advantages, the structure can sometimes feel excessive for smaller projects, leading to unnecessary complexity. There is also a
+                learning curve associated with fully grasping the nuances of this setup. Furthermore, the potential for overengineering exists, as simpler
+                solutions may be overlooked in favor of more complicated ones, which can hinder efficiency.
+        </p>
+
+        <h3>Example Breakdown</h3>
+        <p>Here's a quick overview:</p>
+        <ul>
+                <li><strong>/cmd/mysite</strong> is the entry point, specifically <strong>main.go</strong>.</li>
+                <li>
+                        <strong>/pkg</strong> contains reusable libraries:
+                        <ul>
+                                <li><strong>/models/user.go</strong> defines the user model.</li>
+                                <li><strong>/services/user.go</strong> contains business logic related to users.</li>
+                                <li><strong>/repositories/user.go</strong> manages database interactions for user data.</li>
+                        </ul>
+                </li>
+                <li>
+                        <strong>/internal</strong> houses internal application logic:
                         <ul>
                                 <li>
-                                        Endpoint generation is restricted to single primary keys. For best results use <code>+</code> option with the table.
-                                        This helps me make a RESTful api.
+                                        <strong>/config</strong> for application configuration:
+                                        <ul>
+                                                <li><strong>app.go</strong> for application-level settings.</li>
+                                                <li><strong>db.go</strong> for database configurations.</li>
+                                        </ul>
                                 </li>
-                                <li>Previously attempted join logic is removed and on pause while I lock down the easier stuff.</li>
-                                <li>The NodeJS Express endpoints are temporary removed as I focus my time on the Go api.</li>
-                                <li>Removed the "read options" for now in favor of the full read.</li>
-                        </ul>
-                </section>
-
-                <section>
-                        <h2>PostgreSQL</h2>
-                        <span> Lots of good progress, recently added unique indexes on foreign keys. Its been a while since I tested its outputs. </span>
-                        <ul>
-                                <li>The update procedure ignores attributes marked as readonly</li>
                                 <li>
-                                        Two read functions are generated:
-                                        <ol>
-                                                <li>Single is basic, letting you read by primary key</li>
-                                                <li>Many (plural form) gives all the data</li>
-                                                <!-- <li>
-                                                        Many gives a trimmed down list if things in the table
+                                        <strong>/handlers</strong> for HTTP endpoints:
+                                        <ul>
+                                                <li>
+                                                        <strong>/user</strong> user related handlers
                                                         <ul>
-                                                                <li>automatically done if an attribute is named: name, label, value, code, title, or tag.</li>
-                                                                <li>aimed to help with dropdown list / selection needs</li>
+                                                                <li><strong>form.go</strong> handles form submissions for user data.</li>
+                                                                <li><strong>html.go</strong> handles the server-side rendering of user pages.</li>
+                                                                <li><strong>json.go</strong> handles JSON endpoints for user data.</li>
                                                         </ul>
-                                                </li> -->
-                                                <!-- <li>
-                                                        Joined recursively grabs foreign attributes too
-                                                        <ul>
-                                                                <li>Automatically generated if a foreign key is present</li>
-                                                                <li>Limited for self references</li>
-                                                        </ul>
-                                                </li> -->
-                                        </ol>
+                                                </li>
+                                        </ul>
                                 </li>
+                                <li>
+                                        <strong>/middleware</strong> is not yet in use but contains <strong>example.go</strong> as a placeholder for future
+                                        middleware (e.g., authentication).
+                                </li>
+                                <li><strong>/routes</strong> defines application routes in <strong>routes.go</strong>.</li>
                         </ul>
-
-                        <h2>Go Api</h2>
-                        <span>
-                                A work in progress too, but most promising. As of testing the code runs, but thats as far as my testing has gone. For now I took
-                                the sql queries and included them into the Go code to remove the need for stored procedure or functions. Plans to add a toggle
-                                may follow, not sure yet.
-                        </span>
-
+                </li>
+                <li>
+                        <strong>/web</strong> contains frontend resources:
                         <ul>
-                                <li>RESTful api design</li>
-                                <li>Endpoints grouped by schema to give it more context</li>
-                                <li>GET, PUT, POST, DELETE mirroring postgresql table structures</li>
-                                <li>GET params are parsed into appropriate type before attempting postgresql call</li>
-                                <li>Error handling for pretty much every step</li>
+                                <li>
+                                        <strong>/templates</strong> for HTML templates:
+                                        <ul>
+                                                <li>
+                                                        <strong>/user</strong> user-related templates:
+                                                        <ul>
+                                                                <li><strong>show</strong> displays single user details.</li>
+                                                                <li><strong>new</strong> includes a form for creating a new user.</li>
+                                                                <li><strong>index</strong> displays all users in a table.</li>
+                                                                <li><strong>edit</strong> features a form for editing user details.</li>
+                                                        </ul>
+                                                </li>
+                                        </ul>
+                                </li>
+                                <li><strong>/static</strong> contains static files (CSS, JS).</li>
                         </ul>
+                </li>
+        </ul>
 
-                        <h2>Html</h2>
-                        <span>
-                                This is mostly proof of concept, and very little time spent so far. I plan to make a proper implementation with Go templates and
-                                SSR.
-                        </span>
-                </section>
-                <footer>
-                        <nav>
-                                <a href="privacy-policy.html">Privacy Policy</a>
-                        </nav>
-                </footer>
-        </body>
-</html>
+        <h2>PostgreSQL</h2>
+        <p>
+                Progress has been promising, with recent additions of unique indexes on foreign keys. It's been a while since I tested the outputs, but it did
+                function with the current default example for the Go app.
+        </p>
+        <ul>
+                <li>The update procedure ignores attributes marked as read-only.</li>
+                <li>
+                        Two read functions are generated:
+                        <ol>
+                                <li>Single read function allows access by primary key.</li>
+                                <li>Many read function retrieves all data.</li>
+                        </ol>
+                </li>
+        </ul>
+</section>
+
+<footer>
+        <nav>
+                <a href="privacy-policy.html">Privacy Policy</a>
+        </nav>
+</footer>

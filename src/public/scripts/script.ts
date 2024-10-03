@@ -5,7 +5,6 @@ import { CodeGenerator, FileOutputs } from './core/structure';
 import '../assets/normalize.css';
 import '../assets/styles.css';
 import { TsTypesCodeGenerator } from './generators/ts_types';
-import { HtmlCodeGenerator } from './generators/html_js';
 import { GoCodeGenerator } from './generators/go';
 import { downloadZip } from './core/download';
 
@@ -304,7 +303,7 @@ const APP_ITEMS = [
         new AppItem('Postgres', new SqlGenerator()),
         // new AppItem('Node JS', new NodeExpressCodeGenerator()),
         new AppItem('TS Types', new TsTypesCodeGenerator()),
-        new AppItem('HTML forms', new HtmlCodeGenerator()),
+        // new AppItem('HTML forms', new HtmlCodeGenerator()),
 
         // new AppItem('Go structs', new GoTypesCodeGenerator()),
         // new AppItem('GO', undefined),
