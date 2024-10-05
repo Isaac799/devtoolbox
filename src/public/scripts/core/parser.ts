@@ -11,6 +11,8 @@ import {
         SqlType,
         UNALIASED_SELF_REFERENCE_ALIAS,
         EndpointParam,
+        RangeResult,
+        AttrValidation,
 } from './structure';
 
 /**
@@ -189,9 +191,17 @@ export class InputParser {
                 return this;
         }
 
-        ExtractSqlOptions(values: Array<string>, position: number): Array<string> {
+        ExtractSqlOptions(
+                values: Array<string>,
+                position: number
+        ): {
+                options: Array<string>;
+                validation: AttrValidation;
+        } {
                 let remainingItems = values.slice(position, values.length);
                 let relevantRemainingItems: string[] = [];
+                let attrValidation: AttrValidation = {};
+
                 for (let i = 0; i < remainingItems.length; i++) {
                         let option = remainingItems[i];
                         option = option.trim();
@@ -201,12 +211,30 @@ export class InputParser {
                         } else {
                                 relevantRemainingItems.push(option);
                         }
+                        let range = parseRange(option);
+                        if (!range) continue;
+                        attrValidation = {
+                                range: range,
+                        };
+                        // relevantRemainingItems.push(range);
                 }
-                // let relevantRemainingItems = remainingItems
-                //         .map((e) => e.trim())
-                //         .filter((e) => !!e);
 
-                return relevantRemainingItems;
+                function parseRange(input: string): RangeResult | null {
+                        // Define the regex pattern to match 'number..number' or 'decimal..decimal'
+                        const rangePattern = /^\s*(\d+(\.\d+)?)\s*\.\.\s*(\d+(\.\d+)?)\s*$/;
+                        const match = input.match(rangePattern);
+                        if (!match) {
+                                return null;
+                        }
+                        const min = parseFloat(match[1]);
+                        const max = parseFloat(match[3]);
+                        return { min, max };
+                }
+
+                return {
+                        options: relevantRemainingItems,
+                        validation: attrValidation,
+                };
         }
 
         ParseSqlSchema(line: string): SqlSchema {
@@ -217,7 +245,7 @@ export class InputParser {
 
                 let schema = new SqlSchema(value);
                 schema.tables = {};
-                schema.options = options;
+                schema.options = options.options;
                 return schema;
         }
 
@@ -230,8 +258,8 @@ export class InputParser {
 
                 let validOptions: Array<string> = [];
                 let invalidOptions: Array<string> = [];
-                for (let k = 0; k < options.length; k++) {
-                        const option = options[k];
+                for (let k = 0; k < options.options.length; k++) {
+                        const option = options.options[k];
                         let optionAdded = false;
                         for (const key in ATTRIBUTE_OPTION) {
                                 const sqlTableAttrOption = ATTRIBUTE_OPTION[key];
@@ -246,19 +274,20 @@ export class InputParser {
                         }
                 }
 
-                let attribute: SqlTableAttribute = new SqlTableAttribute(parentTable, sqlType);
-
-                attribute.shortHandType = shortHandType;
-                attribute.value = value;
-                attribute.options = new Set([...validOptions]);
-                attribute.defaultValue = undefined;
-
-                let wantToBeReadOnly = attribute.value[0] === '_';
+                let wantToBeReadOnly = value[0] === '_';
                 if (wantToBeReadOnly) {
-                        attribute.readOnly = true;
-                        // we just care to replace the first one
-                        attribute.value = attribute.value.replace('_', '');
+                        value = value.replace('_', '');
                 }
+
+                let attribute: SqlTableAttribute = new SqlTableAttribute(
+                        parentTable,
+                        sqlType,
+                        value,
+                        wantToBeReadOnly,
+                        shortHandType,
+                        new Set([...validOptions]),
+                        options.validation
+                );
 
                 // TODO improve default validation
 
@@ -312,23 +341,15 @@ export class InputParser {
                 let newTable: SqlTable = new SqlTable(parentSchema, label);
 
                 newTable.label = label;
-                newTable.options = options;
+                newTable.options = options.options;
 
                 if (newTable.options.includes('@')) {
-                        let attr = new SqlTableAttribute(newTable, SqlType.TIMESTAMP);
-                        attr.shortHandType = 'ts';
+                        let attr = new SqlTableAttribute(newTable, SqlType.TIMESTAMP, 'record_created_on', true, 'ts', new Set(['!']), {});
                         attr.defaultValue = 'CURRENT_TIMESTAMP';
-                        attr.value = 'record_created_on';
-                        attr.options = new Set(['!']);
-                        attr.readOnly = true;
                         newTable.attributes[attr.value] = attr;
                 }
                 if (newTable.options.includes('+')) {
-                        let attr = new SqlTableAttribute(newTable, SqlType.SERIAL);
-                        attr.shortHandType = 'i';
-                        attr.defaultValue = undefined;
-                        attr.value = 'id';
-                        attr.options = new Set(['!', '+']);
+                        let attr = new SqlTableAttribute(newTable, SqlType.SERIAL, 'id', true, 'i', new Set(['!', '+']), {});
                         newTable.attributes[attr.value] = attr;
                 }
                 return newTable;
@@ -434,27 +455,32 @@ export class InputParser {
                                 type = SqlType.INT;
                         }
 
-                        let newAttribute = new SqlTableAttribute(attr.parentTable, type);
-
                         // add the reference to
-                        newAttribute.referenceTo = new SqlReferenceTo(foreignTableNameAlias, key);
+                        let referenceTo = new SqlReferenceTo(foreignTableNameAlias, key);
 
+                        let referenceToSelf = false;
                         if (attr.parentTable.id === referencedTable.id) {
-                                newAttribute.referenceToSelf = true;
+                                referenceToSelf = true;
                                 if (!foreignTableNameAlias) {
-                                        foreignTableNameAlias = `${UNALIASED_SELF_REFERENCE_ALIAS}${newAttribute.parentTable.label}`;
+                                        foreignTableNameAlias = `${UNALIASED_SELF_REFERENCE_ALIAS}${attr.parentTable.label}`;
                                 }
                         }
 
+                        let value = '';
                         if (foreignTableNameAlias) {
-                                newAttribute.value = `${foreignTableNameAlias}_${key.value}`;
+                                value = `${foreignTableNameAlias}_${key.value}`;
                         } else {
-                                newAttribute.value = `${foreignTableName}_${key.value}`;
+                                value = `${foreignTableName}_${key.value}`;
                         }
 
                         // take in the options from the attributes that are references
-                        newAttribute.options = attr.options;
-                        newAttribute.defaultValue = attr.defaultValue;
+                        let options = attr.options;
+                        let defaultValue = attr.defaultValue;
+
+                        let newAttribute = new SqlTableAttribute(attr.parentTable, type, value, attr.readOnly, attr.shortHandType, options, {});
+                        newAttribute.referenceTo = referenceTo;
+                        newAttribute.referenceToSelf = referenceToSelf;
+                        newAttribute.defaultValue = defaultValue;
 
                         answer.push(newAttribute);
                 }

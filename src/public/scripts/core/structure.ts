@@ -286,6 +286,11 @@ function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunct
         };
 }
 
+export type RangeResult = {
+        min: number;
+        max: number;
+};
+
 export type GoAttrStuff = {
         goType: string;
         parseFunction: (x: string) => string;
@@ -695,8 +700,6 @@ export class Endpoint {
                         endpointPath += `/{${this.http.query.go.var.propertyAsVariable}}`;
                 }
 
-                console.log('endpointPath :>> ', endpointPath);
-
                 this.url = {
                         forRouter: endpointPath,
                         indexPage: `/${this.go.real.name}`,
@@ -805,23 +808,41 @@ export class SqlSchema {
         }
 }
 
+export type AttrValidation = {
+        range?: RangeResult;
+};
+
 export class SqlTableAttribute {
         id: number;
         referenceToSelf: boolean = false;
-        readOnly: boolean = false;
-        value: string = '';
-        schemaName: string = '';
-        shortHandType: string = '';
         sqlType: SqlType;
         defaultValue?: string | null = null;
-        options = new Set<string>();
         referenceTo: SqlReferenceTo | null = null;
-        parentTable: SqlTable;
 
-        constructor(parent: SqlTable, type: SqlType) {
+        parentTable: SqlTable;
+        value: string;
+        readOnly: boolean;
+        shortHandType: string;
+        options: Set<string>;
+        validation: AttrValidation;
+
+        constructor(
+                parent: SqlTable,
+                type: SqlType,
+                value: string,
+                readOnly: boolean,
+                shortHandType: string,
+                options: Set<string>,
+                validation: AttrValidation
+        ) {
                 this.id = Math.random();
                 this.parentTable = parent;
                 this.sqlType = type;
+                this.value = value;
+                this.readOnly = readOnly;
+                this.shortHandType = shortHandType;
+                this.options = options;
+                this.validation = validation;
         }
 
         get fullName(): string {

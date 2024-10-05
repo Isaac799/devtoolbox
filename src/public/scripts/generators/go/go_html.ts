@@ -68,7 +68,6 @@ export class GoHTML extends CodeGenerator {
                                 // time is for the date on page
                                 importsParts.push('time');
                                 importsParts = [...new Set(importsParts)];
-                                console.log('importsParts :>> ', importsParts);
 
                                 let imports = importsParts
                                         .filter((e) => !!e)
