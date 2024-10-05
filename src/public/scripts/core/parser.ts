@@ -200,7 +200,9 @@ export class InputParser {
         } {
                 let remainingItems = values.slice(position, values.length);
                 let relevantRemainingItems: string[] = [];
-                let attrValidation: AttrValidation = {};
+                let attrValidation: AttrValidation = {
+                        required: false,
+                };
                 let isPartOfValidation = false;
 
                 for (let i = 0; i < remainingItems.length; i++) {
@@ -214,9 +216,7 @@ export class InputParser {
                         }
                         let range = parseRange(option);
                         if (!range) continue;
-                        attrValidation = {
-                                range: range,
-                        };
+                        attrValidation.range = range;
                         isPartOfValidation = true;
                 }
 
@@ -395,12 +395,16 @@ export class InputParser {
                 newTable.options = options.options;
 
                 if (newTable.options.includes('@')) {
-                        let attr = new SqlTableAttribute(newTable, SqlType.TIMESTAMP, 'record_created_on', true, 'ts', new Set(['!']), {});
+                        let attr = new SqlTableAttribute(newTable, SqlType.TIMESTAMP, 'record_created_on', true, 'ts', new Set(['!']), {
+                                required: true,
+                        });
                         attr.defaultValue = 'CURRENT_TIMESTAMP';
                         newTable.attributes[attr.value] = attr;
                 }
                 if (newTable.options.includes('+')) {
-                        let attr = new SqlTableAttribute(newTable, SqlType.SERIAL, 'id', true, 'i', new Set(['!', '+']), {});
+                        let attr = new SqlTableAttribute(newTable, SqlType.SERIAL, 'id', true, 'i', new Set(['!', '+']), {
+                                required: true,
+                        });
                         newTable.attributes[attr.value] = attr;
                 }
                 return newTable;
@@ -528,10 +532,13 @@ export class InputParser {
                         let options = attr.options;
                         let defaultValue = attr.defaultValue;
 
-                        let newAttribute = new SqlTableAttribute(attr.parentTable, type, value, attr.readOnly, attr.shortHandType, options, {});
+                        let newAttribute = new SqlTableAttribute(attr.parentTable, type, value, attr.readOnly, attr.shortHandType, options, {
+                                required: false,
+                        });
                         newAttribute.referenceTo = referenceTo;
                         newAttribute.referenceToSelf = referenceToSelf;
                         newAttribute.defaultValue = defaultValue;
+                        newAttribute.validation.required = !newAttribute.isNullable();
 
                         answer.push(newAttribute);
                 }

@@ -1,3 +1,4 @@
+import { GoCommentItOut } from '../../core/formatting';
 import { CodeGenerator, Endpoint, EndpointParam, SqlTable } from '../../core/structure';
 import { SqlGenerator } from './../sql/postgres_sql';
 
@@ -144,7 +145,7 @@ func ValidateFloat64(num float64, min, max float64) error {
 
                 // because we declare err in the validation
                 let queryRowPhrase = '';
-                if (validation) {
+                if (validation.count > 0) {
                         queryRowPhrase = `err = repo.DB.QueryRow(query, ${inputsForQuery}).Scan(${scanInto})`;
                 } else {
                         queryRowPhrase = `err := repo.DB.QueryRow(query, ${inputsForQuery}).Scan(${scanInto})`;
@@ -152,7 +153,7 @@ func ValidateFloat64(num float64, min, max float64) error {
                 let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${endpoint.go.real.type}) (${
                         endpoint.go.primaryKey.go.var.propertyGoType
                 }, error) {
-    ${validation}                
+    ${validation.phrase}                
     query := \`${SqlGenerator.GenerateACreateEndpoint(endpoint, true)}\`
     ${queryRowPhrase}
     return ${returnStuff}, err
@@ -214,14 +215,14 @@ func ValidateFloat64(num float64, min, max float64) error {
 
                 // because we declare err in the validation
                 let queryRowPhrase = '';
-                if (validation) {
+                if (validation.count > 0) {
                         queryRowPhrase = `_, err = repo.DB.Exec(query, ${inputs})`;
                 } else {
                         queryRowPhrase = `_, err := repo.DB.Exec(query, ${inputs})`;
                 }
 
                 let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${endpoint.go.real.type}) error {
-    ${validation}                
+    ${validation.phrase}                
     query := \`${SqlGenerator.GenerateAUpdateEndpoint(endpoint, true)}\`
     ${queryRowPhrase}
     return err
@@ -241,19 +242,28 @@ func ValidateFloat64(num float64, min, max float64) error {
                 return str.trim();
         }
 
-        private static BuildVarValidation(endpoint: Endpoint, value: EndpointParam[], forCreate: boolean, returnValue: boolean) {
+        private static BuildVarValidation(
+                endpoint: Endpoint,
+                value: EndpointParam[],
+                forCreate: boolean,
+                returnValue: boolean
+        ): {
+                count: number;
+                phrase: string;
+        } {
                 let items = [...value];
                 if (!forCreate) {
                         items = items.filter((e) => !e.readOnly);
                 }
-                return items
+                let validationsAdded = 0;
+                let phrase = items
                         .filter((e) => e.validation.range)
-                        .map((e, i) => {
+                        .map((e) => {
                                 let str = '';
                                 let range = e.validation.range;
                                 let returnVal = returnValue ? `${endpoint.go.primaryKey.go.stuff.emptyValue}, err` : 'err';
                                 if (range) {
-                                        let declare = i === 0 ? 'err :=' : 'err =';
+                                        let declare = validationsAdded === 0 ? 'err :=' : 'err =';
                                         if (e.go.var.propertyGoType === 'string') {
                                                 str = `${declare} ValidateString(${endpoint.go.real.name}.${e.go.var.propertyName}, ${range.min}, ${range.max})
     if err != nil {
@@ -271,9 +281,19 @@ func ValidateFloat64(num float64, min, max float64) error {
     }`;
                                         }
                                 }
+                                if (!e.validation.required) {
+                                        str = GoCommentItOut(str, 'commented out because the field is not required');
+                                } else {
+                                        validationsAdded += 1;
+                                }
 
                                 return str;
                         })
                         .join('\n\n    ');
+
+                return {
+                        count: validationsAdded,
+                        phrase: phrase,
+                };
         }
 }

@@ -806,6 +806,7 @@ export class SqlSchema {
 }
 
 export type AttrValidation = {
+        required: boolean;
         range?: RangeResult;
 };
 

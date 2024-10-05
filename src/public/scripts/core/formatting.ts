@@ -218,3 +218,18 @@ export const organizeObjectByKeys = (obj: any) => {
 
 //         return grouped;
 // };
+
+export const GoCommentItOut = (input: string, reason: string): string => {
+        // Split the input string by new lines
+        const lines = input.split('\n');
+
+        // Map through each line and add '//' at the beginning
+        const modifiedLines = lines.map((line) => {
+                return `//${line}`; // Prepend '//'
+        });
+
+        modifiedLines.unshift(`// ${reason}`);
+
+        // Join the modified lines back into a single string
+        return modifiedLines.join('\n');
+};
