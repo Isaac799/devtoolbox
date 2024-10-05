@@ -351,7 +351,7 @@ export class InputParser {
                 messages: string[];
         } {
                 let decimalRange = [SqlType.DECIMAL, SqlType.FLOAT, SqlType.REAL];
-                let wholeNumberRange = [SqlType.SERIAL, SqlType.INT, SqlType.xs, SqlType.s, SqlType.m, SqlType.l, SqlType.xl, SqlType.xxl];
+                let wholeNumberRange = [SqlType.SERIAL, SqlType.INT, SqlType.VARCHAR];
                 let range = options.validation.range;
                 let messages = [];
                 if (range) {
@@ -551,31 +551,35 @@ export class InputParser {
         }
 
         ValidAttribute(attr: SqlTableAttribute, table: SqlTable): boolean {
+                if (attr.sqlType === SqlType.VARCHAR && !attr.validation.range) {
+                        this.SaveErrorMessage(`'${attr.value}' on '${table.label}' lacks a valid range. (e.g. '0..255')`);
+                        return false;
+                }
+
                 for (const attributeName in table.attributes) {
                         if (!Object.prototype.hasOwnProperty.call(table.attributes, attributeName)) {
                                 continue;
                         }
                         const attribute = table.attributes[attributeName];
+
                         if (attribute.value === attr.value) {
-                                this.SaveErrorMessage(`Cannot create column '${attr.value}' on table '${table.label}' because it already exists.`);
+                                this.SaveErrorMessage(`'${attr.value}' on '${table.label}' already exists`);
                                 return false;
                         }
 
                         if (`${attribute.referenceTo?.column.parentTable.label}|${attribute.referenceTo?.tableAlias}` === attr.value) {
-                                this.SaveErrorMessage(`Cannot create column '${attr.value}' on table '${table.label}' because it already exists.`);
+                                this.SaveErrorMessage(`'${attr.value}' on '${table.label}' already exists`);
                                 return false;
                         }
                 }
 
                 if (!attr.isNullable() && attr.isDefaultNull()) {
-                        this.SaveErrorMessage(`Cannot create column '${attr.value}' on table '${table.label}' due to conflicting nullability flags.`);
+                        this.SaveErrorMessage(`'${attr.value}' on '${table.label}' has conflicting nullability flags`);
                         return false;
                 }
 
                 if (attr.isForeignKey() && !attr.referenceTo) {
-                        this.SaveErrorMessage(
-                                `Foreign key not added. The reference '${attr.value}' is could not be fround, or is missing a suitable primary key.`
-                        );
+                        this.SaveErrorMessage(`reference '${attr.value}' was not fround or is missing a suitable primary key`);
                         return false;
                 }
                 return true;

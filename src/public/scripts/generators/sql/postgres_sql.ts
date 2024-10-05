@@ -9,7 +9,7 @@ export class SqlGenerator extends CodeGenerator {
         }
 
         CreateAttributeString(attr: SqlTableAttribute): string {
-                let attrStr = `${attr.value} ${attr.sqlType}`;
+                let attrStr = `${attr.value} ${attr.fullSqlType}`;
 
                 for (const option of attr.options) {
                         for (const key in ATTRIBUTE_OPTION) {

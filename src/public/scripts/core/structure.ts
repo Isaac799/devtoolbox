@@ -31,12 +31,7 @@ export enum SqlType {
         SERIAL = 'SERIAL',
         INT = 'INT',
         BOOLEAN = 'BOOLEAN',
-        xs = 'VARCHAR(8)',
-        s = 'VARCHAR(128)',
-        m = 'VARCHAR(512)',
-        l = 'VARCHAR(2048)',
-        xl = 'VARCHAR(8192)',
-        xxl = 'VARCHAR(32768)',
+        VARCHAR = 'VARCHAR',
 }
 
 export const MAX_LOOP_COUNT = 10000 as const;
@@ -54,12 +49,7 @@ export const SQL_TABLE_ATTRIBUTES: {
         [SqlType.REAL]: /^\s{2,8}- (r|real) [a-zA-Z_]{2,16}/,
         [SqlType.INT]: /^\s{2,8}- (i|int|integer) [a-zA-Z_]{2,16}/,
         [SqlType.BOOLEAN]: /^\s{2,8}- (b|boolean|bool) [a-zA-Z_]{2,16}/,
-        [SqlType.xs]: /^\s{2,8}- xs [a-zA-Z_]{2,16}/,
-        [SqlType.s]: /^\s{2,8}- s [a-zA-Z_]{2,16}/,
-        [SqlType.m]: /^\s{2,8}- m [a-zA-Z_]{2,16}/,
-        [SqlType.l]: /^\s{2,8}- l [a-zA-Z_]{2,16}/,
-        [SqlType.xl]: /^\s{2,8}- xl [a-zA-Z_]{2,16}/,
-        [SqlType.xxl]: /^\s{2,8}- xxl [a-zA-Z_]{2,16}/,
+        [SqlType.VARCHAR]: /^\s{2,8}- (s|string|str) [a-zA-Z_]{2,16}/,
         REFERENCE: /^\s{2,8}- \^ [a-zA-Z_]{2,16}/, // . & | SEARCHED FOR LATER
 };
 
@@ -75,12 +65,7 @@ export const SQL_TO_TS_TYPE = {
         [SqlType.REAL]: 'number',
         [SqlType.INT]: 'number',
         [SqlType.BOOLEAN]: 'boolean',
-        [SqlType.xs]: 'string',
-        [SqlType.s]: 'string',
-        [SqlType.m]: 'string',
-        [SqlType.l]: 'string',
-        [SqlType.xl]: 'string',
-        [SqlType.xxl]: 'string',
+        [SqlType.VARCHAR]: 'string',
 };
 
 export const SQL_TO_GO_PACKAGE = {
@@ -95,12 +80,7 @@ export const SQL_TO_GO_PACKAGE = {
         [SqlType.REAL]: 'strconv',
         [SqlType.INT]: 'strconv',
         [SqlType.BOOLEAN]: 'strconv',
-        [SqlType.xs]: 'strconv',
-        [SqlType.s]: 'strconv',
-        [SqlType.m]: 'strconv',
-        [SqlType.l]: 'strconv',
-        [SqlType.xl]: 'strconv',
-        [SqlType.xxl]: 'strconv',
+        [SqlType.VARCHAR]: 'strconv',
 };
 
 export const SQL_TO_GO_PACKAGE_FOR_STRUCT = {
@@ -115,12 +95,7 @@ export const SQL_TO_GO_PACKAGE_FOR_STRUCT = {
         [SqlType.REAL]: '',
         [SqlType.INT]: '',
         [SqlType.BOOLEAN]: '',
-        [SqlType.xs]: '',
-        [SqlType.s]: '',
-        [SqlType.m]: '',
-        [SqlType.l]: '',
-        [SqlType.xl]: '',
-        [SqlType.xxl]: '',
+        [SqlType.VARCHAR]: '',
 };
 export const SQL_TO_HTML_INPUT_TYPE = {
         [SqlType.BIT]: '', // NOT NEEDED
@@ -134,12 +109,7 @@ export const SQL_TO_HTML_INPUT_TYPE = {
         [SqlType.REAL]: 'number',
         [SqlType.INT]: 'number',
         [SqlType.BOOLEAN]: '', // NOT NEEDED
-        [SqlType.xs]: 'text',
-        [SqlType.s]: 'text',
-        [SqlType.m]: 'text',
-        [SqlType.l]: 'text',
-        [SqlType.xl]: 'text',
-        [SqlType.xxl]: 'text',
+        [SqlType.VARCHAR]: 'text',
 };
 
 export const SQL_TO_HTML_INPUT_CLASS = {
@@ -154,12 +124,7 @@ export const SQL_TO_HTML_INPUT_CLASS = {
         [SqlType.REAL]: 'input',
         [SqlType.INT]: 'input',
         [SqlType.BOOLEAN]: '', // NOT NEEDED
-        [SqlType.xs]: 'input',
-        [SqlType.s]: 'input',
-        [SqlType.m]: 'input',
-        [SqlType.l]: 'input',
-        [SqlType.xl]: 'input',
-        [SqlType.xxl]: 'input',
+        [SqlType.VARCHAR]: 'input',
 };
 
 export const ATTRIBUTE_OPTION: {
@@ -332,7 +297,7 @@ function generateRangePhrase(validation: AttrValidation, sqlT: SqlType) {
         let range = validation.range;
         let rangePhrase = '';
         let nums = [SqlType.SERIAL, SqlType.DECIMAL, SqlType.FLOAT, SqlType.REAL, SqlType.INT];
-        let strs = [SqlType.xs, SqlType.s, SqlType.m, SqlType.l, SqlType.xl, SqlType.xxl];
+        let strs = [SqlType.VARCHAR];
         if (range) {
                 if (nums.includes(sqlT)) {
                         rangePhrase = `min="${range.min}" max="${range.max}" step="${determineStepRange(range)}"`;
@@ -486,65 +451,15 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
                 importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.BOOLEAN],
                 importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.BOOLEAN],
         },
-        [SqlType.xs]: {
+        [SqlType.VARCHAR]: {
                 goType: 'string',
                 emptyValue: `""`,
                 parseFunction: (x) => `${x}`,
                 toStringFunction: (x) => `${x}`,
-                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
-                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xs],
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xs],
-        },
-        [SqlType.s]: {
-                goType: 'string',
-                emptyValue: `""`,
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
-                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.s],
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.s],
-        },
-        [SqlType.m]: {
-                goType: 'string',
-                emptyValue: `""`,
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
-                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.m],
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.m],
-        },
-        [SqlType.l]: {
-                goType: 'string',
-                emptyValue: `""`,
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
-                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.l],
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.l],
-        },
-        [SqlType.xl]: {
-                goType: 'string',
-                emptyValue: `""`,
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
-                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xl],
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xl],
-        },
-        [SqlType.xxl]: {
-                goType: 'string',
-                emptyValue: `""`,
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
-                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xxl],
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xxl],
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.VARCHAR),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.VARCHAR),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.VARCHAR],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.VARCHAR],
         },
 };
 
@@ -601,7 +516,7 @@ export class EndpointParam {
                 };
                 this.sql = {
                         name: name,
-                        type: attr.sqlType,
+                        type: attr.fullSqlType,
                         sqlLocation: new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value),
                 };
                 this.html = {
@@ -897,7 +812,19 @@ export type AttrValidation = {
 export class SqlTableAttribute {
         id: number;
         referenceToSelf: boolean = false;
-        sqlType: SqlType;
+        private _sqlType: SqlType;
+        get sqlType() {
+                return this._sqlType;
+        }
+        get fullSqlType(): string {
+                if (this._sqlType === SqlType.VARCHAR) {
+                        if (this.validation.range) {
+                                return `VARCHAR(${this.validation.range.max})`;
+                        }
+                }
+                return this._sqlType;
+        }
+
         defaultValue?: string | null = null;
         referenceTo: SqlReferenceTo | null = null;
 
@@ -919,7 +846,7 @@ export class SqlTableAttribute {
         ) {
                 this.id = Math.random();
                 this.parentTable = parent;
-                this.sqlType = type;
+                this._sqlType = type;
                 this.value = value;
                 this.readOnly = readOnly;
                 this.shortHandType = shortHandType;

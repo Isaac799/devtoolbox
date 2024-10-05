@@ -194,7 +194,7 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
                 for (let i = 0; i < errors.length; i++) {
                         const error = errors[i];
                         let errorItem = document.createElement('div');
-                        errorItem.classList.add('warn');
+                        errorItem.classList.add('error');
                         errorItem.classList.add('p-1');
                         errorItem.innerText = error;
                         errorOut.appendChild(errorItem);
@@ -329,7 +329,7 @@ const DEFAULT_INPUT = `
   - s title * 4..31
 
 - product + 
-  - s title * !
+  - s title * ! 0..63
   - d price ! 1.00..1000.00
 
 - product_category
