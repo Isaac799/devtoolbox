@@ -31,7 +31,7 @@
                         <p>However, I faced a few obstacles:</p>
                         <ul>
                                 <li>
-                                        I appreciate what I could learn from Elixir and the new problem-solving approaches it offers (i.e. functional paradigm),
+                                        I appreciate what I could learn from Elixir and the new problem-solving approaches it offers (e.g. functional paradigm),
                                         but it's not a skill that directly translates to my current work environment.
                                 </li>
                                 <li>While I find Elixir's atoms and macros fascinating, I struggle to "just trust" them, feeling that it was too arbitrary.</li>
@@ -66,9 +66,9 @@
                         <ul>
                                 <li>
                                         Endpoint generation is currently limited to single primary keys. For optimal results, please use the
-                                        <strong>+</strong> option with the table, as it helps in creating a RESTful API.
+                                        <strong>+</strong> option on tables
                                 </li>
-                                <li>I have paused attempts at join logic while I focus on more straightforward implementations.</li>
+                                <li>I have paused attempts at join logic while I focus on locking in core features.</li>
                                 <li>NodeJS Express endpoints have been temporarily removed as I prioritize development on the Go API.</li>
                                 <li>The "read options" feature has been set aside in favor of a full read functionality for now.</li>
                         </ul>
@@ -77,31 +77,28 @@
                 <section>
                         <h2>Go API</h2>
                         <p>
-                                This project aims to develop a robust application boilerplate to facilitate larger projects. Initial manual testing indicates
-                                that it works well with simple tables, though I still need to address some missing imports.
+                                This project aims to develop a robust application boilerplate to facilitate larger projects. I am testing outputs and have had
+                                good fortune so far, but am constantly handling edge cases and you may run into some too.
                         </p>
 
                         <pre>
-    cd cmd/mysite/
-    go get
-    go vet
-    # fix issues
-    go run .
-        </pre
+cd cmd/mysite/
+go get
+go vet
+go run .</pre
                         >
 
                         <h3>Pros</h3>
                         <p>
-                                The clear organization of the Go app structure facilitates easy navigation and efficient code maintenance. Code reuse across
-                                different components enhances productivity by saving time during feature development. This setup supports scalability, allowing
-                                for the addition of new functionalities without disrupting existing code.
+                                The organized structure makes it easy to navigate and maintain the code. Plus, being able to reuse code across different
+                                components really boosts productivity, saving time when you're developing new features. This setup is also great for
+                                scalability, meaning you can add new functionalities without messing up the existing code.
                         </p>
-
                         <h3>Cons</h3>
                         <p>
-                                Despite its advantages, the structure can sometimes feel excessive for smaller projects, leading to unnecessary complexity.
-                                There is also a learning curve associated with fully grasping the nuances of this setup. Furthermore, the potential for
-                                overengineering exists, as simpler solutions may be overlooked in favor of more complicated ones, which can hinder efficiency.
+                                On the flip side, this structure can feel a bit overkill for smaller projects, which might add unnecessary complexity. There's
+                                also a learning curve to really get the hang of everything. And sometimes, it can lead to overengineering, where simpler
+                                solutions get overlooked in favor of more complicated ones, which can slow things down.
                         </p>
 
                         <h3>Example Breakdown</h3>
@@ -113,7 +110,10 @@
                                         <ul>
                                                 <li><strong>/models/user.go</strong> defines the user model.</li>
                                                 <li><strong>/services/user.go</strong> contains business logic related to users.</li>
-                                                <li><strong>/repositories/user.go</strong> manages database interactions for user data.</li>
+                                                <li>
+                                                        <strong>/repositories/user.go</strong> manages database interactions and data validation for user
+                                                        related data.
+                                                </li>
                                         </ul>
                                 </li>
                                 <li>
@@ -158,10 +158,10 @@
                                                                 <li>
                                                                         <strong>/user</strong> user-related templates:
                                                                         <ul>
-                                                                                <li><strong>show</strong> displays single user details.</li>
-                                                                                <li><strong>new</strong> includes a form for creating a new user.</li>
-                                                                                <li><strong>index</strong> displays all users in a table.</li>
-                                                                                <li><strong>edit</strong> features a form for editing user details.</li>
+                                                                                <li><strong>show.html</strong> displays single user details.</li>
+                                                                                <li><strong>new.html</strong> includes a form for creating a new user.</li>
+                                                                                <li><strong>index.html</strong> displays all users in a table.</li>
+                                                                                <li><strong>edit.html</strong> features a form for editing user details.</li>
                                                                         </ul>
                                                                 </li>
                                                         </ul>
