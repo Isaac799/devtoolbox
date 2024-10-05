@@ -255,6 +255,7 @@ const boolRadioHtmlInputFunctionForGoWithValue: goHtmlInputFunctionWithValue = (
 
 function genericHtmlInputFunctionForGo(sqlT: SqlType): goHtmlInputFunction {
         return function ah(x) {
+                let rangePhrase = generateRangePhrase(x.validation, sqlT);
                 return `<div class="field">
                     <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
                     <div class="control">
@@ -262,7 +263,9 @@ function genericHtmlInputFunctionForGo(sqlT: SqlType): goHtmlInputFunction {
                             class="${SQL_TO_HTML_INPUT_CLASS[sqlT]}"
                             type="${SQL_TO_HTML_INPUT_TYPE[sqlT]}"
                             id="${x.value}"
-                            name="${x.value}"${x.isNullable() ? '' : '\n                    required'}
+                            name="${x.value}"
+                            ${x.isNullable() ? '' : 'required'}
+                            ${rangePhrase}
                         />
                     </div>
                 </div>`;
@@ -270,6 +273,7 @@ function genericHtmlInputFunctionForGo(sqlT: SqlType): goHtmlInputFunction {
 }
 function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunctionWithValue {
         return function ah(x, y) {
+                let rangePhrase = generateRangePhrase(x.validation, sqlT);
                 return `<div class="field">
                     <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
                     <div class="control">
@@ -277,13 +281,29 @@ function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunct
                             class="${SQL_TO_HTML_INPUT_CLASS[sqlT]}"
                             type="${SQL_TO_HTML_INPUT_TYPE[sqlT]}"
                             id="${x.value}"
-                            name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${
-                        y ? `\n                    value="{{ .Data.${y} }}"` : ''
-                }
+                            name="${x.value}"
+                            ${x.isNullable() ? '' : 'required'}
+                            ${y ? `value="{{ .Data.${y} }}"` : ''}
+                            ${rangePhrase}
                         />
                     </div>
                 </div>`;
         };
+}
+
+function generateRangePhrase(validation: AttrValidation, sqlT: SqlType) {
+        let range = validation.range;
+        let rangePhrase = '';
+        let nums = [SqlType.SERIAL, SqlType.DECIMAL, SqlType.FLOAT, SqlType.REAL, SqlType.INT, SqlType.BOOLEAN];
+        let strs = [SqlType.xs, SqlType.s, SqlType.m, SqlType.l, SqlType.xl, SqlType.xxl];
+        if (range) {
+                if (nums.includes(sqlT)) {
+                        rangePhrase = `min="${range.min}" max="${range.max}"`;
+                } else if (strs.includes(sqlT)) {
+                        rangePhrase = `minlength="${range.min}" maxlength="${range.max}"`;
+                }
+        }
+        return rangePhrase;
 }
 
 export type RangeResult = {
