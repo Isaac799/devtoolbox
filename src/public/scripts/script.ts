@@ -202,7 +202,30 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
                 errorOut.style.display = 'block';
         }
 
-        fileOutputs = generatedFiles;
+        let noFiles = true;
+        for (const key in currentAppItem.generator.input) {
+                if (Object.prototype.hasOwnProperty.call(currentAppItem.generator.input, key)) {
+                        const schema = currentAppItem.generator.input[key];
+                        for (const key in schema.tables) {
+                                if (Object.prototype.hasOwnProperty.call(schema.tables, key)) {
+                                        noFiles = false;
+                                        break;
+                                }
+                        }
+                }
+        }
+
+        if (noFiles) {
+                fileOutputs = {
+                        'notice.txt': `- please input something valid to see an output
+- checkout the syntax guide for help
+
+- you can also clear the input box and refresh the page to load in the default example
+`,
+                };
+        } else {
+                fileOutputs = generatedFiles;
+        }
 
         if (!Object.keys(generatedFiles).includes(selectedFileOutputs)) {
                 selectedFileOutputs = Object.keys(generatedFiles)[0];
@@ -215,6 +238,10 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
         for (let i = 0; i < fileItems.length; i++) {
                 const tab = fileItems[i];
                 files.appendChild(tab);
+        }
+
+        if (noFiles) {
+                selectedFileOutputs = 'notice.txt';
         }
         UpdateSelectedFile(selectedFileOutputs);
 }
@@ -299,8 +326,8 @@ let fileOutputs: FileOutputs = {};
 let selectedFileOutputs: string = '';
 
 const APP_ITEMS = [
-        new AppItem('Go', new GoCodeGenerator()),
         new AppItem('Postgres', new SqlGenerator()),
+        new AppItem('Go', new GoCodeGenerator()),
         // new AppItem('Node JS', new NodeExpressCodeGenerator()),
         new AppItem('TS Types', new TsTypesCodeGenerator()),
         // new AppItem('HTML forms', new HtmlCodeGenerator()),
