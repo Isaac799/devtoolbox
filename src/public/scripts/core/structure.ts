@@ -122,309 +122,8 @@ export const SQL_TO_GO_PACKAGE_FOR_STRUCT = {
         [SqlType.xl]: '',
         [SqlType.xxl]: '',
 };
-
-type goHtmlInputFunction = (x: SqlTableAttribute, setValueToThisAttribute?: string) => string;
-
-const stringHtmlInputFunctionForGo: goHtmlInputFunction = (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.s]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`;
-
-export type GoAttrStuff = {
-        goType: string;
-        parseFunction: (x: string) => string;
-        toStringFunction: (x: string) => string;
-        htmlInputFunction: goHtmlInputFunction;
-        importPackageForConversion: string;
-        importPackageForStruct: string;
-};
-
-export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
-        [SqlType.BIT]: {
-                goType: 'bool',
-                parseFunction: (x) => `strconv.ParseBool(${x})`,
-                toStringFunction: (x) => `strconv.FormatBool(${x})`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.BIT]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.BIT],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.BIT],
-        },
-        [SqlType.DATE]: {
-                // TODO
-                //t := time.Now()
-                // str := t.Format("2006-01-02 15:04:05") // Example format
-                goType: 'time.Time',
-                parseFunction: (x) => `time.Parse("2006-01-02", ${x})`,
-                toStringFunction: (x) => `TODO ${x}`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.DATE]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.DATE],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.DATE],
-        },
-        [SqlType.CHAR]: {
-                goType: 'string',
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.CHAR]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.CHAR],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.CHAR],
-        },
-        [SqlType.TIME]: {
-                // TODO
-                //t := time.Now()
-                // str := t.Format("2006-01-02 15:04:05") // Example format
-
-                goType: 'time.Time',
-                parseFunction: (x) => `time.Parse("15:04:05", ${x})`,
-                toStringFunction: (x) => `TODO ${x}`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.TIME]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.TIME],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.TIME],
-        },
-        [SqlType.TIMESTAMP]: {
-                // TODO
-                //t := time.Now()
-                // str := t.Format("2006-01-02 15:04:05") // Example format
-
-                goType: 'time.Time',
-                parseFunction: (x) => `time.Parse("2006-01-02 15:04:05", ${x})`,
-                toStringFunction: (x) => `TODO ${x}`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.TIMESTAMP]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.TIMESTAMP],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.TIMESTAMP],
-        },
-        [SqlType.SERIAL]: {
-                goType: 'int',
-                parseFunction: (x) => `strconv.Atoi(${x})`,
-                toStringFunction: (x) => `strconv.Itoa(${x})`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.SERIAL]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.SERIAL],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.SERIAL],
-        },
-        [SqlType.DECIMAL]: {
-                goType: 'float64',
-                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
-                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.DECIMAL]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.DECIMAL],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.DECIMAL],
-        },
-        [SqlType.FLOAT]: {
-                goType: 'float64',
-                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
-                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.FLOAT]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.FLOAT],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.FLOAT],
-        },
-        [SqlType.REAL]: {
-                goType: 'float64',
-                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
-                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.REAL]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.REAL],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.REAL],
-        },
-        [SqlType.INT]: {
-                goType: 'int',
-                parseFunction: (x) => `strconv.Atoi(${x})`,
-                toStringFunction: (x) => `strconv.Itoa(${x})`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.INT]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.INT],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.INT],
-        },
-        [SqlType.BOOLEAN]: {
-                goType: 'bool',
-                parseFunction: (x) => `strconv.ParseBool(${x})`,
-                toStringFunction: (x) => `strconv.FormatBool(${x})`,
-                htmlInputFunction: (x, y) => `<div class="field">
-            <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
-            <div class="control">
-                <input
-                    class="input"
-                    type="${SQL_TO_HTML_INPUT_TYPE[SqlType.BOOLEAN]}"
-                    id="${x.value}"
-                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${y ? `\n                    value="${y}"` : ''}
-                />
-            </div>
-        </div>`,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.BOOLEAN],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.BOOLEAN],
-        },
-        [SqlType.xs]: {
-                goType: 'string',
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: stringHtmlInputFunctionForGo,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xs],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xs],
-        },
-        [SqlType.s]: {
-                goType: 'string',
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: stringHtmlInputFunctionForGo,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.s],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.s],
-        },
-        [SqlType.m]: {
-                goType: 'string',
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: stringHtmlInputFunctionForGo,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.m],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.m],
-        },
-        [SqlType.l]: {
-                goType: 'string',
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: stringHtmlInputFunctionForGo,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.l],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.l],
-        },
-        [SqlType.xl]: {
-                goType: 'string',
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: stringHtmlInputFunctionForGo,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xl],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xl],
-        },
-        [SqlType.xxl]: {
-                goType: 'string',
-                parseFunction: (x) => `${x}`,
-                toStringFunction: (x) => `${x}`,
-                htmlInputFunction: stringHtmlInputFunctionForGo,
-                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xxl],
-
-                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xxl],
-        },
-};
-
 export const SQL_TO_HTML_INPUT_TYPE = {
-        [SqlType.BIT]: 'checkbox',
+        [SqlType.BIT]: '', // NOT NEEDED
         [SqlType.DATE]: 'date',
         [SqlType.CHAR]: 'text',
         [SqlType.TIME]: 'time',
@@ -434,13 +133,33 @@ export const SQL_TO_HTML_INPUT_TYPE = {
         [SqlType.FLOAT]: 'number',
         [SqlType.REAL]: 'number',
         [SqlType.INT]: 'number',
-        [SqlType.BOOLEAN]: 'checkbox',
+        [SqlType.BOOLEAN]: '', // NOT NEEDED
         [SqlType.xs]: 'text',
         [SqlType.s]: 'text',
         [SqlType.m]: 'text',
         [SqlType.l]: 'text',
         [SqlType.xl]: 'text',
         [SqlType.xxl]: 'text',
+};
+
+export const SQL_TO_HTML_INPUT_CLASS = {
+        [SqlType.BIT]: '', // NOT NEEDED
+        [SqlType.DATE]: 'input',
+        [SqlType.CHAR]: 'input',
+        [SqlType.TIME]: 'input',
+        [SqlType.TIMESTAMP]: 'input',
+        [SqlType.SERIAL]: 'input',
+        [SqlType.DECIMAL]: 'input',
+        [SqlType.FLOAT]: 'input',
+        [SqlType.REAL]: 'input',
+        [SqlType.INT]: 'input',
+        [SqlType.BOOLEAN]: '', // NOT NEEDED
+        [SqlType.xs]: 'input',
+        [SqlType.s]: 'input',
+        [SqlType.m]: 'input',
+        [SqlType.l]: 'input',
+        [SqlType.xl]: 'input',
+        [SqlType.xxl]: 'input',
 };
 
 export const ATTRIBUTE_OPTION: {
@@ -487,6 +206,261 @@ export type LeftRightJoinInfo = {
                 alias: string;
                 usingAttributes: SqlTableAttribute[];
         };
+};
+
+type goHtmlInputFunction = (x: SqlTableAttribute) => string;
+type goHtmlInputFunctionWithValue = (x: SqlTableAttribute, setValueToThisAttribute: string) => string;
+
+const boolRadioHtmlInputFunctionForGo: goHtmlInputFunction = (x) => `<fieldset class="control">
+            <legend>${SnakeToPascal(x.value)}:</legend>
+            <label class="radio">
+                <input
+                    type="radio" 
+                    value="true"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}
+                >
+                True
+            </label>
+            <label class="radio">
+                <input 
+                    type="radio" 
+                    value="false"
+                    name="${x.value}"
+                >
+                False
+            </label>
+        </fieldset>`;
+
+const boolRadioHtmlInputFunctionForGoWithValue: goHtmlInputFunctionWithValue = (x, y) => `<fieldset class="control">
+            <legend>${SnakeToPascal(x.value)}:</legend>
+            <label class="radio">
+                <input
+                    type="radio" 
+                    value="true"
+                    name="${x.value}"${x.isNullable() ? '' : '\n                    required'}
+                    {{if .Data.${y}}}checked{{end}}
+                >
+                True
+            </label>
+            <label class="radio">
+                <input 
+                    type="radio" 
+                    value="false"
+                    name="${x.value}"
+                    {{if not .Data.${y}}}checked{{end}}
+                >
+                False
+            </label>
+        </fieldset>`;
+
+function genericHtmlInputFunctionForGo(sqlT: SqlType): goHtmlInputFunction {
+        return function ah(x) {
+                return `<div class="field">
+                    <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+                    <div class="control">
+                        <input
+                            class="${SQL_TO_HTML_INPUT_CLASS[sqlT]}"
+                            type="${SQL_TO_HTML_INPUT_TYPE[sqlT]}"
+                            id="${x.value}"
+                            name="${x.value}"${x.isNullable() ? '' : '\n                    required'}
+                        />
+                    </div>
+                </div>`;
+        };
+}
+function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunctionWithValue {
+        return function ah(x, y) {
+                return `<div class="field">
+                    <label class="label" for="${x.value}">${SnakeToPascal(x.value)}</label>
+                    <div class="control">
+                        <input
+                            class="${SQL_TO_HTML_INPUT_CLASS[sqlT]}"
+                            type="${SQL_TO_HTML_INPUT_TYPE[sqlT]}"
+                            id="${x.value}"
+                            name="${x.value}"${x.isNullable() ? '' : '\n                    required'}${
+                        y ? `\n                    value="{{ .Data.${y} }}"` : ''
+                }
+                        />
+                    </div>
+                </div>`;
+        };
+}
+
+export type GoAttrStuff = {
+        goType: string;
+        parseFunction: (x: string) => string;
+        toStringFunction: (x: string) => string;
+        htmlInputFunction: goHtmlInputFunction;
+        htmlInputWithValueFunction: goHtmlInputFunctionWithValue;
+        importPackageForConversion: string;
+        importPackageForStruct: string;
+};
+
+export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
+        [SqlType.BIT]: {
+                goType: 'bool',
+                parseFunction: (x) => `strconv.ParseBool(${x})`,
+                toStringFunction: (x) => `strconv.FormatBool(${x})`,
+                htmlInputFunction: boolRadioHtmlInputFunctionForGo,
+                htmlInputWithValueFunction: boolRadioHtmlInputFunctionForGoWithValue,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.BIT],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.BIT],
+        },
+        [SqlType.DATE]: {
+                // TODO
+                //t := time.Now()
+                // str := t.Format("2006-01-02 15:04:05") // Example format
+                goType: 'time.Time',
+                parseFunction: (x) => `time.Parse("2006-01-02", ${x})`,
+                toStringFunction: (x) => `TODO ${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.DATE),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.DATE),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.DATE],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.DATE],
+        },
+        [SqlType.CHAR]: {
+                goType: 'string',
+                parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.CHAR),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.CHAR),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.CHAR],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.CHAR],
+        },
+        [SqlType.TIME]: {
+                // TODO
+                //t := time.Now()
+                // str := t.Format("2006-01-02 15:04:05") // Example format
+
+                goType: 'time.Time',
+                parseFunction: (x) => `time.Parse("15:04:05", ${x})`,
+                toStringFunction: (x) => `TODO ${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.TIME),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.TIME),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.TIME],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.TIME],
+        },
+        [SqlType.TIMESTAMP]: {
+                // TODO
+                //t := time.Now()
+                // str := t.Format("2006-01-02 15:04:05") // Example format
+
+                goType: 'time.Time',
+                parseFunction: (x) => `time.Parse("2006-01-02 15:04:05", ${x})`,
+                toStringFunction: (x) => `TODO ${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.TIMESTAMP),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.TIMESTAMP),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.TIMESTAMP],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.TIMESTAMP],
+        },
+        [SqlType.SERIAL]: {
+                goType: 'int',
+                parseFunction: (x) => `strconv.Atoi(${x})`,
+                toStringFunction: (x) => `strconv.Itoa(${x})`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.SERIAL),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.SERIAL),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.SERIAL],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.SERIAL],
+        },
+        [SqlType.DECIMAL]: {
+                goType: 'float64',
+                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
+                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.DECIMAL),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.DECIMAL),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.DECIMAL],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.DECIMAL],
+        },
+        [SqlType.FLOAT]: {
+                goType: 'float64',
+                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
+                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.FLOAT),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.FLOAT),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.FLOAT],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.FLOAT],
+        },
+        [SqlType.REAL]: {
+                goType: 'float64',
+                parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
+                toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.REAL),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.REAL),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.REAL],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.REAL],
+        },
+        [SqlType.INT]: {
+                goType: 'int',
+                parseFunction: (x) => `strconv.Atoi(${x})`,
+                toStringFunction: (x) => `strconv.Itoa(${x})`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.INT),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.INT),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.INT],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.INT],
+        },
+        [SqlType.BOOLEAN]: {
+                goType: 'bool',
+                parseFunction: (x) => `strconv.ParseBool(${x})`,
+                toStringFunction: (x) => `strconv.FormatBool(${x})`,
+                htmlInputFunction: boolRadioHtmlInputFunctionForGo,
+                htmlInputWithValueFunction: boolRadioHtmlInputFunctionForGoWithValue,
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.BOOLEAN],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.BOOLEAN],
+        },
+        [SqlType.xs]: {
+                goType: 'string',
+                parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xs],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xs],
+        },
+        [SqlType.s]: {
+                goType: 'string',
+                parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.s],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.s],
+        },
+        [SqlType.m]: {
+                goType: 'string',
+                parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.m],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.m],
+        },
+        [SqlType.l]: {
+                goType: 'string',
+                parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.l],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.l],
+        },
+        [SqlType.xl]: {
+                goType: 'string',
+                parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xl],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xl],
+        },
+        [SqlType.xxl]: {
+                goType: 'string',
+                parseFunction: (x) => `${x}`,
+                toStringFunction: (x) => `${x}`,
+                htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
+                htmlInputWithValueFunction: genericHtmlInputFunctionForGoWithValue(SqlType.s),
+                importPackageForConversion: SQL_TO_GO_PACKAGE[SqlType.xxl],
+                importPackageForStruct: SQL_TO_GO_PACKAGE_FOR_STRUCT[SqlType.xxl],
+        },
 };
 
 export class EndpointParam {

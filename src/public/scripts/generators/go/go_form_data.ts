@@ -222,8 +222,8 @@ ${variablesFromPath}
                                                 : `    ${e.go.var.propertyAsVariable}Str := r.FormValue("${e.sql.name}") 
         ${e.go.var.propertyAsVariable}, err := ${e.go.stuff.parseFunction(`${e.go.var.propertyAsVariable}Str`)}
            if err != nil {
-           http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
-           return
+           // http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
+           // return
         }`
 
                                 //     `${e.go.var.varName}Str := r.URL.Query().Get("${e.sql.name}")

@@ -125,7 +125,7 @@ export class GoSSR extends CodeGenerator {
                                 if (e.isPrimaryKey() || e.readOnly) {
                                         return ` <p><strong>${SnakeToTitle(e.value)}:</strong> {{.Data.${SnakeToPascal(e.value)}}}</p>`;
                                 } else {
-                                        return SQL_TO_GO_TYPE[e.sqlType].htmlInputFunction(e, `{{ .Data.${SnakeToPascal(e.value)} }}`);
+                                        return SQL_TO_GO_TYPE[e.sqlType].htmlInputWithValueFunction(e, SnakeToPascal(e.value));
                                 }
                         })
                         .join('\n        ');
