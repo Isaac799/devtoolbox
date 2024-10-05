@@ -1,4 +1,3 @@
-import { SnakeToPascal } from '../../core/formatting';
 import { CodeGenerator, Endpoint, SqlTable } from '../../core/structure';
 import { SqlGenerator } from './../sql/postgres_sql';
 
@@ -16,7 +15,6 @@ import (
                 let goEndpoints: {
                         name: string;
                         method: 'get' | 'put' | 'post' | 'delete';
-                        path: string;
                 }[] = [];
 
                 for (const schemaName in schemas) {
@@ -29,75 +27,74 @@ import (
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
-
-                                let allParts: string[] = [pkg];
-
-                                if (!table.endpoints.goShow) {
-                                        console.error('missing table.endpoints.goShow');
+                                if (!table.endpoints) {
                                         continue;
                                 }
 
-                                let repo = `type ${table.endpoints.goShow.repo.type} struct {
+                                let allParts: string[] = [pkg];
+
+                                // any table repo name will do
+                                let rpNm = table.endpoints.read.single.repo.type;
+                                let repo = `type ${rpNm} struct {
     DB *sql.DB
 }`;
 
                                 allParts.push(repo);
 
-                                if (table.endpoints.create !== null) {
-                                        for (let m = 0; m < table.endpoints.create.length; m++) {
-                                                const endpoint = table.endpoints.create[m];
+                                {
+                                        const endpoint = table.endpoints.create.single;
 
-                                                goEndpoints.push({
-                                                        name: endpoint.go.fnName,
-                                                        method: 'post',
-                                                        path: endpoint.path,
-                                                });
+                                        goEndpoints.push({
+                                                name: endpoint.go.fnName,
+                                                method: 'post',
+                                        });
 
-                                                let str = GoPkgRepositories.GenerateCreateSnippet(endpoint);
-                                                allParts.push(str);
-                                        }
+                                        let str = GoPkgRepositories.GenerateCreateSnippet(endpoint);
+                                        allParts.push(str);
                                 }
-                                if (table.endpoints.read !== null) {
-                                        for (let m = 0; m < table.endpoints.read.length; m++) {
-                                                const endpoint = table.endpoints.read[m];
+                                {
+                                        const endpoint = table.endpoints.read.single;
 
-                                                goEndpoints.push({
-                                                        name: endpoint.go.fnName,
-                                                        method: 'get',
-                                                        path: endpoint.path,
-                                                });
+                                        goEndpoints.push({
+                                                name: endpoint.go.fnName,
+                                                method: 'get',
+                                        });
 
-                                                let str = GoPkgRepositories.GenerateReadSnippet(endpoint, table);
-                                                allParts.push(str);
-                                        }
+                                        let str = GoPkgRepositories.GenerateReadSingleSnippet(endpoint, table);
+                                        allParts.push(str);
                                 }
-                                if (table.endpoints.update !== null) {
-                                        for (let m = 0; m < table.endpoints.update.length; m++) {
-                                                const endpoint = table.endpoints.update[m];
+                                {
+                                        const endpoint = table.endpoints.read.many;
 
-                                                goEndpoints.push({
-                                                        name: endpoint.go.fnName,
-                                                        method: 'put',
-                                                        path: endpoint.path,
-                                                });
+                                        goEndpoints.push({
+                                                name: endpoint.go.fnName,
+                                                method: 'get',
+                                        });
 
-                                                let str = GoPkgRepositories.GenerateUpdateSnippet(endpoint);
-                                                allParts.push(str);
-                                        }
+                                        let str = GoPkgRepositories.GenerateReadManySnippet(endpoint, table);
+                                        allParts.push(str);
                                 }
-                                if (table.endpoints.delete !== null) {
-                                        for (let m = 0; m < table.endpoints.delete.length; m++) {
-                                                const endpoint = table.endpoints.delete[m];
+                                {
+                                        const endpoint = table.endpoints.update.single;
 
-                                                goEndpoints.push({
-                                                        name: endpoint.go.fnName,
-                                                        method: 'delete',
-                                                        path: endpoint.path,
-                                                });
+                                        goEndpoints.push({
+                                                name: endpoint.go.fnName,
+                                                method: 'put',
+                                        });
 
-                                                let str = GoPkgRepositories.GenerateDeleteSnippet(endpoint);
-                                                allParts.push(str);
-                                        }
+                                        let str = GoPkgRepositories.GenerateUpdateSnippet(endpoint);
+                                        allParts.push(str);
+                                }
+                                {
+                                        const endpoint = table.endpoints.delete.single;
+
+                                        goEndpoints.push({
+                                                name: endpoint.go.fnName,
+                                                method: 'delete',
+                                        });
+
+                                        let str = GoPkgRepositories.GenerateDeleteSnippet(endpoint);
+                                        allParts.push(str);
                                 }
                                 let tableStr = allParts.join('\n\n');
                                 this.output['/pkg/repositories/' + table.label + '.go'] = tableStr;
@@ -108,12 +105,12 @@ import (
         }
 
         private static GenerateCreateSnippet(endpoint: Endpoint) {
-                let inputsForQuery = endpoint.http.bodyIn.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`).join(', ');
-                let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.output.varName}.${SnakeToPascal(e.sql.sqlLocation.column)}`).join(', ');
-                let returnStuff = endpoint.sql.outputs.map((e) => `${endpoint.go.output.varName}.${SnakeToPascal(e.sql.sqlLocation.column)}`).join(', ');
+                let inputsForQuery = endpoint.http.bodyIn.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let returnStuff = endpoint.sql.outputs.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.routerRepoName}(${endpoint.go.input.varName} *models.${endpoint.go.input.typeName}) (${
-                        endpoint.sql.outputs[0].go.typeType
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${endpoint.go.real.type}) (${
+                        endpoint.go.primaryKey.go.var.propertyGoType
                 }, error) {
     query := \`${SqlGenerator.GenerateACreateEndpoint(endpoint, true)}\`
     err := repo.DB.QueryRow(query, ${inputsForQuery}).Scan(${scanInto})
@@ -122,18 +119,29 @@ import (
                 return str.trim();
         }
 
-        private static GenerateReadSnippet(endpoint: Endpoint, table: SqlTable) {
-                let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.output.varName}.${SnakeToPascal(e.sql.sqlLocation.column)}`).join(', ');
-                let paramFromRouter = `${endpoint.primaryKeyEndpointParam.go.varName} ${endpoint.primaryKeyEndpointParam.go.typeType}`;
+        private static GenerateReadSingleSnippet(endpoint: Endpoint, table: SqlTable) {
+                let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let paramFromRouter = `${endpoint.go.primaryKey.go.var.propertyAsVariable} ${endpoint.go.primaryKey.go.var.propertyGoType}`;
 
-                let inputsForQuery = endpoint.http.path.map((e) => `${e.go.varName}`);
-                let inputsForQuery2 = endpoint.http.bodyIn.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`);
+                let inputsForQuery = endpoint.http.path.map((e) => `${e.go.var.propertyAsVariable}`);
+                let inputsForQuery2 = endpoint.http.bodyIn.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`);
                 let inputs = [...inputsForQuery, ...inputsForQuery2].join(', ');
 
-                // let inputs = endpoint.inputs.map((e) => `${endpoint.go.input.name}.${e.go.name}`);
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${paramFromRouter}) (models.${endpoint.go.real.type}, error) {
+    query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
+    
+    var ${endpoint.go.real.name} models.${endpoint.go.real.type}
+    err := repo.DB.QueryRow(query, ${inputs}).Scan(${scanInto})
+    
+    return ${endpoint.go.real.name}, err
+}`;
+                return str.trim();
+        }
 
-                if (endpoint.many) {
-                        let str = `func (repo *${endpoint.repo.type}) ${endpoint.routerRepoName}() ([]models.${endpoint.go.output.typeType}, error) {
+        private static GenerateReadManySnippet(endpoint: Endpoint, table: SqlTable) {
+                let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}() ([]models.${endpoint.go.real.type}, error) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
     rows, err := repo.DB.Query(query)
      if err != nil {
@@ -141,42 +149,28 @@ import (
      }
      defer rows.Close()
 
-     var ${endpoint.go.output.varName}s []models.${endpoint.go.output.typeType}
+     var ${endpoint.go.real.name}s []models.${endpoint.go.real.type}
      for rows.Next() {
-         var ${endpoint.go.output.varName} models.${endpoint.go.output.typeType}
+         var ${endpoint.go.real.name} models.${endpoint.go.real.type}
          err := rows.Scan(${scanInto})
          if err != nil {
              return nil, err
          }
-         ${endpoint.go.output.varName}s = append(${endpoint.go.output.varName}s, ${endpoint.go.output.varName})
+         ${endpoint.go.real.name}s = append(${endpoint.go.real.name}s, ${endpoint.go.real.name})
      }
 
-     return ${endpoint.go.output.varName}s, err
-}`;
-                        return str.trim();
-                }
-
-                // var ${endpoint.go.input.name} ${endpoint.go.input.type}
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.routerRepoName}(${paramFromRouter}) (models.${endpoint.go.output.typeType}, error) {
-    query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
-    
-    var ${endpoint.go.output.varName} models.${endpoint.go.output.typeType}
-    err := repo.DB.QueryRow(query, ${inputs}).Scan(${scanInto})
-    
-    return ${endpoint.go.output.varName}, err
+     return ${endpoint.go.real.name}s, err
 }`;
                 return str.trim();
         }
 
         private static GenerateUpdateSnippet(endpoint: Endpoint) {
                 // here as its the repo we want id in the body too, so we treat it the same
-                let pathAttrs = endpoint.http.path.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`);
-                let bodyAttrs = endpoint.http.bodyIn.map((e) => `${endpoint.go.input.varName}.${e.go.typeName}`);
+                let pathAttrs = endpoint.http.path.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`);
+                let bodyAttrs = endpoint.http.bodyIn.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`);
                 let inputs = [...pathAttrs, ...bodyAttrs].join(', ');
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.routerRepoName}(${endpoint.go.input.varName} *models.${
-                        endpoint.go.input.typeName
-                }) error {
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${endpoint.go.real.type}) error {
     query := \`${SqlGenerator.GenerateAUpdateEndpoint(endpoint, true)}\`
     _, err := repo.DB.Exec(query, ${inputs})
     return err
@@ -185,10 +179,10 @@ import (
         }
 
         private static GenerateDeleteSnippet(endpoint: Endpoint) {
-                let inputs = endpoint.http.path.map((e) => `${e.go.varName}`).join(', ');
-                let paramFromRouter = `${endpoint.primaryKeyEndpointParam.go.varName} ${endpoint.primaryKeyEndpointParam.go.typeType}`;
+                let inputs = endpoint.http.path.map((e) => `${e.go.var.propertyAsVariable}`).join(', ');
+                let paramFromRouter = `${endpoint.go.primaryKey.go.var.propertyAsVariable} ${endpoint.go.primaryKey.go.var.propertyGoType}`;
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.routerRepoName}(${paramFromRouter}) error {
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${paramFromRouter}) error {
     query := \`${SqlGenerator.GenerateADeleteEndpoint(endpoint, true)}\`
     _, err := repo.DB.Exec(query, ${inputs})
     return err

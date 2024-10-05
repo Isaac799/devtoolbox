@@ -1,4 +1,4 @@
-import { alignKeyword, alignKeywords, SnakeToCamel } from '../../core/formatting';
+import { alignKeyword, alignKeywords } from '../../core/formatting';
 import { CodeGenerator, Endpoint, EndpointParam, HttpMethod, SQL_TO_GO_TYPE, SqlTable } from '../../core/structure';
 import { GoRouter } from './go_router';
 
@@ -10,7 +10,6 @@ export class GoFormData extends CodeGenerator {
                 let goEndpoints: {
                         name: string;
                         method: 'get' | 'put' | 'post' | 'delete';
-                        path: string;
                 }[] = [];
 
                 for (const schemaName in schemas) {
@@ -24,53 +23,43 @@ export class GoFormData extends CodeGenerator {
                                 }
                                 const table = schema.tables[tableName];
                                 if (table.hasCompositePrimaryKey()) continue;
+                                if (!table.endpoints) continue;
 
                                 let allParts: string[] = [];
+                                importsParts = importsParts.concat(GoRouter.GenerateImports(table.is, true));
 
-                                if (table.endpoints.create !== null) {
-                                        for (let m = 0; m < table.endpoints.create.length; m++) {
-                                                const endpoint = table.endpoints.create[m];
-                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
+                                {
+                                        const endpoint = table.endpoints.create.single;
 
-                                                goEndpoints.push({
-                                                        name: endpoint.go.fnName,
-                                                        method: 'post',
-                                                        path: endpoint.path,
-                                                });
+                                        goEndpoints.push({
+                                                name: endpoint.go.fnName,
+                                                method: 'post',
+                                        });
 
-                                                let str = GoFormData.GenerateCreateSnippet(table, endpoint);
-                                                allParts.push(str);
-                                        }
+                                        let str = GoFormData.GenerateCreateSnippet(table, endpoint);
+                                        allParts.push(str);
                                 }
-                                if (table.endpoints.update !== null) {
-                                        for (let m = 0; m < table.endpoints.update.length; m++) {
-                                                const endpoint = table.endpoints.update[m];
-                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, false));
+                                {
+                                        const endpoint = table.endpoints.update.single;
 
-                                                goEndpoints.push({
-                                                        name: endpoint.go.fnName,
-                                                        method: 'put',
-                                                        path: endpoint.path,
-                                                });
+                                        goEndpoints.push({
+                                                name: endpoint.go.fnName,
+                                                method: 'put',
+                                        });
 
-                                                let str = GoFormData.GenerateUpdateSnippet(table, endpoint);
-                                                allParts.push(str);
-                                        }
+                                        let str = GoFormData.GenerateUpdateSnippet(table, endpoint);
+                                        allParts.push(str);
                                 }
-                                if (table.endpoints.delete !== null) {
-                                        for (let m = 0; m < table.endpoints.delete.length; m++) {
-                                                const endpoint = table.endpoints.delete[m];
-                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
+                                {
+                                        const endpoint = table.endpoints.delete.single;
 
-                                                goEndpoints.push({
-                                                        name: endpoint.go.fnName,
-                                                        method: 'delete',
-                                                        path: endpoint.path,
-                                                });
+                                        goEndpoints.push({
+                                                name: endpoint.go.fnName,
+                                                method: 'delete',
+                                        });
 
-                                                let str = GoFormData.CreateDeleteSnippet(endpoint);
-                                                allParts.push(str);
-                                        }
+                                        let str = GoFormData.CreateDeleteSnippet(endpoint);
+                                        allParts.push(str);
                                 }
 
                                 importsParts = [...new Set(importsParts)];
@@ -97,67 +86,6 @@ import (
                         }
                 }
 
-                const paths: {
-                        [path: string]: {
-                                [method: string]: string;
-                        };
-                } = {};
-
-                for (let i = 0; i < goEndpoints.length; i++) {
-                        const endpoint = goEndpoints[i];
-                        if (!paths[endpoint.path]) {
-                                paths[endpoint.path] = {};
-                        }
-                        paths[endpoint.path][endpoint.method] = endpoint.name;
-                }
-
-                // const GETS = endpoints.filter((e)=>e.method==='get')
-                // const POSTS = endpoints.filter((e)=>e.method==='post')
-                // const PUTS = endpoints.filter((e)=>e.method==='put')
-                // const DELS = endpoints.filter((e)=>e.method==='delete')
-
-                let endpointStrs: string[] = [];
-
-                for (const pathName in paths) {
-                        if (!Object.prototype.hasOwnProperty.call(paths, pathName)) {
-                                continue;
-                        }
-                        const endpoint = paths[pathName];
-
-                        let things = [
-                                endpoint['get']
-                                        ? `    case http.MethodGet:
-                ${endpoint['get']}(w, r)`
-                                        : '',
-
-                                endpoint['post']
-                                        ? `    case http.MethodPost:
-                ${endpoint['post']}(w, r)`
-                                        : '',
-
-                                endpoint['put']
-                                        ? `    case http.MethodPut:
-                ${endpoint['put']}(w, r)`
-                                        : '',
-
-                                endpoint['delete']
-                                        ? `    case http.MethodDelete:
-                ${endpoint['delete']}(w, r)`
-                                        : '',
-                        ];
-                        things = things.filter((e) => !!e);
-
-                        const endpointsStr = `
-    http.HandleFunc("${pathName}", func(w http.ResponseWriter, r *http.Request) {
-        switch r.Method {
-        ${things.join('\n        ')}
-            default:
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
-    })`;
-                        endpointStrs.push(endpointsStr);
-                }
-
                 return this;
         }
 
@@ -165,7 +93,7 @@ import (
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '\n    ' + variablesFromPath;
 
-                let str = `func ${endpoint.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+                let str = `func ${endpoint.go.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {${variablesFromPath}    
         if err := r.ParseForm(); err != nil {
             http.Error(w, err.Error(), http.StatusBadRequest)
@@ -176,15 +104,15 @@ import (
 
         ${GoFormData.BuildVarFromTheForm(table, endpoint, true)}
 
-        ${endpoint.primaryKeyEndpointParam.go.varName}, err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); 
+        ${endpoint.go.primaryKey.go.var.propertyAsVariable}, err := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); 
         
         if err != nil {
             http.Error(w, "Error processing: "+err.Error(), http.StatusInternalServerError)
             return
         }
 
-        redirectPath := strings.Join([]string{"${endpoint.redirectPath}", ${endpoint.primaryKeyEndpointParam.go.toString(
-                        endpoint.primaryKeyEndpointParam.go.varName
+        redirectPath := strings.Join([]string{"${endpoint.url.indexPage}", ${endpoint.go.primaryKey.go.stuff.toStringFunction(
+                        endpoint.go.primaryKey.go.var.propertyAsVariable
                 )}}, "/")
         http.Redirect(w, r, redirectPath, http.StatusSeeOther)
     }
@@ -196,7 +124,7 @@ import (
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '\n    ' + variablesFromPath;
 
-                let str = `func ${endpoint.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+                let str = `func ${endpoint.go.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {${variablesFromPath}    
         if err := r.ParseForm(); err != nil {
             http.Error(w, err.Error(), http.StatusBadRequest)
@@ -207,12 +135,12 @@ import (
 
         ${GoFormData.BuildVarFromTheForm(table, endpoint, false)}
 
-        if err := repo.${endpoint.routerRepoName}(&${endpoint.go.input.varName}); err != nil {
+        if err := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); err != nil {
             http.Error(w, "Error processing: "+err.Error(), http.StatusInternalServerError)
             return
         }
 
-        redirectPath := strings.Join([]string{"${endpoint.redirectPath}", ${endpoint.primaryKeyEndpointParam.go.varName}Str}, "/")
+        redirectPath := strings.Join([]string{"${endpoint.url.indexPage}", ${endpoint.go.primaryKey.go.var.propertyAsVariable}Str}, "/")
         http.Redirect(w, r, redirectPath, http.StatusSeeOther)
     }
 }`;
@@ -223,16 +151,16 @@ import (
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '    ' + variablesFromPath;
 
-                let str = `func ${endpoint.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+                let str = `func ${endpoint.go.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
 ${variablesFromPath}    
 
-        if err := repo.${endpoint.routerRepoName}(${SnakeToCamel(endpoint.primaryKeyName)}); err != nil {
+        if err := repo.${endpoint.go.routerRepoName}(${endpoint.go.primaryKey.go.var.propertyAsVariable}); err != nil {
             http.Error(w, "Error deleting: "+err.Error(), http.StatusInternalServerError)
             return
         }
 
-        http.Redirect(w, r, "${endpoint.redirectPath}", http.StatusSeeOther)
+        http.Redirect(w, r, "${endpoint.url.indexPage}", http.StatusSeeOther)
     }
 }`;
 
@@ -240,6 +168,9 @@ ${variablesFromPath}
         }
 
         private static BuildVarFromTheForm(table: SqlTable, endpoint: Endpoint, forCreate: boolean) {
+                if (!table.singlePk) {
+                        return '';
+                }
                 function FormatStack(stack: string[]) {
                         let types = alignKeywords(
                                 stack,
@@ -252,22 +183,20 @@ ${variablesFromPath}
                 let outputStack: string[] = [];
                 let stack: string[] = [];
 
-                let pk = endpoint.primaryKeyName;
-
-                stack.push(`${endpoint.go.input.varName} := models.${endpoint.go.input.typeType} {`);
+                stack.push(`${endpoint.go.real.name} := models.${endpoint.go.real.type} {`);
 
                 // let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 // variablesFromPath = '\n    ' + variablesFromPath;
 
-                for (const attr of table.endpoints.existsAs) {
+                for (const attr of table.is) {
                         if (!forCreate && attr.readOnly) continue;
-                        if (attr.sql.name === pk) {
+                        if (attr.sql.name === table.singlePk.value) {
                                 if (endpoint.method !== HttpMethod.POST) {
-                                        stack.push(`    ${attr.go.typeName}: ${attr.go.varName},`);
+                                        stack.push(`    ${attr.go.var.propertyName}: ${attr.go.var.propertyAsVariable},`);
                                 }
                         } else {
                                 // stack.push(`    ${attr.go.typeName}: r.FormValue("${attr.sql.name}"),`);
-                                stack.push(`    ${attr.go.typeName}: ${attr.go.varName},`);
+                                stack.push(`    ${attr.go.var.propertyName}: ${attr.go.var.propertyAsVariable},`);
                         }
                 }
 
@@ -288,17 +217,17 @@ ${variablesFromPath}
                 return items
                         .map(
                                 (e) =>
-                                        e.go.typeType === 'string'
-                                                ? `${e.go.varName} := r.FormValue("${e.sql.name}")`
-                                                : `    ${e.go.varName}Str := r.FormValue("${e.sql.name}") 
-        ${e.go.varName}, err := ${e.go.parser(`${e.go.varName}Str`)}
+                                        e.go.var.propertyGoType === 'string'
+                                                ? `${e.go.var.propertyAsVariable} := r.FormValue("${e.sql.name}")`
+                                                : `    ${e.go.var.propertyAsVariable}Str := r.FormValue("${e.sql.name}") 
+        ${e.go.var.propertyAsVariable}, err := ${e.go.stuff.parseFunction(`${e.go.var.propertyAsVariable}Str`)}
            if err != nil {
            http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
            return
         }`
 
-                                //     `${e.go.varName}Str := r.URL.Query().Get("${e.sql.name}")
-                                //     ${e.go.varName}, err := ${e.go.parser(`${e.go.varName}Str`)}
+                                //     `${e.go.var.varName}Str := r.URL.Query().Get("${e.sql.name}")
+                                //     ${e.go.var.varName}, err := ${e.go.parser(`${e.go.var.varName}Str`)}
                                 //         if err != nil {
                                 //         http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
                                 //         return

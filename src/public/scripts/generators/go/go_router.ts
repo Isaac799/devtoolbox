@@ -27,74 +27,80 @@ export class GoRouter extends CodeGenerator {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
-                                if (!table.endpoints.goShow) {
-                                        console.error('what?! no show on router gen for table');
+                                if (!table.endpoints) {
                                         continue;
                                 }
-                                let u = table.endpoints.goShow;
-                                repositories.push(`${u.repo.var} := &repositories.${u.repo.type}{DB: db}`);
+                                // for the repo any endpoint will do
+                                let repo = table.endpoints.read.single.repo;
 
-                                if (table.endpoints.create) {
-                                        for (const endpoint of table.endpoints.create) {
-                                                routes.push(
-                                                        `r.HandleFunc("${endpoint.path + '/new'}", ${table.goPackageName}.${
-                                                                endpoint.routerFuncName
-                                                        }).Methods("${HttpMethod.GET}")`
-                                                );
-                                                routesApi.push(
-                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
-                                                );
+                                repositories.push(`${repo.var} := &repositories.${repo.type}{DB: db}`);
 
-                                                routesForm.push(
-                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("POST")`
-                                                );
-                                        }
+                                {
+                                        let endpoint = table.endpoints.create.single;
+                                        routes.push(
+                                                `r.HandleFunc("${endpoint.url.forRouter + '/new'}", ${table.goPackageName}.${
+                                                        endpoint.go.routerFuncName
+                                                }).Methods("${HttpMethod.GET}")`
+                                        );
+                                        routesApi.push(
+                                                `r.HandleFunc("/api${endpoint.url.forRouter}", ${table.goPackageName}.${endpoint.go.routerFuncApiName}(${repo.var})).Methods("${endpoint.method}")`
+                                        );
+
+                                        routesForm.push(
+                                                `r.HandleFunc("${endpoint.url.forRouter}", ${table.goPackageName}.${endpoint.go.routerFuncFormName}(${repo.var})).Methods("POST")`
+                                        );
                                 }
-                                if (table.endpoints.update) {
-                                        for (const endpoint of table.endpoints.update) {
-                                                routes.push(
-                                                        `r.HandleFunc("${endpoint.path + '/edit'}", ${table.goPackageName}.${endpoint.routerFuncName}(${
-                                                                u.repo.var
-                                                        })).Methods("${HttpMethod.GET}")`
-                                                );
-                                                routesApi.push(
-                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
-                                                );
+                                {
+                                        let endpoint = table.endpoints.update.single;
+                                        routes.push(
+                                                `r.HandleFunc("${endpoint.url.forRouter + '/edit'}", ${table.goPackageName}.${endpoint.go.routerFuncName}(${
+                                                        repo.var
+                                                })).Methods("${HttpMethod.GET}")`
+                                        );
+                                        routesApi.push(
+                                                `r.HandleFunc("/api${endpoint.url.forRouter}", ${table.goPackageName}.${endpoint.go.routerFuncApiName}(${repo.var})).Methods("${endpoint.method}")`
+                                        );
 
-                                                routesForm.push(
-                                                        // `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("PUT")`
-                                                        `r.HandleFunc("${endpoint.path}/update", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("POST")`
-                                                );
-                                        }
+                                        routesForm.push(
+                                                // `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${repo.var})).Methods("PUT")`
+                                                `r.HandleFunc("${endpoint.url.forRouter}/update", ${table.goPackageName}.${endpoint.go.routerFuncFormName}(${repo.var})).Methods("POST")`
+                                        );
                                 }
-                                if (table.endpoints.delete) {
-                                        for (const endpoint of table.endpoints.delete) {
-                                                // no delete view
-                                                // routes.push(
-                                                //         `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncName}(${u.repo.var})).Methods("${HttpMethod.GET}")`
-                                                // );
-                                                routesApi.push(
-                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
-                                                );
+                                {
+                                        let endpoint = table.endpoints.delete.single;
+                                        // no delete view
+                                        // routes.push(
+                                        //         `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.go.routerFuncName}(${repo.var})).Methods("${HttpMethod.GET}")`
+                                        // );
+                                        routesApi.push(
+                                                `r.HandleFunc("/api${endpoint.url.forRouter}", ${table.goPackageName}.${endpoint.go.routerFuncApiName}(${repo.var})).Methods("${endpoint.method}")`
+                                        );
 
-                                                routesForm.push(
-                                                        // `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("DELETE")`
-                                                        `r.HandleFunc("${endpoint.path}/delete", ${table.goPackageName}.${endpoint.routerFuncFormName}(${u.repo.var})).Methods("POST")`
-                                                );
-                                        }
+                                        routesForm.push(
+                                                // `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncFormName}(${repo.var})).Methods("DELETE")`
+                                                `r.HandleFunc("${endpoint.url.forRouter}/delete", ${table.goPackageName}.${endpoint.go.routerFuncFormName}(${repo.var})).Methods("POST")`
+                                        );
                                 }
 
                                 // * important that read is last as it will match before the edit and delete
 
-                                if (table.endpoints.read) {
-                                        for (const endpoint of table.endpoints.read) {
-                                                routes.push(
-                                                        `r.HandleFunc("${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncName}(${u.repo.var})).Methods("${HttpMethod.GET}")`
-                                                );
-                                                routesApi.push(
-                                                        `r.HandleFunc("/api${endpoint.path}", ${table.goPackageName}.${endpoint.routerFuncApiName}(${u.repo.var})).Methods("${endpoint.method}")`
-                                                );
-                                        }
+                                {
+                                        let endpoint = table.endpoints.read.single;
+                                        routes.push(
+                                                `r.HandleFunc("${endpoint.url.forRouter}", ${table.goPackageName}.${endpoint.go.routerFuncName}(${repo.var})).Methods("${HttpMethod.GET}")`
+                                        );
+                                        routesApi.push(
+                                                `r.HandleFunc("/api${endpoint.url.forRouter}", ${table.goPackageName}.${endpoint.go.routerFuncApiName}(${repo.var})).Methods("${endpoint.method}")`
+                                        );
+                                }
+                                {
+                                        let endpoint = table.endpoints.read.many;
+                                        routes.push(
+                                                `r.HandleFunc("${endpoint.url.forRouter}", ${table.goPackageName}.${endpoint.go.routerFuncName}(${repo.var})).Methods("${HttpMethod.GET}")`
+                                        );
+                                        routesApi.push(
+                                                `r.HandleFunc("/api${endpoint.url.forRouter}", ${table.goPackageName}.${endpoint.go.routerFuncApiName}(${repo.var})).Methods("${endpoint.method}")`
+                                        );
                                 }
                         }
                 }
@@ -216,19 +222,19 @@ func serveAsset(w http.ResponseWriter, r *http.Request) {
                 return value
                         .map(
                                 (e) =>
-                                        e.go.typeType === 'string'
+                                        e.go.var.propertyGoType === 'string'
                                                 ? `    vars := mux.Vars(r)
-    ${e.go.varName} := vars["${e.go.varName}"]`
+    ${e.go.var.propertyAsVariable} := vars["${e.go.var.propertyAsVariable}"]`
                                                 : `    vars := mux.Vars(r)
-    ${e.go.varName}Str := vars["${e.go.varName}"] 
-    ${e.go.varName}, err := ${e.go.parser(`${e.go.varName}Str`)}
+    ${e.go.var.propertyAsVariable}Str := vars["${e.go.var.propertyAsVariable}"] 
+    ${e.go.var.propertyAsVariable}, err := ${e.go.stuff.parseFunction(`${e.go.var.propertyAsVariable}Str`)}
        if err != nil {
        http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
        return
     }`
 
-                                //     `${e.go.varName}Str := r.URL.Query().Get("${e.sql.name}")
-                                //     ${e.go.varName}, err := ${e.go.parser(`${e.go.varName}Str`)}
+                                //     `${e.go.var.varName}Str := r.URL.Query().Get("${e.sql.name}")
+                                //     ${e.go.var.varName}, err := ${e.go.parser(`${e.go.var.varName}Str`)}
                                 //         if err != nil {
                                 //         http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
                                 //         return
@@ -240,13 +246,13 @@ func serveAsset(w http.ResponseWriter, r *http.Request) {
         static GenerateImports(value: EndpointParam[], includeReadonly: boolean) {
                 let input = [...value];
                 if (!includeReadonly) {
-                        input = input.filter((e) => e.readOnly);
+                        input = input.filter((e) => !e.readOnly);
                 }
-                let imports = value.filter((e) => !e.readOnly).map((e) => e.go.importPackage);
+                let imports = input.map((e) => e.go.stuff.importPackageForConversion);
                 return imports;
         }
         static GenerateImportsFormStruct(value: EndpointParam[]) {
-                let imports = value.map((e) => e.go.importPackageForStruct);
+                let imports = value.map((e) => e.go.stuff.importPackageForStruct);
                 return imports;
         }
 }

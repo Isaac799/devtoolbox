@@ -137,17 +137,16 @@ const stringHtmlInputFunctionForGo: goHtmlInputFunction = (x, y) => `<div class=
             </div>
         </div>`;
 
-export const SQL_TO_GO_TYPE: Record<
-        string,
-        {
-                goType: string;
-                parseFunction: (x: string) => string;
-                toStringFunction: (x: string) => string;
-                htmlInputFunction: goHtmlInputFunction;
-                importPackageForConversion: string;
-                importPackageForStruct: string;
-        }
-> = {
+export type GoAttrStuff = {
+        goType: string;
+        parseFunction: (x: string) => string;
+        toStringFunction: (x: string) => string;
+        htmlInputFunction: goHtmlInputFunction;
+        importPackageForConversion: string;
+        importPackageForStruct: string;
+};
+
+export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         [SqlType.BIT]: {
                 goType: 'bool',
                 parseFunction: (x) => `strconv.ParseBool(${x})`,
@@ -496,13 +495,8 @@ export class EndpointParam {
                 type: string;
         };
         go: {
-                varName: string;
-                typeName: string;
-                typeType: string;
-                importPackage: string;
-                importPackageForStruct: string;
-                parser: (x: string) => string;
-                toString: (x: string) => string;
+                var: GoVar;
+                stuff: GoAttrStuff;
         };
         sql: {
                 name: string;
@@ -520,34 +514,38 @@ export class EndpointParam {
 
         readOnly: boolean = false;
 
-        constructor(type: SqlType, name: string, sqlLocation: SqlLocation, readOnly: boolean) {
-                this.readOnly = readOnly;
+        constructor(attr: SqlTableAttribute, inOut: boolean = false) {
+                this.readOnly = attr.readOnly;
+
+                let name = attr.value;
+                if (inOut) {
+                        name = IN_OUT_PREFIX + name;
+                }
 
                 this.typescript = {
                         name: SnakeToCamel(name),
-                        type: SQL_TO_TS_TYPE[type],
+                        type: SQL_TO_TS_TYPE[attr.sqlType],
                 };
                 this.go = {
-                        varName: SnakeToCamel(name),
-                        typeName: SnakeToPascal(name),
-                        typeType: SQL_TO_GO_TYPE[type].goType,
-                        parser: SQL_TO_GO_TYPE[type].parseFunction,
-                        toString: SQL_TO_GO_TYPE[type].toStringFunction,
-                        importPackage: SQL_TO_GO_TYPE[type].importPackageForConversion,
-                        importPackageForStruct: SQL_TO_GO_TYPE[type].importPackageForStruct,
+                        stuff: SQL_TO_GO_TYPE[attr.sqlType],
+                        var: {
+                                propertyAsVariable: SnakeToCamel(name),
+                                propertyName: SnakeToPascal(attr.value),
+                                propertyGoType: SQL_TO_GO_TYPE[attr.sqlType].goType,
+                        },
                 };
                 this.json = {
                         name: name,
-                        type: type,
+                        type: attr.sqlType,
                 };
                 this.sql = {
                         name: name,
-                        type: type,
-                        sqlLocation: sqlLocation,
+                        type: attr.sqlType,
+                        sqlLocation: new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value),
                 };
                 this.html = {
                         name: SnakeToTitle(name),
-                        type: SQL_TO_HTML_INPUT_TYPE[type],
+                        type: SQL_TO_HTML_INPUT_TYPE[attr.sqlType],
                 };
         }
 }
@@ -588,50 +586,35 @@ export const HttpMethodToHtmlName = (x: HttpMethod, many: boolean) => {
         }
 };
 
+export type GoVar = {
+        propertyAsVariable: string;
+        propertyName: string;
+        propertyGoType: string;
+};
+
 export class Endpoint {
         method: HttpMethod;
         /**
          * if something can be used as select options, ad a drop down list so to speak
          */
         isOptions: boolean = false;
-        many: boolean = false;
-        sqlTableName: string;
-        sqlTableFullName: string;
-        sqlSchemaName: string;
-        primaryKeyName: string;
-        primaryKeyEndpointParam: EndpointParam;
-        routerFuncName: string;
-        routerFuncApiName: string;
-        routerFuncFormName: string;
-        routerRepoName: string;
+
         repo: {
                 type: string;
                 var: string;
         };
-
         sql: {
                 inout: EndpointParam[];
                 inputs: EndpointParam[];
                 outputs: EndpointParam[];
                 name: string;
-        } = {
-                inout: [],
-                inputs: [],
-                outputs: [],
-                name: '',
         };
         http: {
-                query: EndpointParam[];
+                query: EndpointParam;
                 path: EndpointParam[];
                 bodyIn: EndpointParam[];
                 bodyOut: EndpointParam[];
                 name: string;
-        } = {
-                query: [],
-                path: [],
-                bodyIn: [],
-                bodyOut: [],
-                name: '',
         };
         typescript: {
                 fnName: string;
@@ -650,176 +633,144 @@ export class Endpoint {
         };
         go: {
                 fnName: string;
-                input: {
-                        varName: string;
-                        typeName: string;
-                        typeType: string;
-                };
-                output: {
-                        varName: string;
-                        typeName: string;
-                        typeType: string;
-                };
+                routerFuncName: string;
+                routerFuncApiName: string;
+                routerFuncFormName: string;
+                routerRepoName: string;
+                primaryKey: EndpointParam;
                 real: {
                         name: string;
                         type: string;
                 };
         };
+        url: {
+                indexPage: string;
+                forRouter: string;
+                filePath: string;
+                apiIndexPage: string;
+        };
 
-        get path() {
-                // let endpointPath = `/${this.sqlSchemaName}/${this.go.real.name}`;
-                let endpointPath = `/${this.go.real.name}`;
-                if (!this.many && this.method !== HttpMethod.POST) {
-                        endpointPath += `/{${SnakeToCamel(this.primaryKeyName)}}`;
-                }
+        private tableLabel: string;
+        tableFullName: string;
+
+        filePath = (kind: 'show' | 'new' | 'edit' | 'index') => {
+                let endpointPath = `/web/templates/${this.tableLabel}/${kind}.html`;
+                // let endpointPath = `/templates/${this.sqlSchemaName}/${this.sqlTableName}/${kind}.html`;
                 return endpointPath;
-        }
+        };
 
-        get redirectPath() {
-                let endpointPath = `/${this.go.real.name}`;
-                return endpointPath;
-        }
+        constructor(method: HttpMethod, table: SqlTable, many: boolean, pk: SqlTableAttribute) {
+                this.method = method;
+                this.tableFullName = table.fullName;
+                let manyStrModifier = many ? 's' : '';
+                this.tableLabel = table.label;
 
-        constructor(method: HttpMethod, name: string, table: SqlTable, many: boolean, sqlTableAttribute: SqlTableAttribute) {
-                this.http.name = name;
-                this.primaryKeyName = sqlTableAttribute.value;
-                this.primaryKeyEndpointParam = new EndpointParam(
-                        sqlTableAttribute.sqlType,
-                        sqlTableAttribute.value,
-                        new SqlLocation(sqlTableAttribute.parentTable.parentSchema.name, sqlTableAttribute.parentTable.label, sqlTableAttribute.value),
-                        sqlTableAttribute.readOnly
-                );
+                // this.routerFuncApiName = SnakeToPascal(`api_${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
 
                 this.repo = {
                         type: `${SnakeToPascal(table.label + '_repository')}`,
                         var: `${SnakeToCamel(table.label + '_repository')}`,
                 };
 
-                this.sql.name = `${method.toLowerCase()}_${name}`;
-                if (many) {
-                        // this.sql.name += 's';
-                }
-                this.method = method;
-                this.many = many;
-                const tableL = table.label;
-                this.sqlTableName = table.label;
-                this.sqlTableFullName = table.fullName;
-                this.sqlSchemaName = table.parentSchema.name;
-                this.routerFuncName = SnakeToPascal(`${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
-                // this.routerFuncApiName = SnakeToPascal(`api_${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
-                this.routerFuncApiName = SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}`) + (many ? 's' : '');
-                this.routerFuncFormName = SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}_form`) + (many ? 's' : '');
-                this.routerRepoName = SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}`) + (many ? 's' : '');
-
+                this.sql = {
+                        inout: [],
+                        inputs: [],
+                        outputs: [],
+                        name: `${method.toLowerCase()}_${table.label}${manyStrModifier}`,
+                };
+                this.http = {
+                        query: new EndpointParam(pk),
+                        path: [],
+                        bodyIn: [],
+                        bodyOut: [],
+                        name: SnakeToKebab(`${method.toLowerCase()}_${table.label}${manyStrModifier}`),
+                };
                 this.typescript = {
                         fnName: SnakeToCamel(this.sql.name),
                         input: {
-                                name: SnakeToCamel(`${name}`),
-                                type: SnakeToCamel(`${name}`),
+                                name: SnakeToCamel(`${this.sql.name}`),
+                                type: SnakeToCamel(`${this.sql.name}`),
                         },
                         output: {
-                                name: SnakeToCamel(`${name}`),
-                                type: SnakeToCamel(`${name}`),
+                                name: SnakeToCamel(`${this.sql.name}`),
+                                type: SnakeToCamel(`${this.sql.name}`),
                         },
                         real: {
-                                name: SnakeToCamel(tableL),
-                                type: SnakeToCamel(tableL),
+                                name: SnakeToCamel(table.label),
+                                type: SnakeToCamel(table.label),
                         },
                 };
+
                 this.go = {
                         fnName: SnakeToPascal(this.sql.name),
-                        input: {
-                                varName: SnakeToCamel(`${name}`),
-                                typeName: SnakeToPascal(`${name}`),
-                                typeType: SnakeToPascal(`${name}`),
-                        },
-                        output: {
-                                varName: SnakeToCamel(`${name}`),
-                                typeName: SnakeToPascal(`${name}`),
-                                typeType: SnakeToPascal(`${name}`),
-                        },
+                        routerFuncName: SnakeToPascal(`${HttpMethodToHtmlName(this.method, many)}_${table.label}`),
+                        routerFuncApiName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}${manyStrModifier}`),
+                        routerFuncFormName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}_form${manyStrModifier}`),
+                        routerRepoName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}${manyStrModifier}`),
+
+                        primaryKey: new EndpointParam(pk),
                         real: {
-                                name: SnakeToKebab(tableL),
-                                type: SnakeToPascal(tableL),
+                                name: SnakeToKebab(table.label),
+                                type: SnakeToPascal(table.label),
                         },
+                };
+
+                let endpointPath = `/${this.go.real.name}`;
+
+                if (!many && this.method !== HttpMethod.POST) {
+                        endpointPath += `/{${this.http.query.go.var.propertyAsVariable}}`;
+                }
+
+                console.log('endpointPath :>> ', endpointPath);
+
+                this.url = {
+                        forRouter: endpointPath,
+                        indexPage: `/${this.go.real.name}`,
+                        apiIndexPage: `/api/${this.go.real.name}`,
+                        filePath: `/web/templates/${this.go.real.name}`,
                 };
         }
 
         sqlOutputs() {
                 return this.sql.outputs.map((e) => e.sql.name).join(',\n    ');
         }
-
-        get url() {
-                // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
-                let endpointPath = `/${SnakeToKebab(this.sqlTableName)}`;
-                return endpointPath;
-        }
-}
-
-export class EndpointGoShow {
-        readonly method: HttpMethod = HttpMethod.GET;
-
-        routerFuncName: string;
-        sqlTableName: string;
-        sqlTableFullName: string;
-        sqlSchemaName: string;
-        routerRepoName: string;
-        repo: {
-                type: string;
-                var: string;
-        };
-        primaryKeyName: string;
-        propertyNames: string[];
-        sqlAttributes: SqlTableAttribute[];
-
-        get urlForm() {
-                // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
-                let endpointPath = `/${SnakeToKebab(this.sqlTableName)}`;
-                return endpointPath;
-        }
-        get urlJSON() {
-                // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
-                let endpointPath = `/api/${SnakeToKebab(this.sqlTableName)}`;
-                return endpointPath;
-        }
-        get urlHTML() {
-                // let endpointPath = `/${this.sqlSchemaName}/${SnakeToKebab(this.sqlTableName)}`;
-                let endpointPath = `/${SnakeToKebab(this.sqlTableName)}`;
-                return endpointPath;
-        }
-
-        filePath(kind: 'show' | 'new' | 'edit' | 'index') {
-                let endpointPath = `/web/templates/${this.sqlTableName}/${kind}.html`;
-                // let endpointPath = `/templates/${this.sqlSchemaName}/${this.sqlTableName}/${kind}.html`;
-                return endpointPath;
-        }
-
-        constructor(table: SqlTable, primaryKeyName: string, propertyNames: string[]) {
-                this.propertyNames = propertyNames.map((e) => SnakeToPascal(e));
-                this.sqlAttributes = Object.values(table.attributes);
-                this.primaryKeyName = SnakeToPascal(primaryKeyName);
-                this.routerFuncName = SnakeToPascal(`${HttpMethodToHtmlName(this.method, false)}_${table.label}`);
-                this.sqlTableName = table.label;
-                this.sqlTableFullName = table.fullName;
-                this.sqlSchemaName = table.parentSchema.name;
-                this.repo = {
-                        type: `${SnakeToPascal(table.label + '_repository')}`,
-                        var: `${SnakeToCamel(table.label + '_repository')}`,
-                };
-                this.routerRepoName = SnakeToPascal(`${this.method.toLowerCase()}_${table.label}`);
-        }
 }
 
 export class EntityEndpoints {
-        existsAs: EndpointParam[] = [];
+        create: {
+                single: Endpoint;
+        };
+        read: {
+                single: Endpoint;
+                many: Endpoint;
+        };
+        update: {
+                single: Endpoint;
+        };
+        delete: {
+                single: Endpoint;
+        };
 
-        goShow: EndpointGoShow | null = null;
-        create: Endpoint[] | null = null;
-        read: Endpoint[] | null = null;
-        update: Endpoint[] | null = null;
-        delete: Endpoint[] | null = null;
-
-        constructor() {}
+        constructor(
+                createIn: {
+                        single: Endpoint;
+                },
+                readIn: {
+                        single: Endpoint;
+                        many: Endpoint;
+                },
+                updateIn: {
+                        single: Endpoint;
+                },
+                deleteIn: {
+                        single: Endpoint;
+                }
+        ) {
+                this.create = createIn;
+                this.read = readIn;
+                this.update = updateIn;
+                this.delete = deleteIn;
+        }
 }
 
 export class CodeGenerator {
@@ -933,6 +884,12 @@ export class SqlTableAttribute {
         }
 }
 
+export type PreSqlTable = {
+        parentSchema: SqlSchema;
+        label: string;
+        options: string[];
+};
+
 export class SqlTable {
         id: number;
         label: string;
@@ -943,21 +900,18 @@ export class SqlTable {
                 [x: string]: SqlTableAttribute;
         } = {};
 
-        endpoints: EntityEndpoints = {
-                goShow: null,
-                existsAs: [],
-                create: null,
-                read: null,
-                update: null,
-                delete: null,
-        };
+        get singlePk(): SqlTableAttribute | null {
+                let pks = this.primaryKeys();
+                let values = Object.values(pks);
+                if (values.length !== 1) return null;
+                return values[0];
+        }
+
+        is: EndpointParam[] = [];
+        endpoints: EntityEndpoints | null = null;
 
         get fullName(): string {
                 return `${this.parentSchema.name}.${this.label}`;
-        }
-
-        get desiresCRUD(): boolean {
-                return !!this.endpoints.create || !!this.endpoints.read || !!this.endpoints.update || !!this.endpoints.delete;
         }
 
         constructor(parent: SqlSchema, label: string) {
@@ -1069,64 +1023,15 @@ export class SqlTable {
                 return keys;
         }
 
-        generateEmptyEndpoints() {
-                let answer = new EntityEndpoints();
-
-                // let hasCreate = this.options.map((option) => /[C][rR][uU][dD]/.test(option)).includes(true);
-                // let hasRead = this.options.map((option) => /[cC][R][uU][dD]/.test(option)).includes(true);
-                // let hasUpdate = this.options.map((option) => /[cC][rR][U][dD]/.test(option)).includes(true);
-                // let hasDelete = this.options.map((option) => /[cC][rR][uU][D]/.test(option)).includes(true);
-                // const desireCRUD = hasCreate || hasRead || hasUpdate || hasDelete;
-
-                // if (!desireCRUD) return;
-
-                if (this.hasCompositePrimaryKey()) return;
-
-                // if (hasCreate) answer.create = [];
-                // if (hasRead) answer.read = [];
-                // if (hasUpdate) answer.update = [];
-                // if (hasDelete) answer.delete = [];
-
-                answer.create = [];
-                answer.read = [];
-                answer.update = [];
-                answer.delete = [];
-
-                this.endpoints = answer;
-        }
-
         generateEndpoints() {
-                let primaryKeys = Object.values(this.primaryKeys());
-                if (primaryKeys.length !== 1) {
-                        return;
-                }
-                let firstPrimaryKey = primaryKeys[0];
-
-                if (!this.desiresCRUD) return;
-
                 let primaryInOutAttrs = Object.values(this.primaryKeys()).map((e) => {
-                        return new EndpointParam(
-                                e.sqlType,
-                                `${IN_OUT_PREFIX}${e.value}`,
-                                new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
-                                e.readOnly
-                        );
+                        return new EndpointParam(e, true);
                 });
                 let primaryAttrs = Object.values(this.primaryKeys()).map((e) => {
-                        return new EndpointParam(
-                                e.sqlType,
-                                e.value,
-                                new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
-                                e.readOnly
-                        );
+                        return new EndpointParam(e);
                 });
                 let allAttrs = Object.values(this.attributes).map((e) => {
-                        return new EndpointParam(
-                                e.sqlType,
-                                e.value,
-                                new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
-                                e.readOnly
-                        );
+                        return new EndpointParam(e);
                 });
                 // let simpleAttrs = Object.values(this.attributes)
                 //         .filter((e) => ['name', 'label', 'value', 'code', 'title', 'tag'].includes(e.value))
@@ -1141,66 +1046,70 @@ export class SqlTable {
                 let nonPrimaryAttrs = Object.values(this.attributes)
                         .filter((e) => !e.isPrimaryKey())
                         .map((e) => {
-                                return new EndpointParam(
-                                        e.sqlType,
-                                        e.value,
-                                        new SqlLocation(e.parentTable.parentSchema.name, e.parentTable.label, e.value),
-                                        e.readOnly
-                                );
+                                return new EndpointParam(e);
                         });
 
-                let goAttributeNames = allAttrs.map((e) => e.go.varName);
-                this.endpoints.goShow = new EndpointGoShow(this, firstPrimaryKey.value, goAttributeNames);
-                if (this.endpoints.create) {
-                        let o = new Endpoint(HttpMethod.POST, this.label, this, false, firstPrimaryKey);
-                        o.sql.inout = [...primaryInOutAttrs];
-                        o.sql.inputs = [...nonPrimaryAttrs];
-                        o.http.bodyIn = [...nonPrimaryAttrs];
-                        o.sql.outputs = [...primaryInOutAttrs];
-                        o.http.bodyOut = [...allAttrs];
-                        this.endpoints.create.push(o);
+                if (!this.singlePk) {
+                        console.log('no single pk, skipping endpoint gen for ' + this.label);
+                        return;
                 }
-                if (this.endpoints.read) {
-                        let readSingle = new Endpoint(HttpMethod.GET, this.label, this, false, firstPrimaryKey);
-                        readSingle.sql.inputs = [...primaryAttrs];
-                        readSingle.http.path = [...primaryAttrs];
-                        readSingle.sql.outputs = [...allAttrs];
-                        readSingle.http.bodyOut = [...allAttrs];
-                        this.endpoints.read.push(readSingle);
 
-                        // if (simpleAttrs.length > 0) {
-                        //         let readOptions = new Endpoint(HttpMethod.GET, `options_${this.label}`, this, true, firstPrimaryKey);
-                        //         readOptions.sql.inputs = [];
-                        //         readOptions.http.path = [];
-                        //         readOptions.sql.outputs = [...primaryAttrs, ...simpleAttrs];
-                        //         readOptions.http.bodyOut = [...primaryAttrs, ...simpleAttrs];
-                        //         this.entityEndpoints.read.push(readOptions);
-                        // }
+                let createSingle = new Endpoint(HttpMethod.POST, this, false, this.singlePk);
+                createSingle.sql.inout = [...primaryInOutAttrs];
+                createSingle.sql.inputs = [...nonPrimaryAttrs];
+                createSingle.http.bodyIn = [...nonPrimaryAttrs];
+                createSingle.sql.outputs = [...primaryInOutAttrs];
+                createSingle.http.bodyOut = [...allAttrs];
 
-                        let readEverything = new Endpoint(HttpMethod.GET, this.label, this, true, firstPrimaryKey);
-                        readEverything.sql.inputs = [];
-                        readEverything.http.path = [];
-                        readEverything.sql.outputs = [...allAttrs];
-                        readEverything.http.bodyOut = [...allAttrs];
-                        this.endpoints.read.push(readEverything);
-                }
-                if (this.endpoints.update) {
-                        let o = new Endpoint(HttpMethod.PUT, this.label, this, false, firstPrimaryKey);
-                        o.sql.inout = [...primaryInOutAttrs];
-                        o.sql.inputs = [...nonPrimaryAttrs];
-                        o.http.bodyIn = [...nonPrimaryAttrs];
-                        o.http.path = [...primaryAttrs];
+                let readSingle = new Endpoint(HttpMethod.GET, this, false, this.singlePk);
+                readSingle.sql.inputs = [...primaryAttrs];
+                readSingle.http.path = [...primaryAttrs];
+                readSingle.sql.outputs = [...allAttrs];
+                readSingle.http.bodyOut = [...allAttrs];
 
-                        o.sql.outputs = [];
-                        o.http.bodyOut = [];
-                        this.endpoints.update.push(o);
-                }
-                if (this.endpoints.delete) {
-                        let o = new Endpoint(HttpMethod.DELETE, this.label, this, false, firstPrimaryKey);
-                        o.sql.inputs = [...primaryAttrs];
-                        o.http.path = [...primaryAttrs];
-                        this.endpoints.delete.push(o);
-                }
+                // if (simpleAttrs.length > 0) {
+                //         let readOptions = new Endpoint(HttpMethod.GET, `options_${this.label}`, this, true, this.singlePk);
+                //         readOptions.sql.inputs = [];
+                //         readOptions.http.path = [];
+                //         readOptions.sql.outputs = [...primaryAttrs, ...simpleAttrs];
+                //         readOptions.http.bodyOut = [...primaryAttrs, ...simpleAttrs];
+                //         this.entityEndpoints.read.push(readOptions);
+                // }
+
+                let readEverything = new Endpoint(HttpMethod.GET, this, true, this.singlePk);
+                readEverything.sql.inputs = [];
+                readEverything.http.path = [];
+                readEverything.sql.outputs = [...allAttrs];
+                readEverything.http.bodyOut = [...allAttrs];
+
+                let updateSingle = new Endpoint(HttpMethod.PUT, this, false, this.singlePk);
+                updateSingle.sql.inout = [...primaryInOutAttrs];
+                updateSingle.sql.inputs = [...nonPrimaryAttrs];
+                updateSingle.http.bodyIn = [...nonPrimaryAttrs];
+                updateSingle.http.path = [...primaryAttrs];
+
+                updateSingle.sql.outputs = [];
+                updateSingle.http.bodyOut = [];
+
+                let deleteSingle = new Endpoint(HttpMethod.DELETE, this, false, this.singlePk);
+                deleteSingle.sql.inputs = [...primaryAttrs];
+                deleteSingle.http.path = [...primaryAttrs];
+
+                this.endpoints = new EntityEndpoints(
+                        {
+                                single: createSingle,
+                        },
+                        {
+                                single: readSingle,
+                                many: readEverything,
+                        },
+                        {
+                                single: updateSingle,
+                        },
+                        {
+                                single: deleteSingle,
+                        }
+                );
         }
 
         static ReadJoins(
@@ -1265,101 +1174,6 @@ export class SqlTable {
 
                 return collection;
         }
-
-        // private static ReadAttributes(
-        //         inputTable: SqlTable,
-        //         collection: Array<JoinedCodePreEndpoint> = [],
-        //         i: number = 0,
-        //         aliasInput: string | null = '',
-        //         nestedCount: number = 0
-        // ): Array<JoinedCodePreEndpoint> | null {
-        //         if (i > MAX_SEARCH_NESTED_COUNT) {
-        //                 console.error('exceeded max loop count on getting attribute and its referenced attributes');
-        //                 return null;
-        //         }
-
-        //         if (nestedCount >= JOIN_DEPTH) {
-        //                 return null;
-        //         }
-
-        //         let typicalAttrs = Object.values(inputTable.attributes).filter((e) => !e.isForeignKey());
-
-        //         for (let k = 0; k < typicalAttrs.length; k++) {
-        //                 const typicalAttr = typicalAttrs[k];
-        //                 let joinAsParts = [typicalAttr.parentTable.label, typicalAttr.value];
-        //                 if (aliasInput) {
-        //                         joinAsParts.unshift(aliasInput);
-        //                 }
-        //                 let readAttributeAs = joinAsParts.join('_');
-        //                 let readTableAs = '';
-        //                 let tableSlicedName = typicalAttr.parentTable.label.slice(0, 3);
-        //                 readTableAs = `${tableSlicedName}_${i}`;
-
-        //                 let joinedCodePreEndpoint = new JoinedCodePreEndpoint(readAttributeAs, readTableAs, typicalAttr);
-        //                 collection.push(joinedCodePreEndpoint);
-        //         }
-
-        //         for (const [table, attrs] of inputTable.uniqueFkGroups()) {
-        //                 let attr = attrs[0]; // We only care about a single fk, handling composite fk
-
-        //                 // if (attr.value === 'person_first_name') {
-        //                 //     console.log('attr :>> ', attr);
-        //                 // }
-
-        //                 if (attr.referenceToSelf) {
-        //                         nestedCount += 1;
-        //                 }
-
-        //                 let parts = [];
-        //                 if (nestedCount) {
-        //                         parts.push(`depth_${nestedCount}`);
-        //                 }
-        //                 // parts.push(attr.value)
-        //                 if (attr.parentTable.id !== table.id) {
-        //                         // parts.push("via")
-        //                         parts.push(inputTable.label);
-        //                 }
-
-        //                 SqlTable.ReadAttributes(table, collection, i + 1, parts.join('_'), nestedCount);
-        //         }
-
-        //         return collection;
-        // }
-
-        // private GenerateReadJoinedEndpoint(parameterPrimaryKeys: CodeEndpointField[]): CodeEndpoint | null {
-        //         let name = `read_joined_${this.label}`;
-        //         let endpoint = new CodeEndpoint(name, this);
-
-        //         let inputs: CodeEndpointField[] = [];
-        //         let outputs: CodeEndpointField[] = [];
-
-        //         inputs = [...parameterPrimaryKeys];
-
-        //         let attributeToRead = SqlTable.ReadAttributes(this);
-
-        //         if (!attributeToRead || Object.keys(this.attributes).length === attributeToRead.length) {
-        //                 return null;
-        //         }
-
-        //         for (const attrRead of attributeToRead) {
-        //                 const attr = attrRead.attr;
-        //                 let sqlLocation = new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value);
-        //                 if (attrRead.readAttributeAs) {
-        //                         sqlLocation.columnAliasedAs = attrRead.readAttributeAs;
-        //                 }
-        //                 if (attrRead.readTableAs) {
-        //                         sqlLocation.tableAliasedAs = attrRead.readTableAs;
-        //                 }
-
-        //                 let codeEndpoint = new CodeEndpointField(attr.sqlType, `${PARAM_PREFIX}${attr.value}`, sqlLocation, attr.readOnly);
-        //                 outputs.push(codeEndpoint);
-        //         }
-
-        //         endpoint.inputs = [...inputs];
-        //         endpoint.outputs = [...outputs];
-
-        //         return endpoint;
-        // }
 
         hasPrimaryKey(): boolean {
                 return Object.keys(this.primaryKeys()).length > 0;

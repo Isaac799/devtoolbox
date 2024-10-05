@@ -11,7 +11,6 @@ import {
         SqlType,
         UNALIASED_SELF_REFERENCE_ALIAS,
         EndpointParam,
-        SqlLocation,
 } from './structure';
 
 /**
@@ -108,6 +107,12 @@ export class InputParser {
                                                 table.attributes[attribute.value] = attribute;
                                         }
 
+                                        let temp = [];
+                                        for (const e of Object.values(table.attributes)) {
+                                                temp.push(new EndpointParam(e));
+                                        }
+                                        table.is = temp;
+
                                         break;
                                 case TokenizingState.Schema:
                                         let newSchema = this.ParseSqlSchema(line);
@@ -171,29 +176,7 @@ export class InputParser {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
-
-                                table.generateEmptyEndpoints();
-
-                                for (const attr of Object.values(table.attributes)) {
-                                        table.endpoints.existsAs.push(
-                                                new EndpointParam(
-                                                        attr.sqlType,
-                                                        attr.value,
-                                                        new SqlLocation(attr.parentTable.parentSchema.name, attr.parentTable.label, attr.value),
-                                                        attr.readOnly
-                                                )
-                                        );
-                                }
-
-                                if (table.desiresCRUD && Object.keys(table.primaryKeys()).length !== 1) {
-                                        // this.SaveErrorMessage(
-                                        //         `Cannot generate endpoint for '${table.parentSchema.name}.${table.label}' without a single primary key.`
-                                        // );
-                                        continue;
-                                }
-
                                 table.generateEndpoints();
-                                // sqlEndpoint.push( `\n--  -  cru)d operations for ${table.schemaName}.${table.label}\n`;
                         }
                 }
         }

@@ -30,13 +30,12 @@ export class GoTemplates extends CodeGenerator {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
-                                if (!table.endpoints.goShow) {
-                                        console.error('missing go show file path when creating navigation bar');
+                                if (!table.endpoints?.read.single) {
                                         continue;
                                 }
                                 linksToAppIndexes.push({
-                                        name: table.endpoints.goShow.sqlTableName,
-                                        path: table.endpoints.goShow.urlHTML,
+                                        name: table.label,
+                                        path: table.endpoints.read.many.url.indexPage,
                                 });
                         }
                 }

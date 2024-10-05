@@ -25,9 +25,10 @@ export class TsTypesCodeGenerator extends CodeGenerator {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
+                                if (!table.endpoints) continue;
 
                                 stack.push(`export type ${SnakeToTitle(tableName)} = {`);
-                                for (const attr of table.endpoints.existsAs) {
+                                for (const attr of table.endpoints.read.single.http.bodyOut) {
                                         stack.push(`    ${attr.typescript.name}: ${attr.typescript.type};`);
                                 }
                                 stack.push('}');

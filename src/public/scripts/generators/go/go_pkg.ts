@@ -30,11 +30,13 @@ export class GoPkg extends CodeGenerator {
                                 let stack: string[] = [];
 
                                 const table = schema.tables[tableName];
-                                importsParts = importsParts.concat(GoRouter.GenerateImportsFormStruct(table.endpoints.existsAs));
+                                if (!table.endpoints) continue;
+
+                                importsParts = importsParts.concat(GoRouter.GenerateImportsFormStruct(table.is));
 
                                 stack.push(`type ${SnakeToPascal(tableName)} struct {`);
-                                for (const attr of table.endpoints.existsAs) {
-                                        stack.push(`    ${attr.go.typeName} ${attr.go.typeType} \`json:"${attr.sql.name}"\``);
+                                for (const attr of table.endpoints.read.single.http.bodyOut) {
+                                        stack.push(`    ${attr.go.var.propertyName} ${attr.go.var.propertyGoType} \`json:"${attr.sql.name}"\``);
                                 }
 
                                 stack.push('}');

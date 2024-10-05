@@ -36,16 +36,17 @@ export class SqlGenerator extends CodeGenerator {
         }
 
         GenerateSqlEndpoint(table: SqlTable): string {
-                let sqlEndpoint: string[] = [];
-
-                if (!table.endpoints.create && !table.endpoints.read && !table.endpoints.update && !table.endpoints.delete) {
+                if (!table.endpoints) {
                         return '';
                 }
+
+                let sqlEndpoint: string[] = [];
 
                 sqlEndpoint.push(`\n\n-- crud operations for ${table.fullName}`);
 
                 this.GenerateCreateEndpoint(table, sqlEndpoint);
-                this.GenerateReadEndpoint(table, sqlEndpoint);
+                this.GenerateReadSingleEndpoint(table, sqlEndpoint);
+                this.GenerateReadManyEndpoint(table, sqlEndpoint);
                 this.GenerateUpdateEndpoint(table, sqlEndpoint);
                 this.GenerateDeleteEndpoint(table, sqlEndpoint);
 
@@ -53,27 +54,23 @@ export class SqlGenerator extends CodeGenerator {
         }
 
         private GenerateDeleteEndpoint(table: SqlTable, sqlEndpoint: string[]) {
-                if (!table.endpoints.delete) {
-                        return;
-                }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.endpoints.delete.length; i++) {
-                        const endpoint = table.endpoints.delete[i];
+                const endpoint = table.endpoints!.delete.single;
 
-                        const primaryInputsEqualing = endpoint.sql.inputs.map(
-                                (e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`
-                        );
-                        let where = SqlGenerator.JoinAnd(alignKeyword(primaryInputsEqualing, '='));
+                const primaryInputsEqualing = endpoint.sql.inputs.map(
+                        (e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`
+                );
+                let where = SqlGenerator.JoinAnd(alignKeyword(primaryInputsEqualing, '='));
 
-                        where = `\n    ${where}`;
+                where = `\n    ${where}`;
 
-                        const params = alignKeywords(
-                                endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
-                                typeKeywords
-                        ).join(',\n    ');
+                const params = alignKeywords(
+                        endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
+                        typeKeywords
+                ).join(',\n    ');
 
-                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+                let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
 CREATE PROCEDURE ${table.parentSchema.name}.${endpoint.sql.name} (
     ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
@@ -81,33 +78,28 @@ DELETE FROM ${table.fullName}
 WHERE ${where}; 
 END; 
 $$;`;
-                        code.push(procedure);
-                }
+                code.push(procedure);
 
                 sqlEndpoint.push(code.join('\n\n'));
         }
 
         private GenerateUpdateEndpoint(table: SqlTable, sqlEndpoint: string[]) {
-                if (!table.endpoints.update) {
-                        return;
-                }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.endpoints.update.length; i++) {
-                        const endpoint = table.endpoints.update[i];
-                        const whereEquals = endpoint.sql.inputs.map(
-                                (e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`
-                        );
-                        const whereEqualsAligned = alignKeyword(whereEquals, '=');
-                        let where = `\n    ${SqlGenerator.JoinAnd(whereEqualsAligned)}`;
-                        where = `\n    ${where}`;
+                const endpoint = table.endpoints!.update.single;
+                const whereEquals = endpoint.sql.inputs.map(
+                        (e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${e.sql.name}`
+                );
+                const whereEqualsAligned = alignKeyword(whereEquals, '=');
+                let where = `\n    ${SqlGenerator.JoinAnd(whereEqualsAligned)}`;
+                where = `\n    ${where}`;
 
-                        const params = alignKeywords(
-                                endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
-                                typeKeywords
-                        ).join(',\n    ');
+                const params = alignKeywords(
+                        endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
+                        typeKeywords
+                ).join(',\n    ');
 
-                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+                let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
 CREATE PROCEDURE ${table.parentSchema.name}.${endpoint.sql.name} ( 
     ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
@@ -121,94 +113,82 @@ WHERE ${where};
 END; 
 $$;`;
 
-                        code.push(procedure);
-                }
+                code.push(procedure);
 
                 sqlEndpoint.push(code.join('\n\n'));
         }
 
-        private GenerateReadEndpoint(table: SqlTable, sqlEndpoint: string[]) {
-                if (!table.endpoints.read) {
-                        return;
-                }
+        private GenerateReadSingleEndpoint(table: SqlTable, sqlEndpoint: string[]) {
                 let code: string[] = [];
 
-                for (let i = 0; i < table.endpoints.read.length; i++) {
-                        const endpoint = table.endpoints.read[i];
+                const endpoint = table.endpoints!.read.single;
 
-                        const inputStr = alignKeywords(
-                                endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
-                                typeKeywords
-                        ).join(',\n    ');
+                const inputStr = alignKeywords(
+                        endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
+                        typeKeywords
+                ).join(',\n    ');
 
-                        let inputs = endpoint.sql.inputs.length ? `\n    ${inputStr}\n` : ``;
+                let inputs = endpoint.sql.inputs.length ? `\n    ${inputStr}\n` : ``;
 
-                        const whereParts = endpoint.sql.inputs.map((e) => {
-                                let answer = [];
-                                if (e.sql.sqlLocation.tableAliasedAs) {
-                                        answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
-                                } else {
-                                        answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
-                                }
-                                answer.push('=');
-                                answer.push(e.sql.name);
-                                answer = alignKeywords(answer, typeKeywords);
-
-                                return answer.join(' ');
-                        });
-                        let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
-                        where = `\n    WHERE ${where}`;
-
-                        if (!endpoint.sql.inputs.length) {
-                                where = '';
-                        }
-
-                        let join = '';
-                        let tableName = '';
-                        let joinStr = `\n    ${SqlGenerator.GenerateReadLeftJoinString(table)}`;
-
-                        if (endpoint.sql.name.includes('join')) {
-                                join = joinStr;
-                                tableName = `${table.fullName} ${table.label.slice(0, 3)}_0`;
+                const whereParts = endpoint.sql.inputs.map((e) => {
+                        let answer = [];
+                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
                         } else {
-                                tableName = `${table.fullName}`;
+                                answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
+                        }
+                        answer.push('=');
+                        answer.push(e.sql.name);
+                        answer = alignKeywords(answer, typeKeywords);
+
+                        return answer.join(' ');
+                });
+                let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
+                where = `\n    WHERE ${where}`;
+
+                if (!endpoint.sql.inputs.length) {
+                        where = '';
+                }
+
+                let join = '';
+                let tableName = '';
+                tableName = `${table.fullName}`;
+
+                const paramsNeeded = endpoint.sql.outputs.map((e) => {
+                        let answer = [];
+
+                        if (e.sql.sqlLocation.columnAliasedAs) {
+                                if (e.sql.sqlLocation.tableAliasedAs) {
+                                        answer.push(`${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
+                                } else {
+                                        answer.push();
+                                }
+                        } else {
+                                answer.push(e.sql.sqlLocation.column);
                         }
 
-                        const paramsNeeded = endpoint.sql.outputs.map((e) => {
-                                let answer = [];
+                        answer.push(e.sql.type);
 
-                                if (e.sql.sqlLocation.columnAliasedAs) {
-                                        if (e.sql.sqlLocation.tableAliasedAs) {
-                                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
-                                        } else {
-                                                answer.push();
-                                        }
-                                } else {
-                                        answer.push(e.sql.sqlLocation.column);
-                                }
+                        return answer.join(' ');
+                });
+                const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
+                const selectsNeeded = endpoint.sql.outputs.map((e) => {
+                        let answer = [];
 
-                                answer.push(e.sql.type);
-
-                                return answer.join(' ');
-                        });
-                        const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
-                        const selectsNeeded = endpoint.sql.outputs.map((e) => {
-                                let answer = [];
-
-                                if (e.sql.sqlLocation.tableAliasedAs) {
-                                        answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
-                                } else {
-                                        answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
-                                }
-                                if (e.sql.sqlLocation.columnAliasedAs) {
-                                        answer.push(`AS ${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
-                                } else {
-                                        answer.push(e.sql.sqlLocation.columnAliasedAs);
-                                }
-                                return answer.join(' ');
-                        });
-                        const selecting = alignKeyword(selectsNeeded, ' AS ').join(',\n    ');
-                        let procedure = `DROP FUNCTION IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
+                        } else {
+                                answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
+                        }
+                        if (e.sql.sqlLocation.columnAliasedAs) {
+                                answer.push(`AS ${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
+                        } else {
+                                answer.push(e.sql.sqlLocation.columnAliasedAs);
+                        }
+                        return answer.join(' ');
+                });
+                const selecting = alignKeyword(selectsNeeded, ' AS ').join(',\n    ');
+                let procedure = `DROP FUNCTION IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
 CREATE FUNCTION ${table.parentSchema.name}.${endpoint.sql.name} (${inputs}) RETURNS TABLE ( 
     ${params}        
 ) LANGUAGE plpgsql AS $$ BEGIN
@@ -218,8 +198,99 @@ SELECT
 FROM ${tableName}${join}${where};
 END; 
 $$;`;
-                        code.push(procedure);
+                code.push(procedure);
+
+                sqlEndpoint.push(code.join('\n\n'));
+        }
+
+        private GenerateReadManyEndpoint(table: SqlTable, sqlEndpoint: string[]) {
+                let code: string[] = [];
+
+                const endpoint = table.endpoints!.read.single;
+
+                const inputStr = alignKeywords(
+                        endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`),
+                        typeKeywords
+                ).join(',\n    ');
+
+                let inputs = endpoint.sql.inputs.length ? `\n    ${inputStr}\n` : ``;
+
+                const whereParts = endpoint.sql.inputs.map((e) => {
+                        let answer = [];
+                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
+                        } else {
+                                answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
+                        }
+                        answer.push('=');
+                        answer.push(e.sql.name);
+                        answer = alignKeywords(answer, typeKeywords);
+
+                        return answer.join(' ');
+                });
+                let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
+                where = `\n    WHERE ${where}`;
+
+                if (!endpoint.sql.inputs.length) {
+                        where = '';
                 }
+
+                let join = '';
+                let tableName = '';
+                // let joinStr = `\n    ${SqlGenerator.GenerateReadLeftJoinString(table)}`;
+
+                // if (endpoint.sql.name.includes('join')) {
+                //         join = joinStr;
+                //         tableName = `${table.fullName} ${table.label.slice(0, 3)}_0`;
+                // } else {
+                tableName = `${table.fullName}`;
+                // }
+
+                const paramsNeeded = endpoint.sql.outputs.map((e) => {
+                        let answer = [];
+
+                        if (e.sql.sqlLocation.columnAliasedAs) {
+                                if (e.sql.sqlLocation.tableAliasedAs) {
+                                        answer.push(`${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
+                                } else {
+                                        answer.push();
+                                }
+                        } else {
+                                answer.push(e.sql.sqlLocation.column);
+                        }
+
+                        answer.push(e.sql.type);
+
+                        return answer.join(' ');
+                });
+                const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
+                const selectsNeeded = endpoint.sql.outputs.map((e) => {
+                        let answer = [];
+
+                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
+                        } else {
+                                answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
+                        }
+                        if (e.sql.sqlLocation.columnAliasedAs) {
+                                answer.push(`AS ${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
+                        } else {
+                                answer.push(e.sql.sqlLocation.columnAliasedAs);
+                        }
+                        return answer.join(' ');
+                });
+                const selecting = alignKeyword(selectsNeeded, ' AS ').join(',\n    ');
+                let procedure = `DROP FUNCTION IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+CREATE FUNCTION ${table.parentSchema.name}.${endpoint.sql.name} (${inputs}) RETURNS TABLE ( 
+    ${params}        
+) LANGUAGE plpgsql AS $$ BEGIN
+RETURN QUERY
+SELECT 
+    ${selecting}     
+FROM ${tableName}${join}${where};
+END; 
+$$;`;
+                code.push(procedure);
 
                 sqlEndpoint.push(code.join('\n\n'));
         }
@@ -255,25 +326,20 @@ $$;`;
         }
 
         private GenerateCreateEndpoint(table: SqlTable, sqlEndpoint: string[]) {
-                if (!table.endpoints.create) {
-                        return;
-                }
                 let code: string[] = [];
 
-                for (let i = 0; i < table.endpoints.create.length; i++) {
-                        const endpoint = table.endpoints.create[i];
-                        const paramsNeeded = endpoint.sql.inout
-                                .map((e) => `INOUT ${e.sql.name} ${e.sql.type}`)
-                                .concat(endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`));
-                        const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
-                        const into = endpoint.sql.inputs
-                                .map((e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`)
-                                .join(',\n    ');
-                        const values = endpoint.sql.inputs.map((e) => `${e.sql.name}`).join(',\n    ');
-                        const returning =
-                                endpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`) + ' INTO ' + endpoint.sql.outputs.map((e) => `${e.sql.name}`);
+                const endpoint = table.endpoints!.create.single;
+                const paramsNeeded = endpoint.sql.inout
+                        .map((e) => `INOUT ${e.sql.name} ${e.sql.type}`)
+                        .concat(endpoint.sql.inputs.map((e) => `${e.sql.name} ${e.sql.type}`));
+                const params = alignKeywords(paramsNeeded, typeKeywords).join(',\n    ');
+                const into = endpoint.sql.inputs
+                        .map((e) => `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`)
+                        .join(',\n    ');
+                const values = endpoint.sql.inputs.map((e) => `${e.sql.name}`).join(',\n    ');
+                const returning = endpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`) + ' INTO ' + endpoint.sql.outputs.map((e) => `${e.sql.name}`);
 
-                        let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
+                let procedure = `DROP PROCEDURE IF EXISTS ${table.parentSchema.name}.${endpoint.sql.name};
 CREATE PROCEDURE ${table.parentSchema.name}.${endpoint.sql.name} ( 
     ${params}
 ) LANGUAGE plpgsql AS $$ BEGIN
@@ -288,8 +354,7 @@ RETURNING
 END; 
 $$;`;
 
-                        code.push(procedure);
-                }
+                code.push(procedure);
 
                 sqlEndpoint.push(code.join('\n\n'));
         }
@@ -394,8 +459,6 @@ $$;`;
                 for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
                         if (line.startsWith('DROP TABLE')) {
-                                console.log('HI');
-
                                 procFnTables.push(line);
                         } else if (line.startsWith('DROP PROCEDURE') || line.startsWith('DROP FUNCTION')) {
                                 procFnDrops.push(line);
@@ -460,7 +523,7 @@ $$;`;
                 const returning = endpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`).join(', ');
 
                 let procedure = `
-INSERT INTO ${endpoint.sqlTableFullName} (
+INSERT INTO ${endpoint.tableFullName} (
     ${into}
 ) 
 VALUES (
@@ -486,7 +549,7 @@ RETURNING
 
                 where = `\n    ${where}`;
 
-                let procedure = `DELETE FROM ${endpoint.sqlTableFullName}
+                let procedure = `DELETE FROM ${endpoint.tableFullName}
 WHERE ${where};`;
                 return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
@@ -506,7 +569,7 @@ WHERE ${where};`;
     ).join(',\n    ')}
 WHERE ${where};`;
 
-                let start = `UPDATE ${endpoint.sqlTableFullName} `;
+                let start = `UPDATE ${endpoint.tableFullName} `;
                 return start + replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
 
@@ -537,9 +600,9 @@ WHERE ${where};`;
 
                 if (endpoint.sql.name.includes('join')) {
                         join = joinStr;
-                        tableName = `${endpoint.sqlTableFullName} ${endpoint.sqlTableName.slice(0, 3)}_0`;
+                        tableName = `${endpoint.tableFullName} ${endpoint.tableFullName.slice(0, 3)}_0`;
                 } else {
-                        tableName = `${endpoint.sqlTableFullName}`;
+                        tableName = `${endpoint.tableFullName}`;
                 }
 
                 const selectsNeeded = endpoint.sql.outputs.map((e) => {

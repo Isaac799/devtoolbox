@@ -1,5 +1,5 @@
 import { SnakeToCamel, SnakeToTitle } from '../../core/formatting';
-import { CodeGenerator, Endpoint, EndpointGoShow, HttpMethodToHtmlName } from '../../core/structure';
+import { CodeGenerator, Endpoint, HttpMethodToHtmlName, SqlTable } from '../../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoHTML extends CodeGenerator {
@@ -28,47 +28,48 @@ export class GoHTML extends CodeGenerator {
                                 }
                                 const table = schema.tables[tableName];
                                 if (table.hasCompositePrimaryKey()) continue;
+                                if (!table.endpoints) continue;
 
-                                if (!table.endpoints.goShow) {
-                                        console.error('missing table.endpoints.goShow on generate render');
+                                if (!table.singlePk) {
                                         continue;
                                 }
+                                importsParts = importsParts.concat(GoRouter.GenerateImports(table.is, true));
 
-                                if (table.endpoints.create) {
-                                        for (const endpoint of table.endpoints.create) {
-                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
-                                                let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, endpoint.many)}_${table.label}`);
-                                                let filePath = '/web/templates' + endpoint.url + '/new.html';
-                                                allParts.push(GoHTML.GenerateNewSnippet(endpoint, title, filePath));
-                                        }
+                                {
+                                        let endpoint = table.endpoints.create.single;
+                                        let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, false)}_${table.label}`);
+                                        let filePath = endpoint.url.filePath + '/new.html';
+                                        allParts.push(GoHTML.GenerateNewSnippet(endpoint, title, filePath));
                                 }
 
-                                if (table.endpoints.read) {
-                                        for (const endpoint of table.endpoints.read) {
-                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
-                                                let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, endpoint.many)}_${table.label}`);
-                                                if (endpoint.many) {
-                                                        let filePath = '/web/templates' + endpoint.url + '/index.html';
-                                                        allParts.push(GoHTML.GenerateIndexSnippet(endpoint, title, filePath));
-                                                } else {
-                                                        let filePath = '/web/templates' + endpoint.url + '/show.html';
-                                                        allParts.push(GoHTML.GenerateShowEditSnippet(endpoint, title, filePath, table.endpoints.goShow));
-                                                }
-                                        }
-                                }
+                                {
+                                        let endpoint = table.endpoints.read.single;
+                                        let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, false)}_${table.label}`);
 
-                                if (table.endpoints.update) {
-                                        for (const endpoint of table.endpoints.update) {
-                                                importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, false));
-                                                let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, endpoint.many)}_${table.label}`);
-                                                let filePath = '/web/templates' + endpoint.url + '/edit.html';
-                                                allParts.push(GoHTML.GenerateShowEditSnippet(endpoint, title, filePath, table.endpoints.goShow));
-                                        }
+                                        let filePath = endpoint.url.filePath + '/show.html';
+                                        allParts.push(GoHTML.GenerateShowEditSnippet(endpoint, title, filePath, table));
+                                }
+                                {
+                                        let endpoint = table.endpoints.read.many;
+                                        let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, true)}_${table.label}`);
+
+                                        let filePath = endpoint.url.filePath + '/index.html';
+                                        allParts.push(GoHTML.GenerateIndexSnippet(endpoint, title, filePath));
+                                }
+                                {
+                                        let endpoint = table.endpoints.update.single;
+                                        let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, false)}_${table.label}`);
+                                        let filePath = endpoint.url.filePath + '/edit.html';
+                                        allParts.push(GoHTML.GenerateShowEditSnippet(endpoint, title, filePath, table));
                                 }
 
                                 let renderFunctions = allParts.join('\n\n');
 
+                                // time is for the date on page
+                                importsParts.push('time');
                                 importsParts = [...new Set(importsParts)];
+                                console.log('importsParts :>> ', importsParts);
+
                                 let imports = importsParts
                                         .filter((e) => !!e)
                                         .map((e) => `"${e}"`)
@@ -81,7 +82,6 @@ import (
     "myapp/pkg/repositories"
     "net/http"
     "text/template"
-    "time"
     ${imports}
 
     "github.com/gorilla/mux"
@@ -130,38 +130,38 @@ ${renderFunctions}
                 }
         }
 
-        private static GenerateShowEditSnippet(endpoint: Endpoint, title: string, filePath: string, getEndpoint: EndpointGoShow) {
+        private static GenerateShowEditSnippet(endpoint: Endpoint, title: string, filePath: string, table: SqlTable) {
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '    ' + variablesFromPath;
 
-                let str = `func ${endpoint.routerFuncName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+                let str = `func ${endpoint.go.routerFuncName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
 ${variablesFromPath}
-        ${endpoint.go.input.varName}, err := repo.${getEndpoint.routerRepoName}(${SnakeToCamel(endpoint.primaryKeyName)}); 
+        ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${SnakeToCamel(table.singlePk!.value)}); 
         if err != nil {
             http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
             return
         }
-        renderPage(w, r, "${title}", "${filePath}", ${endpoint.go.input.varName})
+        renderPage(w, r, "${title}", "${filePath}", ${endpoint.go.real.name})
     }
 }`;
                 return str.trim();
         }
         private static GenerateNewSnippet(endpoint: Endpoint, title: string, filePath: string) {
-                let str = `func ${endpoint.routerFuncName}(w http.ResponseWriter, r *http.Request) {
+                let str = `func ${endpoint.go.routerFuncName}(w http.ResponseWriter, r *http.Request) {
     renderPage(w, r, "${title}", "${filePath}", nil)
 }`;
                 return str.trim();
         }
         private static GenerateIndexSnippet(endpoint: Endpoint, title: string, filePath: string) {
-                let str = `func ${endpoint.routerFuncName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+                let str = `func ${endpoint.go.routerFuncName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        ${endpoint.go.input.varName}s, err := repo.${endpoint.routerRepoName}(); 
+        ${endpoint.go.real.name}s, err := repo.${endpoint.go.routerRepoName}(); 
         if err != nil {
             http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
             return
         }
-        renderPage(w, r, "${title}", "${filePath}", ${endpoint.go.input.varName}s)
+        renderPage(w, r, "${title}", "${filePath}", ${endpoint.go.real.name}s)
     }
 }`;
                 return str.trim();

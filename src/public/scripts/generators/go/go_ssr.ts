@@ -25,6 +25,7 @@ export class GoSSR extends CodeGenerator {
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
+                                if (!table.endpoints) continue;
                                 let files = this.GenerateHtmlFiles(table);
                                 answer = {
                                         ...answer,
@@ -36,8 +37,7 @@ export class GoSSR extends CodeGenerator {
         }
 
         GenerateHtmlFiles(table: SqlTable): FileOutputs {
-                if (!table.endpoints.goShow) {
-                        console.error('error: missing show');
+                if (!table.endpoints) {
                         return {};
                 }
 
@@ -48,25 +48,27 @@ export class GoSSR extends CodeGenerator {
                 let htmlIndex = GoSSR.GenerateHtmlIndex(table);
                 let htmlShow = GoSSR.GenerateHtmlShow(table);
 
-                htmlFiles[table.endpoints.goShow.filePath('new')] = htmlNew;
-                htmlFiles[table.endpoints.goShow.filePath('edit')] = htmlEdit;
-                htmlFiles[table.endpoints.goShow.filePath('index')] = htmlIndex;
-                htmlFiles[table.endpoints.goShow.filePath('show')] = htmlShow;
+                // the endpoint not really matter here
+                let fp = table.endpoints.read.single.filePath;
+
+                htmlFiles[fp('new')] = htmlNew;
+                htmlFiles[fp('edit')] = htmlEdit;
+                htmlFiles[fp('index')] = htmlIndex;
+                htmlFiles[fp('show')] = htmlShow;
 
                 return htmlFiles;
         }
 
         private static GenerateHtmlNew(table: SqlTable): string {
                 let title = SnakeToTitle(table.label);
-                let show = table.endpoints.goShow;
-                if (!show) {
-                        return 'error: missing show';
-                }
+                let show = Object.values(table.attributes);
 
-                let attrInputsStr = show.sqlAttributes
+                let attrInputsStr = show
                         .filter((e) => !e.isPrimaryKey())
                         .map((e) => SQL_TO_GO_TYPE[e.sqlType].htmlInputFunction(e))
                         .join('\n        ');
+
+                let urlHtml = table.endpoints!.read.single.url.indexPage;
 
                 let str = `{{ define "content" }}
 
@@ -83,17 +85,17 @@ export class GoSSR extends CodeGenerator {
 <nav class="breadcrumb is-centered" aria-label="breadcrumbs">
     <ul>
         <li>
-            <a href="${show.urlHTML}">${title}</a>
+            <a href="${urlHtml}">${title}</a>
         </li>
         <li class="is-active">
-            <a href="${show.urlHTML}/new" aria-current="page">New</a>
+            <a href="${urlHtml}/new" aria-current="page">New</a>
         </li>
     </ul>
 </nav>
 
 <div class="container">
     <h1 class="title">${title} Form</h1>
-    <form action="${show.urlForm}" method="POST">
+    <form action="${urlHtml}" method="POST">
         
         ${attrInputsStr}
 
@@ -116,12 +118,9 @@ export class GoSSR extends CodeGenerator {
                 let inputDELETE = ``;
 
                 let title = SnakeToTitle(table.label);
-                let show = table.endpoints.goShow;
-                if (!show) {
-                        return 'error: missing show';
-                }
+                let show = Object.values(table.attributes);
 
-                let attrInputsStr = show.sqlAttributes
+                let attrInputsStr = show
                         .map((e) => {
                                 if (e.isPrimaryKey() || e.readOnly) {
                                         return ` <p><strong>${SnakeToTitle(e.value)}:</strong> {{.Data.${SnakeToPascal(e.value)}}}</p>`;
@@ -130,6 +129,9 @@ export class GoSSR extends CodeGenerator {
                                 }
                         })
                         .join('\n        ');
+
+                let urlHtml = table.endpoints!.read.single.url.indexPage;
+                let pkProp = table.endpoints?.read.single.go.primaryKey.go.var.propertyName;
 
                 let str = `{{ define "content" }}
 
@@ -146,20 +148,20 @@ export class GoSSR extends CodeGenerator {
 <nav class="breadcrumb is-centered" aria-label="breadcrumbs">
     <ul>
         <li>
-            <a href="${show.urlHTML}">${title}</a>
+            <a href="${urlHtml}">${title}</a>
         </li>
         <li>
-            <a href="${show.urlHTML}/{{ .Data.${show.primaryKeyName} }}"> {{ .Data.${show.primaryKeyName} }}</a>
+            <a href="${urlHtml}/{{ .Data.${pkProp} }}"> {{ .Data.${pkProp} }}</a>
         </li>
         <li class="is-active">
-            <a href="${show.urlHTML}/{{ .Data.${show.primaryKeyName} }}/edit" aria-current="page">Edit</a>
+            <a href="${urlHtml}/{{ .Data.${pkProp} }}/edit" aria-current="page">Edit</a>
         </li>
     </ul>
 </nav>
 
 <div class="container">
     <h1 class="title">Edit ${title}</h1>
-    <form action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}/update" method="POST">
+    <form action="${urlHtml}/{{ .Data.${pkProp} }}/update" method="POST">
         ${inputPUT}
        
         ${attrInputsStr}
@@ -202,7 +204,7 @@ export class GoSSR extends CodeGenerator {
                         Cancel
                     </button>
                     <form
-                        action="${show.urlForm}/{{ .Data.${show.primaryKeyName} }}/delete"
+                        action="${urlHtml}/{{ .Data.${pkProp} }}/delete"
                         method="POST"
                         style="display: inline"
                     >
@@ -223,20 +225,20 @@ export class GoSSR extends CodeGenerator {
         }
         private static GenerateHtmlIndex(table: SqlTable): string {
                 let title = SnakeToTitle(table.label);
-                let show = table.endpoints.goShow;
-                if (!show) {
-                        return 'error: missing show';
-                }
 
-                let attrsTableHeaderStr = show.propertyNames.map((e) => ` <th>${SnakeToTitle(e)}</th>`).join('\n            ');
-                let attrsTableBodyStr = show.propertyNames
+                let show = table.endpoints!.read.single.http.bodyOut;
+                let urlHtml = table.endpoints!.read.single.url.indexPage;
+                let pkProp = table.endpoints!.read.single.go.primaryKey.go.var.propertyName;
+
+                let attrsTableHeaderStr = show.map((e) => ` <th>${SnakeToTitle(e.sql.name)}</th>`).join('\n            ');
+                let attrsTableBodyStr = show
                         .map((e) => {
                                 // <td>{{if .IsActive}}Yes{{else}}No{{end}}</td>
 
-                                if (e === show.primaryKeyName) {
-                                        return ` <td><a href="${show.urlHTML}/{{.${show.primaryKeyName}}}"> {{.${e}}} </a></td>`;
+                                if (e.go.var.propertyName === pkProp) {
+                                        return ` <td><a href="${urlHtml}/{{.${pkProp}}}"> {{.${e.go.var.propertyName}}} </a></td>`;
                                 } else {
-                                        return ` <td>{{.${e}}}</td>`;
+                                        return ` <td>{{.${e.go.var.propertyName}}}</td>`;
                                 }
                         })
                         .join('\n                ');
@@ -257,7 +259,7 @@ export class GoSSR extends CodeGenerator {
 <nav class="breadcrumb is-centered" aria-label="breadcrumbs">
     <ul>
         <li class="is-active">
-            <a href="${show.urlHTML}" aria-current="page">${title}</a>
+            <a href="${urlHtml}" aria-current="page">${title}</a>
         </li>
     </ul>
 </nav>
@@ -276,7 +278,7 @@ export class GoSSR extends CodeGenerator {
 
     <div class="field">
         <div class="control">
-            <a class="button is-info" href="${show.urlHTML}/new">New ${title}</a>
+            <a class="button is-info" href="${urlHtml}/new">New ${title}</a>
         </div>
     </div>
 </div>
@@ -288,12 +290,12 @@ export class GoSSR extends CodeGenerator {
         }
         private static GenerateHtmlShow(table: SqlTable): string {
                 let title = SnakeToTitle(table.label);
-                let show = table.endpoints.goShow;
-                if (!show) {
-                        return 'error: missing show';
-                }
 
-                let attrsStr = show.propertyNames.map((e) => ` <p><strong>${SnakeToTitle(e)}:</strong> {{.Data.${e}}}</p>`).join('\n        ');
+                let show = table.endpoints!.read.single.http.bodyOut;
+                let urlHtml = table.endpoints!.read.single.url.indexPage;
+                let pkProp = table.endpoints?.read.single.go.primaryKey.go.var.propertyName;
+
+                let attrsStr = show.map((e) => ` <p><strong>${SnakeToTitle(e.sql.name)}:</strong> {{.Data.${e.go.var.propertyName}}}</p>`).join('\n        ');
 
                 let str = `{{ define "content" }}
 
@@ -310,24 +312,24 @@ export class GoSSR extends CodeGenerator {
 <nav class="breadcrumb is-centered" aria-label="breadcrumbs">
     <ul>
         <li>
-            <a href="${show.urlHTML}">${title}</a>
+            <a href="${urlHtml}">${title}</a>
         </li>
         <li class="is-active">
-            <a href="${show.urlHTML}/{{ .Data.${show.primaryKeyName} }}" aria-current="page">
-                {{ .Data.${show.primaryKeyName} }}
+            <a href="${urlHtml}/{{ .Data.${pkProp} }}" aria-current="page">
+                {{ .Data.${pkProp} }}
             </a>
         </li>
     </ul>
 </nav>
 
 <div class="container">
-    <h1 class="title">${show.sqlTableName} Details</h1>
+    <h1 class="title">${title} Details</h1>
     <div class="box">
         ${attrsStr}
     </div>
     <div class="field">
         <div class="control">
-            <a class="button is-info" href="${show.urlHTML}/{{ .Data.${show.primaryKeyName} }}/edit">
+            <a class="button is-info" href="${urlHtml}/{{ .Data.${pkProp} }}/edit">
                 Edit ${title}
             </a>
         </div>
