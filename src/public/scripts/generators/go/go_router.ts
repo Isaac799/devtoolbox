@@ -65,7 +65,7 @@ export class GoRouter extends CodeGenerator {
                                                 routes[_routes] = [];
                                         }
                                         routes[_routes].push({
-                                                method: HttpMethod.POST,
+                                                method: endpoint.method,
                                                 handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncFormName}(${repo.var})`,
                                         });
                                 }
@@ -90,12 +90,12 @@ export class GoRouter extends CodeGenerator {
                                                 handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncApiName}(${repo.var})`,
                                         });
 
-                                        _routes = `${endpoint.url.forRouter}/update`;
+                                        _routes = `${endpoint.url.forRouter}`;
                                         if (!routes[_routes]) {
                                                 routes[_routes] = [];
                                         }
                                         routes[_routes].push({
-                                                method: HttpMethod.POST,
+                                                method: endpoint.method,
                                                 handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncFormName}(${repo.var})`,
                                         });
                                 }
@@ -113,12 +113,12 @@ export class GoRouter extends CodeGenerator {
                                                 handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncApiName}(${repo.var})`,
                                         });
 
-                                        _routes = `${endpoint.url.forRouter}/delete`;
+                                        _routes = `${endpoint.url.forRouter}`;
                                         if (!routes[_routes]) {
                                                 routes[_routes] = [];
                                         }
                                         routes[_routes].push({
-                                                method: HttpMethod.POST,
+                                                method: endpoint.method,
                                                 handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncFormName}(${repo.var})`,
                                         });
                                 }
@@ -215,14 +215,6 @@ export class GoRouter extends CodeGenerator {
 
                 let imports = allPackages.map((e) => `"myapp/internal/handlers/${e}"`).join('\n    ');
 
-                let methodOverrideStr = ``;
-                //                 let methodOverrideStr = `
-
-                //     // note: a path to match must match for our form submission to run through
-                //     //       the middleware for necessary method modification
-                //     http.Handle("/", middleware.MethodOverride(r))`;
-
-                //    "myapp/internal/middleware"
                 let str = `package routes
 
 import (
@@ -230,20 +222,24 @@ import (
     "myapp/pkg/repositories"
     "net/http"
     "path/filepath"
+    "myapp/internal/middleware"
 
     ${imports}    
 
     _ "github.com/lib/pq"
 )
 
-func SetupRoutes(mux *http.ServeMux, db *sql.DB) {
+func SetupRoutes(serverMux *http.ServeMux, db *sql.DB) {
     ${repositoriesStr}
+
+    mux := http.NewServeMux()
+
+    // Makes all requests run through this middleware
+    serverMux.Handle("/", middleware.MethodOverride(mux))
 
     mux.HandleFunc("/assets/{filename}", serveAsset)
 
 ${finalRouteStrs}
-
-    ${methodOverrideStr}
 }
 
 func serveAsset(w http.ResponseWriter, r *http.Request) {
@@ -284,8 +280,8 @@ func serveAsset(w http.ResponseWriter, r *http.Request) {
                 return value
                         .map((e) =>
                                 e.go.var.propertyGoType === 'string'
-                                        ? `${e.go.var.propertyAsVariable} :=  mux.PathValue("${e.go.var.propertyAsVariable}")`
-                                        : `${e.go.var.propertyAsVariable}Str :=  mux.PathValue("${e.go.var.propertyAsVariable}")
+                                        ? `${e.go.var.propertyAsVariable} :=  r.PathValue("${e.go.var.propertyAsVariable}")`
+                                        : `${e.go.var.propertyAsVariable}Str :=  r.PathValue("${e.go.var.propertyAsVariable}")
     ${e.go.var.propertyAsVariable}, err := ${e.go.stuff.parseFunction(`${e.go.var.propertyAsVariable}Str`)}
        if err != nil {
        http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)

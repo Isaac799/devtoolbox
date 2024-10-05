@@ -112,10 +112,10 @@ export class GoSSR extends CodeGenerator {
                 return str;
         }
         private static GenerateHtmlEdit(table: SqlTable): string {
-                // let inputPUT = `<input type="hidden" name="_method" value="PUT" />`;
-                // let inputDELETE = `<input type="hidden" name="_method" value="DELETE" />`;
-                let inputPUT = ``;
-                let inputDELETE = ``;
+                let inputPUT = `<input type="hidden" name="_method" value="PUT" />`;
+                let inputDELETE = `<input type="hidden" name="_method" value="DELETE" />`;
+                // let inputPUT = ``;
+                // let inputDELETE = ``;
 
                 let title = SnakeToTitle(table.label);
                 let show = Object.values(table.attributes);
@@ -161,7 +161,7 @@ export class GoSSR extends CodeGenerator {
 
 <div class="container">
     <h1 class="title">Edit ${title}</h1>
-    <form action="${urlHtml}/{{ .Data.${pkProp} }}/update" method="POST">
+    <form action="${urlHtml}/{{ .Data.${pkProp} }}" method="POST">
         ${inputPUT}
        
         ${attrInputsStr}
@@ -204,7 +204,7 @@ export class GoSSR extends CodeGenerator {
                         Cancel
                     </button>
                     <form
-                        action="${urlHtml}/{{ .Data.${pkProp} }}/delete"
+                        action="${urlHtml}/{{ .Data.${pkProp} }}"
                         method="POST"
                         style="display: inline"
                     >

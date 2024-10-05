@@ -113,27 +113,27 @@ import "fmt"
         
 // ValidateNumber checks if the number is within the specified range (inclusive).
 func ValidateNumber(num, min, max int) error {
-	if num < min || num > max {
-		return fmt.Errorf("number %d is out of range (%d to %d)", num, min, max)
-	}
-	return nil
+    if num < min || num > max {
+        return fmt.Errorf("number %d is out of range (%d to %d)", num, min, max)
+    }
+    return nil
 }
 
 // ValidateString checks if the string length is within the specified limits (inclusive).
 func ValidateString(s string, minLen, maxLen int) error {
-	length := len(s)
-	if length < minLen || length > maxLen {
-		return fmt.Errorf("string length %d is out of bounds (%d to %d)", length, minLen, maxLen)
-	}
-	return nil
+    length := len(s)
+    if length < minLen || length > maxLen {
+        return fmt.Errorf("string length %d is out of bounds (%d to %d)", length, minLen, maxLen)
+    }
+    return nil
 }
         
 // ValidateFloat64 checks if the float64 number is within the specified range (inclusive).
 func ValidateFloat64(num float64, min, max float64) error {
-	if num < min || num > max {
-		return fmt.Errorf("float %f is out of range (%f to %f)", num, min, max)
-	}
-	return nil
+    if num < min || num > max {
+        return fmt.Errorf("float %f is out of range (%f to %f)", num, min, max)
+    }
+    return nil
 }`;
 
         private static GenerateCreateSnippet(endpoint: Endpoint, table: SqlTable) {
