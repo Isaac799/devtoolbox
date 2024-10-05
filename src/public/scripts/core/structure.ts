@@ -291,14 +291,51 @@ function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunct
         };
 }
 
+// function determineStep(value: number): string {
+//         const valueStr = value.toString();
+//         const decimalIndex = valueStr.indexOf('.');
+
+//         if (decimalIndex === -1) {
+//             return '1';
+//         }
+//         const decimalPart = valueStr.slice(decimalIndex + 1);
+//         const stepValue = Math.pow(10, -decimalPart.length);
+
+//         return stepValue.toString();
+//     }
+
+function determineStepRange(range: { min: string; max: string }): string {
+        const { min, max } = range;
+
+        // calculates step based on a stringified decimal
+        const calculateStep = (value: string): string => {
+                const decimalIndex = value.indexOf('.');
+
+                if (decimalIndex === -1) {
+                        return '1';
+                }
+
+                const decimalPart = value.slice(decimalIndex + 1);
+                const stepValue = Math.pow(10, -decimalPart.length);
+
+                return stepValue.toString();
+        };
+
+        const stepMin = calculateStep(min);
+        const stepMax = calculateStep(max);
+
+        // use the more precise step (smaller)
+        return parseFloat(stepMin) < parseFloat(stepMax) ? stepMin : stepMax;
+}
+
 function generateRangePhrase(validation: AttrValidation, sqlT: SqlType) {
         let range = validation.range;
         let rangePhrase = '';
-        let nums = [SqlType.SERIAL, SqlType.DECIMAL, SqlType.FLOAT, SqlType.REAL, SqlType.INT, SqlType.BOOLEAN];
+        let nums = [SqlType.SERIAL, SqlType.DECIMAL, SqlType.FLOAT, SqlType.REAL, SqlType.INT];
         let strs = [SqlType.xs, SqlType.s, SqlType.m, SqlType.l, SqlType.xl, SqlType.xxl];
         if (range) {
                 if (nums.includes(sqlT)) {
-                        rangePhrase = `min="${range.min}" max="${range.max}"`;
+                        rangePhrase = `min="${range.min}" max="${range.max}" step="${determineStepRange(range)}"`;
                 } else if (strs.includes(sqlT)) {
                         rangePhrase = `minlength="${range.min}" maxlength="${range.max}"`;
                 }
@@ -306,13 +343,19 @@ function generateRangePhrase(validation: AttrValidation, sqlT: SqlType) {
         return rangePhrase;
 }
 
+/**
+ * min max stringified decimals
+ */
 export type RangeResult = {
-        min: number;
-        max: number;
+        // min: number;
+        // max: number;
+        min: string;
+        max: string;
 };
 
 export type GoAttrStuff = {
         goType: string;
+        emptyValue: string;
         parseFunction: (x: string) => string;
         toStringFunction: (x: string) => string;
         htmlInputFunction: goHtmlInputFunction;
@@ -324,6 +367,7 @@ export type GoAttrStuff = {
 export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         [SqlType.BIT]: {
                 goType: 'bool',
+                emptyValue: 'false',
                 parseFunction: (x) => `strconv.ParseBool(${x})`,
                 toStringFunction: (x) => `strconv.FormatBool(${x})`,
                 htmlInputFunction: boolRadioHtmlInputFunctionForGo,
@@ -336,6 +380,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
                 //t := time.Now()
                 // str := t.Format("2006-01-02 15:04:05") // Example format
                 goType: 'time.Time',
+                emptyValue: 'time.Time{}',
                 parseFunction: (x) => `time.Parse("2006-01-02", ${x})`,
                 toStringFunction: (x) => `TODO ${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.DATE),
@@ -345,6 +390,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.CHAR]: {
                 goType: 'string',
+                emptyValue: `""`,
                 parseFunction: (x) => `${x}`,
                 toStringFunction: (x) => `${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.CHAR),
@@ -358,6 +404,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
                 // str := t.Format("2006-01-02 15:04:05") // Example format
 
                 goType: 'time.Time',
+                emptyValue: 'time.Time{}',
                 parseFunction: (x) => `time.Parse("15:04:05", ${x})`,
                 toStringFunction: (x) => `TODO ${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.TIME),
@@ -371,6 +418,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
                 // str := t.Format("2006-01-02 15:04:05") // Example format
 
                 goType: 'time.Time',
+                emptyValue: 'time.Time{}',
                 parseFunction: (x) => `time.Parse("2006-01-02 15:04:05", ${x})`,
                 toStringFunction: (x) => `TODO ${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.TIMESTAMP),
@@ -380,6 +428,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.SERIAL]: {
                 goType: 'int',
+                emptyValue: '0',
                 parseFunction: (x) => `strconv.Atoi(${x})`,
                 toStringFunction: (x) => `strconv.Itoa(${x})`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.SERIAL),
@@ -389,6 +438,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.DECIMAL]: {
                 goType: 'float64',
+                emptyValue: '0.0',
                 parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
                 toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.DECIMAL),
@@ -398,6 +448,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.FLOAT]: {
                 goType: 'float64',
+                emptyValue: '0.0',
                 parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
                 toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.FLOAT),
@@ -407,6 +458,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.REAL]: {
                 goType: 'float64',
+                emptyValue: '0.0',
                 parseFunction: (x) => `strconv.ParseFloat(${x}, 64)`,
                 toStringFunction: (x) => `strconv.FormatFloat(${x}, 'f', -1, 64)`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.REAL),
@@ -416,6 +468,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.INT]: {
                 goType: 'int',
+                emptyValue: '0',
                 parseFunction: (x) => `strconv.Atoi(${x})`,
                 toStringFunction: (x) => `strconv.Itoa(${x})`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.INT),
@@ -425,6 +478,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.BOOLEAN]: {
                 goType: 'bool',
+                emptyValue: 'false',
                 parseFunction: (x) => `strconv.ParseBool(${x})`,
                 toStringFunction: (x) => `strconv.FormatBool(${x})`,
                 htmlInputFunction: boolRadioHtmlInputFunctionForGo,
@@ -434,6 +488,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.xs]: {
                 goType: 'string',
+                emptyValue: `""`,
                 parseFunction: (x) => `${x}`,
                 toStringFunction: (x) => `${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
@@ -443,6 +498,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.s]: {
                 goType: 'string',
+                emptyValue: `""`,
                 parseFunction: (x) => `${x}`,
                 toStringFunction: (x) => `${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
@@ -452,6 +508,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.m]: {
                 goType: 'string',
+                emptyValue: `""`,
                 parseFunction: (x) => `${x}`,
                 toStringFunction: (x) => `${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
@@ -461,6 +518,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.l]: {
                 goType: 'string',
+                emptyValue: `""`,
                 parseFunction: (x) => `${x}`,
                 toStringFunction: (x) => `${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
@@ -470,6 +528,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.xl]: {
                 goType: 'string',
+                emptyValue: `""`,
                 parseFunction: (x) => `${x}`,
                 toStringFunction: (x) => `${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
@@ -479,6 +538,7 @@ export const SQL_TO_GO_TYPE: Record<string, GoAttrStuff> = {
         },
         [SqlType.xxl]: {
                 goType: 'string',
+                emptyValue: `""`,
                 parseFunction: (x) => `${x}`,
                 toStringFunction: (x) => `${x}`,
                 htmlInputFunction: genericHtmlInputFunctionForGo(SqlType.s),
@@ -510,11 +570,13 @@ export class EndpointParam {
                 name: string;
                 type: string;
         };
+        validation: AttrValidation;
 
         readOnly: boolean = false;
 
-        constructor(attr: SqlTableAttribute, inOut: boolean = false) {
+        constructor(attr: SqlTableAttribute, validation: AttrValidation, inOut: boolean = false) {
                 this.readOnly = attr.readOnly;
+                this.validation = validation;
 
                 let name = attr.value;
                 if (inOut) {
@@ -678,7 +740,7 @@ export class Endpoint {
                         name: `${method.toLowerCase()}_${table.label}${manyStrModifier}`,
                 };
                 this.http = {
-                        query: new EndpointParam(pk),
+                        query: new EndpointParam(pk, pk.validation),
                         path: [],
                         bodyIn: [],
                         bodyOut: [],
@@ -707,7 +769,7 @@ export class Endpoint {
                         routerFuncFormName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}_form${manyStrModifier}`),
                         routerRepoName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}${manyStrModifier}`),
 
-                        primaryKey: new EndpointParam(pk),
+                        primaryKey: new EndpointParam(pk, pk.validation),
                         real: {
                                 name: SnakeToKebab(table.label),
                                 type: SnakeToPascal(table.label),
@@ -1040,13 +1102,13 @@ export class SqlTable {
 
         generateEndpoints() {
                 let primaryInOutAttrs = Object.values(this.primaryKeys()).map((e) => {
-                        return new EndpointParam(e, true);
+                        return new EndpointParam(e, e.validation, true);
                 });
                 let primaryAttrs = Object.values(this.primaryKeys()).map((e) => {
-                        return new EndpointParam(e);
+                        return new EndpointParam(e, e.validation);
                 });
                 let allAttrs = Object.values(this.attributes).map((e) => {
-                        return new EndpointParam(e);
+                        return new EndpointParam(e, e.validation);
                 });
                 // let simpleAttrs = Object.values(this.attributes)
                 //         .filter((e) => ['name', 'label', 'value', 'code', 'title', 'tag'].includes(e.value))
@@ -1061,7 +1123,7 @@ export class SqlTable {
                 let nonPrimaryAttrs = Object.values(this.attributes)
                         .filter((e) => !e.isPrimaryKey())
                         .map((e) => {
-                                return new EndpointParam(e);
+                                return new EndpointParam(e, e.validation);
                         });
 
                 if (!this.singlePk) {

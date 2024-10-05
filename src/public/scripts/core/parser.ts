@@ -111,7 +111,7 @@ export class InputParser {
 
                                         let temp = [];
                                         for (const e of Object.values(table.attributes)) {
-                                                temp.push(new EndpointParam(e));
+                                                temp.push(new EndpointParam(e, e.validation));
                                         }
                                         table.is = temp;
 
@@ -201,6 +201,7 @@ export class InputParser {
                 let remainingItems = values.slice(position, values.length);
                 let relevantRemainingItems: string[] = [];
                 let attrValidation: AttrValidation = {};
+                let isPartOfValidation = false;
 
                 for (let i = 0; i < remainingItems.length; i++) {
                         let option = remainingItems[i];
@@ -216,7 +217,7 @@ export class InputParser {
                         attrValidation = {
                                 range: range,
                         };
-                        // relevantRemainingItems.push(range);
+                        isPartOfValidation = true;
                 }
 
                 function parseRange(input: string): RangeResult | null {
@@ -226,13 +227,15 @@ export class InputParser {
                         if (!match) {
                                 return null;
                         }
-                        const min = parseFloat(match[1]);
-                        const max = parseFloat(match[3]);
+                        // const min = parseFloat(match[1]);
+                        // const max = parseFloat(match[3]);
+                        const min = match[1];
+                        const max = match[3];
                         return { min, max };
                 }
 
                 return {
-                        options: relevantRemainingItems,
+                        options: isPartOfValidation ? [] : relevantRemainingItems,
                         validation: attrValidation,
                 };
         }
@@ -277,6 +280,13 @@ export class InputParser {
                 let wantToBeReadOnly = value[0] === '_';
                 if (wantToBeReadOnly) {
                         value = value.replace('_', '');
+                }
+
+                let rangeAcceptable = this.ValidateRangeValidationForAttribute(options, sqlType);
+                if (options.validation.range && !rangeAcceptable.pass) {
+                        options.validation.range = undefined;
+                        let specificReasons = rangeAcceptable.messages.join(' and ');
+                        this.SaveErrorMessage(`Range for '${value}' was unacceptable. ${specificReasons}`);
                 }
 
                 let attribute: SqlTableAttribute = new SqlTableAttribute(
@@ -331,6 +341,47 @@ export class InputParser {
                 }
 
                 return attribute;
+        }
+
+        private ValidateRangeValidationForAttribute(
+                options: { options: Array<string>; validation: AttrValidation },
+                sqlType: SqlType
+        ): {
+                pass: boolean;
+                messages: string[];
+        } {
+                let decimalRange = [SqlType.DECIMAL, SqlType.FLOAT, SqlType.REAL];
+                let wholeNumberRange = [SqlType.SERIAL, SqlType.INT, SqlType.xs, SqlType.s, SqlType.m, SqlType.l, SqlType.xl, SqlType.xxl];
+                let range = options.validation.range;
+                let messages = [];
+                if (range) {
+                        if (decimalRange.includes(sqlType)) {
+                                if (!range.min.toString().includes('.')) {
+                                        messages.push("min must include a '.'");
+                                }
+                                if (!range.max.toString().includes('.')) {
+                                        messages.push("max must include a '.'");
+                                }
+                        } else if (wholeNumberRange.includes(sqlType)) {
+                                if (range.min.toString().includes('.')) {
+                                        messages.push("min cannot include a '.'");
+                                }
+                                if (range.max.toString().includes('.')) {
+                                        messages.push("max cannot include a '.'");
+                                }
+                        }
+                        // we know parse should work when creating the validation with regex for numbers
+                        const min = parseFloat(range.min);
+                        const max = parseFloat(range.max);
+                        if (min > max) {
+                                messages.push('minimum must be less than maximum');
+                        }
+                }
+
+                return {
+                        pass: messages.length === 0,
+                        messages: messages,
+                };
         }
 
         ParseSqlTable(parentSchema: SqlSchema, line: string): SqlTable {

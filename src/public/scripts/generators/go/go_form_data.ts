@@ -189,15 +189,17 @@ ${variablesFromPath}
                 // variablesFromPath = '\n    ' + variablesFromPath;
 
                 for (const attr of table.is) {
-                        if (!forCreate && attr.readOnly) continue;
                         if (attr.sql.name === table.singlePk.value) {
-                                if (endpoint.method !== HttpMethod.POST) {
+                                if (!forCreate && endpoint.method !== HttpMethod.POST) {
                                         stack.push(`    ${attr.go.var.propertyName}: ${attr.go.var.propertyAsVariable},`);
                                 }
-                        } else {
-                                // stack.push(`    ${attr.go.typeName}: r.FormValue("${attr.sql.name}"),`);
-                                stack.push(`    ${attr.go.var.propertyName}: ${attr.go.var.propertyAsVariable},`);
+                                continue;
                         }
+
+                        if (!forCreate && attr.readOnly) continue;
+
+                        // stack.push(`    ${attr.go.typeName}: r.FormValue("${attr.sql.name}"),`);
+                        stack.push(`    ${attr.go.var.propertyName}: ${attr.go.var.propertyAsVariable},`);
                 }
 
                 stack.push('}');

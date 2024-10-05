@@ -319,18 +319,18 @@ const DEFAULT_INPUT = `
 ## customer
 
 - customer +
-  - s email * 
-  - s username **
+  - s email * 8..255
+  - s username ** 6..20
   - b active
 
 ## catalog
 
 - category + 
-  - s title *
+  - s title * 4..31
 
 - product + 
   - s title * !
-  - d price !
+  - d price ! 1.00..1000.00
 
 - product_category
   - ^ product + !
@@ -351,7 +351,7 @@ const DEFAULT_INPUT = `
 - order + @ 
   - ^ _customer.customer ! *
   - b finalized !
-  - d _total_cost !
+  - d _total_cost ! 1.00..1000000.00
   
 - order_item @ 
   - ^ order + !
