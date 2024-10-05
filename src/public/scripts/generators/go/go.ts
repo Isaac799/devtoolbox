@@ -58,8 +58,8 @@ export class GoCodeGenerator extends CodeGenerator {
 
 go 1.21.13
 `;
-                let goSum = `github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
-github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
+                let goSum = `net/http v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
+net/http v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 `;
@@ -72,7 +72,6 @@ import (
     "myapp/internal/config"
     "myapp/internal/routes"
 
-    "github.com/gorilla/mux"
     _ "github.com/lib/pq"
 )
 
@@ -92,7 +91,7 @@ func main() {
     defer db.Close()
 
     app := &config.App{
-        Router: mux.NewRouter(),
+        Router: http.NewServeMux(),
         DB:     db,
     }
 
@@ -101,7 +100,6 @@ func main() {
         log.Fatal(err)
     }
 }
-
 `;
 
                 let appModel = `package config
@@ -110,12 +108,10 @@ import (
     "database/sql"
     "log"
     "net/http"
-
-    "github.com/gorilla/mux"
 )
 
 type App struct {
-    Router *mux.Router
+    Router *http.ServeMux
     DB     *sql.DB
 }
 
@@ -129,12 +125,12 @@ func (a *App) Run(addr string) {
                 let readme = 'todo';
 
                 let lowerFiles = {
+                        ...goRouter,
                         '/cmd/mysite/main.go': mainGo,
                         '/internal/config/app.go': appModel,
                         ...goFormData,
                         ...goDatabase,
                         ...goMiddleware,
-                        ...goRouter,
                         ...goPkgRepositories,
                         ...goJSON,
                         ...goHTML,

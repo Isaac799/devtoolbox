@@ -81,9 +81,8 @@ import (
     "myapp/pkg/repositories"
     "net/http"
     "text/template"
+    
     ${imports}
-
-    "github.com/gorilla/mux"
 )
 
 func renderPage(w http.ResponseWriter, _ *http.Request, title, templateName string, data interface{}) {

@@ -75,9 +75,8 @@ import (
     "myapp/pkg/repositories"
     "net/http"
     "strings"
+    
     ${imports}
-
-    "github.com/gorilla/mux"
 )`;
 
                                 allParts.unshift(pkg);
