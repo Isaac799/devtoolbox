@@ -56,7 +56,7 @@ export class GoCodeGenerator extends CodeGenerator {
 
                 let goMod = `module myapp
 
-go 1.21.13
+go 1.23.2
 `;
                 let goSum = `net/http v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
 net/http v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
@@ -125,9 +125,9 @@ func (a *App) Run(addr string) {
                 let readme = 'todo';
 
                 let lowerFiles = {
-                        ...goRouter,
                         '/cmd/mysite/main.go': mainGo,
                         '/internal/config/app.go': appModel,
+                        ...goRouter,
                         ...goFormData,
                         ...goDatabase,
                         ...goMiddleware,
