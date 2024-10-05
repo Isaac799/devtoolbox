@@ -179,12 +179,12 @@
                                 </tr>
                                 <tr>
                                         <td>type</td>
-                                        <td>- [ xs | s | m | l | xl | xxl ] (t-shirt sizes)</td>
+                                        <td>- [ s | str | string ]</td>
                                         <td>
                                                 creates an attribute of type
-                                                <strong>varchar(n)</strong>
+                                                <strong>varchar(n)</strong> where n is the max in a range
                                         </td>
-                                        <td><code>- m description</code></td>
+                                        <td><code>- string message 10..255</code></td>
                                 </tr>
                                 <tr>
                                         <td>type</td>
@@ -203,6 +203,15 @@
                                                 <strong>primary key</strong>
                                         </td>
                                         <td><code>- xs code +</code></td>
+                                </tr>
+                                <tr>
+                                        <td>flag</td>
+                                        <td>min..max</td>
+                                        <td>
+                                                indicates the acceptable range for <strong>validation and precision</strong>. required for strings, recommended
+                                                for numerical
+                                        </td>
+                                        <td><code>- d price 0.00..999.99</code> or <code>- string title 0..255</code></td>
                                 </tr>
                                 <tr>
                                         <td>flag</td>
