@@ -1,4 +1,4 @@
-import { alignKeyword, SnakeToPascal } from '../../core/formatting';
+import { alignKeyword, organizePathObjectByKeys, SnakeToPascal } from '../../core/formatting';
 import { CodeGenerator, EndpointParam, HttpMethod } from '../../core/structure';
 
 type GroupedRoute = {
@@ -78,7 +78,8 @@ export class GoRouter extends CodeGenerator {
                                         }
                                         routes[_routes].push({
                                                 method: HttpMethod.GET,
-                                                handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncName}(${repo.var})`,
+                                                // nil param is the changeset
+                                                handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncName}(${repo.var}, nil)`,
                                         });
 
                                         _routes = `/api${endpoint.url.forRouter}`;
@@ -188,6 +189,9 @@ export class GoRouter extends CodeGenerator {
 
                 // console.log(routes);
                 let routeStrs = [];
+
+                routes = organizePathObjectByKeys(routes);
+
                 for (const key in routes) {
                         if (Object.prototype.hasOwnProperty.call(routes, key)) {
                                 const route = routes[key];

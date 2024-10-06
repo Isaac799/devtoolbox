@@ -58,7 +58,7 @@ export class GoFormData extends CodeGenerator {
                                                 method: 'delete',
                                         });
 
-                                        let str = GoFormData.CreateDeleteSnippet(endpoint);
+                                        let str = GoFormData.CreateDeleteSnippet(table, endpoint);
                                         allParts.push(str);
                                 }
 
@@ -137,7 +137,7 @@ import (
         changeset := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name});
         
         if !changeset.IsValid() {
-            http.Error(w, "Error updating", http.StatusInternalServerError)
+            ${endpoint.go.routerFuncName}(repo, changeset)(w, r)
             return
         }
 
@@ -148,7 +148,7 @@ import (
                 return str;
         }
 
-        private static CreateDeleteSnippet(endpoint: Endpoint) {
+        private static CreateDeleteSnippet(table: SqlTable, endpoint: Endpoint) {
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '    ' + variablesFromPath;
 
@@ -159,7 +159,7 @@ ${variablesFromPath}
         changeset := repo.${endpoint.go.routerRepoName}(${endpoint.go.primaryKey.go.var.propertyAsVariable}); 
         
         if !changeset.IsValid() {
-            http.Error(w, "Error deleting", http.StatusInternalServerError)
+            ${table.endpoints!.update.single.go.routerFuncName}(repo, changeset)(w, r)
             return
         }
 

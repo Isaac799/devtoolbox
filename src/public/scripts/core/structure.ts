@@ -203,7 +203,7 @@ const boolRadioHtmlInputFunctionForGoWithValue: goHtmlInputFunctionWithValue = (
                     type="radio" 
                     value="true"
                     name="${x.value}"${x.isNullable() ? '' : '\n                    required'}
-                    {{if .Data.${y}}}checked{{end}}
+                    {{if .Data.Record.${y}}}checked{{end}}
                 >
                 True
             </label>
@@ -212,7 +212,7 @@ const boolRadioHtmlInputFunctionForGoWithValue: goHtmlInputFunctionWithValue = (
                     type="radio" 
                     value="false"
                     name="${x.value}"
-                    {{if not .Data.${y}}}checked{{end}}
+                    {{if not .Data.Record.${y}}}checked{{end}}
                 >
                 False
             </label>
@@ -248,7 +248,7 @@ function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunct
                             id="${x.value}"
                             name="${x.value}"
                             ${x.isNullable() ? '' : 'required'}
-                            ${y ? `value="{{ .Data.${y} }}"` : ''}
+                            ${y ? `value="{{ .Data.Record.${y} }}"` : ''}
                             ${rangePhrase}
                         />
                     </div>
@@ -684,9 +684,9 @@ export class Endpoint {
 
                 this.go = {
                         fnName: SnakeToPascal(this.sql.name),
-                        routerFuncName: SnakeToPascal(`${HttpMethodToHtmlName(this.method, many)}_${table.label}`),
-                        routerFuncApiName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}${manyStrModifier}`),
-                        routerFuncFormName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}_form${manyStrModifier}`),
+                        routerFuncName: SnakeToPascal(`${HttpMethodToHtmlName(this.method, many)}_page`),
+                        routerFuncApiName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_json${manyStrModifier}`),
+                        routerFuncFormName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_form${manyStrModifier}`),
                         routerRepoName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}${manyStrModifier}`),
 
                         primaryKey: new EndpointParam(pk, pk.validation),

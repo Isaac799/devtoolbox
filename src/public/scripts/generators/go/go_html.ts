@@ -14,7 +14,6 @@ export class GoHTML extends CodeGenerator {
         GenerateRenderer() {
                 let schemas = this.input;
                 let importsParts: string[] = [];
-                let allParts: string[] = [];
 
                 for (const schemaName in schemas) {
                         if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
@@ -23,6 +22,8 @@ export class GoHTML extends CodeGenerator {
                         const schema = schemas[schemaName];
 
                         for (const tableName in schema.tables) {
+                                let allParts: string[] = [];
+
                                 if (!Object.prototype.hasOwnProperty.call(schema.tables, tableName)) {
                                         continue;
                                 }
@@ -47,7 +48,7 @@ export class GoHTML extends CodeGenerator {
                                         let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, false)}_${table.label}`);
 
                                         let filePath = endpoint.url.filePath + '/show.html';
-                                        allParts.push(GoHTML.GenerateShowEditSnippet(endpoint, title, filePath, table));
+                                        allParts.push(GoHTML.GenerateShowSnippet(endpoint, title, filePath, table));
                                 }
                                 {
                                         let endpoint = table.endpoints.read.many;
@@ -60,7 +61,7 @@ export class GoHTML extends CodeGenerator {
                                         let endpoint = table.endpoints.update.single;
                                         let title = SnakeToTitle(`${HttpMethodToHtmlName(endpoint.method, false)}_${table.label}`);
                                         let filePath = endpoint.url.filePath + '/edit.html';
-                                        allParts.push(GoHTML.GenerateShowEditSnippet(endpoint, title, filePath, table));
+                                        allParts.push(GoHTML.GenerateEditSnippet(endpoint, title, filePath, table));
                                 }
 
                                 let renderFunctions = allParts.join('\n\n');
@@ -78,48 +79,54 @@ export class GoHTML extends CodeGenerator {
 
 import (
     "log"
+    "myapp/pkg/models"
     "myapp/pkg/repositories"
+    "myapp/pkg/validation"
     "net/http"
     "text/template"
     
     ${imports}
 )
 
-func renderPage(w http.ResponseWriter, _ *http.Request, title, templateName string, data interface{}) {
+func renderTemplate(w http.ResponseWriter, title, templateName string, data interface{}) {
     templateData := struct {
-       Title string
-       Year  int
-       Data  interface{}
+        Title string
+        Year  int
+        Data  interface{}
     }{
-       Title: title,
-       Year:  time.Now().Year(),
-       Data:  data,
+        Title: title,
+        Year:  time.Now().Year(),
+        Data:  data,
     }
 
     pageTemplate, err := template.ParseFiles(
-       "../../web/templates/base.html",
-       "../../" + templateName,
-       "../../web/templates/navbar.html",
-       "../../web/templates/footer.html",
+        "../../web/templates/base.html",
+        "../../"+templateName,
+        "../../web/templates/navbar.html",
+        "../../web/templates/footer.html",
     )
 
     if err != nil {
-       log.Println("Error parsing templates:", err)
-       http.Error(w, "Internal server error", http.StatusInternalServerError)
-       return
+        log.Println("Error parsing templates:", err)
+        http.Error(w, "Internal server error", http.StatusInternalServerError)
+        return
     }
 
     err = pageTemplate.ExecuteTemplate(w, "base.html", templateData)
     if err != nil {
-       log.Println("Error executing template:", err)
-       http.Error(w, "Internal server error", http.StatusInternalServerError)
+        log.Println("Error executing template:", err)
+        http.Error(w, "Internal server error", http.StatusInternalServerError)
     }
 }
 
-func ShowHome(w http.ResponseWriter, r *http.Request) {
-    renderPage(w, r, "Home", "show.home.html", nil)
+func renderChangesetPage(w http.ResponseWriter, _ *http.Request, title, templateName string, changeset *validation.Changeset[models.Product]) {
+    renderTemplate(w, title, templateName, changeset)
 }
 
+func renderPage(w http.ResponseWriter, _ *http.Request, title, templateName string, data interface{}) {
+    renderTemplate(w, title, templateName, data)
+}
+    
 ${renderFunctions}
 `;
 
@@ -128,7 +135,7 @@ ${renderFunctions}
                 }
         }
 
-        private static GenerateShowEditSnippet(endpoint: Endpoint, title: string, filePath: string, table: SqlTable) {
+        private static GenerateShowSnippet(endpoint: Endpoint, title: string, filePath: string, table: SqlTable) {
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '    ' + variablesFromPath;
 
@@ -141,6 +148,29 @@ ${variablesFromPath}
             return
         }
         renderPage(w, r, "${title}", "${filePath}", ${endpoint.go.real.name})
+    }
+}`;
+                return str.trim();
+        }
+
+        private static GenerateEditSnippet(endpoint: Endpoint, title: string, filePath: string, table: SqlTable) {
+                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n        ');
+                let funcParams = `repo *repositories.${endpoint.repo.type}, changeset *validation.Changeset[models.${endpoint.go.real.type}]`;
+
+                let str = `func ${endpoint.go.routerFuncName}(${funcParams}) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+    
+        if changeset == nil {
+            ${variablesFromPath}
+            ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${SnakeToCamel(table.singlePk!.value)}); 
+            if err != nil {
+                http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
+                return
+            }
+            newChangeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
+            changeset = &newChangeset
+        }
+        renderPage(w, r, "${title}", "${filePath}", changeset)
     }
 }`;
                 return str.trim();

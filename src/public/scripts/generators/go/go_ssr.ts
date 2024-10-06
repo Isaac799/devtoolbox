@@ -123,7 +123,7 @@ export class GoSSR extends CodeGenerator {
                 let attrInputsStr = show
                         .map((e) => {
                                 if (e.isPrimaryKey() || e.readOnly) {
-                                        return ` <p><strong>${SnakeToTitle(e.value)}:</strong> {{.Data.${SnakeToPascal(e.value)}}}</p>`;
+                                        return ` <p><strong>${SnakeToTitle(e.value)}:</strong> {{.Data.Record.${SnakeToPascal(e.value)}}}</p>`;
                                 } else {
                                         return SQL_TO_GO_TYPE[e.sqlType].htmlInputWithValueFunction(e, SnakeToPascal(e.value));
                                 }
@@ -151,17 +151,30 @@ export class GoSSR extends CodeGenerator {
             <a href="${urlHtml}">${title}</a>
         </li>
         <li>
-            <a href="${urlHtml}/{{ .Data.${pkProp} }}"> {{ .Data.${pkProp} }}</a>
+            <a href="${urlHtml}/{{ .Data.Record.${pkProp} }}"> {{ .Data.Record.${pkProp} }}</a>
         </li>
         <li class="is-active">
-            <a href="${urlHtml}/{{ .Data.${pkProp} }}/edit" aria-current="page">Edit</a>
+            <a href="${urlHtml}/{{ .Data.Record.${pkProp} }}/edit" aria-current="page">Edit</a>
         </li>
     </ul>
 </nav>
 
 <div class="container">
     <h1 class="title">Edit ${title}</h1>
-    <form action="${urlHtml}/{{ .Data.${pkProp} }}" method="POST">
+
+    {{ if .Data.Errors }}
+    <div class="notification is-danger">
+        <button class="delete"></button>
+        <strong>Errors:</strong>
+        <ul>
+            {{ range $key, $value := .Data.Errors }}
+            <li>{{ $key }}: {{ $value }}</li>
+            {{ end }}
+        </ul>
+    </div>
+    {{ end }}
+    
+    <form action="${urlHtml}/{{ .Data.Record.${pkProp} }}" method="POST">
         ${inputPUT}
        
         ${attrInputsStr}
@@ -204,7 +217,7 @@ export class GoSSR extends CodeGenerator {
                         Cancel
                     </button>
                     <form
-                        action="${urlHtml}/{{ .Data.${pkProp} }}"
+                        action="${urlHtml}/{{ .Data.Record.${pkProp} }}"
                         method="POST"
                         style="display: inline"
                     >
