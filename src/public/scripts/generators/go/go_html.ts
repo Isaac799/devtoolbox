@@ -119,7 +119,7 @@ func renderTemplate(w http.ResponseWriter, title, templateName string, data inte
     }
 }
 
-func renderChangesetPage(w http.ResponseWriter, _ *http.Request, title, templateName string, changeset *validation.Changeset[models.Product]) {
+func renderChangesetPage(w http.ResponseWriter, _ *http.Request, title, templateName string, changeset *validation.Changeset[models.${table.endpoints.create.single.go.real.type}]) {
     renderTemplate(w, title, templateName, changeset)
 }
 
@@ -170,14 +170,16 @@ ${variablesFromPath}
             newChangeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
             changeset = &newChangeset
         }
-        renderPage(w, r, "${title}", "${filePath}", changeset)
+        renderChangesetPage(w, r, "${title}", "${filePath}", changeset)
     }
 }`;
                 return str.trim();
         }
         private static GenerateNewSnippet(endpoint: Endpoint, title: string, filePath: string) {
-                let str = `func ${endpoint.go.routerFuncName}(w http.ResponseWriter, r *http.Request) {
-    renderPage(w, r, "${title}", "${filePath}", nil)
+                let str = `func ${endpoint.go.routerFuncName}(changeset *validation.Changeset[models.${endpoint.go.real.type}]) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        renderChangesetPage(w, r, "${title}", "${filePath}", changeset)
+    }
 }`;
                 return str.trim();
         }

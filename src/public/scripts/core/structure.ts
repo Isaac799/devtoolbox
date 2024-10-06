@@ -203,7 +203,9 @@ const boolRadioHtmlInputFunctionForGoWithValue: goHtmlInputFunctionWithValue = (
                     type="radio" 
                     value="true"
                     name="${x.value}"${x.isNullable() ? '' : '\n                    required'}
-                    {{if .Data.Record.${y}}}checked{{end}}
+                    {{ if .Data }}
+                        {{if .Data.Record.${y}}}checked{{end}}
+                    {{ else }}{{ end }}    
                 >
                 True
             </label>
@@ -212,7 +214,9 @@ const boolRadioHtmlInputFunctionForGoWithValue: goHtmlInputFunctionWithValue = (
                     type="radio" 
                     value="false"
                     name="${x.value}"
-                    {{if not .Data.Record.${y}}}checked{{end}}
+                    {{ if .Data }}
+                        {{if not .Data.Record.${y}}}checked{{end}}
+                    {{ else }}{{ end }}    
                 >
                 False
             </label>
@@ -247,9 +251,12 @@ function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunct
                             type="${SQL_TO_HTML_INPUT_TYPE[sqlT]}"
                             id="${x.value}"
                             name="${x.value}"
+                            {{ if .Data }}
                             ${x.isNullable() ? '' : 'required'}
                             ${y ? `value="{{ .Data.Record.${y} }}"` : ''}
                             ${rangePhrase}
+                            {{ else }}{{ end }}    
+
                         />
                     </div>
                 </div>`;
@@ -488,10 +495,12 @@ export class EndpointParam {
         validation: AttrValidation;
 
         readOnly: boolean = false;
+        systemField: boolean;
 
         constructor(attr: SqlTableAttribute, validation: AttrValidation, inOut: boolean = false) {
                 this.readOnly = attr.readOnly;
                 this.validation = validation;
+                this.systemField = attr.systemField;
 
                 let name = attr.value;
                 if (inOut) {
@@ -643,6 +652,7 @@ export class Endpoint {
                 let manyStrModifier = many ? 's' : '';
                 this.tableLabel = table.label;
 
+                // let changeSetName = SnakeToPascal(`new_${method.toLowerCase()}_changeset`);
                 let changeSetName = SnakeToPascal(`new_${method.toLowerCase()}_changeset`);
                 this.changeSetName = changeSetName;
 
@@ -837,6 +847,7 @@ export class SqlTableAttribute {
         parentTable: SqlTable;
         value: string;
         readOnly: boolean;
+        systemField: boolean;
         shortHandType: string;
         options: Set<string>;
         validation: AttrValidation;
@@ -848,13 +859,15 @@ export class SqlTableAttribute {
                 readOnly: boolean,
                 shortHandType: string,
                 options: Set<string>,
-                validation: AttrValidation
+                validation: AttrValidation,
+                systemField: boolean = false
         ) {
                 this.id = Math.random();
                 this.parentTable = parent;
                 this._sqlType = type;
                 this.value = value;
                 this.readOnly = readOnly;
+                this.systemField = systemField;
                 this.shortHandType = shortHandType;
                 this.options = options;
                 this.validation = validation;
@@ -1066,8 +1079,8 @@ export class SqlTable {
 
                 let createSingle = new Endpoint(HttpMethod.POST, this, false, this.singlePk);
                 createSingle.sql.inout = [...primaryInOutAttrs];
-                createSingle.sql.inputs = [...nonPrimaryAttrs];
-                createSingle.http.bodyIn = [...nonPrimaryAttrs];
+                createSingle.sql.inputs = [...nonPrimaryAttrs].filter((e) => !e.systemField);
+                createSingle.http.bodyIn = [...nonPrimaryAttrs].filter((e) => !e.systemField);
                 createSingle.sql.outputs = [...primaryInOutAttrs];
                 createSingle.http.bodyOut = [...allAttrs];
 
@@ -1094,8 +1107,8 @@ export class SqlTable {
 
                 let updateSingle = new Endpoint(HttpMethod.PUT, this, false, this.singlePk);
                 updateSingle.sql.inout = [...primaryInOutAttrs];
-                updateSingle.sql.inputs = [...nonPrimaryAttrs];
-                updateSingle.http.bodyIn = [...nonPrimaryAttrs];
+                updateSingle.sql.inputs = [...nonPrimaryAttrs].filter((e) => !e.readOnly && !e.systemField);
+                updateSingle.http.bodyIn = [...nonPrimaryAttrs].filter((e) => !e.readOnly && !e.systemField);
                 updateSingle.http.path = [...primaryAttrs];
 
                 updateSingle.sql.outputs = [];

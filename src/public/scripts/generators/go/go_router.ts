@@ -48,7 +48,7 @@ export class GoRouter extends CodeGenerator {
                                         }
                                         routes[_routes].push({
                                                 method: HttpMethod.GET,
-                                                handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncName}`,
+                                                handlerFunc: `${table.goPackageName}.${endpoint.go.routerFuncName}(nil)`,
                                         });
 
                                         _routes = `/api${endpoint.url.forRouter}`;
@@ -298,7 +298,7 @@ func serveAsset(w http.ResponseWriter, r *http.Request) {
         static GenerateImports(value: EndpointParam[], includeReadonly: boolean) {
                 let input = [...value];
                 if (!includeReadonly) {
-                        input = input.filter((e) => !e.readOnly);
+                        input = input.filter((e) => !e.readOnly && !e.systemField);
                 }
                 let imports = input.map((e) => e.go.stuff.importPackageForConversion);
                 return imports;

@@ -2,6 +2,18 @@ import { alignKeyword, alignKeywords, SnakeToPascal, SnakeToTitle } from '../../
 import { CodeGenerator, FileOutputs, SQL_TO_GO_TYPE, SqlTable } from '../../core/structure';
 
 export class GoSSR extends CodeGenerator {
+        private static readonly ChangesetErrorNotifications = `    {{ if .Data.Errors }}
+    <div class="notification is-danger">
+        <button class="delete"></button>
+        <strong>Errors:</strong>
+        <ul>
+            {{ range $key, $value := .Data.Errors }}
+            <li>{{ $key }}: {{ $value }}</li>
+            {{ end }}
+        </ul>
+    </div>
+    {{ end }}`;
+
         FormatStack(stack: string[]) {
                 let types = alignKeywords(
                         stack,
@@ -64,8 +76,8 @@ export class GoSSR extends CodeGenerator {
                 let show = Object.values(table.attributes);
 
                 let attrInputsStr = show
-                        .filter((e) => !e.isPrimaryKey())
-                        .map((e) => SQL_TO_GO_TYPE[e.sqlType].htmlInputFunction(e))
+                        .filter((e) => !e.isPrimaryKey() && !e.systemField)
+                        .map((e) => SQL_TO_GO_TYPE[e.sqlType].htmlInputWithValueFunction(e, SnakeToPascal(e.value)))
                         .join('\n        ');
 
                 let urlHtml = table.endpoints!.read.single.url.indexPage;
@@ -95,6 +107,13 @@ export class GoSSR extends CodeGenerator {
 
 <div class="container">
     <h1 class="title">${title} Form</h1>
+
+{{ if .Data }}
+    ${GoSSR.ChangesetErrorNotifications}
+{{ else }}
+
+{{ end }}    
+
     <form action="${urlHtml}" method="POST">
         
         ${attrInputsStr}
@@ -111,6 +130,7 @@ export class GoSSR extends CodeGenerator {
 
                 return str;
         }
+
         private static GenerateHtmlEdit(table: SqlTable): string {
                 let inputPUT = `<input type="hidden" name="_method" value="PUT" />`;
                 let inputDELETE = `<input type="hidden" name="_method" value="DELETE" />`;
@@ -162,17 +182,7 @@ export class GoSSR extends CodeGenerator {
 <div class="container">
     <h1 class="title">Edit ${title}</h1>
 
-    {{ if .Data.Errors }}
-    <div class="notification is-danger">
-        <button class="delete"></button>
-        <strong>Errors:</strong>
-        <ul>
-            {{ range $key, $value := .Data.Errors }}
-            <li>{{ $key }}: {{ $value }}</li>
-            {{ end }}
-        </ul>
-    </div>
-    {{ end }}
+    ${GoSSR.ChangesetErrorNotifications}
     
     <form action="${urlHtml}/{{ .Data.Record.${pkProp} }}" method="POST">
         ${inputPUT}

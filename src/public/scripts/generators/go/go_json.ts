@@ -1,4 +1,4 @@
-import { CodeGenerator, Endpoint } from '../../core/structure';
+import { CodeGenerator, Endpoint, SqlTable } from '../../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoJSON extends CodeGenerator {
@@ -80,7 +80,7 @@ export class GoJSON extends CodeGenerator {
                                                 method: 'delete',
                                         });
 
-                                        let str = GoJSON.CreateDeleteSnippet(endpoint);
+                                        let str = GoJSON.CreateDeleteSnippet(table, endpoint);
                                         allParts.push(str);
                                 }
 
@@ -159,7 +159,7 @@ import (
 }`;
                 return str;
         }
-        private static CreateDeleteSnippet(endpoint: Endpoint) {
+        private static CreateDeleteSnippet(table: SqlTable, endpoint: Endpoint) {
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '    ' + variablesFromPath;
 
@@ -167,10 +167,16 @@ import (
     return func(w http.ResponseWriter, r *http.Request) {
 ${variablesFromPath}    
 
-        changeset := repo.${endpoint.go.routerRepoName}(${endpoint.go.primaryKey.go.var.propertyAsVariable}); 
+        ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${endpoint.go.primaryKey.go.var.propertyAsVariable})
+        if err != nil {
+            http.Error(w, "record not found", http.StatusBadRequest)
+            return
+        }
+
+        changeset := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); 
         
         if !changeset.IsValid() {
-            http.Error(w, "Error deleting", http.StatusInternalServerError)
+            ${table.endpoints!.update.single.go.routerFuncName}(repo, changeset)(w, r)
             return
         }
 

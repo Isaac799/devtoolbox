@@ -158,10 +158,9 @@ import (
                 let bodyAttrs = endpoint.http.bodyIn.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`);
                 let inputs = [...pathAttrs, ...bodyAttrs].join(', ');
                 let returns = `*validation.Changeset[models.${endpoint.go.real.type}]`;
+                let funcParams = `${endpoint.go.real.name} *models.${endpoint.go.real.type}`;
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${
-                        endpoint.go.real.type
-                }) ${returns} {
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${funcParams}) ${returns} {
     changeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
 
     if !changeset.IsValid() {
@@ -201,14 +200,13 @@ import (
         }
 
         private static GenerateDeleteSnippet(endpoint: Endpoint) {
-                let inputs = endpoint.http.path.map((e) => `${e.go.var.propertyAsVariable}`).join(', ');
-                let paramFromRouter = `${endpoint.go.primaryKey.go.var.propertyAsVariable} ${endpoint.go.primaryKey.go.var.propertyGoType}`;
+                let inputs = endpoint.http.path.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
                 let returns = `*validation.Changeset[models.${endpoint.go.real.type}]`;
+                let funcParams = `${endpoint.go.real.name} *models.${endpoint.go.real.type}`;
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${paramFromRouter}) ${returns} {
-    ${endpoint.go.real.name} := models.${endpoint.go.real.type}{
-        ${endpoint.go.primaryKey.go.var.propertyName}: ${endpoint.go.primaryKey.go.var.propertyAsVariable},
-    }
+                // let paramFromRouter = `${endpoint.go.primaryKey.go.var.propertyAsVariable} ${endpoint.go.primaryKey.go.var.propertyGoType}`;
+
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${funcParams}) ${returns} {
     changeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
 
     if !changeset.IsValid() {

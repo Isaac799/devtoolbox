@@ -399,16 +399,34 @@ export class InputParser {
                 newTable.options = options.options;
 
                 if (newTable.options.includes('@')) {
-                        let attr = new SqlTableAttribute(newTable, SqlType.TIMESTAMP, 'record_created_on', true, 'ts', new Set(['!']), {
-                                required: true,
-                        });
+                        let attr = new SqlTableAttribute(
+                                newTable,
+                                SqlType.TIMESTAMP,
+                                'record_created_on',
+                                true,
+                                'ts',
+                                new Set(['!']),
+                                {
+                                        required: true,
+                                },
+                                true
+                        );
                         attr.defaultValue = 'CURRENT_TIMESTAMP';
                         newTable.attributes[attr.value] = attr;
                 }
                 if (newTable.options.includes('+')) {
-                        let attr = new SqlTableAttribute(newTable, SqlType.SERIAL, 'id', true, 'i', new Set(['!', '+']), {
-                                required: true,
-                        });
+                        let attr = new SqlTableAttribute(
+                                newTable,
+                                SqlType.SERIAL,
+                                'id',
+                                true,
+                                'i',
+                                new Set(['!', '+']),
+                                {
+                                        required: true,
+                                },
+                                true
+                        );
                         newTable.attributes[attr.value] = attr;
                 }
                 return newTable;

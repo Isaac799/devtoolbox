@@ -1,5 +1,5 @@
 import { alignKeyword, alignKeywords, SnakeToPascal } from '../../core/formatting';
-import { CodeGenerator, Endpoint, EndpointParam, HttpMethod, SQL_TO_GO_TYPE } from '../../core/structure';
+import { CodeGenerator, Endpoint, EndpointParam, SQL_TO_GO_TYPE } from '../../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoPkgModel extends CodeGenerator {
@@ -88,17 +88,18 @@ import "myapp/pkg/validation"
                 let firstLetter = endpoint.go.real.name[0];
 
                 let phrases = items
+                        .filter((e) => !e.systemField)
                         .filter((e) => e.validation.range)
                         .map((e) => {
                                 // if deleting we do not really use atm
-                                if (endpoint.method === HttpMethod.DELETE) {
-                                        return `// ${e.go.var.propertyName} validation optional on delete`;
-                                }
+                                // if (endpoint.method === HttpMethod.DELETE) {
+                                //         return `// ${e.go.var.propertyName} validation optional on delete`;
+                                // }
 
-                                // if updating we only care about the fields we will change, the non readonly ones
-                                if (endpoint.method === HttpMethod.PUT && e.readOnly) {
-                                        return `// ${e.go.var.propertyName} is 'readonly', not changing on update or needing validation`;
-                                }
+                                // // if updating we only care about the fields we will change, the non readonly ones
+                                // if (endpoint.method === HttpMethod.PUT && e.readOnly) {
+                                //         return `// ${e.go.var.propertyName} is 'readonly', not changing on update or needing validation`;
+                                // }
 
                                 let str = '';
                                 let errTitle = e.go.var.propertyAsVariable;

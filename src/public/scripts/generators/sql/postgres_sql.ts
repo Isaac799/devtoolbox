@@ -519,7 +519,8 @@ $$;`;
 
         static GenerateACreateEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {
                 const into = endpoint.sql.inputs.map((e) => `${e.sql.sqlLocation.column}`).join(',\n    ');
-                const values = endpoint.sql.inputs.map((e, i) => (withPlaceholders ? `$${i + 1}` : `${e.sql.name}`)).join(',\n    ');
+                let defaultCount = 0;
+                const values = endpoint.sql.inputs.map((e, i) => (withPlaceholders ? `$${i + 1 - defaultCount}` : `${e.sql.name}`)).join(',\n    ');
                 const returning = endpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`).join(', ');
 
                 let procedure = `
@@ -557,16 +558,15 @@ WHERE ${where};`;
         static GenerateAUpdateEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {
                 const whereEquals = endpoint.sql.inout.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${i + 1}` : e.sql.name}`);
                 let whereClauses = whereEquals.length + 1;
+                let setting = endpoint.sql.inputs.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${whereClauses + i}` : e.sql.name}`);
 
                 const whereEqualsAligned = alignKeyword(whereEquals, '=');
                 let where = `\n    ${SqlGenerator.JoinAnd(whereEqualsAligned)}`;
                 where = `\n    ${where}`;
 
+                console.log('endpoint.sql.inputs :>> ', endpoint.sql.inputs);
                 let procedure = `SET 
-    ${alignKeyword(
-            endpoint.sql.inputs.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${whereClauses + i}` : e.sql.name}`),
-            '='
-    ).join(',\n    ')}
+    ${alignKeyword(setting, '=').join(',\n    ')}
 WHERE ${where};`;
 
                 let start = `UPDATE ${endpoint.tableFullName} `;

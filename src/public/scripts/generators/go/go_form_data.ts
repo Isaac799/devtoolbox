@@ -26,10 +26,11 @@ export class GoFormData extends CodeGenerator {
                                 if (!table.endpoints) continue;
 
                                 let allParts: string[] = [];
-                                importsParts = importsParts.concat(GoRouter.GenerateImports(table.is, true));
+                                // importsParts = importsParts.concat(GoRouter.GenerateImports(table.is, true));
 
                                 {
                                         const endpoint = table.endpoints.create.single;
+                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
 
                                         goEndpoints.push({
                                                 name: endpoint.go.fnName,
@@ -41,6 +42,7 @@ export class GoFormData extends CodeGenerator {
                                 }
                                 {
                                         const endpoint = table.endpoints.update.single;
+                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
 
                                         goEndpoints.push({
                                                 name: endpoint.go.fnName,
@@ -52,6 +54,7 @@ export class GoFormData extends CodeGenerator {
                                 }
                                 {
                                         const endpoint = table.endpoints.delete.single;
+                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
 
                                         goEndpoints.push({
                                                 name: endpoint.go.fnName,
@@ -94,6 +97,8 @@ import (
                 let idFromChangeset = `changeset.Record.${endpoint.go.primaryKey.go.var.propertyName}`;
                 let redirectId = endpoint.go.primaryKey.go.stuff.toStringFunction(idFromChangeset);
 
+                console.log('endpoint.http.bodyIn :>> ', endpoint.http.bodyIn);
+
                 let str = `func ${endpoint.go.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {${variablesFromPath}    
         if err := r.ParseForm(); err != nil {
@@ -101,14 +106,14 @@ import (
             return
         }      
 
-        ${GoFormData.ParseFromForm(endpoint.http.bodyIn, true)}
+        ${GoFormData.ParseFromForm(endpoint.http.bodyIn)}
 
         ${GoFormData.BuildVarFromTheForm(table, endpoint, true)}
 
         changeset := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); 
         
         if !changeset.IsValid() {
-            http.Error(w, "Error creating", http.StatusInternalServerError)
+            ${table.endpoints!.create.single.go.routerFuncName}(changeset)(w, r)
             return
         }
 
@@ -122,6 +127,9 @@ import (
         private static GenerateUpdateSnippet(table: SqlTable, endpoint: Endpoint) {
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 variablesFromPath = '\n    ' + variablesFromPath;
+                let setVarsFromGottenRecord = endpoint.http.bodyIn
+                        .map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName} = ${e.go.var.propertyAsVariable}`)
+                        .join('\n    ');
 
                 let str = `func ${endpoint.go.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {${variablesFromPath}    
@@ -130,14 +138,20 @@ import (
             return
         }      
 
-        ${GoFormData.ParseFromForm(endpoint.http.bodyIn, false)}
+        ${GoFormData.ParseFromForm(endpoint.http.bodyIn)}
 
-        ${GoFormData.BuildVarFromTheForm(table, endpoint, false)}
+        ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${endpoint.go.primaryKey.go.var.propertyAsVariable})
+        if err != nil {
+            http.Error(w, "record not found", http.StatusBadRequest)
+            return
+        }
 
-        changeset := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name});
+        ${setVarsFromGottenRecord}
+
+        changeset := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); 
         
         if !changeset.IsValid() {
-            ${endpoint.go.routerFuncName}(repo, changeset)(w, r)
+            ${table.endpoints!.update.single.go.routerFuncName}(repo, changeset)(w, r)
             return
         }
 
@@ -156,7 +170,13 @@ import (
     return func(w http.ResponseWriter, r *http.Request) {
 ${variablesFromPath}    
 
-        changeset := repo.${endpoint.go.routerRepoName}(${endpoint.go.primaryKey.go.var.propertyAsVariable}); 
+        ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${endpoint.go.primaryKey.go.var.propertyAsVariable})
+        if err != nil {
+            http.Error(w, "record not found", http.StatusBadRequest)
+            return
+        }
+
+        changeset := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); 
         
         if !changeset.IsValid() {
             ${table.endpoints!.update.single.go.routerFuncName}(repo, changeset)(w, r)
@@ -191,7 +211,7 @@ ${variablesFromPath}
                 // let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
                 // variablesFromPath = '\n    ' + variablesFromPath;
 
-                for (const attr of table.is) {
+                for (const attr of endpoint.http.bodyIn) {
                         if (attr.sql.name === table.singlePk.value) {
                                 if (!forCreate && endpoint.method !== HttpMethod.POST) {
                                         stack.push(`    ${attr.go.var.propertyName}: ${attr.go.var.propertyAsVariable},`);
@@ -199,7 +219,7 @@ ${variablesFromPath}
                                 continue;
                         }
 
-                        if (!forCreate && attr.readOnly) continue;
+                        if (!forCreate && (attr.readOnly || attr.systemField)) continue;
 
                         // stack.push(`    ${attr.go.typeName}: r.FormValue("${attr.sql.name}"),`);
                         stack.push(`    ${attr.go.var.propertyName}: ${attr.go.var.propertyAsVariable},`);
@@ -214,12 +234,8 @@ ${variablesFromPath}
                 return fileContent;
         }
 
-        private static ParseFromForm(value: EndpointParam[], forCreate: boolean) {
-                let items = [...value];
-                if (!forCreate) {
-                        items = items.filter((e) => !e.readOnly);
-                }
-                return items
+        private static ParseFromForm(value: EndpointParam[]) {
+                return value
                         .map(
                                 (e) =>
                                         e.go.var.propertyGoType === 'string'
@@ -227,8 +243,8 @@ ${variablesFromPath}
                                                 : `    ${e.go.var.propertyAsVariable}Str := r.FormValue("${e.sql.name}") 
         ${e.go.var.propertyAsVariable}, err := ${e.go.stuff.parseFunction(`${e.go.var.propertyAsVariable}Str`)}
            if err != nil {
-           // http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
-           // return
+            http.Error(w, "Invalid ${e.sql.name}", http.StatusBadRequest)
+            return
         }`
 
                                 //     `${e.go.var.varName}Str := r.URL.Query().Get("${e.sql.name}")
