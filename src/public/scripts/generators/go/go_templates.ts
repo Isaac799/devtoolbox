@@ -9,6 +9,7 @@ export class GoTemplates extends CodeGenerator {
                         '/web/templates/navbar.html': this.GenerateNavigationBar(),
                         '/web/templates/show.home.html': GoTemplates.homeHtml,
                         '/web/static/bulma.js': GoTemplates.bulmaJs,
+                        '/web/static/smartForm.js': GoTemplates.smartForm,
                 };
                 return this;
         }
@@ -155,6 +156,7 @@ ${htmlLinks}
         />
         <link rel="stylesheet" href="/assets/style.css" />
         <script src="/assets/bulma.js"></script>
+        <script src="/assets/smartForm.js"></script>
         <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
     </head>
     <body>
@@ -163,36 +165,155 @@ ${htmlLinks}
 </html>
 `;
 
-        private static readonly bulmaJs = `document.addEventListener("DOMContentLoaded", () => {
+        private static readonly smartForm = `document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector("form");
+    
+    // Check if the form exists
+    if (!form) {
+        console.info("Form element not found.");
+        return;
+    }
+
+    const inputs = form.querySelectorAll("input, textarea, select");
+    const formUrl = window.location.pathname; // Get the current URL path
+
+    const storageKey = (name) => \`\${formUrl}-\${name}\`;
+
+    const saveToLocalStorage = (name, value) => {
+        try {
+            const data = { value, timestamp: Date.now() };
+            localStorage.setItem(storageKey(name), JSON.stringify(data));
+        } catch (error) {
+            console.error(\`Error saving to localStorage: \${error.message}\`);
+        }
+    };
+
+    const loadFromLocalStorage = (input) => {
+        try {
+            const savedData = localStorage.getItem(storageKey(input.name));
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                if (
+                    parsedData &&
+                    Date.now() - parsedData.timestamp < 48 * 60 * 60 * 1000
+                ) {
+                    input.value = parsedData.value;
+                }
+            }
+        } catch (error) {
+            console.error(\`Error loading from localStorage for \${input.name}: \${error.message}\`);
+        }
+    };
+
+    const clearLocalStorage = () => {
+        inputs.forEach((input) => {
+            try {
+                localStorage.removeItem(storageKey(input.name));
+            } catch (error) {
+                console.error(\`Error clearing localStorage for \${input.name}: \${error.message}\`);
+            }
+        });
+    };
+
+    // Restore data from local storage
+    inputs.forEach((input) => {
+        loadFromLocalStorage(input);
+        input.addEventListener("input", () =>
+            saveToLocalStorage(input.name, input.value)
+        );
+    });
+
+    // Clear local storage after submission
+    form.addEventListener("submit", (event) => {
+        clearLocalStorage();
+        // Optionally, you could perform a form submission here
+        console.log("Form submitted. Local storage cleared.");
+    });
+
+    // Function to clear local storage and refresh the window
+    const resetForm = () => {
+        clearLocalStorage();
+        form.reset();
+        window.location.reload(); // Refresh the window
+    };
+
+    const resetButton = document.getElementById("reset-form");
+    if (resetButton) {
+        resetButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            resetForm();
+        });
+    }
+});
+
+`;
+
+        private static readonly bulmaJs = `
+document.addEventListener("DOMContentLoaded", () => {
+    // Navbar Burger functionality
     const burger = document.querySelector(".navbar-burger");
     const menu = document.querySelector("#navbar");
 
-    if (burger) {
+    if (burger && menu) {
         burger.addEventListener("click", () => {
             burger.classList.toggle("is-active");
             menu.classList.toggle("is-active");
         });
+    } else {
+        console.error("Navbar burger or menu not found.");
     }
 
-  (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
-    const $notification = $delete.parentNode;
+    // Notification delete functionality
+    const notificationDeletes = document.querySelectorAll('.notification .delete');
 
-    $delete.addEventListener('click', () => {
-      $notification.parentNode.removeChild($notification);
-    });
-  });
+    if (notificationDeletes.length > 0) {
+        notificationDeletes.forEach(($delete) => {
+            const $notification = $delete.parentNode;
+
+            $delete.addEventListener('click', () => {
+                if ($notification && $notification.parentNode) {
+                    $notification.parentNode.removeChild($notification);
+                } else {
+                    console.error("Notification or parent node not found.");
+                }
+            });
+        });
+    }
+
 });
 
+// Function to open confirmation delete modal
 function openConfirmDeleteModal() {
-    document.getElementById("confirmModal").classList.add("is-active");
+    const modal = document.getElementById("confirmModal");
+    if (modal) {
+        modal.classList.add("is-active");
+        // Confirm delete action
+        const confirmDeleteButton = document.getElementById("confirmDelete");
+        if (confirmDeleteButton) {
+            confirmDeleteButton.onclick = function () {
+                const deleteForm = document.getElementById("deleteForm");
+                if (deleteForm) {
+                    deleteForm.submit();
+                } else {
+                    console.error("Delete form not found.");
+                }
+            };
+        } else {
+            console.error("Confirm delete button not found.");
+        }
+    } else {
+        console.error("Confirm modal not found.");
+    }
 }
 
+// Function to close confirmation delete modal
 function closeConfirmDeleteModal() {
-    document.getElementById("confirmModal").classList.remove("is-active");
+    const modal = document.getElementById("confirmModal");
+    if (modal) {
+        modal.classList.remove("is-active");
+    } else {
+        console.error("Confirm modal not found.");
+    }
 }
-
-document.getElementById("confirmDelete").onclick = function () {
-    document.getElementById("deleteForm").submit();
-};
 `;
 }

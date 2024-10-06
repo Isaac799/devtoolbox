@@ -177,7 +177,7 @@ type goHtmlInputFunction = (x: SqlTableAttribute) => string;
 type goHtmlInputFunctionWithValue = (x: SqlTableAttribute, setValueToThisAttribute: string) => string;
 
 const boolRadioHtmlInputFunctionForGo: goHtmlInputFunction = (x) => `<fieldset class="control">
-            <legend>${SnakeToPascal(x.value)}:</legend>
+            <legend><strong>${SnakeToPascal(x.value)}:</strong></legend>
             <label class="radio">
                 <input
                     type="radio" 
@@ -197,7 +197,7 @@ const boolRadioHtmlInputFunctionForGo: goHtmlInputFunction = (x) => `<fieldset c
         </fieldset>`;
 
 const boolRadioHtmlInputFunctionForGoWithValue: goHtmlInputFunctionWithValue = (x, y) => `<fieldset class="control">
-            <legend>${SnakeToPascal(x.value)}:</legend>
+            <legend><strong>${SnakeToPascal(x.value)}:</strong></legend>
             <label class="radio">
                 <input
                     type="radio" 
@@ -254,8 +254,8 @@ function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunct
                             {{ if .Data }}
                             ${x.isNullable() ? '' : 'required'}
                             ${y ? `value="{{ .Data.Record.${y} }}"` : ''}
-                            ${rangePhrase}
                             {{ else }}{{ end }}    
+                            ${rangePhrase}
 
                         />
                     </div>

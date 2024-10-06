@@ -143,7 +143,7 @@ export class GoSSR extends CodeGenerator {
                 let attrInputsStr = show
                         .map((e) => {
                                 if (e.isPrimaryKey() || e.readOnly) {
-                                        return ` <p><strong>${SnakeToTitle(e.value)}:</strong> {{.Data.Record.${SnakeToPascal(e.value)}}}</p>`;
+                                        return ` <p class="pb-2"><strong>${SnakeToTitle(e.value)}:</strong> {{.Data.Record.${SnakeToPascal(e.value)}}}</p>`;
                                 } else {
                                         return SQL_TO_GO_TYPE[e.sqlType].htmlInputWithValueFunction(e, SnakeToPascal(e.value));
                                 }
@@ -189,7 +189,8 @@ export class GoSSR extends CodeGenerator {
        
         ${attrInputsStr}
 
-        <div class="buttons">
+        <div class="buttons pt-4">
+            <button class="button is-info" id="reset-form">Reset Form</button>
             <button class="button is-primary" type="submit">Save Changes</button>
         </div>
     </form>
@@ -318,7 +319,9 @@ export class GoSSR extends CodeGenerator {
                 let urlHtml = table.endpoints!.read.single.url.indexPage;
                 let pkProp = table.endpoints?.read.single.go.primaryKey.go.var.propertyName;
 
-                let attrsStr = show.map((e) => ` <p><strong>${SnakeToTitle(e.sql.name)}:</strong> {{.Data.${e.go.var.propertyName}}}</p>`).join('\n        ');
+                let attrsStr = show
+                        .map((e) => ` <p class="pb-2"><strong>${SnakeToTitle(e.sql.name)}:</strong> {{.Data.${e.go.var.propertyName}}}</p>`)
+                        .join('\n        ');
 
                 let str = `{{ define "content" }}
 
