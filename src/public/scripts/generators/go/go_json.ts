@@ -1,4 +1,3 @@
-import { SnakeToCamel } from '../../core/formatting';
 import { CodeGenerator, Endpoint } from '../../core/structure';
 import { GoRouter } from './go_router';
 
@@ -114,6 +113,9 @@ import (
         }
 
         private static GenerateCreateSnippet(endpoint: Endpoint) {
+                let idFromChangeset = `changeset.Record.${endpoint.go.primaryKey.go.var.propertyName}`;
+                let redirectId = endpoint.go.primaryKey.go.stuff.toStringFunction(idFromChangeset);
+
                 let str = `func ${endpoint.go.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var ${endpoint.go.real.name} models.${endpoint.go.real.type}
@@ -122,16 +124,14 @@ import (
             return
         }
 
-        ${endpoint.go.primaryKey.go.var.propertyAsVariable}, err := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); 
+        changeset := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); 
         
-        if err != nil {
-            http.Error(w, "Error processing: "+err.Error(), http.StatusInternalServerError)
+        if !changeset.IsValid() {
+            http.Error(w, "Error creating", http.StatusInternalServerError)
             return
         }
 
-        redirectPath := strings.Join([]string{"${endpoint.url.apiIndexPage}", ${endpoint.go.primaryKey.go.stuff.toStringFunction(
-                        endpoint.go.primaryKey.go.var.propertyAsVariable
-                )}}, "/")
+        redirectPath := strings.Join([]string{"${endpoint.url.indexPage}", ${redirectId}}, "/")
         http.Redirect(w, r, redirectPath, http.StatusSeeOther)
     }
 }`;
@@ -146,9 +146,11 @@ import (
             http.Error(w, err.Error(), http.StatusBadRequest)
             return
         }
-
-        if err := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name}); err != nil {
-            http.Error(w, "Error processing: "+err.Error(), http.StatusInternalServerError)
+            
+        changeset := repo.${endpoint.go.routerRepoName}(&${endpoint.go.real.name});
+        
+        if !changeset.IsValid() {
+            http.Error(w, "Error updating", http.StatusInternalServerError)
             return
         }
 
@@ -165,8 +167,10 @@ import (
     return func(w http.ResponseWriter, r *http.Request) {
 ${variablesFromPath}    
 
-        if err := repo.${endpoint.go.routerRepoName}(${SnakeToCamel(endpoint.go.primaryKey.go.var.propertyAsVariable)}); err != nil {
-            http.Error(w, "Error deleting: "+err.Error(), http.StatusInternalServerError)
+        changeset := repo.${endpoint.go.routerRepoName}(${endpoint.go.primaryKey.go.var.propertyAsVariable}); 
+        
+        if !changeset.IsValid() {
+            http.Error(w, "Error deleting", http.StatusInternalServerError)
             return
         }
 

@@ -629,6 +629,8 @@ export class Endpoint {
         private tableLabel: string;
         tableFullName: string;
 
+        changeSetName: string;
+
         filePath = (kind: 'show' | 'new' | 'edit' | 'index') => {
                 let endpointPath = `/web/templates/${this.tableLabel}/${kind}.html`;
                 // let endpointPath = `/templates/${this.sqlSchemaName}/${this.sqlTableName}/${kind}.html`;
@@ -640,6 +642,9 @@ export class Endpoint {
                 this.tableFullName = table.fullName;
                 let manyStrModifier = many ? 's' : '';
                 this.tableLabel = table.label;
+
+                let changeSetName = SnakeToPascal(`new_${method.toLowerCase()}_changeset`);
+                this.changeSetName = changeSetName;
 
                 // this.routerFuncApiName = SnakeToPascal(`api_${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
 

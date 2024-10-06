@@ -203,7 +203,6 @@ export class InputParser {
                 let attrValidation: AttrValidation = {
                         required: false,
                 };
-                let isPartOfValidation = false;
 
                 for (let i = 0; i < remainingItems.length; i++) {
                         let option = remainingItems[i];
@@ -217,7 +216,6 @@ export class InputParser {
                         let range = parseRange(option);
                         if (!range) continue;
                         attrValidation.range = range;
-                        isPartOfValidation = true;
                 }
 
                 function parseRange(input: string): RangeResult | null {
@@ -235,7 +233,7 @@ export class InputParser {
                 }
 
                 return {
-                        options: isPartOfValidation ? [] : relevantRemainingItems,
+                        options: relevantRemainingItems,
                         validation: attrValidation,
                 };
         }
@@ -298,6 +296,8 @@ export class InputParser {
                         new Set([...validOptions]),
                         options.validation
                 );
+
+                attribute.validation.required = !attribute.isNullable();
 
                 // TODO improve default validation
 
@@ -538,7 +538,7 @@ export class InputParser {
                         newAttribute.referenceTo = referenceTo;
                         newAttribute.referenceToSelf = referenceToSelf;
                         newAttribute.defaultValue = defaultValue;
-                        newAttribute.validation.required = !newAttribute.isNullable();
+                        newAttribute.validation.required = attr.validation.required;
 
                         answer.push(newAttribute);
                 }

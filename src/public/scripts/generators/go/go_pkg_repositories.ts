@@ -1,5 +1,4 @@
-import { GoCommentItOut } from '../../core/formatting';
-import { CodeGenerator, Endpoint, EndpointParam, SqlTable } from '../../core/structure';
+import { CodeGenerator, Endpoint, SqlTable } from '../../core/structure';
 import { SqlGenerator } from './../sql/postgres_sql';
 
 export class GoPkgRepositories extends CodeGenerator {
@@ -10,13 +9,9 @@ export class GoPkgRepositories extends CodeGenerator {
 
 import (
     "database/sql"
+    "myapp/pkg/validation"
     "myapp/pkg/models"
 )`;
-
-                let goEndpoints: {
-                        name: string;
-                        method: 'get' | 'put' | 'post' | 'delete';
-                }[] = [];
 
                 for (const schemaName in schemas) {
                         if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
@@ -44,56 +39,26 @@ import (
 
                                 {
                                         const endpoint = table.endpoints.create.single;
-
-                                        goEndpoints.push({
-                                                name: endpoint.go.fnName,
-                                                method: 'post',
-                                        });
-
-                                        let str = GoPkgRepositories.GenerateCreateSnippet(endpoint, table);
+                                        let str = GoPkgRepositories.GenerateCreateSnippet(endpoint);
                                         allParts.push(str);
                                 }
                                 {
                                         const endpoint = table.endpoints.read.single;
-
-                                        goEndpoints.push({
-                                                name: endpoint.go.fnName,
-                                                method: 'get',
-                                        });
-
                                         let str = GoPkgRepositories.GenerateReadSingleSnippet(endpoint, table);
                                         allParts.push(str);
                                 }
                                 {
                                         const endpoint = table.endpoints.read.many;
-
-                                        goEndpoints.push({
-                                                name: endpoint.go.fnName,
-                                                method: 'get',
-                                        });
-
                                         let str = GoPkgRepositories.GenerateReadManySnippet(endpoint, table);
                                         allParts.push(str);
                                 }
                                 {
                                         const endpoint = table.endpoints.update.single;
-
-                                        goEndpoints.push({
-                                                name: endpoint.go.fnName,
-                                                method: 'put',
-                                        });
-
-                                        let str = GoPkgRepositories.GenerateUpdateSnippet(endpoint, table);
+                                        let str = GoPkgRepositories.GenerateUpdateSnippet(endpoint);
                                         allParts.push(str);
                                 }
                                 {
                                         const endpoint = table.endpoints.delete.single;
-
-                                        goEndpoints.push({
-                                                name: endpoint.go.fnName,
-                                                method: 'delete',
-                                        });
-
                                         let str = GoPkgRepositories.GenerateDeleteSnippet(endpoint);
                                         allParts.push(str);
                                 }
@@ -102,61 +67,42 @@ import (
                         }
                 }
 
-                this.output['/pkg/repositories/validation.go'] = GoPkgRepositories.validationTools;
-
                 return this;
         }
 
-        private static readonly validationTools = `package repositories
-        
-import "fmt"        
-        
-// ValidateNumber checks if the number is within the specified range (inclusive).
-func ValidateNumber(num, min, max int) error {
-    if num < min || num > max {
-        return fmt.Errorf("number %d is out of range (%d to %d)", num, min, max)
-    }
-    return nil
-}
-
-// ValidateString checks if the string length is within the specified limits (inclusive).
-func ValidateString(s string, minLen, maxLen int) error {
-    length := len(s)
-    if length < minLen || length > maxLen {
-        return fmt.Errorf("string length %d is out of bounds (%d to %d)", length, minLen, maxLen)
-    }
-    return nil
-}
-        
-// ValidateFloat64 checks if the float64 number is within the specified range (inclusive).
-func ValidateFloat64(num float64, min, max float64) error {
-    if num < min || num > max {
-        return fmt.Errorf("float %f is out of range (%f to %f)", num, min, max)
-    }
-    return nil
-}`;
-
-        private static GenerateCreateSnippet(endpoint: Endpoint, table: SqlTable) {
+        private static GenerateCreateSnippet(endpoint: Endpoint) {
                 let inputsForQuery = endpoint.http.bodyIn.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
                 let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
-                let returnStuff = endpoint.sql.outputs.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let returns = `*validation.Changeset[models.${endpoint.go.real.type}]`;
 
-                let validation = GoPkgRepositories.BuildVarValidation(endpoint, table.is, true, true);
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${
+                        endpoint.go.real.type
+                }) ${returns} {
+    changeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
 
-                // because we declare err in the validation
-                let queryRowPhrase = '';
-                if (validation.count > 0) {
-                        queryRowPhrase = `err = repo.DB.QueryRow(query, ${inputsForQuery}).Scan(${scanInto})`;
-                } else {
-                        queryRowPhrase = `err := repo.DB.QueryRow(query, ${inputsForQuery}).Scan(${scanInto})`;
-                }
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${endpoint.go.real.type}) (${
-                        endpoint.go.primaryKey.go.var.propertyGoType
-                }, error) {
-    ${validation.phrase}                
+    if !changeset.IsValid() {
+        return &changeset
+    }
+
+    tx, err := repo.DB.Begin()
+    if err != nil {
+        changeset.Errors["transaction"] = err.Error()
+        return &changeset
+    }
+                
     query := \`${SqlGenerator.GenerateACreateEndpoint(endpoint, true)}\`
-    ${queryRowPhrase}
-    return ${returnStuff}, err
+
+    if err := tx.QueryRow(query, ${inputsForQuery}).Scan(${scanInto}); err != nil {
+        if rollbackErr := tx.Rollback(); rollbackErr != nil {
+            changeset.Errors["rollback"] = rollbackErr.Error()
+        }
+        changeset.Errors["postgres"] = err.Error()
+        return &changeset
+    }
+    if err := tx.Commit(); err != nil {
+        changeset.Errors["commit"] = err.Error()
+    }
+    return &changeset
 }`;
                 return str.trim();
         }
@@ -206,26 +152,50 @@ func ValidateFloat64(num float64, min, max float64) error {
                 return str.trim();
         }
 
-        private static GenerateUpdateSnippet(endpoint: Endpoint, table: SqlTable) {
+        private static GenerateUpdateSnippet(endpoint: Endpoint) {
                 // here as its the repo we want id in the body too, so we treat it the same
                 let pathAttrs = endpoint.http.path.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`);
                 let bodyAttrs = endpoint.http.bodyIn.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`);
                 let inputs = [...pathAttrs, ...bodyAttrs].join(', ');
-                let validation = GoPkgRepositories.BuildVarValidation(endpoint, table.is, true, false);
+                let returns = `*validation.Changeset[models.${endpoint.go.real.type}]`;
 
-                // because we declare err in the validation
-                let queryRowPhrase = '';
-                if (validation.count > 0) {
-                        queryRowPhrase = `_, err = repo.DB.Exec(query, ${inputs})`;
-                } else {
-                        queryRowPhrase = `_, err := repo.DB.Exec(query, ${inputs})`;
-                }
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${
+                        endpoint.go.real.type
+                }) ${returns} {
+    changeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${endpoint.go.real.name} *models.${endpoint.go.real.type}) error {
-    ${validation.phrase}                
+    if !changeset.IsValid() {
+        return &changeset
+    }
+
+    tx, err := repo.DB.Begin()
+    if err != nil {
+        changeset.Errors["transaction"] = err.Error()
+        return &changeset
+    }
+                
     query := \`${SqlGenerator.GenerateAUpdateEndpoint(endpoint, true)}\`
-    ${queryRowPhrase}
-    return err
+
+    result, err := tx.Exec(query, ${inputs}); 
+    if err != nil {
+        if rollbackErr := tx.Rollback(); rollbackErr != nil {
+            changeset.Errors["rollback"] = rollbackErr.Error()
+        }
+        changeset.Errors["postgres"] = err.Error()
+        return &changeset
+    }
+
+    rowsAffected, err := result.RowsAffected()
+    if err != nil {
+        changeset.Errors["rowsAffected"] = err.Error()
+    } else if rowsAffected == 0 {
+        changeset.Errors["notFound"] = "no ${endpoint.go.real.name} record found with the given ${endpoint.go.primaryKey.go.var.propertyAsVariable}."
+    }
+
+    if err := tx.Commit(); err != nil {
+        changeset.Errors["commit"] = err.Error()
+    }
+    return &changeset
 }`;
                 return str.trim();
         }
@@ -233,67 +203,47 @@ func ValidateFloat64(num float64, min, max float64) error {
         private static GenerateDeleteSnippet(endpoint: Endpoint) {
                 let inputs = endpoint.http.path.map((e) => `${e.go.var.propertyAsVariable}`).join(', ');
                 let paramFromRouter = `${endpoint.go.primaryKey.go.var.propertyAsVariable} ${endpoint.go.primaryKey.go.var.propertyGoType}`;
+                let returns = `*validation.Changeset[models.${endpoint.go.real.type}]`;
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${paramFromRouter}) error {
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${paramFromRouter}) ${returns} {
+    ${endpoint.go.real.name} := models.${endpoint.go.real.type}{
+        ${endpoint.go.primaryKey.go.var.propertyName}: ${endpoint.go.primaryKey.go.var.propertyAsVariable},
+    }
+    changeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
+
+    if !changeset.IsValid() {
+        return &changeset
+    }
+
+    tx, err := repo.DB.Begin()
+    if err != nil {
+        changeset.Errors["transaction"] = err.Error()
+        return &changeset
+    }
+                
     query := \`${SqlGenerator.GenerateADeleteEndpoint(endpoint, true)}\`
-    _, err := repo.DB.Exec(query, ${inputs})
-    return err
+
+    result, err := tx.Exec(query, ${inputs}); 
+    if err != nil {
+        if rollbackErr := tx.Rollback(); rollbackErr != nil {
+            changeset.Errors["rollback"] = rollbackErr.Error()
+        }
+        changeset.Errors["postgres"] = err.Error()
+        return &changeset
+    }
+
+    rowsAffected, err := result.RowsAffected()
+    if err != nil {
+        changeset.Errors["rowsAffected"] = err.Error()
+    } else if rowsAffected == 0 {
+        changeset.Errors["notFound"] = "no ${endpoint.go.real.name} record found with the given ${endpoint.go.primaryKey.go.var.propertyAsVariable}."
+    }
+
+    if err := tx.Commit(); err != nil {
+        changeset.Errors["commit"] = err.Error()
+    }
+    return &changeset
 }`;
                 return str.trim();
-        }
-
-        private static BuildVarValidation(
-                endpoint: Endpoint,
-                value: EndpointParam[],
-                forCreate: boolean,
-                returnValue: boolean
-        ): {
-                count: number;
-                phrase: string;
-        } {
-                let items = [...value];
-                if (!forCreate) {
-                        items = items.filter((e) => !e.readOnly);
-                }
-                let validationsAdded = 0;
-                let phrase = items
-                        .filter((e) => e.validation.range)
-                        .map((e) => {
-                                let str = '';
-                                let range = e.validation.range;
-                                let returnVal = returnValue ? `${endpoint.go.primaryKey.go.stuff.emptyValue}, err` : 'err';
-                                if (range) {
-                                        let declare = validationsAdded === 0 ? 'err :=' : 'err =';
-                                        if (e.go.var.propertyGoType === 'string') {
-                                                str = `${declare} ValidateString(${endpoint.go.real.name}.${e.go.var.propertyName}, ${range.min}, ${range.max})
-    if err != nil {
-        return ${returnVal}
-    }`;
-                                        } else if (e.go.var.propertyGoType === 'float64') {
-                                                str = `${declare} ValidateFloat64(${endpoint.go.real.name}.${e.go.var.propertyName}, ${range.min}, ${range.max})
-    if err != nil {
-        return ${returnVal}
-    }`;
-                                        } else {
-                                                str = `${declare} ValidateNumber(${endpoint.go.real.name}.${e.go.var.propertyName}, ${range.min}, ${range.max})
-    if err != nil {
-        return ${returnVal}
-    }`;
-                                        }
-                                }
-                                if (!e.validation.required) {
-                                        str = GoCommentItOut(str, 'commented out because the field is not required');
-                                } else {
-                                        validationsAdded += 1;
-                                }
-
-                                return str;
-                        })
-                        .join('\n\n    ');
-
-                return {
-                        count: validationsAdded,
-                        phrase: phrase,
-                };
         }
 }

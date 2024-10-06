@@ -7,13 +7,14 @@ import { GoSSR } from './go_ssr';
 import { GoTemplates } from './go_templates';
 import { GoHTML } from './go_html';
 import { GoRouter } from './go_router';
-import { GoPkg } from './go_pkg';
+import { GoPkgModel } from './go_pkg_model';
 import { GoPkgRepositories } from './go_pkg_repositories';
 import { GoFormData } from './go_form_data';
+import { GoPkgValidation } from './go_pkg_validation';
 
 export class GoCodeGenerator extends CodeGenerator {
         goJSON = new GoJSON();
-        goPkg = new GoPkg();
+        goPkgModel = new GoPkgModel();
         goSSR = new GoSSR();
         goDatabase = new GoDatabase();
         goTemplates = new GoTemplates();
@@ -22,13 +23,14 @@ export class GoCodeGenerator extends CodeGenerator {
         goMiddleware = new GoMiddleware();
         goPkgRepositories = new GoPkgRepositories();
         goFormData = new GoFormData();
+        goPkgValidation = new GoPkgValidation();
 
         Run() {
                 let goJSON = this.goJSON.Clear().SetInput(this.input).Run().Read();
                 goJSON = trimAndRemoveBlankStrings(goJSON);
 
-                let goPkg = this.goPkg.Clear().SetInput(this.input).Run().Read();
-                goPkg = trimAndRemoveBlankStrings(goPkg);
+                let goPkgModel = this.goPkgModel.Clear().SetInput(this.input).Run().Read();
+                goPkgModel = trimAndRemoveBlankStrings(goPkgModel);
 
                 let goSSR = this.goSSR.Clear().SetInput(this.input).Run().Read();
                 goSSR = trimAndRemoveBlankStrings(goSSR);
@@ -53,6 +55,9 @@ export class GoCodeGenerator extends CodeGenerator {
 
                 let goFormData = this.goFormData.Clear().SetInput(this.input).Run().Read();
                 goFormData = trimAndRemoveBlankStrings(goFormData);
+
+                let goPkgValidation = this.goPkgValidation.Clear().SetInput(this.input).Run().Read();
+                goPkgValidation = trimAndRemoveBlankStrings(goPkgValidation);
 
                 let goMod = `module myapp
 
@@ -132,9 +137,10 @@ func (a *App) Run(addr string) {
                         ...goPkgRepositories,
                         ...goJSON,
                         ...goHTML,
-                        ...goPkg,
+                        ...goPkgModel,
                         ...goSSR,
                         ...goTemplates,
+                        ...goPkgValidation,
                         '/scripts/migrate.go': migration,
                         '/test/test_handler_x.go': test,
                         'readme.md': readme,
