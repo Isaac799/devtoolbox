@@ -149,75 +149,31 @@ export const organizeObjectByKeys = (obj: any) => {
         return sortedObject;
 };
 
-// export const groupData = (data: FileOutputs): NestedFileOutputs => {
-//         function addToNestedDict(nestedDict: NestedFileOutputs, keys: string[], item: FileOutputs) {
-//                 let current = nestedDict;
+export const organizePathObjectByKeys = (obj: any) => {
+        // Get the keys of the object and sort them based on path components
+        const sortedKeys = Object.keys(obj).sort((a, b) => {
+                const aParts = a.split('/');
+                const bParts = b.split('/');
 
-//                 if (keys.length === 1) {
-//                         (current as any) = item;
-//                         return;
-//                 }
-//                 for (const key of keys) {
-//                         if (!current[key]) {
-//                                 current[key] = {}; // Create a new object if the key doesn't exist
-//                         }
-//                         current = current[key] as NestedFileOutputs; // Move deeper into the nested structure
-//                 }
-//         }
+                // Compare each part of the paths
+                for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+                        if (aParts[i] !== bParts[i]) {
+                                return aParts[i].localeCompare(bParts[i]);
+                        }
+                }
 
-//         const groupedData: any = {};
+                // If one path is a prefix of the other, the shorter one comes first
+                return aParts.length - bParts.length;
+        });
 
-//         // Populate the nested dictionary
-//         for (const key in data) {
-//                 if (data.hasOwnProperty(key)) {
-//                         const item = { [key]: data[key] }; // Create item from key-value pair
-//                         const keys = key.split('/'); // Split the key into parts
+        // Create a new object with sorted keys
+        const sortedObject: any = {};
+        for (const key of sortedKeys) {
+                sortedObject[key] = obj[key];
+        }
 
-//                         if (keys.length === 1) {
-//                                 groupData[key] = item[key];
-//                                 continue;
-//                         }
-
-//                         // Add to the nested dictionary
-//                         addToNestedDict(groupedData, keys, item);
-//                 }
-//         }
-
-//         return groupedData;
-// };
-// export const groupData = (data: Record<string, any>): Record<string, any> => {
-//         const grouped: Record<string, any> = {};
-
-//         const keys = Object.keys(data);
-//         for (const key of keys) {
-//                 const parts = key.split('/');
-//                 const PartA = parts[0];
-//                 const PartB = parts[1];
-//                 const PartC = parts[2];
-
-//                 // Initialize group structure if it doesn't exist
-//                 if (!grouped[PartA]) {
-//                         grouped[PartA] = [];
-//                 }
-//                 if (!grouped[PartA][PartB]) {
-//                         grouped[PartA][PartB] = {};
-//                 }
-//                 if (!grouped[PartA][PartB][PartC]) {
-//                         grouped[PartA][PartB][PartC] = {};
-//                 }
-
-//                 // Push the data into the correct group
-//                 if (PartC) {
-//                         grouped[PartA][PartB][PartC] = data[key];
-//                 } else if (PartB) {
-//                         grouped[PartA][PartB] = data[key];
-//                 } else {
-//                         grouped[PartA].push(data[key]);
-//                 }
-//         }
-
-//         return grouped;
-// };
+        return sortedObject;
+};
 
 export const GoCommentItOut = (input: string, reason: string): string => {
         // Split the input string by new lines

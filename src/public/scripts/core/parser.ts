@@ -262,6 +262,10 @@ export class InputParser {
                 for (let k = 0; k < options.options.length; k++) {
                         const option = options.options[k];
                         let optionAdded = false;
+
+                        // todo a better way of seeing the option was a range
+                        if (option.includes('..')) continue;
+
                         for (const key in ATTRIBUTE_OPTION) {
                                 const sqlTableAttrOption = ATTRIBUTE_OPTION[key];
                                 if (!sqlTableAttrOption.test(option)) {
