@@ -118,7 +118,7 @@ export class GoSSR extends CodeGenerator {
         
         ${attrInputsStr}
 
-        <div class="field">
+        <div class="field pt-4">
             <div class="control">
                 <button class="button is-primary" type="submit">Submit</button>
             </div>
