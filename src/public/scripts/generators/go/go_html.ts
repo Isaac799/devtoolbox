@@ -102,7 +102,7 @@ ${renderFunctions}
 ${variablesFromPath}
         ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${SnakeToCamel(table.singlePk!.value)}); 
         if err != nil {
-            http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
+            http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
             return
         }
         services.RenderPage(w, r, "${title}", "${filePath}", &${endpoint.go.real.name})
@@ -122,7 +122,7 @@ ${variablesFromPath}
             ${variablesFromPath}
             ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${SnakeToCamel(table.singlePk!.value)}); 
             if err != nil {
-                http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
+                http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
                 return
             }
             newChangeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
@@ -146,7 +146,7 @@ ${variablesFromPath}
     return func(w http.ResponseWriter, r *http.Request) {
         ${endpoint.go.real.name}s, err := repo.${endpoint.go.routerRepoName}(); 
         if err != nil {
-            http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
+            http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
             return
         }
         services.RenderPage(w, r, "${title}", "${filePath}", &${endpoint.go.real.name}s)
