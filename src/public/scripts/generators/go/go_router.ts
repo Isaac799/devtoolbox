@@ -227,6 +227,7 @@ import (
     "net/http"
     "path/filepath"
     "myapp/internal/middleware"
+    "myapp/internal/handlers/page"
 
     ${imports}    
 
@@ -242,6 +243,9 @@ func SetupRoutes(serverMux *http.ServeMux, db *sql.DB) {
     serverMux.Handle("/", middleware.MethodOverride(mux))
 
     mux.HandleFunc("/assets/{filename}", serveAsset)
+    mux.HandleFunc("/404", page.Error404Page())
+    mux.HandleFunc("/500", page.Error500Page())
+    mux.HandleFunc("/", page.HomePage())
 
 ${finalRouteStrs}
 }
@@ -295,11 +299,15 @@ func serveAsset(w http.ResponseWriter, r *http.Request) {
                         .join('\n\n    ');
         }
 
-        static GenerateImports(value: EndpointParam[], includeReadonly: boolean) {
+        static GenerateImports(value: EndpointParam[], includeReadonly: boolean, includeSystem: boolean) {
                 let input = [...value];
                 if (!includeReadonly) {
-                        input = input.filter((e) => !e.readOnly && !e.systemField);
+                        input = input.filter((e) => !e.readOnly);
                 }
+                if (!includeSystem) {
+                        input = input.filter((e) => !e.systemField);
+                }
+                // input = input.filter((e) => !e.systemField);
                 let imports = input.map((e) => e.go.stuff.importPackageForConversion);
                 return imports;
         }

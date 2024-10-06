@@ -39,7 +39,7 @@ export class GoJSON extends CodeGenerator {
                                 }
                                 {
                                         const endpoint = table.endpoints.read.single;
-                                        importsParts = importsParts.concat(GoRouter.GenerateImports([endpoint.http.query], true));
+                                        importsParts = importsParts.concat(GoRouter.GenerateImports([endpoint.http.query], true, true));
 
                                         goEndpoints.push({
                                                 name: endpoint.go.fnName,
@@ -73,7 +73,7 @@ export class GoJSON extends CodeGenerator {
                                 }
                                 {
                                         const endpoint = table.endpoints.delete.single;
-                                        importsParts = importsParts.concat(GoRouter.GenerateImports([endpoint.http.query], true));
+                                        importsParts = importsParts.concat(GoRouter.GenerateImports([endpoint.http.query], true, false));
 
                                         goEndpoints.push({
                                                 name: endpoint.go.fnName,

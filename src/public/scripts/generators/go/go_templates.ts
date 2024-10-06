@@ -7,9 +7,18 @@ export class GoTemplates extends CodeGenerator {
                         '/web/templates/base.html': GoTemplates.baseHtml,
                         '/web/templates/footer.html': GoTemplates.footerHtml,
                         '/web/templates/navbar.html': this.GenerateNavigationBar(),
-                        '/web/templates/show.home.html': GoTemplates.homeHtml,
                         '/web/static/bulma.js': GoTemplates.bulmaJs,
                         '/web/static/smartForm.js': GoTemplates.smartForm,
+                        //
+                        '/pkg/services/render_html.go': GoTemplates.serviceRender,
+                        //
+                        '/web/templates/page/home.html': GoTemplates.homeHtml,
+                        '/web/templates/page/404.html': GoTemplates.notFoundHtml,
+                        '/web/templates/page/500.html': GoTemplates.serverErrorHtml,
+                        //
+                        '/internal/handlers/page/home.go': GoTemplates.homeHandler,
+                        '/internal/handlers/page/404.go': GoTemplates.notFoundHandler,
+                        '/internal/handlers/page/500.go': GoTemplates.serverErrorHandler,
                 };
                 return this;
         }
@@ -72,11 +81,11 @@ ${htmlLinks}
 
         private static readonly homeHtml = `{{ define "content" }}
 
-<section class="hero is-info">
+<section class="hero is-primary">
     <div class="hero-body">
         <div class="container">
-            <h1 class="title">About Us</h1>
-            <h2 class="subtitle">Learn more about what we do!</h2>
+            <h1 class="title">Welcome to Our Community</h1>
+            <h2 class="subtitle">Discover, Engage, and Grow Together!</h2>
         </div>
     </div>
 </section>
@@ -85,50 +94,41 @@ ${htmlLinks}
 
 <section class="section">
     <div class="container">
-        <h2 class="title">What We Do</h2>
+        <h2 class="title">Our Mission</h2>
         <p class="content">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent
-            vitae eros eget tellus tristique bibendum. Curabitur sodales ligula
-            in libero. Sed dignissim lacinia nunc. Phasellus magna. In hac
-            habitasse platea dictumst.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vel nisi at nisl pharetra auctor. 
+            Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.
         </p>
 
-        <h2 class="title">Our Core Principles</h2>
+        <h2 class="title">Upcoming Events</h2>
         <p class="content">
-            Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque non turpis sit amet nisl gravida 
+            laoreet ut a erat. Curabitur vel felis nec nisl tincidunt dignissim.
         </p>
 
-        <h2 class="title">Join Us</h2>
+        <h2 class="title">Success Stories</h2>
         <p class="content">
-            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
-            officia deserunt mollit anim id est laborum. Nam libero tempore, cum
-            soluta nobis est eligendi optio cumque nihil impedit quo minus id
-            quod maxime placeat facere possimus.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer sit amet turpis vitae massa 
+            dignissim facilisis. Sed vel orci vitae lacus suscipit pretium.
         </p>
 
-        <h2 class="title">Our Vision</h2>
+        <h2 class="title">Get Involved</h2>
         <p class="content">
-            Nulla facilisi. Integer lacinia sollicitudin massa. Cras in nibh id
-            lacus lacinia semper. Morbi vel lectus vitae libero dictum gravida.
-            Sed consequat, leo eget bibendum sodales, augue velit cursus nunc,
-            quis gravida magna mi a libero.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis non velit eget nisl tristique 
+            facilisis in ut mi. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere 
+            cubilia curae.
         </p>
 
-        <h2 class="title">Get In Touch</h2>
+        <h2 class="title">Stay Connected</h2>
         <p class="content">
-            Fusce tincidunt, est in aliquam efficitur, leo arcu varius odio, eu
-            tincidunt erat sapien sit amet urna. Vivamus sit amet libero sed
-            eros venenatis aliquam ac vitae magna. Contact us to learn more
-            about how you can get involved with our initiatives.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin euismod, est non tristique 
+            fermentum, arcu odio malesuada justo, vitae sagittis justo lacus in magna.
         </p>
     </div>
 </section>
 
 {{ template "footer" . }}{{ end }}
+
 `;
         private static readonly footerHtml = `{{ define "footer" }}
 <footer class="footer">
@@ -313,6 +313,156 @@ function closeConfirmDeleteModal() {
         modal.classList.remove("is-active");
     } else {
         console.error("Confirm modal not found.");
+    }
+}
+`;
+
+        private static readonly notFoundHtml = `{{ define "content" }}
+
+<section class="hero is-warning">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">404 - Page Not Found</h1>
+            <h2 class="subtitle">Oops! We couldn't find that page.</h2>
+        </div>
+    </div>
+</section>
+
+{{ template "navbar" . }}
+
+<section class="section">
+    <div class="container">
+        <h2 class="title">What Happened?</h2>
+        <p class="content">
+            The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+        </p>
+
+        <h2 class="title">Try These Options</h2>
+        <ul>
+            <li><a href="/">Return to the homepage</a></li>
+        </ul>
+    </div>
+</section>
+
+{{ template "footer" . }}{{ end }}
+`;
+
+        private static readonly serverErrorHtml = `{{ define "content" }}
+
+<section class="hero is-danger">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">500 - Internal Server Error</h1>
+            <h2 class="subtitle">Sorry! Something went wrong on our end.</h2>
+        </div>
+    </div>
+</section>
+
+{{ template "navbar" . }}
+
+<section class="section">
+    <div class="container">
+        <h2 class="title">We're Working on It</h2>
+        <p class="content">
+            Our team has been notified and is working to resolve the issue. We apologize for the inconvenience.
+        </p>
+        
+        <h2 class="title">Return to Safety</h2>
+        <ul>
+            <li><a href="/">Go back to the homepage</a></li>
+        </ul>
+    </div>
+</section>
+
+{{ template "footer" . }}{{ end }}
+`;
+        private static readonly serviceRender = `package services
+
+import (
+	"log"
+	"myapp/pkg/validation"
+	"net/http"
+	"text/template"
+	"time"
+)
+
+func RenderTemplate[T any](w http.ResponseWriter, title, templateName string, data T) {
+	templateData := struct {
+		Title string
+		Year  int
+		Data  interface{}
+	}{
+		Title: title,
+		Year:  time.Now().Year(),
+		Data:  data,
+	}
+
+	pageTemplate, err := template.ParseFiles(
+		"../../web/templates/base.html",
+		"../../"+templateName,
+		"../../web/templates/navbar.html",
+		"../../web/templates/footer.html",
+	)
+
+	if err != nil {
+		log.Println("Error parsing templates:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	err = pageTemplate.ExecuteTemplate(w, "base.html", templateData)
+	if err != nil {
+		log.Println("Error executing template:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func RenderChangesetPage[T any](w http.ResponseWriter, _ *http.Request, title, templateName string, changeset *validation.Changeset[T]) {
+	RenderTemplate(w, title, templateName, changeset)
+}
+
+func RenderPage[T any](w http.ResponseWriter, _ *http.Request, title, templateName string, data *T) {
+	RenderTemplate(w, title, templateName, data)
+}
+
+`;
+
+        private static readonly homeHandler = `package page
+
+import (
+    "myapp/pkg/services"
+    "net/http"
+)
+
+func HomePage() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        services.RenderPage[any](w, r, "Home", "web/templates/page/home.html", nil)
+    }
+}
+`;
+        private static readonly notFoundHandler = `package page
+
+import (
+    "myapp/pkg/services"
+    "net/http"
+)
+
+func Error404Page() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        services.RenderPage[any](w, r, "Not Found", "web/templates/page/404.html", nil)
+    }
+}
+`;
+        private static readonly serverErrorHandler = `package page
+
+import (
+    "myapp/pkg/services"
+    "net/http"
+)
+
+func Error500Page() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        services.RenderPage[any](w, r, "Server Error", "web/templates/page/500.html", nil)
     }
 }
 `;

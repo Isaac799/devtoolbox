@@ -34,7 +34,7 @@ export class GoHTML extends CodeGenerator {
                                 if (!table.singlePk) {
                                         continue;
                                 }
-                                importsParts = importsParts.concat(GoRouter.GenerateImports(table.is, true));
+                                importsParts = importsParts.concat(GoRouter.GenerateImports(table.is, true, false));
 
                                 {
                                         let endpoint = table.endpoints.create.single;
@@ -66,8 +66,6 @@ export class GoHTML extends CodeGenerator {
 
                                 let renderFunctions = allParts.join('\n\n');
 
-                                // time is for the date on page
-                                importsParts.push('time');
                                 importsParts = [...new Set(importsParts)];
 
                                 let imports = importsParts
@@ -78,55 +76,15 @@ export class GoHTML extends CodeGenerator {
                                 let str = `package ${table.goPackageName}
 
 import (
-    "log"
     "myapp/pkg/models"
     "myapp/pkg/repositories"
     "myapp/pkg/validation"
+    "myapp/pkg/services"
     "net/http"
-    "text/template"
     
     ${imports}
 )
-
-func renderTemplate(w http.ResponseWriter, title, templateName string, data interface{}) {
-    templateData := struct {
-        Title string
-        Year  int
-        Data  interface{}
-    }{
-        Title: title,
-        Year:  time.Now().Year(),
-        Data:  data,
-    }
-
-    pageTemplate, err := template.ParseFiles(
-        "../../web/templates/base.html",
-        "../../"+templateName,
-        "../../web/templates/navbar.html",
-        "../../web/templates/footer.html",
-    )
-
-    if err != nil {
-        log.Println("Error parsing templates:", err)
-        http.Error(w, "Internal server error", http.StatusInternalServerError)
-        return
-    }
-
-    err = pageTemplate.ExecuteTemplate(w, "base.html", templateData)
-    if err != nil {
-        log.Println("Error executing template:", err)
-        http.Error(w, "Internal server error", http.StatusInternalServerError)
-    }
-}
-
-func renderChangesetPage(w http.ResponseWriter, _ *http.Request, title, templateName string, changeset *validation.Changeset[models.${table.endpoints.create.single.go.real.type}]) {
-    renderTemplate(w, title, templateName, changeset)
-}
-
-func renderPage(w http.ResponseWriter, _ *http.Request, title, templateName string, data interface{}) {
-    renderTemplate(w, title, templateName, data)
-}
-    
+   
 ${renderFunctions}
 `;
 
@@ -147,7 +105,7 @@ ${variablesFromPath}
             http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
             return
         }
-        renderPage(w, r, "${title}", "${filePath}", ${endpoint.go.real.name})
+        services.RenderPage(w, r, "${title}", "${filePath}", &${endpoint.go.real.name})
     }
 }`;
                 return str.trim();
@@ -170,7 +128,7 @@ ${variablesFromPath}
             newChangeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
             changeset = &newChangeset
         }
-        renderChangesetPage(w, r, "${title}", "${filePath}", changeset)
+        services.RenderChangesetPage(w, r, "${title}", "${filePath}", changeset)
     }
 }`;
                 return str.trim();
@@ -178,7 +136,7 @@ ${variablesFromPath}
         private static GenerateNewSnippet(endpoint: Endpoint, title: string, filePath: string) {
                 let str = `func ${endpoint.go.routerFuncName}(changeset *validation.Changeset[models.${endpoint.go.real.type}]) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        renderChangesetPage(w, r, "${title}", "${filePath}", changeset)
+        services.RenderChangesetPage(w, r, "${title}", "${filePath}", changeset)
     }
 }`;
                 return str.trim();
@@ -191,7 +149,7 @@ ${variablesFromPath}
             http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)
             return
         }
-        renderPage(w, r, "${title}", "${filePath}", ${endpoint.go.real.name}s)
+        services.RenderPage(w, r, "${title}", "${filePath}", &${endpoint.go.real.name}s)
     }
 }`;
                 return str.trim();

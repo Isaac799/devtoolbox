@@ -30,7 +30,7 @@ export class GoFormData extends CodeGenerator {
 
                                 {
                                         const endpoint = table.endpoints.create.single;
-                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
+                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true, false));
 
                                         goEndpoints.push({
                                                 name: endpoint.go.fnName,
@@ -42,7 +42,7 @@ export class GoFormData extends CodeGenerator {
                                 }
                                 {
                                         const endpoint = table.endpoints.update.single;
-                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
+                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true, true));
 
                                         goEndpoints.push({
                                                 name: endpoint.go.fnName,
@@ -54,7 +54,7 @@ export class GoFormData extends CodeGenerator {
                                 }
                                 {
                                         const endpoint = table.endpoints.delete.single;
-                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true));
+                                        importsParts = importsParts.concat(GoRouter.GenerateImports(endpoint.http.bodyIn, true, false));
 
                                         goEndpoints.push({
                                                 name: endpoint.go.fnName,
