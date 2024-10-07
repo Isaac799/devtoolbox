@@ -923,6 +923,9 @@ export class SqlTable {
                 [x: string]: SqlTableAttribute;
         } = {};
 
+        isReferencedBy: Array<SqlTable> = [];
+        hasReferenceTo: Array<SqlTable> = [];
+
         get singlePk(): SqlTableAttribute | null {
                 let pks = this.primaryKeys();
                 let values = Object.values(pks);

@@ -201,10 +201,17 @@ export class InputParser {
                                 for (const key in schema.tables) {
                                         if (Object.prototype.hasOwnProperty.call(schema.tables, key)) {
                                                 const table = schema.tables[key];
-                                                console.log('\n');
-                                                console.log('before :>> ', Object.keys(table.attributes));
                                                 SortTableAttributes(table);
-                                                console.log('after :>> ', Object.keys(table.attributes));
+                                                console.log('');
+                                                console.log('');
+                                                console.log(
+                                                        `${table.label} isReferencedBy tables`,
+                                                        table.isReferencedBy.map((e) => e.label)
+                                                );
+                                                console.log(
+                                                        `${table.label} hasReferenceTo tables`,
+                                                        table.hasReferenceTo.map((e) => e.label)
+                                                );
                                         }
                                 }
                         }
@@ -583,6 +590,9 @@ export class InputParser {
                 }
 
                 let keys = referencedTable.primaryKeys();
+
+                referencedTable.isReferencedBy.push(attr.parentTable);
+                attr.parentTable.hasReferenceTo.push(referencedTable);
 
                 for (const attributeName in keys) {
                         if (!Object.prototype.hasOwnProperty.call(keys, attributeName)) {
