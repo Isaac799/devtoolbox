@@ -105,7 +105,7 @@ ${variablesFromPath}
             http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
             return
         }
-        services.RenderPage(w, r, "${title}", "${filePath}", &${endpoint.go.real.name})
+        services.RenderPageWithData(w, r, "${title}", "${filePath}", &${endpoint.go.real.name})
     }
 }`;
                 return str.trim();
@@ -128,7 +128,7 @@ ${variablesFromPath}
             newChangeset := ${endpoint.go.real.name}.${endpoint.changeSetName}()
             changeset = &newChangeset
         }
-        services.RenderChangesetPage(w, r, "${title}", "${filePath}", changeset)
+        services.RenderPageWithChangeset(w, r, "${title}", "${filePath}", changeset)
     }
 }`;
                 return str.trim();
@@ -136,7 +136,7 @@ ${variablesFromPath}
         private static GenerateNewSnippet(endpoint: Endpoint, title: string, filePath: string) {
                 let str = `func ${endpoint.go.routerFuncName}(changeset *validation.Changeset[models.${endpoint.go.real.type}]) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        services.RenderChangesetPage(w, r, "${title}", "${filePath}", changeset)
+        services.RenderPageWithChangeset(w, r, "${title}", "${filePath}", changeset)
     }
 }`;
                 return str.trim();
@@ -180,7 +180,7 @@ ${variablesFromPath}
             
         
         
-        services.RenderPage(w, r, "${title}", "${filePath}", &pageData)
+        services.RenderPageWithData(w, r, "${title}", "${filePath}", &pageData)
     }
 }`;
                 return str.trim();

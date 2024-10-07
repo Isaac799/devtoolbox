@@ -694,10 +694,10 @@ export class Endpoint {
 
                 this.go = {
                         fnName: SnakeToPascal(this.sql.name),
-                        routerFuncName: SnakeToPascal(`${HttpMethodToHtmlName(this.method, many)}_page`),
-                        routerFuncApiName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_json${manyStrModifier}`),
-                        routerFuncFormName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_form${manyStrModifier}`),
-                        routerRepoName: SnakeToPascal(`${this.method.toLocaleLowerCase()}_${table.label}${manyStrModifier}`),
+                        routerFuncName: SnakeToPascal(`handle_${HttpMethodToHtmlName(this.method, many)}_page`),
+                        routerFuncApiName: SnakeToPascal(`handle_${this.method.toLocaleLowerCase()}_json${manyStrModifier}`),
+                        routerFuncFormName: SnakeToPascal(`handle_${this.method.toLocaleLowerCase()}_form${manyStrModifier}`),
+                        routerRepoName: SnakeToPascal(`repo_${this.method.toLocaleLowerCase()}_${table.label}${manyStrModifier}`),
 
                         primaryKey: new EndpointParam(pk, pk.validation),
                         real: {

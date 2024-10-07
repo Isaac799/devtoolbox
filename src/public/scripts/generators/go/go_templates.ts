@@ -413,12 +413,16 @@ func RenderTemplate[T any](w http.ResponseWriter, title, templateName string, da
     }
 }
 
-func RenderChangesetPage[T any](w http.ResponseWriter, _ *http.Request, title, templateName string, changeset *validation.Changeset[T]) {
+func RenderPageWithChangeset[T any](w http.ResponseWriter, _ *http.Request, title, templateName string, changeset *validation.Changeset[T]) {
     RenderTemplate(w, title, templateName, changeset)
 }
 
-func RenderPage[T any](w http.ResponseWriter, _ *http.Request, title, templateName string, data *T) {
+func RenderPageWithData[T any](w http.ResponseWriter, _ *http.Request, title, templateName string, data *T) {
     RenderTemplate(w, title, templateName, data)
+}
+
+func RenderPage(w http.ResponseWriter, _ *http.Request, title, templateName string) {
+	RenderTemplate[any](w, title, templateName, nil)
 }
 
 `;
@@ -432,7 +436,7 @@ import (
 
 func HomePage() http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-    services.RenderPage[any](w, r, "Home", "web/templates/page/home.html", nil)
+    services.RenderPage(w, r, "Home", "web/templates/page/home.html")
     }
 }
 `;
@@ -445,7 +449,7 @@ import (
 
 func Error404Page() http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-    services.RenderPage[any](w, r, "Not Found", "web/templates/page/404.html", nil)
+    services.RenderPage(w, r, "Not Found", "web/templates/page/404.html")
     }
 }
 `;
@@ -458,7 +462,7 @@ import (
 
 func Error500Page() http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-    services.RenderPage[any](w, r, "Server Error", "web/templates/page/500.html", nil)
+    services.RenderPage(w, r, "Server Error", "web/templates/page/500.html")
     }
 }
 `;
