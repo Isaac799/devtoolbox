@@ -247,6 +247,7 @@ export class GoSSR extends CodeGenerator {
 `;
                 return str;
         }
+
         private static GenerateHtmlIndex(table: SqlTable): string {
                 let title = SnakeToTitle(table.label);
 
@@ -294,12 +295,14 @@ export class GoSSR extends CodeGenerator {
         ${attrsTableHeaderStr}
         </thead>
         <tbody>
-            {{range .Data }}
+            {{range .Data.Items }}
             ${attrsTableBodyStr}
             {{end}}
         </tbody>
     </table>
 
+{{ template "pagination" . }}
+    
     <div class="field">
         <div class="control">
             <a class="button is-info" href="${urlHtml}/new">New ${title}</a>

@@ -144,12 +144,43 @@ ${variablesFromPath}
         private static GenerateIndexSnippet(endpoint: Endpoint, title: string, filePath: string) {
                 let str = `func ${endpoint.go.routerFuncName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        ${endpoint.go.real.name}s, err := repo.${endpoint.go.routerRepoName}(); 
+        offset, limit, page := services.GetPagination(r, 10, 1) // Default limit 10 and page 1
+        ${endpoint.go.real.name}s, err := repo.${endpoint.go.routerRepoName}(offset, limit);
+
         if err != nil {
-            http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
-            return
+                http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
+                return
         }
-        services.RenderPage(w, r, "${title}", "${filePath}", &${endpoint.go.real.name}s)
+
+        // Get total count for pagination
+        totalCount, err := repo.GetTotalCount()
+
+        if err != nil {
+                http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
+                return
+        }        
+
+        totalPages := (totalCount + limit - 1) / limit
+        previousPage := page - 1
+        nextPage := page + 1
+
+        pageData := models.Pagination[models.${endpoint.go.real.type}]{
+            Items:        &${endpoint.go.real.name}s,
+            CurrentPage:  page,
+            TotalPages:   totalPages,
+            TotalCount:   totalCount,
+            Limit:        limit,
+            PreviousPage: previousPage,
+            NextPage:     nextPage,
+            ShowFirst:    page > 2,
+            ShowPrevious: previousPage > 0,
+            ShowNext:     nextPage <= totalPages,
+            ShowLast:     totalPages > 1 && page < totalPages-1,
+        }
+            
+        
+        
+        services.RenderPage(w, r, "${title}", "${filePath}", &pageData)
     }
 }`;
                 return str.trim();

@@ -96,6 +96,7 @@ import (
     "encoding/json"
     "myapp/pkg/models"
     "myapp/pkg/repositories"
+    "myapp/pkg/services"
     "net/http"
     "strings"
 
@@ -230,7 +231,9 @@ ${variablesFromPath}
                 let str = `func ${endpoint.go.routerFuncApiName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     ${variablesFromPath}
     return func(w http.ResponseWriter, r *http.Request) {
-        ${endpoint.go.real.name}s, err := repo.${endpoint.go.routerRepoName}(); 
+        offset, limit, _ := services.GetPagination(r, 10, 1) // Default limit 10 and page 1
+
+        ${endpoint.go.real.name}s, err := repo.${endpoint.go.routerRepoName}(offset, limit); 
         
         if err != nil {
             http.Error(w, "Error reading many: "+err.Error(), http.StatusInternalServerError)

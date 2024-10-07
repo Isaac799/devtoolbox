@@ -62,6 +62,11 @@ import (
                                         let str = GoPkgRepositories.GenerateDeleteSnippet(endpoint);
                                         allParts.push(str);
                                 }
+                                {
+                                        const endpoint = table.endpoints.delete.single;
+                                        let str = GoPkgRepositories.GenerateCountSnippet(endpoint);
+                                        allParts.push(str);
+                                }
                                 let tableStr = allParts.join('\n\n');
                                 this.output['/pkg/repositories/' + table.label + '.go'] = tableStr;
                         }
@@ -128,26 +133,32 @@ import (
 
         private static GenerateReadManySnippet(endpoint: Endpoint, table: SqlTable) {
                 let scanInto = endpoint.sql.outputs.map((e) => `&${endpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let funcParams = `offset, limit int`;
 
-                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}() ([]models.${endpoint.go.real.type}, error) {
+                let str = `func (repo *${endpoint.repo.type}) ${endpoint.go.routerRepoName}(${funcParams}) ([]models.${endpoint.go.real.type}, error) {
     query := \`${SqlGenerator.GenerateAReadEndpoint(endpoint, table, true)}\`
-    rows, err := repo.DB.Query(query)
-     if err != nil {
-         return nil, err
-     }
-     defer rows.Close()
-
-     var ${endpoint.go.real.name}s []models.${endpoint.go.real.type}
-     for rows.Next() {
-         var ${endpoint.go.real.name} models.${endpoint.go.real.type}
-         err := rows.Scan(${scanInto})
-         if err != nil {
-             return nil, err
-         }
-         ${endpoint.go.real.name}s = append(${endpoint.go.real.name}s, ${endpoint.go.real.name})
-     }
-
-     return ${endpoint.go.real.name}s, err
+    
+    if limit > 100 {
+        limit = 100
+    }
+    
+    rows, err := repo.DB.Query(query, limit, offset)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    
+    var ${endpoint.go.real.name}s []models.${endpoint.go.real.type}
+    for rows.Next() {
+        var ${endpoint.go.real.name} models.${endpoint.go.real.type}
+        err := rows.Scan(${scanInto})
+        if err != nil {
+            return nil, err
+        }
+        ${endpoint.go.real.name}s = append(${endpoint.go.real.name}s, ${endpoint.go.real.name})
+    }
+    
+    return ${endpoint.go.real.name}s, err
 }`;
                 return str.trim();
         }
@@ -242,6 +253,20 @@ import (
     }
     return &changeset
 }`;
+                return str.trim();
+        }
+
+        private static GenerateCountSnippet(endpoint: Endpoint) {
+                let str = `func (repo *${endpoint.repo.type}) GetTotalCount() (int, error) {
+    var count int
+    query := \`SELECT COUNT(*) FROM ${endpoint.tableFullName};\`
+    err := repo.DB.QueryRow(query).Scan(&count)
+    if err != nil {
+        return 0, err
+    }
+    return count, nil
+}`;
+
                 return str.trim();
         }
 }

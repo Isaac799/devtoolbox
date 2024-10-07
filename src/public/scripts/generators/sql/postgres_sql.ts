@@ -590,8 +590,15 @@ WHERE ${where};`;
                 let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
                 where = `\n    WHERE ${where}`;
 
+                let orderBy = '';
+
                 if (!endpoint.sql.inputs.length) {
-                        where = '';
+                        // assuming its a many at this point
+                        // where = '';
+
+                        let manyLimitOffset = ` LIMIT $1 OFFSET $2`;
+                        where = manyLimitOffset;
+                        orderBy = `ORDER BY ${endpoint.go.primaryKey.sql.sqlLocation.table}.${endpoint.go.primaryKey.sql.sqlLocation.column}`;
                 }
 
                 let join = '';
@@ -621,9 +628,11 @@ WHERE ${where};`;
                         return answer.join(' ');
                 });
                 const selecting = alignKeyword(selectsNeeded, ' AS ').join(',\n    ');
+
+                let afterFrom = [tableName, join, orderBy, where];
                 let procedure = `SELECT 
     ${selecting}     
-FROM ${tableName}${join}${where};`;
+FROM ${afterFrom.join('\n')};`;
                 return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
 }
