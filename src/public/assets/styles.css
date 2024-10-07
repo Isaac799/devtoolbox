@@ -57,6 +57,13 @@
         color: var(--accent); /* or any color you prefer */
 }
 
+img {
+        width: 100%;
+        max-width: 1080px;
+        margin: auto;
+        box-shadow: rgba(100, 100, 111, 0.2) 0 0.5rem 2rem 0px;
+}
+
 body,
 pre,
 input,

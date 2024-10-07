@@ -16,7 +16,7 @@ class Page {
         }
 }
 
-const pages = [new Page('index').Gen(), new Page('about').Gen(), new Page('syntax').Gen()];
+const pages = [new Page('index').Gen(), new Page('about').Gen(), new Page('syntax').Gen(), new Page('demo').Gen()];
 
 module.exports = {
         pages,
