@@ -60,7 +60,7 @@
 img {
         width: 100%;
         max-width: 1080px;
-        margin: auto;
+        margin: 1rem auto 2rem auto;
         box-shadow: rgba(100, 100, 111, 0.2) 0 0.5rem 2rem 0px;
 }
 
@@ -190,7 +190,7 @@ section div.tabs {
         justify-content: flex-start;
         align-items: flex-end;
         gap: 0;
-        border-bottom: 0.1rem solid var(--primary);
+        /* border-bottom: 0.1rem solid var(--primary); */
 }
 
 section div.tabs div {
@@ -273,15 +273,13 @@ textarea {
         font-family: 'Courier New', Courier, monospace;
         margin: 0;
         padding: 0;
+        background-color: rgba(0, 0, 0, 0);
 }
 
 pre,
 textarea,
 .files {
         padding: var(--space);
-        background-color: var(--white);
-        border-left: 0.1rem solid var(--primary);
-        border-left-width: 0.2rem;
 }
 
 code {
@@ -330,6 +328,9 @@ tr {
 .scroll-box {
         /* border-left: 0.1rem solid var(--primary); */
         overflow: auto;
+
+        border: 0.1rem solid var(--primary);
+        box-shadow: rgba(0, 0, 0, 0.25) 0 0 0.5rem 0.05rem inset;
 }
 
 .scroll-box.files {
