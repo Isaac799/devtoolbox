@@ -598,7 +598,10 @@ WHERE ${where};`;
 
                         let manyLimitOffset = ` LIMIT $1 OFFSET $2`;
                         where = manyLimitOffset;
-                        orderBy = `ORDER BY ${endpoint.go.primaryKey.sql.sqlLocation.table}.${endpoint.go.primaryKey.sql.sqlLocation.column}`;
+
+                        // table name caused issues here for order table
+                        // orderBy = `ORDER BY ${endpoint.go.primaryKey.sql.sqlLocation.table}.${endpoint.go.primaryKey.sql.sqlLocation.column}`;
+                        orderBy = `ORDER BY ${endpoint.go.primaryKey.sql.sqlLocation.column}`;
                 }
 
                 let join = '';
