@@ -102,6 +102,7 @@ ${renderFunctions}
 ${variablesFromPath}
         ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${SnakeToCamel(table.singlePk!.value)}); 
         if err != nil {
+            log.Print(err.Error())
             http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
             return
         }
@@ -122,6 +123,7 @@ ${variablesFromPath}
             ${variablesFromPath}
             ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${SnakeToCamel(table.singlePk!.value)}); 
             if err != nil {
+                log.Print(err.Error())
                 http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
                 return
             }
@@ -148,6 +150,7 @@ ${variablesFromPath}
         ${endpoint.go.real.name}s, err := repo.${endpoint.go.routerRepoName}(offset, limit);
 
         if err != nil {
+                log.Print(err.Error())
                 http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
                 return
         }
@@ -156,6 +159,7 @@ ${variablesFromPath}
         totalCount, err := repo.GetTotalCount()
 
         if err != nil {
+                log.Print(err.Error())
                 http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
                 return
         }        
