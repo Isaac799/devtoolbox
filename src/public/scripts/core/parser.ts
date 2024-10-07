@@ -186,9 +186,59 @@ export class InputParser {
         Run() {
                 let lines: Array<string> = this.input.split('\n').filter((e) => !!e);
                 let schemas = this.ProcessLines(lines);
+
+                this.SortAttributes(schemas);
+
                 this.GenerateEndpoint(schemas);
                 this.output = schemas;
                 return this;
+        }
+
+        private SortAttributes(schemas: { [x: string]: SqlSchema }) {
+                for (const key in schemas) {
+                        if (Object.prototype.hasOwnProperty.call(schemas, key)) {
+                                const schema = schemas[key];
+                                for (const key in schema.tables) {
+                                        if (Object.prototype.hasOwnProperty.call(schema.tables, key)) {
+                                                const table = schema.tables[key];
+                                                console.log('\n');
+                                                console.log('before :>> ', Object.keys(table.attributes));
+                                                SortTableAttributes(table);
+                                                console.log('after :>> ', Object.keys(table.attributes));
+                                        }
+                                }
+                        }
+                }
+
+                function SortTableAttributes(table: SqlTable) {
+                        table.attributes = Object.fromEntries(Object.entries(table.attributes).sort(SortCriteria()));
+                }
+                function SortCriteria(): (a: [string, SqlTableAttribute], b: [string, SqlTableAttribute]) => number {
+                        return ([, a], [, b]) => {
+                                // Sort by isPrimaryKey (true < false)
+                                if (a.isPrimaryKey() !== b.isPrimaryKey()) {
+                                        return Number(b.isPrimaryKey()) - Number(a.isPrimaryKey());
+                                }
+
+                                // Sort by isForeignKey (true < false)
+                                if (a.isForeignKey() !== b.isForeignKey()) {
+                                        return Number(b.isForeignKey()) - Number(a.isForeignKey());
+                                }
+
+                                // Sort by readonly (false < true)
+                                if (a.readOnly !== b.readOnly) {
+                                        return Number(a.readOnly) - Number(b.readOnly);
+                                }
+
+                                // Sort by systemField (false < true)
+                                if (a.systemField !== b.systemField) {
+                                        return Number(a.systemField) - Number(b.systemField);
+                                }
+
+                                // If all previous criteria are equal, sort by value
+                                return a.value.localeCompare(b.value);
+                        };
+                }
         }
 
         ExtractSqlOptions(
@@ -402,7 +452,7 @@ export class InputParser {
                         let attr = new SqlTableAttribute(
                                 newTable,
                                 SqlType.TIMESTAMP,
-                                'record_created_on',
+                                'inserted_at',
                                 true,
                                 'ts',
                                 new Set(['!']),
@@ -413,6 +463,21 @@ export class InputParser {
                         );
                         attr.defaultValue = 'CURRENT_TIMESTAMP';
                         newTable.attributes[attr.value] = attr;
+
+                        let attrs = new SqlTableAttribute(
+                                newTable,
+                                SqlType.TIMESTAMP,
+                                'updated_at',
+                                true,
+                                'ts',
+                                new Set(['!']),
+                                {
+                                        required: true,
+                                },
+                                true
+                        );
+                        attrs.defaultValue = 'CURRENT_TIMESTAMP';
+                        newTable.attributes[attrs.value] = attrs;
                 }
                 if (newTable.options.includes('+')) {
                         let attr = new SqlTableAttribute(
