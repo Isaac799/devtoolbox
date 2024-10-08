@@ -97,8 +97,6 @@ import (
                 let idFromChangeset = `changeset.Record.${endpoint.go.primaryKey.go.var.propertyName}`;
                 let redirectId = endpoint.go.primaryKey.go.stuff.toStringFunction(idFromChangeset);
 
-                console.log('endpoint.http.bodyIn :>> ', endpoint.http.bodyIn);
-
                 let str = `func ${endpoint.go.routerFuncFormName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {${variablesFromPath}    
         if err := r.ParseForm(); err != nil {

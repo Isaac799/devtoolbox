@@ -577,6 +577,99 @@ export type GoVar = {
         propertyGoType: string;
 };
 
+/**
+ * Used for things we want to do stuff with, but not make endpoints for
+ * e.g. the associative entities
+ */
+export class NonEndpoint {
+        method: HttpMethod;
+
+        repo: {
+                type: string;
+                var: string;
+        };
+        sql: {
+                inout: EndpointParam[];
+                inputs: EndpointParam[];
+                outputs: EndpointParam[];
+                name: string;
+        };
+        go: {
+                fnName: string;
+                routerFuncName: string;
+                routerFuncApiName: string;
+                routerFuncFormName: string;
+                routerRepoName: string;
+                primaryKeys: EndpointParam[];
+                real: {
+                        name: string;
+                        type: string;
+                };
+        };
+        url: {
+                apiIndexPage: string;
+        };
+
+        private tableLabel: string;
+        tableFullName: string;
+
+        changeSetName: string;
+
+        filePath = (kind: 'show' | 'new' | 'edit' | 'index') => {
+                let endpointPath = `/web/templates/${this.tableLabel}/${kind}.html`;
+                // let endpointPath = `/templates/${this.sqlSchemaName}/${this.sqlTableName}/${kind}.html`;
+                return endpointPath;
+        };
+
+        constructor(method: HttpMethod, table: SqlTable, many: boolean, pks: SqlTableAttribute[]) {
+                this.method = method;
+                this.tableFullName = table.fullName;
+                let manyStrModifier = many ? 's' : '';
+                this.tableLabel = table.label;
+
+                // let changeSetName = SnakeToPascal(`new_${method.toLowerCase()}_changeset`);
+                let changeSetName = SnakeToPascal(`new_${method.toLowerCase()}_changeset`);
+                this.changeSetName = changeSetName;
+
+                // this.routerFuncApiName = SnakeToPascal(`api_${HttpMethodToHtmlName(this.method, many)}_${table.label}`);
+
+                this.repo = {
+                        type: `${SnakeToPascal(table.label + '_repository')}`,
+                        var: `${SnakeToCamel(table.label + '_repository')}`,
+                };
+
+                this.sql = {
+                        inout: [],
+                        inputs: [],
+                        outputs: [],
+                        name: `${method.toLowerCase()}_${table.label}${manyStrModifier}`,
+                };
+
+                this.go = {
+                        fnName: SnakeToPascal(this.sql.name),
+                        routerFuncName: SnakeToPascal(`handle_${HttpMethodToHtmlName(this.method, many)}_page`),
+                        routerFuncApiName: SnakeToPascal(`handle_${this.method.toLocaleLowerCase()}_json${manyStrModifier}`),
+                        routerFuncFormName: SnakeToPascal(`handle_${this.method.toLocaleLowerCase()}_form${manyStrModifier}`),
+                        routerRepoName: SnakeToPascal(`repo_${this.method.toLocaleLowerCase()}_${table.label}${manyStrModifier}`),
+
+                        primaryKeys: pks.map((e) => new EndpointParam(e, e.validation)),
+
+                        real: {
+                                name: SnakeToCamel(table.label),
+                                type: SnakeToPascal(table.label),
+                        },
+                };
+
+                this.url = {
+                        apiIndexPage: `/api/${this.go.real.name}`,
+                };
+        }
+
+        sqlOutputs() {
+                return this.sql.outputs.map((e) => e.sql.name).join(',\n    ');
+        }
+}
+
 export class Endpoint {
         method: HttpMethod;
         /**
@@ -701,7 +794,7 @@ export class Endpoint {
 
                         primaryKey: new EndpointParam(pk, pk.validation),
                         real: {
-                                name: SnakeToKebab(table.label),
+                                name: SnakeToCamel(table.label),
                                 type: SnakeToPascal(table.label),
                         },
                 };
@@ -722,6 +815,43 @@ export class Endpoint {
 
         sqlOutputs() {
                 return this.sql.outputs.map((e) => e.sql.name).join(',\n    ');
+        }
+}
+
+export class EntityNonEndpoints {
+        create: {
+                single: NonEndpoint;
+        };
+        read: {
+                single: NonEndpoint;
+                many: NonEndpoint;
+        };
+        update: {
+                single: NonEndpoint;
+        };
+        delete: {
+                single: NonEndpoint;
+        };
+
+        constructor(
+                createIn: {
+                        single: NonEndpoint;
+                },
+                readIn: {
+                        single: NonEndpoint;
+                        many: NonEndpoint;
+                },
+                updateIn: {
+                        single: NonEndpoint;
+                },
+                deleteIn: {
+                        single: NonEndpoint;
+                }
+        ) {
+                this.create = createIn;
+                this.read = readIn;
+                this.update = updateIn;
+                this.delete = deleteIn;
         }
 }
 
@@ -939,6 +1069,7 @@ export class SqlTable {
 
         is: EndpointParam[] = [];
         endpoints: EntityEndpoints | null = null;
+        nonEndpoints: EntityNonEndpoints | null = null;
 
         get fullName(): string {
                 return `${this.parentSchema.name}.${this.label}`;
@@ -1080,7 +1211,46 @@ export class SqlTable {
                         });
 
                 if (!this.singlePk) {
-                        console.log('no single pk, skipping endpoint gen for ' + this.label);
+                        let pks = Object.values(this.primaryKeys());
+
+                        let createSingle = new NonEndpoint(HttpMethod.POST, this, false, pks);
+                        createSingle.sql.inout = [...primaryInOutAttrs];
+                        createSingle.sql.inputs = [...primaryInOutAttrs, ...nonPrimaryAttrs].filter((e) => !e.systemField);
+                        createSingle.sql.outputs = [...primaryInOutAttrs];
+
+                        let readSingle = new NonEndpoint(HttpMethod.GET, this, false, pks);
+                        readSingle.sql.inputs = [...primaryAttrs];
+                        readSingle.sql.outputs = [...allAttrs];
+
+                        let readEverything = new NonEndpoint(HttpMethod.GET, this, true, pks);
+                        readEverything.sql.inputs = [];
+                        readEverything.sql.outputs = [...allAttrs];
+
+                        let updateSingle = new NonEndpoint(HttpMethod.PUT, this, false, pks);
+                        updateSingle.sql.inout = [...primaryInOutAttrs];
+                        updateSingle.sql.inputs = [...primaryInOutAttrs, ...nonPrimaryAttrs].filter((e) => !e.readOnly && !e.systemField);
+
+                        updateSingle.sql.outputs = [];
+
+                        let deleteSingle = new NonEndpoint(HttpMethod.DELETE, this, false, pks);
+                        deleteSingle.sql.inputs = [...primaryAttrs];
+
+                        this.nonEndpoints = new EntityNonEndpoints(
+                                {
+                                        single: createSingle,
+                                },
+                                {
+                                        single: readSingle,
+                                        many: readEverything,
+                                },
+                                {
+                                        single: updateSingle,
+                                },
+                                {
+                                        single: deleteSingle,
+                                }
+                        );
+                        console.log('this.nonEndpoints :>> ', this.nonEndpoints);
                         return;
                 }
 

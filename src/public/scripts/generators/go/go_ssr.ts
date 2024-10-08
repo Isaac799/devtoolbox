@@ -322,6 +322,20 @@ export class GoSSR extends CodeGenerator {
                 let urlHtml = table.endpoints!.read.single.url.indexPage;
                 let pkProp = table.endpoints?.read.single.go.primaryKey.go.var.propertyName;
 
+                let referencedByParts: string[] = [];
+                for (const t of table.isReferencedBy) {
+                        let str = `<div class="column">${t.label}</div>`;
+                        referencedByParts.push(str);
+                }
+                let referencedByString = `<div class="columns">${referencedByParts.join('\n')}</div>`;
+
+                let referencedToParts: string[] = [];
+                for (const t of table.hasReferenceTo) {
+                        let str = `<div class="column">${t.label}</div>`;
+                        referencedToParts.push(str);
+                }
+                let referencedToString = `<div class="columns>${referencedToParts.join('\n')}</div>`;
+
                 let attrsStr = show
                         .map((e) => ` <p class="pb-2"><strong>${SnakeToTitle(e.sql.name)}:</strong> {{.Data.${e.go.var.propertyName}}}</p>`)
                         .join('\n        ');
@@ -362,6 +376,16 @@ export class GoSSR extends CodeGenerator {
                 Edit ${title}
             </a>
         </div>
+    </div>
+    <div class="box">
+        <h2 class="title is-4">Tables Using ${title}</h2>
+        <h3 class="subtitle is-5">Is referenced by</h3>
+        ${referencedByString}
+    </div>
+    <div class="box">
+        <h2 class="title is-4">Tables Used By ${title}</h2>
+        <h3 class="subtitle is-5">Has a reference to</h3>
+        ${referencedToString}
     </div>
 </div>
 

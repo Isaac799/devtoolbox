@@ -1,5 +1,5 @@
 import { alignKeyword, alignKeywords, SnakeToPascal } from '../../core/formatting';
-import { CodeGenerator, Endpoint, EndpointParam, HttpMethod, SQL_TO_GO_TYPE } from '../../core/structure';
+import { CodeGenerator, Endpoint, EndpointParam, HttpMethod, NonEndpoint, SQL_TO_GO_TYPE } from '../../core/structure';
 import { GoRouter } from './go_router';
 
 export class GoPkgModel extends CodeGenerator {
@@ -30,18 +30,6 @@ export class GoPkgModel extends CodeGenerator {
                                 let stack: string[] = [];
 
                                 const table = schema.tables[tableName];
-                                if (!table.endpoints) continue;
-
-                                importsParts = importsParts.concat(GoRouter.GenerateImportsFormStruct(table.is));
-
-                                stack.push(`type ${SnakeToPascal(tableName)} struct {`);
-                                for (const attr of table.endpoints.read.single.http.bodyOut) {
-                                        stack.push(`    ${attr.go.var.propertyName} ${attr.go.var.propertyGoType} \`json:"${attr.sql.name}"\``);
-                                }
-
-                                stack.push('}');
-                                outputStack.push(this.FormatStack(stack).join(`\n`));
-                                stack = [];
 
                                 importsParts = [...new Set(importsParts)];
                                 let imports = importsParts
@@ -58,6 +46,53 @@ import (
     ${imports}
 )`;
                                 }
+
+                                if (!table.endpoints && table.nonEndpoints) {
+                                        importsParts = importsParts.concat(GoRouter.GenerateImportsFormStruct(table.is));
+
+                                        stack.push(`type ${SnakeToPascal(tableName)} struct {`);
+                                        for (const attr of table.nonEndpoints.read.single.sql.outputs) {
+                                                stack.push(`    ${attr.go.var.propertyName} ${attr.go.var.propertyGoType} \`json:"${attr.sql.name}"\``);
+                                        }
+
+                                        stack.push('}');
+                                        outputStack.push(this.FormatStack(stack).join(`\n`));
+                                        stack = [];
+
+                                        let pkg = `package models${importStmt}     
+                                
+import "myapp/pkg/validation"                                
+                                `;
+                                        outputStack.unshift(pkg);
+
+                                        let fileContent = outputStack.join('\n').trim();
+
+                                        let InsertChangeset = GoPkgModel.NonEndpointBuildVarChangesets(table.nonEndpoints.create.single, table.is);
+                                        let UpdateChangeset = GoPkgModel.NonEndpointBuildVarChangesets(table.nonEndpoints.update.single, table.is);
+                                        let DeleteChangeset = GoPkgModel.NonEndpointBuildVarChangesets(table.nonEndpoints.delete.single, table.is);
+
+                                        let finalAnswer = [fileContent, InsertChangeset, UpdateChangeset, DeleteChangeset];
+                                        let finalAnswerStr = finalAnswer.join('\n\n');
+
+                                        this.output[`/pkg/models/${table.label}.go`] = finalAnswerStr;
+
+                                        this.output[`/pkg/services/${table.label}.go`] = `package services\n\n// add business logic here`;
+                                }
+                                if (!table.endpoints) {
+                                        console.warn(`not sure what to do with table ${table.label} when making the repos`);
+                                        continue;
+                                }
+
+                                importsParts = importsParts.concat(GoRouter.GenerateImportsFormStruct(table.is));
+
+                                stack.push(`type ${SnakeToPascal(tableName)} struct {`);
+                                for (const attr of table.endpoints.read.single.http.bodyOut) {
+                                        stack.push(`    ${attr.go.var.propertyName} ${attr.go.var.propertyGoType} \`json:"${attr.sql.name}"\``);
+                                }
+
+                                stack.push('}');
+                                outputStack.push(this.FormatStack(stack).join(`\n`));
+                                stack = [];
 
                                 let pkg = `package models${importStmt}     
                                 
@@ -139,6 +174,72 @@ import "myapp/pkg/validation"
                 let validationStrs = phrases.join('\n    ');
 
                 let answer = `func (${firstLetter} *${endpoint.go.real.type}) ${endpoint.changeSetName}() validation.Changeset[${endpoint.go.real.type}] {
+    changeset := validation.NewChangeset(${firstLetter})
+
+${validationStrs}
+    return changeset
+}
+`;
+
+                return answer;
+        }
+
+        private static NonEndpointBuildVarChangesets(nonEndpoint: NonEndpoint, value: EndpointParam[]): string {
+                let items = [...value];
+                let firstLetter = nonEndpoint.go.real.name[0];
+
+                let phrases = items
+                        .filter((e) => !e.systemField)
+                        .map((e) => {
+                                if (!e.validation.range) {
+                                        return `// ${e.go.var.propertyName} has no validation`;
+                                }
+
+                                // if deleting we do not really use atm
+                                if (nonEndpoint.method === HttpMethod.DELETE) {
+                                        return `// ${e.go.var.propertyName} validation optional on delete`;
+                                }
+
+                                // if updating we only care about the fields we will change, the non readonly ones
+                                if (nonEndpoint.method === HttpMethod.PUT && e.readOnly) {
+                                        return `// ${e.go.var.propertyName} is 'readonly', not changing on update or needing validation`;
+                                }
+
+                                let str = '';
+                                let errTitle = e.go.var.propertyAsVariable;
+                                let range = e.validation.range;
+                                // let returnVal = returnValue ? `${nonEndpoint.go.primaryKey.go.stuff.emptyValue}, err` : 'err';
+                                if (range) {
+                                        if (e.go.var.propertyGoType === 'string') {
+                                                str = `    if err := validation.ValidateString(${firstLetter}.${e.go.var.propertyName}, ${range.min}, ${range.max}); err != nil {
+        changeset.Errors["${errTitle}"] = err.Error()
+    }`;
+                                        } else if (e.go.var.propertyGoType === 'float64') {
+                                                str = `    if err :=  validation.ValidateFloat64(${firstLetter}.${e.go.var.propertyName}, ${range.min}, ${range.max}); err != nil {
+        changeset.Errors["${errTitle}"] = err.Error()
+    }`;
+                                        } else {
+                                                str = `    if err :=  validation.ValidateNumber(${firstLetter}.${e.go.var.propertyName}, ${range.min}, ${range.max}); err != nil {
+        changeset.Errors["${errTitle}"] = err.Error()
+    }`;
+                                        }
+                                }
+                                // console.log('e.validation.required :>> ', e.go.var.propertyName, e.validation.required);
+                                if (!e.validation.required) {
+                                        // str = GoCommentItOut(str, 'commented out because the field is not required');
+                                        str = `
+    // ${e.go.var.propertyName} is not required (is nullable) so we only validate if it was given
+    if ${firstLetter}.${e.go.var.propertyName} != ${e.go.stuff.emptyValue} {
+    ${str}
+    }`;
+                                }
+
+                                return str;
+                        });
+
+                let validationStrs = phrases.join('\n    ');
+
+                let answer = `func (${firstLetter} *${nonEndpoint.go.real.type}) ${nonEndpoint.changeSetName}() validation.Changeset[${nonEndpoint.go.real.type}] {
     changeset := validation.NewChangeset(${firstLetter})
 
 ${validationStrs}

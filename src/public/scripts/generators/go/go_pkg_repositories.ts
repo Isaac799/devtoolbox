@@ -1,4 +1,4 @@
-import { CodeGenerator, Endpoint, SqlTable } from '../../core/structure';
+import { CodeGenerator, Endpoint, NonEndpoint, SqlTable } from '../../core/structure';
 import { SqlGenerator } from './../sql/postgres_sql';
 
 export class GoPkgRepositories extends CodeGenerator {
@@ -23,11 +23,57 @@ import (
                                         continue;
                                 }
                                 const table = schema.tables[tableName];
-                                if (!table.endpoints) {
+                                let fileName = '/pkg/repositories/' + table.label + '.go';
+                                let allParts: string[] = [pkg];
+
+                                if (!table.endpoints && table.nonEndpoints) {
+                                        // any table repo name will do
+                                        let rpNm = table.nonEndpoints.read.single.repo.type;
+                                        let repo = `type ${rpNm} struct {
+    DB *sql.DB
+}`;
+
+                                        allParts.push(repo);
+
+                                        {
+                                                const endpoint = table.nonEndpoints.create.single;
+                                                let str = GoPkgRepositories.NonEndpointGenerateCreateSnippet(endpoint);
+                                                allParts.push(str);
+                                        }
+                                        {
+                                                const endpoint = table.nonEndpoints.read.single;
+                                                let str = GoPkgRepositories.NonEndpointGenerateReadSingleSnippet(endpoint, table);
+                                                allParts.push(str);
+                                        }
+                                        {
+                                                const endpoint = table.nonEndpoints.read.many;
+                                                let str = GoPkgRepositories.NonEndpointGenerateReadManySnippet(endpoint, table);
+                                                allParts.push(str);
+                                        }
+                                        {
+                                                const endpoint = table.nonEndpoints.update.single;
+                                                let str = GoPkgRepositories.NonEndpointGenerateUpdateSnippet(endpoint, table);
+                                                allParts.push(str);
+                                        }
+                                        {
+                                                const endpoint = table.nonEndpoints.delete.single;
+                                                let str = GoPkgRepositories.NonEndpointGenerateDeleteSnippet(endpoint);
+                                                allParts.push(str);
+                                        }
+                                        {
+                                                const endpoint = table.nonEndpoints.delete.single;
+                                                let str = GoPkgRepositories.NonEndpointGenerateCountSnippet(endpoint);
+                                                allParts.push(str);
+                                        }
+                                        let tableStr = allParts.join('\n\n');
+                                        this.output[fileName] = tableStr;
+
                                         continue;
                                 }
-
-                                let allParts: string[] = [pkg];
+                                if (!table.endpoints) {
+                                        console.warn(`not sure what to do with table ${table.label} when making the repos`);
+                                        continue;
+                                }
 
                                 // any table repo name will do
                                 let rpNm = table.endpoints.read.single.repo.type;
@@ -68,7 +114,7 @@ import (
                                         allParts.push(str);
                                 }
                                 let tableStr = allParts.join('\n\n');
-                                this.output['/pkg/repositories/' + table.label + '.go'] = tableStr;
+                                this.output[fileName] = tableStr;
                         }
                 }
 
@@ -265,6 +311,228 @@ import (
         return 0, err
     }
     return count, nil
+}`;
+
+                return str.trim();
+        }
+
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        private static NonEndpointGenerateCreateSnippet(nonEndpoint: NonEndpoint) {
+                let inputsForQuery = nonEndpoint.sql.inputs.map((e) => `${nonEndpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let scanInto = nonEndpoint.sql.outputs.map((e) => `&${nonEndpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let returns = `*validation.Changeset[models.${nonEndpoint.go.real.type}]`;
+
+                let str = `func (repo *${nonEndpoint.repo.type}) ${nonEndpoint.go.routerRepoName}(${nonEndpoint.go.real.name} *models.${
+                        nonEndpoint.go.real.type
+                }) ${returns} {
+changeset := ${nonEndpoint.go.real.name}.${nonEndpoint.changeSetName}()
+
+if !changeset.IsValid() {
+    return &changeset
+}
+
+tx, err := repo.DB.Begin()
+if err != nil {
+    changeset.Errors["transaction"] = err.Error()
+    return &changeset
+}
+            
+query := \`${SqlGenerator.NonEndpointGenerateACreateEndpoint(nonEndpoint, true)}\`
+
+if err := tx.QueryRow(query, ${inputsForQuery}).Scan(${scanInto}); err != nil {
+    if rollbackErr := tx.Rollback(); rollbackErr != nil {
+        changeset.Errors["rollback"] = rollbackErr.Error()
+    }
+    changeset.Errors["postgres"] = err.Error()
+    return &changeset
+}
+if err := tx.Commit(); err != nil {
+    changeset.Errors["commit"] = err.Error()
+}
+return &changeset
+}`;
+                return str.trim();
+        }
+
+        private static NonEndpointGenerateReadSingleSnippet(nonEndpoint: NonEndpoint, table: SqlTable) {
+                let scanInto = nonEndpoint.sql.outputs.map((e) => `&${nonEndpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let paramFromRouter = nonEndpoint.go.primaryKeys.map((e) => `${e.go.var.propertyAsVariable} ${e.go.var.propertyGoType}`).join(', ');
+
+                let inputsForQuery = nonEndpoint.sql.inputs.map((e) => `${e.go.var.propertyAsVariable}`);
+                let inputs = [...inputsForQuery].join(', ');
+
+                let str = `func (repo *${nonEndpoint.repo.type}) ${nonEndpoint.go.routerRepoName}(${paramFromRouter}) (models.${
+                        nonEndpoint.go.real.type
+                }, error) {
+query := \`${SqlGenerator.NonEndpointGenerateAReadEndpoint(nonEndpoint, table, true)}\`
+
+var ${nonEndpoint.go.real.name} models.${nonEndpoint.go.real.type}
+err := repo.DB.QueryRow(query, ${inputs}).Scan(${scanInto})
+
+return ${nonEndpoint.go.real.name}, err
+}`;
+                return str.trim();
+        }
+
+        private static NonEndpointGenerateReadManySnippet(nonEndpoint: NonEndpoint, table: SqlTable) {
+                let scanInto = nonEndpoint.sql.outputs.map((e) => `&${nonEndpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let funcParams = `offset, limit int`;
+
+                let str = `func (repo *${nonEndpoint.repo.type}) ${nonEndpoint.go.routerRepoName}(${funcParams}) ([]models.${nonEndpoint.go.real.type}, error) {
+query := \`${SqlGenerator.NonEndpointGenerateAReadEndpoint(nonEndpoint, table, true)}\`
+
+if limit > 100 {
+    limit = 100
+}
+
+rows, err := repo.DB.Query(query, limit, offset)
+if err != nil {
+    return nil, err
+}
+defer rows.Close()
+
+var ${nonEndpoint.go.real.name}s []models.${nonEndpoint.go.real.type}
+for rows.Next() {
+    var ${nonEndpoint.go.real.name} models.${nonEndpoint.go.real.type}
+    err := rows.Scan(${scanInto})
+    if err != nil {
+        return nil, err
+    }
+    ${nonEndpoint.go.real.name}s = append(${nonEndpoint.go.real.name}s, ${nonEndpoint.go.real.name})
+}
+
+return ${nonEndpoint.go.real.name}s, err
+}`;
+                return str.trim();
+        }
+
+        private static NonEndpointGenerateUpdateSnippet(nonEndpoint: NonEndpoint, table: SqlTable) {
+                // here as its the repo we want id in the body too, so we treat it the same
+                let bodyAttrs = nonEndpoint.sql.inputs.map((e) => `${nonEndpoint.go.real.name}.${e.go.var.propertyName}`);
+                let inputs = [...bodyAttrs].join(', ');
+                let returns = `*validation.Changeset[models.${nonEndpoint.go.real.type}]`;
+                let funcParams = `${nonEndpoint.go.real.name} *models.${nonEndpoint.go.real.type}`;
+
+                let errorCompositePkMessage = nonEndpoint.go.primaryKeys.map((e) => `${e.go.var.propertyAsVariable}`).join(', ');
+
+                let str = `func (repo *${nonEndpoint.repo.type}) ${nonEndpoint.go.routerRepoName}(${funcParams}) ${returns} {
+changeset := ${nonEndpoint.go.real.name}.${nonEndpoint.changeSetName}()
+
+if !changeset.IsValid() {
+    return &changeset
+}
+
+tx, err := repo.DB.Begin()
+if err != nil {
+    changeset.Errors["transaction"] = err.Error()
+    return &changeset
+}
+            
+query := \`${SqlGenerator.NonEndpointGenerateAUpdateEndpoint(table, nonEndpoint, true)}\`
+
+result, err := tx.Exec(query, ${inputs}); 
+if err != nil {
+    if rollbackErr := tx.Rollback(); rollbackErr != nil {
+        changeset.Errors["rollback"] = rollbackErr.Error()
+    }
+    changeset.Errors["postgres"] = err.Error()
+    return &changeset
+}
+
+rowsAffected, err := result.RowsAffected()
+if err != nil {
+    changeset.Errors["rowsAffected"] = err.Error()
+} else if rowsAffected == 0 {
+    changeset.Errors["notFound"] = "no ${nonEndpoint.go.real.name} record found with the given ${errorCompositePkMessage}."
+}
+
+if err := tx.Commit(); err != nil {
+    changeset.Errors["commit"] = err.Error()
+}
+return &changeset
+}`;
+                return str.trim();
+        }
+
+        private static NonEndpointGenerateDeleteSnippet(nonEndpoint: NonEndpoint) {
+                let inputs = nonEndpoint.sql.inputs.map((e) => `${nonEndpoint.go.real.name}.${e.go.var.propertyName}`).join(', ');
+                let returns = `*validation.Changeset[models.${nonEndpoint.go.real.type}]`;
+                let funcParams = `${nonEndpoint.go.real.name} *models.${nonEndpoint.go.real.type}`;
+
+                // let paramFromRouter = `${nonEndpoint.go.primaryKey.go.var.propertyAsVariable} ${nonEndpoint.go.primaryKey.go.var.propertyGoType}`;
+
+                let errorCompositePkMessage = nonEndpoint.go.primaryKeys.map((e) => `${e.go.var.propertyAsVariable}`).join(', ');
+
+                let str = `func (repo *${nonEndpoint.repo.type}) ${nonEndpoint.go.routerRepoName}(${funcParams}) ${returns} {
+changeset := ${nonEndpoint.go.real.name}.${nonEndpoint.changeSetName}()
+
+if !changeset.IsValid() {
+    return &changeset
+}
+
+tx, err := repo.DB.Begin()
+if err != nil {
+    changeset.Errors["transaction"] = err.Error()
+    return &changeset
+}
+            
+query := \`${SqlGenerator.NonEndpointGenerateADeleteEndpoint(nonEndpoint, true)}\`
+
+result, err := tx.Exec(query, ${inputs}); 
+if err != nil {
+    if rollbackErr := tx.Rollback(); rollbackErr != nil {
+        changeset.Errors["rollback"] = rollbackErr.Error()
+    }
+    changeset.Errors["postgres"] = err.Error()
+    return &changeset
+}
+
+rowsAffected, err := result.RowsAffected()
+if err != nil {
+    changeset.Errors["rowsAffected"] = err.Error()
+} else if rowsAffected == 0 {
+    changeset.Errors["notFound"] = "no ${nonEndpoint.go.real.name} record found with the given ${errorCompositePkMessage}."
+}
+
+if err := tx.Commit(); err != nil {
+    changeset.Errors["commit"] = err.Error()
+}
+return &changeset
+}`;
+                return str.trim();
+        }
+
+        private static NonEndpointGenerateCountSnippet(nonEndpoint: NonEndpoint) {
+                let str = `func (repo *${nonEndpoint.repo.type}) GetTotalCount() (int, error) {
+var count int
+query := \`SELECT COUNT(*) FROM ${nonEndpoint.tableFullName};\`
+err := repo.DB.QueryRow(query).Scan(&count)
+if err != nil {
+    return 0, err
+}
+return count, nil
 }`;
 
                 return str.trim();

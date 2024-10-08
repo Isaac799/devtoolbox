@@ -1,5 +1,5 @@
 import { alignKeyword, alignKeywords, replaceDoubleSpaces } from '../../core/formatting';
-import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, SqlType, Endpoint } from '../../core/structure';
+import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, SqlType, Endpoint, NonEndpoint } from '../../core/structure';
 
 const typeKeywords = Object.values(SqlType).map((e) => ` ${e}`);
 
@@ -619,6 +619,159 @@ WHERE ${where};`;
                 }
 
                 const selectsNeeded = endpoint.sql.outputs.map((e) => {
+                        let answer = [];
+
+                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
+                        } else {
+                                answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
+                        }
+                        if (e.sql.sqlLocation.columnAliasedAs) {
+                                answer.push(`AS ${e.sql.sqlLocation.tableAliasedAs}_${e.sql.sqlLocation.columnAliasedAs}`);
+                        } else {
+                                answer.push(e.sql.sqlLocation.columnAliasedAs);
+                        }
+                        return answer.join(' ');
+                });
+                const selecting = alignKeyword(selectsNeeded, ' AS ').join(',\n    ');
+
+                let afterFrom = [tableName, join, orderBy, where];
+                let procedure = `SELECT 
+    ${selecting}     
+FROM ${afterFrom.join('\n')};`;
+                return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
+        }
+
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        static NonEndpointGenerateACreateEndpoint(nonEndpoint: NonEndpoint, withPlaceholders: boolean = false) {
+                const into = nonEndpoint.sql.inputs.map((e) => `${e.sql.sqlLocation.column}`).join(',\n    ');
+                let defaultCount = 0;
+                const values = nonEndpoint.sql.inputs.map((e, i) => (withPlaceholders ? `$${i + 1 - defaultCount}` : `${e.sql.name}`)).join(',\n    ');
+                const returning = nonEndpoint.sql.outputs.map((e) => `${e.sql.sqlLocation.column}`).join(', ');
+
+                let procedure = `
+INSERT INTO ${nonEndpoint.tableFullName} (
+    ${into}
+) 
+VALUES (
+    ${values}
+)
+RETURNING 
+    ${returning};`;
+                return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
+        }
+
+        static NonEndpointGenerateADeleteEndpoint(nonEndpoint: NonEndpoint, withPlaceholders: boolean = false) {
+                let where = SqlGenerator.JoinAnd(
+                        alignKeyword(
+                                nonEndpoint.sql.inputs.map(
+                                        (e, i) =>
+                                                `${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column} = ${
+                                                        withPlaceholders ? `$${i + 1}` : e.sql.name
+                                                }`
+                                ),
+                                '='
+                        )
+                );
+
+                where = `\n    ${where}`;
+
+                let procedure = `DELETE FROM ${nonEndpoint.tableFullName}
+WHERE ${where};`;
+                return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
+        }
+
+        static NonEndpointGenerateAUpdateEndpoint(table: SqlTable, nonEndpoint: NonEndpoint, withPlaceholders: boolean = false) {
+                const whereEquals = nonEndpoint.sql.inout.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${i + 1}` : e.sql.name}`);
+                let whereClauses = whereEquals.length + 1;
+                let setting = nonEndpoint.sql.inputs.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${whereClauses + i}` : e.sql.name}`);
+
+                if (table.needsUpdatedTimestamps) {
+                        setting.push('updated_at = CURRENT_TIMESTAMP');
+                }
+
+                const whereEqualsAligned = alignKeyword(whereEquals, '=');
+                let where = `\n    ${SqlGenerator.JoinAnd(whereEqualsAligned)}`;
+                where = `\n    ${where}`;
+
+                let procedure = `SET 
+    ${alignKeyword(setting, '=').join(',\n    ')}
+WHERE ${where};`;
+
+                let start = `UPDATE ${nonEndpoint.tableFullName} `;
+                return start + replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
+        }
+
+        static NonEndpointGenerateAReadEndpoint(nonEndpoint: NonEndpoint, table: SqlTable, withPlaceholders: boolean = false) {
+                const whereParts = nonEndpoint.sql.inputs.map((e, i) => {
+                        let answer = [];
+                        if (e.sql.sqlLocation.tableAliasedAs) {
+                                answer.push(`${e.sql.sqlLocation.tableAliasedAs}.${e.sql.sqlLocation.column}`);
+                        } else {
+                                answer.push(`${e.sql.sqlLocation.schema}.${e.sql.sqlLocation.table}.${e.sql.sqlLocation.column}`);
+                        }
+                        answer.push('=');
+                        answer.push(withPlaceholders ? `$${i + 1}` : e.sql.name);
+                        answer = alignKeywords(answer, typeKeywords);
+
+                        return answer.join(' ');
+                });
+                let where = SqlGenerator.JoinAnd(alignKeyword(whereParts, '='));
+                where = `\n    WHERE ${where}`;
+
+                let orderBy = '';
+
+                if (!nonEndpoint.sql.inputs.length) {
+                        // assuming its a many at this point
+                        // where = '';
+
+                        let manyLimitOffset = ` LIMIT $1 OFFSET $2`;
+                        where = manyLimitOffset;
+
+                        let compositePkOrder = nonEndpoint.go.primaryKeys.map((e) => `${e.sql.sqlLocation.column} ASC`).join('\n');
+
+                        // table name caused issues here for order table
+                        // orderBy = `ORDER BY ${nonEndpoint.go.primaryKey.sql.sqlLocation.table}.${nonEndpoint.go.primaryKey.sql.sqlLocation.column}`;
+                        orderBy = `ORDER BY ${compositePkOrder}`;
+                }
+
+                let join = '';
+                let tableName = '';
+                let joinStr = `\n    ${SqlGenerator.GenerateReadLeftJoinString(table)}`;
+
+                if (nonEndpoint.sql.name.includes('join')) {
+                        join = joinStr;
+                        tableName = `${nonEndpoint.tableFullName} ${nonEndpoint.tableFullName.slice(0, 3)}_0`;
+                } else {
+                        tableName = `${nonEndpoint.tableFullName}`;
+                }
+
+                const selectsNeeded = nonEndpoint.sql.outputs.map((e) => {
                         let answer = [];
 
                         if (e.sql.sqlLocation.tableAliasedAs) {

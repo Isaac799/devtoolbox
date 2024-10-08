@@ -94,25 +94,6 @@ ${renderFunctions}
                 }
         }
 
-        private static GenerateShowSnippet(endpoint: Endpoint, title: string, filePath: string, table: SqlTable) {
-                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
-                variablesFromPath = '    ' + variablesFromPath;
-
-                let str = `func ${endpoint.go.routerFuncName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-${variablesFromPath}
-        ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${SnakeToCamel(table.singlePk!.value)}); 
-        if err != nil {
-            log.Print(err.Error())
-            http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
-            return
-        }
-        services.RenderPageWithData(w, r, "${title}", "${filePath}", &${endpoint.go.real.name})
-    }
-}`;
-                return str.trim();
-        }
-
         private static GenerateEditSnippet(endpoint: Endpoint, title: string, filePath: string, table: SqlTable) {
                 let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n        ');
                 let funcParams = `repo *repositories.${endpoint.repo.type}, changeset *validation.Changeset[models.${endpoint.go.real.type}]`;
@@ -186,6 +167,31 @@ ${variablesFromPath}
         
         
         services.RenderPageWithData(w, r, "${title}", "${filePath}", &pageData)
+    }
+}`;
+                return str.trim();
+        }
+
+        private static GenerateShowSnippet(endpoint: Endpoint, title: string, filePath: string, table: SqlTable) {
+                let variablesFromPath = GoRouter.ParseFromPath(endpoint.http.path).split('\n').join('\n    ');
+                variablesFromPath = '    ' + variablesFromPath;
+
+                if (table.isReferencedBy) {
+                }
+
+                if (table.hasReferenceTo) {
+                }
+
+                let str = `func ${endpoint.go.routerFuncName}(repo *repositories.${endpoint.repo.type}) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+${variablesFromPath}
+        ${endpoint.go.real.name}, err := repo.${table.endpoints!.read.single.go.routerRepoName}(${SnakeToCamel(table.singlePk!.value)}); 
+        if err != nil {
+            log.Print(err.Error())
+            http.Redirect(w, r, "/500", http.StatusTemporaryRedirect)
+            return
+        }
+        services.RenderPageWithData(w, r, "${title}", "${filePath}", &${endpoint.go.real.name})
     }
 }`;
                 return str.trim();
