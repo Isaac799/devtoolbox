@@ -555,16 +555,19 @@ WHERE ${where};`;
                 return replaceDoubleSpaces(procedure.replace(/\n/g, ' ').trim());
         }
 
-        static GenerateAUpdateEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {
+        static GenerateAUpdateEndpoint(table: SqlTable, endpoint: Endpoint, withPlaceholders: boolean = false) {
                 const whereEquals = endpoint.sql.inout.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${i + 1}` : e.sql.name}`);
                 let whereClauses = whereEquals.length + 1;
                 let setting = endpoint.sql.inputs.map((e, i) => `${e.sql.sqlLocation.column} = ${withPlaceholders ? `$${whereClauses + i}` : e.sql.name}`);
+
+                if (table.needsUpdatedTimestamps) {
+                        setting.push('updated_at = CURRENT_TIMESTAMP');
+                }
 
                 const whereEqualsAligned = alignKeyword(whereEquals, '=');
                 let where = `\n    ${SqlGenerator.JoinAnd(whereEqualsAligned)}`;
                 where = `\n    ${where}`;
 
-                console.log('endpoint.sql.inputs :>> ', endpoint.sql.inputs);
                 let procedure = `SET 
     ${alignKeyword(setting, '=').join(',\n    ')}
 WHERE ${where};`;

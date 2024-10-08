@@ -202,16 +202,6 @@ export class InputParser {
                                         if (Object.prototype.hasOwnProperty.call(schema.tables, key)) {
                                                 const table = schema.tables[key];
                                                 SortTableAttributes(table);
-                                                console.log('');
-                                                console.log('');
-                                                console.log(
-                                                        `${table.label} isReferencedBy tables`,
-                                                        table.isReferencedBy.map((e) => e.label)
-                                                );
-                                                console.log(
-                                                        `${table.label} hasReferenceTo tables`,
-                                                        table.hasReferenceTo.map((e) => e.label)
-                                                );
                                         }
                                 }
                         }
@@ -655,6 +645,11 @@ export class InputParser {
         }
 
         ValidAttribute(attr: SqlTableAttribute, table: SqlTable): boolean {
+                if (['inserted_at', 'updated_at'].includes(attr.value)) {
+                        this.SaveErrorMessage(`'${attr.value}' on '${table.label}' is reserved for table '@' flag`);
+                        return false;
+                }
+
                 if (attr.sqlType === SqlType.VARCHAR && !attr.validation.range) {
                         this.SaveErrorMessage(`'${attr.value}' on '${table.label}' lacks a valid range. (e.g. '0..255')`);
                         return false;

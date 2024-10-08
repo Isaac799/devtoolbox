@@ -326,8 +326,8 @@ let fileOutputs: FileOutputs = {};
 let selectedFileOutputs: string = '';
 
 const APP_ITEMS = [
-        new AppItem('Postgres', new SqlGenerator()),
         new AppItem('Go', new GoCodeGenerator()),
+        new AppItem('Postgres', new SqlGenerator()),
         // new AppItem('Node JS', new NodeExpressCodeGenerator()),
         new AppItem('TS Types', new TsTypesCodeGenerator()),
         // new AppItem('HTML forms', new HtmlCodeGenerator()),
@@ -341,47 +341,60 @@ const APP_ITEMS = [
 
 window.addEventListener('DOMContentLoaded', Main);
 
-const DEFAULT_INPUT = `
-
-## customer
-
-- customer +
-  - s email * 8..255
-  - s username ** 6..20
-  - b active
-
-## catalog
+const DEFAULT_INPUT = `## catalog
 
 - category + 
   - s title * 4..31
 
-- product + 
+- product + @
   - s title * ! 0..63
   - d price ! 1.00..1000.00
 
-- product_category
+- product_category @
   - ^ product + !
   - ^ category + !
+`;
+// const DEFAULT_INPUT = `
 
-## shopping_cart
+// ## customer
 
-- cart + 
-  - ^ customer.customer ! *
-  
-- cart_item @ 
-  - ^ _cart +
-  - ^ _catalog.product +
-  - d _price_when_carted !
+// - customer +
+//   - s email * 8..255
+//   - s username ** 6..20
+//   - b active
 
-## orders
+// ## catalog
 
-- order + @ 
-  - ^ _customer.customer ! *
-  - b finalized !
-  - d _total_cost ! 1.00..1000000.00
-  
-- order_item @ 
-  - ^ order + !
-  - ^ catalog.product + !
+// - category +
+//   - s title * 4..31
 
-`.trim();
+// - product +
+//   - s title * ! 0..63
+//   - d price ! 1.00..1000.00
+
+// - product_category
+//   - ^ product + !
+//   - ^ category + !
+
+// ## shopping_cart
+
+// - cart +
+//   - ^ customer.customer ! *
+
+// - cart_item @
+//   - ^ _cart +
+//   - ^ _catalog.product +
+//   - d _price_when_carted !
+
+// ## orders
+
+// - order + @
+//   - ^ _customer.customer ! *
+//   - b finalized !
+//   - d _total_cost ! 1.00..1000000.00
+
+// - order_item @
+//   - ^ order + !
+//   - ^ catalog.product + !
+
+// `.trim();

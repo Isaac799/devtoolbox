@@ -926,6 +926,10 @@ export class SqlTable {
         isReferencedBy: Array<SqlTable> = [];
         hasReferenceTo: Array<SqlTable> = [];
 
+        get needsUpdatedTimestamps() {
+                return Object.keys(this.attributes).includes('updated_at');
+        }
+
         get singlePk(): SqlTableAttribute | null {
                 let pks = this.primaryKeys();
                 let values = Object.values(pks);

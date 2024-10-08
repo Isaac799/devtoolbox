@@ -54,7 +54,7 @@ import (
                                 }
                                 {
                                         const endpoint = table.endpoints.update.single;
-                                        let str = GoPkgRepositories.GenerateUpdateSnippet(endpoint);
+                                        let str = GoPkgRepositories.GenerateUpdateSnippet(endpoint, table);
                                         allParts.push(str);
                                 }
                                 {
@@ -163,7 +163,7 @@ import (
                 return str.trim();
         }
 
-        private static GenerateUpdateSnippet(endpoint: Endpoint) {
+        private static GenerateUpdateSnippet(endpoint: Endpoint, table: SqlTable) {
                 // here as its the repo we want id in the body too, so we treat it the same
                 let pathAttrs = endpoint.http.path.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`);
                 let bodyAttrs = endpoint.http.bodyIn.map((e) => `${endpoint.go.real.name}.${e.go.var.propertyName}`);
@@ -184,7 +184,7 @@ import (
         return &changeset
     }
                 
-    query := \`${SqlGenerator.GenerateAUpdateEndpoint(endpoint, true)}\`
+    query := \`${SqlGenerator.GenerateAUpdateEndpoint(table, endpoint, true)}\`
 
     result, err := tx.Exec(query, ${inputs}); 
     if err != nil {
