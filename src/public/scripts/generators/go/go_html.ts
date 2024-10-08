@@ -76,6 +76,7 @@ export class GoHTML extends CodeGenerator {
                                 let str = `package ${table.goPackageName}
 
 import (
+    "log"
     "myapp/pkg/models"
     "myapp/pkg/repositories"
     "myapp/pkg/validation"
