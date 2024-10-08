@@ -398,7 +398,7 @@ $$;`;
                                 createTableBody.push(
                                         `    FOREIGN KEY ( ${fkAttrs.map((e) => e.value).join(', ')} ) REFERENCES ${fkTable.fullName} ( ${fkAttrs
                                                 .map((e) => e.referenceTo?.column.value || '!ERROR!')
-                                                .join(', ')} )`
+                                                .join(', ')} ) ON DELETE CASCADE`
                                 );
                         }
 
