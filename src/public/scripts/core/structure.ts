@@ -841,7 +841,7 @@ export class SqlTableAttribute {
                 return this._sqlType;
         }
 
-        defaultValue?: string | null = null;
+        defaultValue?: string | null = undefined;
         referenceTo: SqlReferenceTo | null = null;
 
         parentTable: SqlTable;
