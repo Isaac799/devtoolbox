@@ -1250,7 +1250,7 @@ export class SqlTable {
                                         single: deleteSingle,
                                 }
                         );
-                        console.log('this.nonEndpoints :>> ', this.nonEndpoints);
+                        // console.log('this.nonEndpoints :>> ', this.nonEndpoints);
                         return;
                 }
 
