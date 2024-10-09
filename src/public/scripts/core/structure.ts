@@ -251,8 +251,8 @@ function genericHtmlInputFunctionForGoWithValue(sqlT: SqlType): goHtmlInputFunct
                             type="${SQL_TO_HTML_INPUT_TYPE[sqlT]}"
                             id="${x.value}"
                             name="${x.value}"
-                            {{ if .Data }}
                             ${x.isNullable() ? '' : 'required'}
+                            {{ if .Data }}
                             ${y ? `value="{{ .Data.Record.${y} }}"` : ''}
                             {{ else }}{{ end }}    
                             ${rangePhrase}
