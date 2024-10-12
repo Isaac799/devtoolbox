@@ -4,9 +4,11 @@ import { CodeGenerator, FileOutputs } from './core/structure';
 
 import '../assets/normalize.css';
 import '../assets/styles.css';
+import '../../../node_modules/highlight.js/styles/a11y-light.min.css';
 import { TsTypesCodeGenerator } from './generators/js/ts_types';
 import { GoCodeGenerator } from './generators/go/go';
 import { downloadZip } from './core/download';
+import hljs from 'highlight.js';
 
 let toDownload: any = {};
 
@@ -54,7 +56,19 @@ function UpdateSelectedFile(selectedFileName: string) {
                 console.error('Missing core html element!');
                 return;
         }
-        output.innerText = fileOutputs[selectedFileOutputs];
+
+        let code = '';
+        let ex = selectedFileOutputs.split('.').pop() || 'txt';
+        if (ex === 'mod' || ex === 'sum') {
+                ex = 'go';
+        }
+        try {
+                code = hljs.highlight(fileOutputs[selectedFileOutputs], { language: ex }).value;
+        } catch (error) {
+                code = hljs.highlightAuto(fileOutputs[selectedFileOutputs]).value;
+        }
+
+        output.innerHTML = code;
 
         for (const fileName in fileOutputs) {
                 if (!Object.prototype.hasOwnProperty.call(fileOutputs, fileName)) {
@@ -283,7 +297,7 @@ function Main(_: Event) {
                 navigator.clipboard.writeText(input.value);
         });
         outputCopy.addEventListener('click', (_) => {
-                navigator.clipboard.writeText(output.innerText);
+                navigator.clipboard.writeText(fileOutputs[selectedFileOutputs]);
         });
         outputDownload.addEventListener('click', (_) => {
                 downloadZip(toDownload, `${APP_ITEMS[focusedAppItemIndex].htmlLabel}-${Date.now().toString().slice(5, 11)}`);

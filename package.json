@@ -30,6 +30,7 @@
                 "webpack-dev-server": "^5.1.0"
         },
         "dependencies": {
+                "highlight.js": "^11.10.0",
                 "jszip": "^3.10.1"
         }
 }
