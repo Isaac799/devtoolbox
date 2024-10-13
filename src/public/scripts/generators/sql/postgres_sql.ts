@@ -1,5 +1,5 @@
 import { alignKeyword, alignKeywords, replaceDoubleSpaces } from '../../core/formatting';
-import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, SqlType, Endpoint, NonEndpoint } from '../../core/structure';
+import { CodeGenerator, ATTRIBUTE_OPTION, SqlSchema, SqlTable, SqlTableAttribute, SqlType, Endpoint, NonEndpoint, FileOutputs } from '../../core/structure';
 
 const typeKeywords = Object.values(SqlType).map((e) => ` ${e}`);
 
@@ -449,6 +449,83 @@ $$;`;
                 };
         }
 
+        ProcessSchemaJustTheTables(schema: SqlSchema) {
+                let tableSql: FileOutputs = {};
+
+                let tables = schema.tables;
+
+                // sql += `CREATE SCHEMA IF NOT EXISTS ${schemaName};`
+                // sql += `DROP SCHEMA ${schemaName};`
+
+                for (const tableName in tables) {
+                        if (!Object.prototype.hasOwnProperty.call(tables, tableName)) {
+                                continue;
+                        }
+                        const table = tables[tableName];
+
+                        const attrStrings: string[] = alignKeywords(
+                                Object.values(table.attributes).map((e) => this.CreateAttributeString(e)),
+                                typeKeywords
+                        );
+
+                        const pks: string[] = Object.values(table.primaryKeys()).map((e) => e.value);
+                        const allGroupKeysStrings: string[][] = generateGroupKeyStrings(table);
+
+                        let createTableBody: string[] = [...attrStrings];
+
+                        const groupsStr = allGroupKeysStrings.map((e) => `    UNIQUE (${e.join(', ')})`);
+                        if (groupsStr.length > 0) {
+                                createTableBody.push(`${groupsStr.join(',\n')}`);
+                        }
+
+                        if (pks.length > 0) {
+                                createTableBody.push(`    PRIMARY KEY ( ${pks.join(', ')} )`);
+                        }
+
+                        let fkGroupings = [...table.uniqueFkGroups().entries()];
+                        for (const [fkTable, fkAttrs] of fkGroupings) {
+                                createTableBody.push(
+                                        `    FOREIGN KEY ( ${fkAttrs.map((e) => e.value).join(', ')} ) REFERENCES ${fkTable.fullName} ( ${fkAttrs
+                                                .map((e) => e.referenceTo?.column.value || '!ERROR!')
+                                                .join(', ')} ) ON DELETE CASCADE`
+                                );
+                        }
+
+                        const dropCreate = `CREATE TABLE ${table.fullName} (\n`;
+                        const createTableEnd = ['\n);'];
+
+                        let createTable = dropCreate + createTableBody.join(',\n') + createTableEnd.join(',\n');
+
+                        const fks = Object.values(table.foreignKeys());
+                        for (const fk of fks) {
+                                createTable += `\nCREATE INDEX idx_${fk.value} ON ${fk.parentTable.fullName}(${fk.value});`;
+                        }
+
+                        tableSql[table.label] = createTable;
+                }
+
+                function generateGroupKeyStrings(table: SqlTable) {
+                        let allGroupKeysStrings: string[][] = [];
+                        let groupedKeys = table.uniqueGroups();
+                        for (const key in groupedKeys) {
+                                const grouping = groupedKeys[key];
+                                let groupKeysStrings: string[] = [];
+                                // for each group
+                                for (let m = 0; m < grouping.length; m++) {
+                                        const attribute = grouping[m];
+                                        // the attr of that group
+                                        groupKeysStrings.push(`${attribute.value}`);
+                                }
+                                if (groupKeysStrings.length > 0) {
+                                        allGroupKeysStrings.push(groupKeysStrings);
+                                }
+                        }
+                        return allGroupKeysStrings;
+                }
+
+                return tableSql;
+        }
+
         GenerateDrops(sql: string) {
                 let procFnTables = [];
                 let procFnSchemas = [];
@@ -515,6 +592,24 @@ $$;`;
                 }
 
                 return this;
+        }
+
+        RunAsMigration() {
+                let schemas = this.input;
+                let allFiles: FileOutputs = {};
+                for (const schemaName in schemas) {
+                        if (!Object.prototype.hasOwnProperty.call(schemas, schemaName)) {
+                                continue;
+                        }
+                        const schema = schemas[schemaName];
+                        let schemaSql = this.ProcessSchemaJustTheTables(schema);
+                        allFiles = {
+                                ...allFiles,
+                                ...schemaSql,
+                        };
+                }
+
+                return allFiles;
         }
 
         static GenerateACreateEndpoint(endpoint: Endpoint, withPlaceholders: boolean = false) {

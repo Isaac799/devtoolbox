@@ -396,7 +396,7 @@ func RenderTemplate[T any](w http.ResponseWriter, title, templateName string, da
         "../../web/templates/base.html",
         "../../"+templateName,
         "../../web/templates/navbar.html",
-		"../../web/templates/pagination.html",
+        "../../web/templates/pagination.html",
         "../../web/templates/footer.html",
     )
 
@@ -422,7 +422,7 @@ func RenderPageWithData[T any](w http.ResponseWriter, _ *http.Request, title, te
 }
 
 func RenderPage(w http.ResponseWriter, _ *http.Request, title, templateName string) {
-	RenderTemplate[any](w, title, templateName, nil)
+    RenderTemplate[any](w, title, templateName, nil)
 }
 
 `;
@@ -499,17 +499,17 @@ func GetPagination(r *http.Request, defaultLimit, defaultPage int) (offset, limi
         private static readonly paginationModel = `package models
         
 type Pagination[T any] struct {
-	Items          *[]T \`json:"items"\`
+    Items          *[]T \`json:"items"\`
     CurrentPage    int  \`json:"current_page"\`
     TotalPages     int  \`json:"total_pages"\`
     TotalCount     int  \`json:"total_count"\`
     Limit          int  \`json:"limit"\`
     PreviousPage   int  \`json:"previous_page"\`
     NextPage       int  \`json:"next_page"\`
-	ShowFirst      bool
-	ShowPrevious   bool
-	ShowNext       bool
-	ShowLast       bool
+    ShowFirst      bool
+    ShowPrevious   bool
+    ShowNext       bool
+    ShowLast       bool
 } 
 `;
         private static readonly paginationTemplate = `{{ define "pagination" }}

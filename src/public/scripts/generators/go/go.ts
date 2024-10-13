@@ -11,6 +11,7 @@ import { GoPkgModel } from './go_pkg_model';
 import { GoPkgRepositories } from './go_pkg_repositories';
 import { GoFormData } from './go_form_data';
 import { GoPkgValidation } from './go_pkg_validation';
+import { GoMigrations } from './go_migrations';
 
 export class GoCodeGenerator extends CodeGenerator {
         goJSON = new GoJSON();
@@ -24,6 +25,7 @@ export class GoCodeGenerator extends CodeGenerator {
         goPkgRepositories = new GoPkgRepositories();
         goFormData = new GoFormData();
         goPkgValidation = new GoPkgValidation();
+        goMigrations = new GoMigrations();
 
         Run() {
                 let goJSON = this.goJSON.Clear().SetInput(this.input).Run().Read();
@@ -58,6 +60,9 @@ export class GoCodeGenerator extends CodeGenerator {
 
                 let goPkgValidation = this.goPkgValidation.Clear().SetInput(this.input).Run().Read();
                 goPkgValidation = trimAndRemoveBlankStrings(goPkgValidation);
+
+                let goMigrations = this.goMigrations.Clear().SetInput(this.input).Run().Read();
+                goMigrations = trimAndRemoveBlankStrings(goMigrations);
 
                 let goMod = `module myapp
 
@@ -123,7 +128,6 @@ func (a *App) Run(addr string) {
 }
 `;
 
-                let migration = 'package migration\n\n// todo ';
                 let test = 'package test\n\n// todo ';
                 let readme = 'todo';
 
@@ -141,7 +145,7 @@ func (a *App) Run(addr string) {
                         ...goSSR,
                         ...goTemplates,
                         ...goPkgValidation,
-                        '/scripts/migrate.go': migration,
+                        ...goMigrations,
                         '/test/test_handler_x.go': test,
                         'readme.md': readme,
                 };
