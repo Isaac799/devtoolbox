@@ -46,15 +46,18 @@
 }
 
 .sql-keyword {
-        color: var(--primary); /* or any color you prefer */
+        color: var(--primary);
+        /* or any color you prefer */
 }
 
 .sql-operator {
-        color: var(--success); /* or any color you prefer */
+        color: var(--success);
+        /* or any color you prefer */
 }
 
 .sql-specifics {
-        color: var(--accent); /* or any color you prefer */
+        color: var(--accent);
+        /* or any color you prefer */
 }
 
 img {
@@ -206,25 +209,8 @@ section div.tabs div {
         overflow: hidden;
 }
 
-section div.files {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
-        gap: 0;
-        /* padding-top: var(--space); */
-        width: auto;
-}
-
-section div.files div {
-        padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-        gap: var(--space-sm);
-        width: max-content;
-        max-height: 1.5rem;
+span.hover-highlight {
+        padding: 0 var(--space) 0 var(--space);
 }
 
 .hover-highlight:hover,
@@ -263,6 +249,7 @@ a:hover {
 textarea {
         border: 0;
 }
+
 textarea:focus {
         outline: none;
 }
@@ -310,11 +297,13 @@ table {
         padding: var(--space);
         margin-top: 1rem;
 }
+
 th,
 td {
         padding: var(--space);
         text-align: left;
 }
+
 th {
         background-color: var(--primary);
         color: var(--white);
@@ -353,6 +342,7 @@ tr {
         top: calc(var(--space) * 2);
         right: calc(var(--space) * 2);
 }
+
 #copy-output {
         position: absolute;
         top: calc(var(--space) * 6);
@@ -428,18 +418,23 @@ tr {
 .g-2 {
         gap: var(--space) var(--space) var(--space) var(--space);
 }
+
 .g-1 {
         gap: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
+
 .p-2 {
         padding: var(--space) var(--space) var(--space) var(--space);
 }
+
 .m-2 {
         margin: var(--space) var(--space) var(--space) var(--space);
 }
+
 .p-1 {
         padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
+
 .m-1 {
         margin: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
@@ -451,6 +446,7 @@ tr {
 .ml-auto {
         margin-left: auto;
 }
+
 .mr-auto {
         margin-right: auto;
 }
@@ -460,6 +456,7 @@ tr {
         position: sticky;
         top: 0;
 }
+
 .sticky-t-1 {
         position: -webkit-sticky;
         position: sticky;
@@ -473,7 +470,7 @@ tr {
         left: 0;
 }
 
-section > h2 {
+section>h2 {
         position: -webkit-sticky;
         position: sticky;
         top: -0.1rem;
@@ -496,7 +493,9 @@ section > h2 {
                 min-width: unset;
         } */
 }
+
 @media (max-width: 640px) {
+
         table,
         thead,
         tbody,
@@ -514,6 +513,7 @@ section > h2 {
                 border-bottom: 0.1rem solid var(--primary);
                 padding: var(--space) 1rem var(--space) 1rem;
         }
+
         tr:last-child {
                 border-bottom: 0;
         }
@@ -523,7 +523,41 @@ section > h2 {
         0% {
                 opacity: 0;
         }
+
         100% {
                 opacity: 1;
         }
+}
+
+ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+}
+
+li {
+        position: relative;
+        padding: 0;
+        margin: 0;
+        padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
+
+}
+
+li::before {
+        content: '';
+        position: absolute;
+        left: -0.85rem;
+        width: 0.2rem;
+        height: 100%;
+        /* background-color: var(--black-transparent); */
+}
+
+li:hover::before {
+        background-color: var(--primary-transparent);
+        /* Highlight on hover */
+}
+
+ul ul {
+        padding-left: 0.85rem;
+        /* Indent nested lists */
 }

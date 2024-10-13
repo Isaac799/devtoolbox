@@ -126,31 +126,91 @@ function BuildTabMenu() {
         return tabItems;
 }
 
-/**
- * @returns {Array.<HTMLElement>}
- */
-function BuildFileMenu() {
-        let files: HTMLDivElement[] = [];
+function BuildFileMenu(): HTMLElement {
+        type TreeNode = {
+                name: string;
+                fileName: string;
+                children: TreeNode[];
+        };
 
-        for (const fileName in fileOutputs) {
-                if (!Object.prototype.hasOwnProperty.call(fileOutputs, fileName)) {
-                        continue;
+        function buildFileTree(fileOutputs: FileOutputs): TreeNode {
+                const root: TreeNode = { name: '', fileName: '', children: [] };
+
+                for (const filePath in fileOutputs) {
+                        const parts = filePath.split('/');
+                        let currentNode = root;
+
+                        for (const part of parts) {
+                                let existingNode = currentNode.children.find((child) => child.name === part);
+
+                                if (!existingNode) {
+                                        existingNode = { name: part, fileName: filePath, children: [] };
+                                        currentNode.children.push(existingNode);
+                                }
+
+                                currentNode = existingNode;
+                        }
                 }
-                const fileContent = fileOutputs[fileName];
-                if (!fileContent) continue;
 
-                let file = document.createElement('div');
-                file.setAttribute('id', fileName);
-                file.innerText = fileName;
-                file.classList.add('primary', 'p-1');
+                const sortChildrenByLength = (node: TreeNode) => {
+                        node.children.sort((a, b) => {
+                                const specialNames = ['web', 'test', 'scripts', 'readme.md'];
+                                const aIsSpecial = specialNames.includes(a.name);
+                                const bIsSpecial = specialNames.includes(b.name);
 
-                file.addEventListener('click', () => {
-                        UpdateSelectedFile(fileName);
-                });
-                files.push(file);
+                                if (aIsSpecial && bIsSpecial) return 0;
+                                if (aIsSpecial) return 1;
+                                if (bIsSpecial) return -1;
+
+                                return a.children.length - b.children.length;
+                        });
+
+                        node.children.forEach(sortChildrenByLength);
+                };
+
+                sortChildrenByLength(root);
+                return root;
         }
 
-        return files;
+        let currentPrimary: HTMLSpanElement | null = null;
+
+        function generateHTML(tree: TreeNode): HTMLElement {
+                const li = document.createElement('li');
+
+                if (tree.name) {
+                        const hoverSpan = document.createElement('span');
+                        hoverSpan.textContent = tree.name;
+
+                        if (tree.children.length === 0) {
+                                hoverSpan.classList.add('hover-highlight');
+                                hoverSpan.addEventListener('click', () => {
+                                        UpdateSelectedFile(tree.fileName);
+
+                                        if (currentPrimary) {
+                                                currentPrimary.classList.remove('primary');
+                                        }
+
+                                        hoverSpan.classList.add('primary');
+                                        currentPrimary = hoverSpan;
+                                });
+                        }
+
+                        li.appendChild(hoverSpan);
+                }
+
+                if (tree.children.length > 0) {
+                        const ul = document.createElement('ul');
+                        tree.children.forEach((child) => {
+                                ul.appendChild(generateHTML(child));
+                        });
+                        li.appendChild(ul);
+                }
+
+                return li;
+        }
+
+        const fileTree = buildFileTree(fileOutputs);
+        return generateHTML(fileTree);
 }
 
 /**
@@ -249,10 +309,7 @@ function RunCodeGeneratorForSelectedTabItem(value: string) {
 
         let fileItems = BuildFileMenu();
         files.innerHTML = '';
-        for (let i = 0; i < fileItems.length; i++) {
-                const tab = fileItems[i];
-                files.appendChild(tab);
-        }
+        files.appendChild(fileItems);
 
         if (noFiles) {
                 selectedFileOutputs = 'notice.txt';
@@ -340,8 +397,8 @@ let fileOutputs: FileOutputs = {};
 let selectedFileOutputs: string = '';
 
 const APP_ITEMS = [
-        new AppItem('Postgres', new SqlGenerator()),
         new AppItem('Go', new GoCodeGenerator()),
+        new AppItem('Postgres', new SqlGenerator()),
         // new AppItem('Node JS', new NodeExpressCodeGenerator()),
         new AppItem('TS Types', new TsTypesCodeGenerator()),
         // new AppItem('HTML forms', new HtmlCodeGenerator()),
