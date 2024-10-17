@@ -17,7 +17,25 @@
 
   <div class="container">
     <div class="columns is-centered">
-      <div class="column is-half">
+      <div class="column ">
+
+        <div class="field">
+          <label class="label" for="schemaName">Schema Name:</label>
+          <div class="control">
+            <input class="input" type="text" id="schemaName" placeholder="Enter schema name" required>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button class="button is-primary" id="addSchemaButton">Add Schema</button>
+          <button class="button is-link" id="generateYAMLButton">Generate YAML</button>
+        </div>
+        
+        <div id="schemas"></div>
+
+
+      </div>
+      <div class="column ">
         <div class="field">
           <label class="label" for="input">Input</label>
           <div class="control">
@@ -25,7 +43,10 @@
           </div>
         </div>
       </div>
-      <div class="column is-half">
+    </div>
+
+    <div class="columns is-centered">
+      <div class="column is-full">
         <div class="field">
           <label class="label">Output</label>
           <div class="control" id="loadingOverlayContainer">

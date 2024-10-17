@@ -9,15 +9,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// BoilerplateHandler handles incoming WebSocket messages
 func BoilerplateHandler(conn *websocket.Conn, message []byte) {
-	schema, err := ParseYAMLFromBytes(message)
+	database, err := ParseYAMLFromBytes(message)
 	if err != nil {
 		fmt.Println("Error parsing YAML:", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("Error parsing YAML"))
 		return
 	}
 
-	summary := GenerateFormattedOutput(schema)
+	summary := GenerateFormattedOutput(database)
 
 	err = conn.WriteMessage(websocket.TextMessage, summary)
 	if err != nil {
@@ -25,24 +26,26 @@ func BoilerplateHandler(conn *websocket.Conn, message []byte) {
 	}
 }
 
-func ParseYAMLFromBytes(data []byte) (models.Schema, error) {
-	var schema models.Schema
+// ParseYAMLFromBytes parses YAML data into a Database struct
+func ParseYAMLFromBytes(data []byte) (models.Schemas, error) {
+	var database models.Schemas
 
-	err := yaml.Unmarshal(data, &schema)
+	err := yaml.Unmarshal(data, &database)
 	if err != nil {
-		return schema, err
+		return database, err
 	}
 
-	return schema, nil
+	return database, nil
 }
 
+// GenerateCreateTableSQL generates SQL for creating a table
 func GenerateCreateTableSQL(tableName string, table models.Table) string {
 	var builder strings.Builder
 	builder.WriteString(fmt.Sprintf("CREATE TABLE %s (\n", tableName))
 
-	for _, attr := range table.Attributes {
+	for name, attr := range table.Attributes {
 		var columnBuilder strings.Builder
-		columnBuilder.WriteString(fmt.Sprintf("    %s", attr.Type))
+		columnBuilder.WriteString(fmt.Sprintf("    %s %s", name, attr.Type))
 
 		// Handle attribute options
 		if attr.Validation.NotNull {
@@ -71,12 +74,15 @@ func GenerateCreateTableSQL(tableName string, table models.Table) string {
 	return output
 }
 
-func GenerateFormattedOutput(schema models.Schema) []byte {
+// GenerateFormattedOutput generates a formatted output of the database schema
+func GenerateFormattedOutput(database models.Schemas) []byte {
 	var builder strings.Builder
 
-	for tableName, table := range schema.Tables {
-		sql := GenerateCreateTableSQL(tableName, table)
-		builder.WriteString(fmt.Sprintf("%s.pgsql|%s", tableName, sql))
+	for schemaName, schema := range database.Schemas {
+		for tableName, table := range schema.Tables {
+			sql := GenerateCreateTableSQL(tableName, table)
+			builder.WriteString(fmt.Sprintf("Schema: %s\nTable: %s\nSQL:\n%s\n", schemaName, tableName, sql))
+		}
 	}
 
 	return []byte(builder.String())

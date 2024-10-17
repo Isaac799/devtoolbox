@@ -8,6 +8,6 @@ type TableOptions struct {
 
 // Table represents a database table with its attributes and options
 type Table struct {
-	Options    TableOptions `yaml:"options,omitempty"`
-	Attributes []Attribute  `yaml:"attributes"`
+	Options    TableOptions         `yaml:"options,omitempty"`
+	Attributes map[string]Attribute `yaml:"attributes"`
 }

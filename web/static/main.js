@@ -41,84 +41,86 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleMessage(event) {
-    const highlightedContent = parseData(event.data);
+    // const highlightedContent = parseData(event.data);
 
-    if (highlightedContent) {
-      output.innerHTML = highlightedContent;
-    }
+    // if (highlightedContent) {
+    //   output.innerHTML = highlightedContent;
+    // }
+
+    output.innerHTML = event.data
 
     hideLoading();
   }
 
-  function parseData(data) {
-    const parts = data.split("|");
+  // function parseData(data) {
+  //   const parts = data.split("|");
 
-    if (parts.length < 2) {
-      return null; // Not enough data to parse
-    }
+  //   if (parts.length < 2) {
+  //     return null; // Not enough data to parse
+  //   }
 
-    const highlightedContents = [];
+  //   const highlightedContents = [];
 
-    for (let i = 0; i < parts.length; i += 2) {
-      const filename = parts[i];
-      const fileContent = parts[i + 1];
+  //   for (let i = 0; i < parts.length; i += 2) {
+  //     const filename = parts[i];
+  //     const fileContent = parts[i + 1];
 
-      if (!fileContent) {
-        console.error("Missing content for filename:", filename);
-        continue;
-      }
+  //     if (!fileContent) {
+  //       console.error("Missing content for filename:", filename);
+  //       continue;
+  //     }
 
-      const fileExtension = filename.split(".").pop();
-      let highlightedContent;
+  //     const fileExtension = filename.split(".").pop();
+  //     let highlightedContent;
 
-      const options = {
-        language: fileExtension,
-      };
+  //     const options = {
+  //       language: fileExtension,
+  //     };
 
-      switch (fileExtension) {
-        case "js":
-          highlightedContent = hljs.highlight(fileContent, {
-            ...options,
-            language: "javascript",
-          }).value;
-          break;
-        case "html":
-          highlightedContent = hljs.highlight(fileContent, {
-            ...options,
-            language: "html",
-          }).value;
-          break;
-        case "css":
-          highlightedContent = hljs.highlight(fileContent, {
-            ...options,
-            language: "css",
-          }).value;
-          break;
-        case "pgsql":
-          highlightedContent = hljs.highlight(fileContent, {
-            ...options,
-            language: "pgsql",
-          }).value;
-          break;
-        case "sql":
-          highlightedContent = hljs.highlight(fileContent, {
-            ...options,
-            language: "sql",
-          }).value;
-          break;
-        default:
-          console.error("Failed to parse response");
-          console.log("\tfilename :>> ", filename);
-          console.log("\tfileExtension :>> ", fileExtension);
-          highlightedContent = fileContent; // Fallback to plain content
-          break;
-      }
+  //     switch (fileExtension) {
+  //       case "js":
+  //         highlightedContent = hljs.highlight(fileContent, {
+  //           ...options,
+  //           language: "javascript",
+  //         }).value;
+  //         break;
+  //       case "html":
+  //         highlightedContent = hljs.highlight(fileContent, {
+  //           ...options,
+  //           language: "html",
+  //         }).value;
+  //         break;
+  //       case "css":
+  //         highlightedContent = hljs.highlight(fileContent, {
+  //           ...options,
+  //           language: "css",
+  //         }).value;
+  //         break;
+  //       case "pgsql":
+  //         highlightedContent = hljs.highlight(fileContent, {
+  //           ...options,
+  //           language: "pgsql",
+  //         }).value;
+  //         break;
+  //       case "sql":
+  //         highlightedContent = hljs.highlight(fileContent, {
+  //           ...options,
+  //           language: "sql",
+  //         }).value;
+  //         break;
+  //       default:
+  //         console.error("Failed to parse response");
+  //         console.log("\tfilename :>> ", filename);
+  //         console.log("\tfileExtension :>> ", fileExtension);
+  //         highlightedContent = fileContent; // Fallback to plain content
+  //         break;
+  //     }
 
-      highlightedContents.push(highlightedContent);
-    }
+  //     highlightedContents.push(highlightedContent);
+  //   }
 
-    return highlightedContents;
-  }
+  //   return highlightedContents;
+  // }
 
   function handleOpen() {
     console.log("WebSocket connection established.");
