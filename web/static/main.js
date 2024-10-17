@@ -51,40 +51,73 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function parseData(data) {
-    const parts = data.trim().split("|");
+    const parts = data.split("|");
 
     if (parts.length < 2) {
       return null; // Not enough data to parse
     }
 
-    const filename = parts[0];
-    const fileContent = parts[1];
-    const fileExtension = filename.split(".").pop();
+    const highlightedContents = [];
 
-    let highlightedContent;
+    for (let i = 0; i < parts.length; i += 2) {
+      const filename = parts[i];
+      const fileContent = parts[i + 1];
 
-    switch (fileExtension) {
-      case "js":
-        highlightedContent = hljs.highlight(fileContent, { language: "javascript" }).value;
-        break;
-      case "html":
-        highlightedContent = hljs.highlight(fileContent, { language: "html" }).value;
-        break;
-      case "css":
-        highlightedContent = hljs.highlight(fileContent, { language: "css" }).value;
-        break;
-      case "pgsql":
-        highlightedContent = hljs.highlight(fileContent, { language: "pgsql" }).value;
-        break;
-      case "sql":
-        highlightedContent = hljs.highlight(fileContent, { language: "sql" }).value;
-        break;
-      default:
-        highlightedContent = "failed to parse response";
-        break;
+      if (!fileContent) {
+        console.error("Missing content for filename:", filename);
+        continue;
+      }
+
+      const fileExtension = filename.split(".").pop();
+      let highlightedContent;
+
+      const options = {
+        language: fileExtension,
+      };
+
+      switch (fileExtension) {
+        case "js":
+          highlightedContent = hljs.highlight(fileContent, {
+            ...options,
+            language: "javascript",
+          }).value;
+          break;
+        case "html":
+          highlightedContent = hljs.highlight(fileContent, {
+            ...options,
+            language: "html",
+          }).value;
+          break;
+        case "css":
+          highlightedContent = hljs.highlight(fileContent, {
+            ...options,
+            language: "css",
+          }).value;
+          break;
+        case "pgsql":
+          highlightedContent = hljs.highlight(fileContent, {
+            ...options,
+            language: "pgsql",
+          }).value;
+          break;
+        case "sql":
+          highlightedContent = hljs.highlight(fileContent, {
+            ...options,
+            language: "sql",
+          }).value;
+          break;
+        default:
+          console.error("Failed to parse response");
+          console.log("\tfilename :>> ", filename);
+          console.log("\tfileExtension :>> ", fileExtension);
+          highlightedContent = fileContent; // Fallback to plain content
+          break;
+      }
+
+      highlightedContents.push(highlightedContent);
     }
 
-    return highlightedContent;
+    return highlightedContents;
   }
 
   function handleOpen() {
