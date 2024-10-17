@@ -1,0 +1,51 @@
+{{ define "content" }}
+
+{{ template "navbar" . }}
+
+<div class="container">
+  {{ if .Data }} {{ if .Data.Errors }}
+  <div class="notification is-danger">
+    <button class="delete"></button>
+    <strong>Errors:</strong>
+    <ul>
+      {{ range $key, $value := .Data.Errors }}
+      <li>{{ $key }}: {{ $value }}</li>
+      {{ end }}
+    </ul>
+  </div>
+  {{ end }} {{ else }} {{ end }}
+
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-half">
+        <div class="field">
+          <label class="label" for="input">Input</label>
+          <div class="control">
+            <textarea id="input" class="textarea" rows="10" placeholder="Type something..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="column is-half">
+        <div class="field">
+          <label class="label">Output</label>
+          <div class="control" id="loadingOverlayContainer">
+            <div id="output" class="box">Your output will appear here...</div>
+            <div id="loadingOverlay" class="lds-grid">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{ end }}
+</div>

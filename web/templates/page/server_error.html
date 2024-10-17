@@ -1,0 +1,28 @@
+{{ define "content" }}
+
+<section class="hero is-danger">
+    <div class="hero-body">
+    <div class="container">
+        <h1 class="title">500 - Internal Server Error</h1>
+        <h2 class="subtitle">Sorry! Something went wrong on our end.</h2>
+    </div>
+    </div>
+</section>
+
+{{ template "navbar" . }}
+
+<section class="section">
+    <div class="container">
+    <h2 class="title">Sorry</h2>
+    <p class="content">
+        Looks like something went wrong, my apologies.
+    </p>
+
+    <h2 class="title">Return to Safety</h2>
+    <ul>
+        <li><a href="/">Go back to the homepage</a></li>
+    </ul>
+    </div>
+</section>
+
+{{ template "footer" . }}{{ end }}
