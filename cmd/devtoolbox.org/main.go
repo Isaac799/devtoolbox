@@ -14,7 +14,7 @@ import (
 
 func main() {
 	wss := models.NewWebSocketServer(1*time.Second, 10)
-	wss.RegisterHandler(constants.MessageTypeBoilerplate, services.ReverseHandler)
+	wss.RegisterHandler(constants.MessageTypeBoilerplate, services.BoilerplateHandler)
 
 	dbPath := "./sessions.db"
 	store, err := models.NewSessionStore(dbPath)
