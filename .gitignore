@@ -1,2 +1,3 @@
 /cmd/**/*.db
 notes.txt
+node_modules

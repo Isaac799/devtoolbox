@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -16,16 +15,9 @@ func main() {
 	wss := models.NewWebSocketServer(1*time.Second, 10)
 	wss.RegisterHandler(constants.MessageTypeBoilerplate, services.BoilerplateHandler)
 
-	dbPath := "./sessions.db"
-	store, err := models.NewSessionStore(dbPath)
-	if err != nil {
-		log.Fatalf("Failed to initialize session store: %v", err)
-	}
-
 	app := &config.App{
 		Router:   http.NewServeMux(),
 		WSServer: wss,
-		Store:    store,
 	}
 
 	routes.RegisterRoutes(app)

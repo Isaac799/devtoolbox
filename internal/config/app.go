@@ -10,7 +10,6 @@ import (
 type App struct {
 	Router   *http.ServeMux
 	WSServer *models.WebSocketServer
-	Store    *models.SessionStore
 }
 
 func (a *App) Run(addr string) {

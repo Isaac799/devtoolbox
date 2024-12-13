@@ -7,20 +7,17 @@ import (
 	"devtoolbox.org/internal/config"
 	"devtoolbox.org/internal/constants"
 	"devtoolbox.org/internal/handlers"
-	"devtoolbox.org/internal/handlers/page"
-	"devtoolbox.org/internal/middleware"
 )
 
 func RegisterRoutes(app *config.App) {
-
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", page.Home())
-	mux.HandleFunc("/home", page.Home())
-	mux.HandleFunc("/about", page.About())
-	mux.HandleFunc("/not-found", page.NotFound())
-	mux.HandleFunc("/server-error", page.ServerError())
-	mux.HandleFunc("/boilerplate", page.Boilerplate())
+	mux.HandleFunc("/", handlers.Home())
+	mux.HandleFunc("/home", handlers.Home())
+	mux.HandleFunc("/about", handlers.About())
+	mux.HandleFunc("/not-found", handlers.NotFound())
+	mux.HandleFunc("/server-error", handlers.ServerError())
+	mux.HandleFunc("/boilerplate", handlers.Boilerplate())
 
 	mux.HandleFunc("/ws/boilerplate", app.WSServer.HandleWebSocket(constants.MessageTypeBoilerplate))
 
@@ -29,7 +26,7 @@ func RegisterRoutes(app *config.App) {
 
 	mux.HandleFunc("/api/client", handlers.ClientHandler)
 
-	app.Router.Handle("/", middleware.Chain(mux, middleware.SecurityHeaders, middleware.Session(app.Store)))
+	app.Router.Handle("/", mux)
 }
 
 func serveAsset(w http.ResponseWriter, r *http.Request) {
