@@ -1,7 +1,8 @@
 import { AttrType } from './structure';
 
-export const validationMap = new Map<AttrType, (x: string) => boolean>();
+export const TAB = '    ';
 
+export const validationMap = new Map<AttrType, (x: string) => boolean>();
 const validationMapPatterns = {
   date: /^\d{4}-\d{2}-\d{2}$/,
   time: /^([01]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/,
@@ -46,7 +47,9 @@ validationMap.set(AttrType.TIMESTAMP, (x: string) => {
 validationMap.set(AttrType.DECIMAL, (x: string) =>
   matchesRegex(x, validationMapPatterns.decimal)
 );
-validationMap.set(AttrType.REAL, (x: string) => matchesRegex(x, validationMapPatterns.real));
+validationMap.set(AttrType.REAL, (x: string) =>
+  matchesRegex(x, validationMapPatterns.real)
+);
 validationMap.set(AttrType.FLOAT, (x: string) =>
   matchesRegex(x, validationMapPatterns.float)
 );

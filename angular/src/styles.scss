@@ -103,7 +103,8 @@ input:focus {
   border-left: 0.1rem solid var(--warn);
   border-left-width: 0.2rem;
   padding-left: 0.35rem;
-  padding-right: 0.35rem; color: var(--black);
+  padding-right: 0.35rem;
+  color: var(--black);
 }
 
 .error {
@@ -346,17 +347,13 @@ button:hover:not(:disabled) {
   // }
 
   // .control:not(.with-hint) {
-    //   border-bottom: 0.1rem solid black;
-    // }
-    // .control.with-hint {
-    //   border-bottom: 0;
-    // }
+  //   border-bottom: 0.1rem solid black;
+  // }
+  // .control.with-hint {
+  //   border-bottom: 0;
+  // }
 
   .control {
-    @media (max-width: 880px) {
-      margin-top: var(--space-sm);
-    }
-
     position: relative;
     display: block;
     min-height: 2rem;
@@ -401,10 +398,10 @@ button:hover:not(:disabled) {
   }
 }
 
-// input.ng-touched.ng-invalid,
-// select.ng-touched.ng-invalid
-input.ng-invalid,
-select.ng-invalid {
+input.ng-touched.ng-invalid,
+select.ng-touched.ng-invalid // input.ng-invalid,select.ng-invalid
+
+  {
   border-left: 0.35rem solid var(--warn) !important;
   background-color: var(--warn-transparent) !important
 }
@@ -449,4 +446,12 @@ select.ng-invalid {
 
   border: 0.1rem solid var(--primary);
   box-shadow: rgba(0, 0, 0, 0.25) 0 0 0.5rem 0.05rem inset;
+}
+
+@media (max-width: 880px) {
+  .controls {
+    .control {
+      margin-top: var(--space-sm);
+    }
+  }
 }
