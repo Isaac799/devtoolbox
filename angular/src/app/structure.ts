@@ -49,6 +49,12 @@ export enum AppMode {
   YAML,
 }
 
+export enum AppGeneratorMode {
+  Postgres,
+  Go,
+  TS,
+}
+
 export enum AppComplexityMode {
   Simple,
   Advanced,
@@ -72,5 +78,6 @@ export enum AttrType {
 
 export type App = {
   mode: AppMode;
+  generatorMode: AppGeneratorMode;
   complexity: AppComplexityMode;
 };

@@ -9,6 +9,7 @@ import { WebSocketService } from './services/web-socket.service';
 import {
   App,
   AppComplexityMode,
+  AppGeneratorMode,
   AppMode,
   Attribute,
   AttrType,
@@ -24,6 +25,7 @@ import {
   Validators,
 } from '@angular/forms';
 import YAML from 'yaml';
+import { schemasToPostgreSQL } from './code';
 
 @Component({
   selector: 'app-root',
@@ -37,6 +39,7 @@ export class AppComponent implements OnInit {
   private readonly configSessionKey = 'devtoolboxAppConfig';
   private readonly regexSnakeCase = /(\w+)_(\w+)/;
   editor = '';
+  generatorOutput = '';
   private _serial = 0;
   private get serial() {
     return this._serial;
@@ -127,6 +130,7 @@ export class AppComponent implements OnInit {
 
   app: App = {
     mode: AppMode.YAML,
+    generatorMode: AppGeneratorMode.Postgres,
     complexity: AppComplexityMode.Simple,
   };
 
@@ -149,6 +153,21 @@ export class AppComponent implements OnInit {
     {
       name: 'Advanced Mode',
       value: AppComplexityMode.Advanced,
+    },
+  ];
+
+  generatorModeOptions = [
+    {
+      name: 'PostgreSQL',
+      value: AppGeneratorMode.Postgres,
+    },
+    {
+      name: 'Go',
+      value: AppGeneratorMode.Go,
+    },
+    {
+      name: 'Typescript',
+      value: AppGeneratorMode.TS,
     },
   ];
 
@@ -287,6 +306,7 @@ export class AppComponent implements OnInit {
     this.loadLastSession();
     this.loadConfig();
     this.updateEditor();
+    this.updateCodeGenerated();
     this.serial = AppComponent.discoverSerial(this.schemas);
     this.addKeyboardListeners();
   }
@@ -457,7 +477,6 @@ export class AppComponent implements OnInit {
     try {
       console.log('restored session');
       this.schemas = JSON.parse(save);
-      this.updateEditor();
     } catch (err) {
       console.error(err);
       sessionStorage.removeItem(this.stateSessionKey);
@@ -507,7 +526,7 @@ export class AppComponent implements OnInit {
       } else {
         sa.Options = undefined;
       }
-      
+
       if (this.showAttrValidation) {
         if (!sa.Validation) {
           sa.Validation = {};
@@ -530,7 +549,6 @@ export class AppComponent implements OnInit {
       } else {
         sa.Validation = undefined;
       }
-
     } else {
       let newAttr: Attribute = {
         id: this.serial,
@@ -636,6 +654,8 @@ export class AppComponent implements OnInit {
 
   saveState() {
     this.updateEditor();
+    this.updateCodeGenerated();
+
     let s = JSON.stringify(this.schemas, null, 2);
     sessionStorage.setItem(this.stateSessionKey, s);
   }
@@ -643,6 +663,18 @@ export class AppComponent implements OnInit {
   saveConfig() {
     let s = JSON.stringify(this.app, null, 2);
     sessionStorage.setItem(this.configSessionKey, s);
+  }
+
+  updateCodeGenerated() {
+    switch (this.app.generatorMode) {
+      case AppGeneratorMode.Postgres:
+        this.generatorOutput = schemasToPostgreSQL(this.schemas);
+        break;
+      case AppGeneratorMode.Go:
+        break;
+      case AppGeneratorMode.TS:
+        break;
+    }
   }
 
   updateEditor() {

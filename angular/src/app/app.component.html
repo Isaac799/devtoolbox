@@ -1,10 +1,14 @@
 <div class="split p-2">
     <div class="fr g-2">
-        <div class="fc">
+        <div class="fc g-2">
             <button (click)="showSettingsModal = true">
                 Settings
             </button>
-            <textarea class="mono-space" [(ngModel)]="editor" cols="35" rows="40"></textarea>
+            <pre class="mono-space code-generator scroll-box">
+{{ generatorOutput }}
+            </pre>
+
+            <textarea class="mono-space scroll-box" [(ngModel)]="editor" cols="35" rows="20"></textarea>
 
         </div>
 
@@ -70,6 +74,14 @@
         <div class="content">
             <!-- Text Editor -->
             <div class="controls">
+                <div class="control">
+                    <label for="appComplexity">Output Language</label>
+                    <select [(ngModel)]="app.generatorMode" (ngModelChange)="saveConfig();" id="appComplexity">
+                        @for (x of generatorModeOptions; track $index) {
+                        <option [ngValue]="x.value">{{x.name}}</option>
+                        }
+                    </select>
+                </div>
                 <div class="control">
                     <label for="appComplexity">Complexity</label>
                     <select [(ngModel)]="app.complexity" (ngModelChange)="saveConfig();" id="appComplexity">
