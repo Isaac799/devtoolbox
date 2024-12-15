@@ -75,7 +75,7 @@
             <!-- Text Editor -->
             <div class="controls">
                 <div class="control">
-                    <label for="appComplexity">Output Language</label>
+                    <label for="appComplexity">Output: Language</label>
                     <select [(ngModel)]="app.generatorMode" (ngModelChange)="saveConfig();" id="appComplexity">
                         @for (x of generatorModeOptions; track $index) {
                         <option [ngValue]="x.value">{{x.name}}</option>
@@ -83,17 +83,17 @@
                     </select>
                 </div>
                 <div class="control">
-                    <label for="appComplexity">Complexity</label>
-                    <select [(ngModel)]="app.complexity" (ngModelChange)="saveConfig();" id="appComplexity">
-                        @for (x of complexityOptions; track $index) {
+                    <label for="appMode">Output: Config</label>
+                    <select [(ngModel)]="app.mode" (ngModelChange)="updateEditor(); saveConfig();" id="appMode">
+                        @for (x of modeOptions; track $index) {
                         <option [ngValue]="x.value">{{x.name}}</option>
                         }
                     </select>
                 </div>
                 <div class="control">
-                    <label for="appMode">Output</label>
-                    <select [(ngModel)]="app.mode" (ngModelChange)="updateEditor(); saveConfig();" id="appMode">
-                        @for (x of modeOptions; track $index) {
+                    <label for="appComplexity">Input: Complexity</label>
+                    <select [(ngModel)]="app.complexity" (ngModelChange)="saveConfig();" id="appComplexity">
+                        @for (x of complexityOptions; track $index) {
                         <option [ngValue]="x.value">{{x.name}}</option>
                         }
                     </select>
@@ -225,14 +225,20 @@
                         <label for="attrRequired">Required</label>
                         <input type="checkbox" id="attrRequired" formControlName="Required">
                     </div>
+                    @if ( attributeForm.controls.Type.value |minMaxRelevant ) {
                     <div class="control ">
-                        <label for="attrMin">Min</label>
+                        <label for="attrMin">
+                            {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType : "min"}}
+                        </label>
                         <input type="number" id="attrMin" formControlName="Min">
                     </div>
                     <div class="control">
-                        <label for="attrMax">Max</label>
+                        <label for="attrMax">
+                            {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType : "max"}}
+                        </label>
                         <input type="number" id="attrMax" formControlName="Max">
                     </div>
+                    }
                 </div>
                 }
             </div>

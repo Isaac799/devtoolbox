@@ -14,7 +14,20 @@ export const schemasToPostgreSQL = (schemas: Schema[]) => {
       createTableLines.push(`CREATE TABLE IF NOT EXISTS ${t.Name} (`);
       drops.push(`DROP TABLE IF EXISTS ${t.Name};`);
       for (const a of t.Attributes) {
-        let attrLine = [`${a.Name} ${a.Type}`];
+        let type = '';
+        if ([AttrType.VARCHAR].includes(a.Type)) {
+          let max = 15;
+          if (!a.Validation || !a.Validation.Max) {
+            console.warn(`missing max validation on "${a.Name}"`);
+          } else {
+            max = a.Validation.Max;
+          }
+          type = [a.Type, `(${max || '15'})`].join('');
+        } else {
+          type = a.Type;
+        }
+
+        let attrLine = [`${a.Name} ${type}`];
         if (a.Options?.Default) {
           // todo better default handling
           attrLine.push(`DEFAULT ${a.Options?.Default}`);

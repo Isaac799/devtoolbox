@@ -347,11 +347,11 @@ button:hover:not(:disabled) {
   margin-top: var(--space);
   padding: var(--space) var(--space) var(--space) var(--space);
 
-  @media (max-width: 640px) {
-    .control:last-child {
-      border: 0;
-    }
-  }
+  // @media (max-width: 640px) {
+  //   .control:last-child {
+  //     border: 0;
+  //   }
+  // }
 
   .control {
     margin-top: var(--space-sm);

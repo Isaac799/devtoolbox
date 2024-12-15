@@ -26,10 +26,18 @@ import {
 } from '@angular/forms';
 import YAML from 'yaml';
 import { schemasToPostgreSQL } from './code';
+import { MinMaxLabelFromAttrTypePipe } from './pipes/min-max-label-from-attr-type.pipe';
+import { MinMaxRelevantPipe } from './pipes/min-max-relevant.pipe';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MinMaxLabelFromAttrTypePipe,
+    MinMaxRelevantPipe,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
@@ -334,6 +342,20 @@ export class AppComponent implements OnInit {
       if (!this.modalOpen) {
         return;
       }
+      if (['Enter', 'Return'].includes(ev.key)) {
+        if (this.showModalAttribute) {
+          this.clickSaveAttribute();
+          return;
+        }
+        if (this.showModalTable) {
+          this.clickSaveTable();
+          return;
+        }
+        if (this.showModalSchema) {
+          this.clickSaveSchema();
+          return;
+        }
+      }
       if (!['Escape'].includes(ev.key)) {
         return;
       }
@@ -498,6 +520,8 @@ export class AppComponent implements OnInit {
     }
     t.Attributes.splice(i, 1);
     this.showModalAttribute = false;
+    this.updateCodeGenerated()
+    this.updateEditor()
     this.saveState();
   }
   clickSaveAttribute() {
@@ -531,16 +555,19 @@ export class AppComponent implements OnInit {
         if (!sa.Validation) {
           sa.Validation = {};
         }
-        if (c.Min.value !== null) {
+        
+        let minMaxRelevant = new MinMaxRelevantPipe().transform(c.Type.value);
+        if (c.Min.value !== null && minMaxRelevant) {
           sa.Validation.Min = c.Min.value;
         } else {
           sa.Validation.Min = undefined;
         }
-        if (c.Max.value !== null) {
+        if (c.Max.value !== null && minMaxRelevant) {
           sa.Validation.Max = c.Max.value;
         } else {
           sa.Validation.Max = undefined;
         }
+
         if (c.Required.value !== null) {
           sa.Validation.Required = c.Required.value;
         } else {
@@ -574,6 +601,8 @@ export class AppComponent implements OnInit {
       this.serial += 1;
     }
     this.attributeForm.reset();
+    this.updateCodeGenerated()
+    this.updateEditor()
     this.saveState();
     this.showModalAttribute = false;
   }
@@ -593,6 +622,8 @@ export class AppComponent implements OnInit {
     }
     s.Tables.splice(i, 1);
     this.showModalTable = false;
+    this.updateCodeGenerated()
+    this.updateEditor()
     this.saveState();
   }
   clickSaveTable() {
@@ -616,6 +647,8 @@ export class AppComponent implements OnInit {
       this.serial += 1;
     }
     this.schemaForm.reset();
+    this.updateCodeGenerated()
+    this.updateEditor()
     this.saveState();
     this.showModalTable = false;
   }
@@ -631,6 +664,8 @@ export class AppComponent implements OnInit {
     }
     this.schemas.splice(i, 1);
     this.showModalSchema = false;
+    this.updateCodeGenerated()
+    this.updateEditor()
     this.saveState();
   }
   clickSaveSchema() {
@@ -648,6 +683,8 @@ export class AppComponent implements OnInit {
       this.serial += 1;
     }
     this.schemaForm.reset();
+    this.updateCodeGenerated()
+    this.updateEditor()
     this.saveState();
     this.showModalSchema = false;
   }
