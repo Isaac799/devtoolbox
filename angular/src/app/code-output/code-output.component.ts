@@ -84,13 +84,13 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
         let endThings: string[] = [];
 
         let pks = t.Attributes.filter((e) => e.Options?.PrimaryKey).map(
-          (e) => e.Name
+          (e) => e.Name,
         );
         let pksStr = `PRIMARY KEY ( ${pks.join(', ')} )`;
         endThings.push(pksStr);
 
         let uniques = t.Attributes.filter((e) => e.Options?.Unique).map(
-          (e) => e.Name
+          (e) => e.Name,
         );
         for (const e of uniques) {
           let uniquesStr = `UNIQUE ( ${e} )`;

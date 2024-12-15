@@ -1,310 +1,255 @@
 <div class="fc p-2">
-    @for (s of data.schemas; track $index) {
+  @for (s of data.schemas; track $index) {
     <!-- Schema -->
     <div class="fc p-2">
-        <div>
-            <span
-                class="title-1 hover-highlight"
-                (click)="doShowModalSchema(s)"
-            >
-                {{ s.Name }}
-            </span>
-        </div>
+      <div>
+        <span class="title-1 hover-highlight" (click)="doShowModalSchema(s)">
+          {{ s.Name }}
+        </span>
+      </div>
 
-        <div class="fc group">
-            @for (t of s.Tables; track $index) {
-            <!-- Table -->
-            <div>
+      <div class="fc group">
+        @for (t of s.Tables; track $index) {
+          <!-- Table -->
+          <div>
+            <span
+              class="title-2 hover-highlight"
+              (click)="doShowModalTable(s, t)"
+            >
+              {{ t.Name }}
+            </span>
+          </div>
+          <div class="fc group">
+            @for (a of t.Attributes; track $index) {
+              <!-- Attribute -->
+              <div>
                 <span
-                    class="title-2 hover-highlight"
-                    (click)="doShowModalTable(s,t)"
+                  class="title-3 hover-highlight"
+                  (click)="doShowModalAttribute(s, t, a)"
                 >
-                    {{ t.Name }}
+                  {{ a.Name }}
                 </span>
-            </div>
-            <div class="fc group">
-                @for (a of t.Attributes; track $index){
-                <!-- Attribute -->
-                <div>
-                    <span
-                        class="title-3 hover-highlight"
-                        (click)="doShowModalAttribute(s,t,a)"
-                    >
-                        {{ a.Name }}
-                    </span>
-                </div>
-                }
-                <div>
-                    <button
-                        class="primary"
-                        (click)="doShowModalAttribute(s,t)"
-                    > + Attr </button>
-                </div>
-            </div>
+              </div>
             }
             <div>
-                <button
-                    class="primary"
-                    (click)="doShowModalTable(s)"
-                > + Table </button>
+              <button class="primary" (click)="doShowModalAttribute(s, t)">
+                + Attr
+              </button>
             </div>
+          </div>
+        }
+        <div>
+          <button class="primary" (click)="doShowModalTable(s)">+ Table</button>
         </div>
+      </div>
     </div>
-    }
-    <div>
-        <button
-            class="primary"
-            (click)="doShowModalSchema()"
-        > + Schema </button>
-    </div>
+  }
+  <div>
+    <button class="primary" (click)="doShowModalSchema()">+ Schema</button>
+  </div>
 </div>
 
 @if (showModalSchema) {
-<app-modal
+  <app-modal
     [title]="'Schema'"
     [(visible)]="showModalSchema"
     (accepted)="clickSaveSchema()"
     [disableAccept]="!schemaForm.valid"
->
+  >
     <ng-content body>
-        <div
-            class="controls"
-            [formGroup]="schemaForm"
-        >
-            <div class="control">
-                <label for="schemaName">Name</label>
-                <input
-                    type="text"
-                    formControlName="Name"
-                    autocomplete="none"
-                    id="schemaName"
-                    #schemaName
-                >
-            </div>
+      <div class="controls" [formGroup]="schemaForm">
+        <div class="control">
+          <label for="schemaName">Name</label>
+          <input
+            type="text"
+            formControlName="Name"
+            autocomplete="none"
+            id="schemaName"
+            #schemaName
+          />
         </div>
+      </div>
     </ng-content>
     <ng-content footer>
-        @if (selectedSchema) {
-        <button
-            (click)="clickDelSchema()"
-            class="error-hover"
-        >
-            Delete
-        </button>
-        }
+      @if (selectedSchema) {
+        <button (click)="clickDelSchema()" class="error-hover">Delete</button>
+      }
     </ng-content>
-</app-modal>
+  </app-modal>
 }
 
 @if (showModalTable) {
-<app-modal
+  <app-modal
     [title]="'Table'"
     [(visible)]="showModalTable"
     (accepted)="clickSaveTable()"
     [disableAccept]="!tableForm.valid"
->
+  >
     <ng-content body>
-        <div
-            class="controls"
-            [formGroup]="tableForm"
-        >
-            <div class="control">
-                <label for="tableName">Name</label>
-                <input
-                    type="text"
-                    formControlName="Name"
-                    autocomplete="none"
-                    id="tableName"
-                    #tableName
-                >
-            </div>
+      <div class="controls" [formGroup]="tableForm">
+        <div class="control">
+          <label for="tableName">Name</label>
+          <input
+            type="text"
+            formControlName="Name"
+            autocomplete="none"
+            id="tableName"
+            #tableName
+          />
         </div>
+      </div>
     </ng-content>
     <ng-content footer>
-        @if (selectedTable) {
-        <button
-            (click)="clickDelTable()"
-            class="error-hover"
-        >
-            Delete
-        </button>
-        }
+      @if (selectedTable) {
+        <button (click)="clickDelTable()" class="error-hover">Delete</button>
+      }
     </ng-content>
-</app-modal>
+  </app-modal>
 }
 
 @if (showModalAttribute) {
-<app-modal
+  <app-modal
     [title]="'Attribute'"
     [(visible)]="showModalAttribute"
     (accepted)="clickSaveAttribute()"
     [disableAccept]="!attributeForm.valid"
->
+  >
     <ng-content body>
-
-        <div
-            class="fc g-2"
-            [formGroup]="attributeForm"
-        >
-            <div class="controls">
-                <div class="control">
-                    <label for="attrName">Name</label>
-                    <input
-                        type="text"
-                        formControlName="Name"
-                        autocomplete="none"
-                        id="attrName"
-                        #attrName
-                    >
-                </div>
-                <div class="control">
-                    <label for="attrType">Type</label>
-                    <select
-                        id="attrType"
-                        formControlName="Type"
-                    >
-                        @for (x of attrTypeOptions; track $index) {
-                        <option [ngValue]="x.value">{{x.name}}</option>
-                        }
-                    </select>
-                </div>
-            </div>
-
-            @if (showAttrOptions) {
-            <div class="controls">
-                <div class="control">
-                    <label for="attrPrimaryKey">Primary Key</label>
-                    <input
-                        type="checkbox"
-                        id="attrPrimaryKey"
-                        formControlName="PrimaryKey"
-                    >
-                </div>
-                <div class="control">
-                    <label for="attrUnique">Unique</label>
-                    <input
-                        type="checkbox"
-                        id="attrUnique"
-                        formControlName="Unique"
-                    >
-                </div>
-                <div class="control with-hint">
-                    <label for="attrDefault">Default Value</label>
-                    <input
-                        type="text"
-                        id="attrDefault"
-                        formControlName="Default"
-                    >
-                </div>
-            </div>
-            }
-
-            @if (showAttrOptions && !attributeForm.controls.Default.valid) {
-            <div class="info">
-                <small>
-                    <strong>Default Value:</strong> {{ attributeForm.controls.Type.value | defaultValueHint }}
-                </small>
-            </div>
-            }
-
-            @if (showAttrValidation) {
-            <div class="controls">
-                <div class="control">
-                    <label for="attrRequired">Required</label>
-                    <input
-                        type="checkbox"
-                        id="attrRequired"
-                        formControlName="Required"
-                    >
-                </div>
-                @if ( attributeForm.controls.Type.value |minMaxRelevant ) {
-                <div class="control ">
-                    <label for="attrMin">
-                        {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType : "min"}}
-                    </label>
-                    <input
-                        type="number"
-                        id="attrMin"
-                        formControlName="Min"
-                    >
-                </div>
-                <div class="control">
-                    <label for="attrMax">
-                        {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType : "max"}}
-                    </label>
-                    <input
-                        type="number"
-                        id="attrMax"
-                        formControlName="Max"
-                    >
-                </div>
-                }
-            </div>
-            }
-
-            @if (showSmartAttributes) {
-            <div class="chips">
-                @for (x of smartSuggestions; track $index) {
-                <span
-                    (click)="clickSmartSuggestion(x)"
-                    class="chip clickable"
-                >
-                    {{ x.Name }}
-                </span>
-                }
-            </div>
-            }
-
-            <div class="fr g-2">
-                @if (!showSmartAttributes && smartSuggestions.length > 0) {
-                <button
-                    class="small-font"
-                    (click)="showSmartAttributes= true"
-                >Show Suggestions</button>
-                } @else if (showSmartAttributes) {
-                <button
-                    class="small-font"
-                    (click)="showSmartAttributes= false"
-                >Hide Suggestions</button>
-                }
-
-                @if (showAttrValidation) {
-                <button
-                    class="small-font"
-                    (click)="showAttrValidation = false"
-                >Remove Validation</button>
-                } @else {
-                <button
-                    class="small-font"
-                    (click)="showAttrValidation= true"
-                >Add Validation</button>
-                }
-
-                @if (showAttrOptions){
-                <button
-                    class="small-font"
-                    (click)="showAttrOptions = false"
-                >Remove Options</button>
-                } @else {
-                <button
-                    class="small-font"
-                    (click)="showAttrOptions = true"
-                >Add Options</button>
-                }
-            </div>
-
+      <div class="fc g-2" [formGroup]="attributeForm">
+        <div class="controls">
+          <div class="control">
+            <label for="attrName">Name</label>
+            <input
+              type="text"
+              formControlName="Name"
+              autocomplete="none"
+              id="attrName"
+              #attrName
+            />
+          </div>
+          <div class="control">
+            <label for="attrType">Type</label>
+            <select id="attrType" formControlName="Type">
+              @for (x of attrTypeOptions; track $index) {
+                <option [ngValue]="x.value">{{ x.name }}</option>
+              }
+            </select>
+          </div>
         </div>
+
+        @if (showAttrOptions) {
+          <div class="controls">
+            <div class="control">
+              <label for="attrPrimaryKey">Primary Key</label>
+              <input
+                type="checkbox"
+                id="attrPrimaryKey"
+                formControlName="PrimaryKey"
+              />
+            </div>
+            <div class="control">
+              <label for="attrUnique">Unique</label>
+              <input type="checkbox" id="attrUnique" formControlName="Unique" />
+            </div>
+            <div class="control with-hint">
+              <label for="attrDefault">Default Value</label>
+              <input type="text" id="attrDefault" formControlName="Default" />
+            </div>
+          </div>
+        }
+
+        @if (showAttrOptions && !attributeForm.controls.Default.valid) {
+          <div class="info">
+            <small>
+              <strong>Default Value:</strong>
+              {{ attributeForm.controls.Type.value | defaultValueHint }}
+            </small>
+          </div>
+        }
+
+        @if (showAttrValidation) {
+          <div class="controls">
+            <div class="control">
+              <label for="attrRequired">Required</label>
+              <input
+                type="checkbox"
+                id="attrRequired"
+                formControlName="Required"
+              />
+            </div>
+            @if (attributeForm.controls.Type.value | minMaxRelevant) {
+              <div class="control">
+                <label for="attrMin">
+                  {{
+                    attributeForm.controls.Type.value
+                      | minMaxLabelFromAttrType: "min"
+                  }}
+                </label>
+                <input type="number" id="attrMin" formControlName="Min" />
+              </div>
+              <div class="control">
+                <label for="attrMax">
+                  {{
+                    attributeForm.controls.Type.value
+                      | minMaxLabelFromAttrType: "max"
+                  }}
+                </label>
+                <input type="number" id="attrMax" formControlName="Max" />
+              </div>
+            }
+          </div>
+        }
+
+        @if (showSmartAttributes) {
+          <div class="chips">
+            @for (x of smartSuggestions; track $index) {
+              <span (click)="clickSmartSuggestion(x)" class="chip clickable">
+                {{ x.Name }}
+              </span>
+            }
+          </div>
+        }
+
+        <div class="fr g-2">
+          @if (!showSmartAttributes && smartSuggestions.length > 0) {
+            <button class="small-font" (click)="showSmartAttributes = true">
+              Show Suggestions
+            </button>
+          } @else if (showSmartAttributes) {
+            <button class="small-font" (click)="showSmartAttributes = false">
+              Hide Suggestions
+            </button>
+          }
+
+          @if (showAttrValidation) {
+            <button class="small-font" (click)="showAttrValidation = false">
+              Remove Validation
+            </button>
+          } @else {
+            <button class="small-font" (click)="showAttrValidation = true">
+              Add Validation
+            </button>
+          }
+
+          @if (showAttrOptions) {
+            <button class="small-font" (click)="showAttrOptions = false">
+              Remove Options
+            </button>
+          } @else {
+            <button class="small-font" (click)="showAttrOptions = true">
+              Add Options
+            </button>
+          }
+        </div>
+      </div>
     </ng-content>
 
     <ng-content footer>
-        @if (selectedAttribute) {
-        <button
-            (click)="clickDelAttribute()"
-            class="error-hover"
-        >
-            Delete
+      @if (selectedAttribute) {
+        <button (click)="clickDelAttribute()" class="error-hover">
+          Delete
         </button>
-        }
+      }
     </ng-content>
-</app-modal>
+  </app-modal>
 }

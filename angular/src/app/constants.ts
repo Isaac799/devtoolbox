@@ -45,66 +45,66 @@ validationMap.set(AttrType.TIMESTAMP, (x: string) => {
 });
 
 validationMap.set(AttrType.DECIMAL, (x: string) =>
-  matchesRegex(x, validationMapPatterns.decimal)
+  matchesRegex(x, validationMapPatterns.decimal),
 );
 validationMap.set(AttrType.REAL, (x: string) =>
-  matchesRegex(x, validationMapPatterns.real)
+  matchesRegex(x, validationMapPatterns.real),
 );
 validationMap.set(AttrType.FLOAT, (x: string) =>
-  matchesRegex(x, validationMapPatterns.float)
+  matchesRegex(x, validationMapPatterns.float),
 );
 validationMap.set(AttrType.SERIAL, (x: string) =>
-  matchesRegex(x, validationMapPatterns.serial)
+  matchesRegex(x, validationMapPatterns.serial),
 );
 validationMap.set(AttrType.INT, (x: string) =>
-  matchesRegex(x, validationMapPatterns.integer)
+  matchesRegex(x, validationMapPatterns.integer),
 );
 validationMap.set(AttrType.BOOLEAN, (x: string) =>
-  matchesRegex(x, validationMapPatterns.boolean)
+  matchesRegex(x, validationMapPatterns.boolean),
 );
 validationMap.set(AttrType.VARCHAR, (x: string) => typeof x === 'string');
 validationMap.set(AttrType.MONEY, (x: string) =>
-  matchesRegex(x, validationMapPatterns.money)
+  matchesRegex(x, validationMapPatterns.money),
 );
 
 export const defaultValueValidatorHintMap = new Map<AttrType, string>();
 defaultValueValidatorHintMap.set(AttrType.BIT, "'0' or '1'");
 defaultValueValidatorHintMap.set(
   AttrType.DATE,
-  "YYYY-MM-DD, 'CURRENT_DATE', or 'NOW()'"
+  "YYYY-MM-DD, 'CURRENT_DATE', or 'NOW()'",
 );
 defaultValueValidatorHintMap.set(
   AttrType.CHAR,
-  'A fixed length string (e.g., 1 character)'
+  'A fixed length string (e.g., 1 character)',
 );
 defaultValueValidatorHintMap.set(
   AttrType.TIME,
-  "HH:MM:SS, 'CURRENT_TIME', or 'NOW()'"
+  "HH:MM:SS, 'CURRENT_TIME', or 'NOW()'",
 );
 defaultValueValidatorHintMap.set(
   AttrType.TIMESTAMP,
-  "YYYY-MM-DD HH:MM:SS, 'CURRENT_TIMESTAMP', or 'NOW()'"
+  "YYYY-MM-DD HH:MM:SS, 'CURRENT_TIMESTAMP', or 'NOW()'",
 );
 defaultValueValidatorHintMap.set(
   AttrType.DECIMAL,
-  'A decimal point (e.g., 123.45, -12.3)'
+  'A decimal point (e.g., 123.45, -12.3)',
 );
 defaultValueValidatorHintMap.set(
   AttrType.REAL,
-  'A real number (e.g., 123.45, -12.3)'
+  'A real number (e.g., 123.45, -12.3)',
 );
 defaultValueValidatorHintMap.set(
   AttrType.FLOAT,
-  'A floating-point number (e.g., 123.45, -12.3)'
+  'A floating-point number (e.g., 123.45, -12.3)',
 );
 defaultValueValidatorHintMap.set(AttrType.SERIAL, 'A positive integer');
 defaultValueValidatorHintMap.set(
   AttrType.INT,
-  'Integer value (e.g., -123, 456)'
+  'Integer value (e.g., -123, 456)',
 );
 defaultValueValidatorHintMap.set(AttrType.BOOLEAN, "'true' or 'false'");
 defaultValueValidatorHintMap.set(AttrType.VARCHAR, 'Any string is acceptable');
 defaultValueValidatorHintMap.set(
   AttrType.MONEY,
-  "Money: e.g., '12.34', or '-12.34'"
+  "Money: e.g., '12.34', or '-12.34'",
 );

@@ -6,7 +6,7 @@ import { GuiEditorComponent } from './gui-editor/gui-editor.component';
 import { DataService } from './services/data.service';
 import { ModalComponent } from './modal/modal.component';
 import { CodeOutputComponent } from './code-output/code-output.component';
-import { TextEditorComponent } from "./text-editor/text-editor.component";
+import { TextEditorComponent } from './text-editor/text-editor.component';
 
 @Component({
   selector: 'app-root',
@@ -17,8 +17,8 @@ import { TextEditorComponent } from "./text-editor/text-editor.component";
     GuiEditorComponent,
     ModalComponent,
     CodeOutputComponent,
-    TextEditorComponent
-],
+    TextEditorComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
@@ -63,7 +63,10 @@ export class AppComponent implements OnInit {
     },
   ];
 
-  constructor(private cdr: ChangeDetectorRef, public data: DataService) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public data: DataService,
+  ) {}
 
   ngOnInit(): void {
     this.data.Initialize();

@@ -1,16 +1,12 @@
 import { Injectable } from '@angular/core';
 import {
   Schema,
-  AttrType,
-  Table,
-  Attribute,
   App,
   AppComplexityMode,
   AppGeneratorMode,
   AppMode,
 } from '../structure';
 import YAML from 'yaml';
-import { CodeOutputComponent } from '../code-output/code-output.component';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -28,7 +24,7 @@ export class DataService {
   app: App = {
     mode: AppMode.YAML,
     generatorMode: AppGeneratorMode.Postgres,
-    complexity: AppComplexityMode.Simple,
+    complexity: AppComplexityMode.Advanced,
   };
 
   constructor() {}

@@ -41,7 +41,6 @@ body {
   overflow: auto;
 }
 
-
 * {
   box-sizing: border-box;
 }
@@ -161,7 +160,6 @@ input:focus {
   color: var(--black);
 }
 
-
 .warn-hover:hover:not(:disabled) {
   background-color: var(--warn-transparent);
   border-left: 0.1rem solid var(--warn);
@@ -225,13 +223,12 @@ input:focus {
   color: var(--black);
 }
 
-
 .g-2 {
-  gap: var(--space)
+  gap: var(--space);
 }
 
 .g-1 {
-  gap: var(--space-sm)
+  gap: var(--space-sm);
 }
 
 .p-2 {
@@ -285,13 +282,12 @@ li {
   padding: 0;
   margin: 0;
   padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
-
 }
 
 code,
 pre,
 textarea {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   margin: 0;
   padding: 0;
   background-color: rgba(0, 0, 0, 0);
@@ -400,10 +396,9 @@ button:hover:not(:disabled) {
 
 input.ng-touched.ng-invalid,
 select.ng-touched.ng-invalid // input.ng-invalid,select.ng-invalid
-
-  {
+{
   border-left: 0.35rem solid var(--warn) !important;
-  background-color: var(--warn-transparent) !important
+  background-color: var(--warn-transparent) !important;
 }
 
 .chips {

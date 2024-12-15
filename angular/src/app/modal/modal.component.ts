@@ -26,13 +26,13 @@ export class ModalComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     window.addEventListener('keyup', this.keyListeners);
   }
-  
+
   ngOnDestroy(): void {
     window.removeEventListener('keyup', this.keyListeners);
   }
 
-  @Input()  disableAccept = false;
- 
+  @Input() disableAccept = false;
+
   private _visible = false;
   public get visible() {
     return this._visible;

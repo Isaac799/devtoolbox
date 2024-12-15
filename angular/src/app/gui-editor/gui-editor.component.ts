@@ -26,12 +26,20 @@ import { validationMap } from '../constants';
 import { MinMaxRelevantPipe } from '../pipes/min-max-relevant.pipe';
 import { ModalComponent } from '../modal/modal.component';
 import { CommonModule } from '@angular/common';
-import { MinMaxLabelFromAttrTypePipe } from "../pipes/min-max-label-from-attr-type.pipe";
-import { DefaultValueHintPipe } from "../pipes/default-value-hint.pipe";
+import { MinMaxLabelFromAttrTypePipe } from '../pipes/min-max-label-from-attr-type.pipe';
+import { DefaultValueHintPipe } from '../pipes/default-value-hint.pipe';
 
 @Component({
   selector: 'app-gui-editor',
-  imports: [ModalComponent, FormsModule, CommonModule, ReactiveFormsModule, MinMaxRelevantPipe, MinMaxLabelFromAttrTypePipe, DefaultValueHintPipe],
+  imports: [
+    ModalComponent,
+    FormsModule,
+    CommonModule,
+    ReactiveFormsModule,
+    MinMaxRelevantPipe,
+    MinMaxLabelFromAttrTypePipe,
+    DefaultValueHintPipe,
+  ],
   templateUrl: './gui-editor.component.html',
   styleUrl: './gui-editor.component.scss',
 })
@@ -267,7 +275,10 @@ export class GuiEditorComponent implements OnInit {
       : this.attrTypeOptionsAdvanced;
   }
 
-  constructor(private cdr: ChangeDetectorRef, public data: DataService) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public data: DataService,
+  ) {}
 
   ngOnInit(): void {
     this.serial = GuiEditorComponent.discoverSerial(this.data.schemas);

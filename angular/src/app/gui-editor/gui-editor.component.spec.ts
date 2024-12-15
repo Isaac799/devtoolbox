@@ -8,9 +8,8 @@ describe('GuiEditorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GuiEditorComponent]
-    })
-    .compileComponents();
+      imports: [GuiEditorComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(GuiEditorComponent);
     component = fixture.componentInstance;
