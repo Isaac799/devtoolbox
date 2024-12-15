@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { WebSocketService } from './services/web-socket.service';
 import {
   App,
@@ -50,6 +56,7 @@ export class AppComponent implements OnInit {
   }
   showAttrOptions: boolean = false;
   showAttrValidation: boolean = false;
+  showSmartAttributes: boolean = false;
   public get showModalSchema(): boolean {
     return this._showModalSchema;
   }
@@ -145,6 +152,106 @@ export class AppComponent implements OnInit {
     },
   ];
 
+  private readonly presetAttributes: Attribute[] = [
+    {
+      id: -1,
+      parent_id: -1,
+      Name: 'id',
+      Type: AttrType.SERIAL,
+      Options: {
+        PrimaryKey: true,
+        Readonly: true,
+        Unique: true,
+      },
+    },
+    {
+      id: -1,
+      parent_id: -1,
+      Name: 'title',
+      Type: AttrType.VARCHAR,
+      Options: {
+        PrimaryKey: false,
+        Readonly: true,
+        Unique: true,
+      },
+      Validation: {
+        Required: true,
+        Min: 3,
+        Max: 31,
+      },
+    },
+    {
+      id: -1,
+      parent_id: -1,
+      Name: 'inserted_at',
+      Type: AttrType.TIMESTAMP,
+      Options: {
+        PrimaryKey: false,
+        Readonly: true,
+        Default: 'CURRENT_TIMESTAMP',
+      },
+    },
+    {
+      id: -1,
+      parent_id: -1,
+      Name: 'updated_at',
+      Type: AttrType.TIMESTAMP,
+      Options: {
+        PrimaryKey: false,
+        Readonly: true,
+        Default: 'CURRENT_TIMESTAMP',
+      },
+    },
+    {
+      id: -1,
+      parent_id: -1,
+      Name: 'email',
+      Type: AttrType.VARCHAR,
+      Options: {
+        Readonly: true,
+        Unique: true,
+      },
+      Validation: {
+        Min: 5,
+        Max: 63,
+        Required: true,
+      },
+    },
+    {
+      id: -1,
+      parent_id: -1,
+      Name: 'revision',
+      Type: AttrType.INT,
+      Options: {
+        Unique: true,
+        Readonly: true,
+      },
+      Validation: {
+        Min: 1,
+        Max: 999,
+        Required: true,
+      },
+    },
+  ];
+
+  get smartSuggestions(): Attribute[] {
+    const t = this.selectedTable;
+    if (!t) return [];
+    const attrNames = t.Attributes.map((e) => e.Name.toLowerCase());
+    let answer = [];
+    for (const e of this.presetAttributes) {
+      if (attrNames.includes(e.Name.toLowerCase())) {
+        continue;
+      }
+      answer.push(JSON.parse(JSON.stringify(e)));
+    }
+    return answer;
+  }
+
+  clickSmartSuggestion(a: Attribute) {
+    this.setAttributeForm(a);
+  }
+
   private readonly attrTypeOptionsSimple = [
     { name: 'Auto Increment', value: AttrType.SERIAL },
     { name: 'Word', value: AttrType.VARCHAR },
@@ -204,6 +311,8 @@ export class AppComponent implements OnInit {
     this.showModalTable = false;
     this.showModalAttribute = false;
     this.showModalSchema = false;
+
+    this.showSmartAttributes = false;
   }
 
   addKeyboardListeners() {
@@ -229,8 +338,12 @@ export class AppComponent implements OnInit {
     if (!s) {
       return;
     }
+    this.setSchemaForm(s);
+  }
+  private setSchemaForm(s: Schema) {
     this.schemaForm.controls.Name.setValue(s.Name);
   }
+
   doShowModalTable(s: Schema, t?: Table) {
     this.closeAllModals();
     this.showModalTable = true;
@@ -246,8 +359,12 @@ export class AppComponent implements OnInit {
     if (!t) {
       return;
     }
+    this.setTableForm(t);
+  }
+  private setTableForm(t: Table) {
     this.tableForm.controls.Name.setValue(t.Name);
   }
+
   doShowModalAttribute(s: Schema, t: Table, a?: Attribute) {
     this.closeAllModals();
     this.showModalAttribute = true;
@@ -261,8 +378,13 @@ export class AppComponent implements OnInit {
     if (!a) {
       this.showAttrOptions = false;
       this.showAttrValidation = false;
+      this.showSmartAttributes = true;
       return;
     }
+    this.setAttributeForm(a);
+  }
+
+  private setAttributeForm(a: Attribute) {
     this.showAttrOptions = a.Options !== undefined;
     this.showAttrValidation = a.Validation !== undefined;
 
@@ -275,6 +397,9 @@ export class AppComponent implements OnInit {
       }
       if (a.Options.Readonly !== undefined) {
         c.Readonly.setValue(a.Options.Readonly);
+      }
+      if (a.Options.Unique !== undefined) {
+        c.Unique.setValue(a.Options.Unique);
       }
       if (a.Options.Default !== undefined) {
         c.Default.setValue(a.Options.Default);
@@ -396,6 +521,7 @@ export class AppComponent implements OnInit {
       } else {
         sa.Options = undefined;
       }
+      
       if (this.showAttrValidation) {
         if (!sa.Validation) {
           sa.Validation = {};
@@ -418,6 +544,7 @@ export class AppComponent implements OnInit {
       } else {
         sa.Validation = undefined;
       }
+
     } else {
       let newAttr: Attribute = {
         id: this.serial,
@@ -546,7 +673,7 @@ export class AppComponent implements OnInit {
 
   nameValidation = [
     Validators.required,
-    Validators.minLength(3),
+    Validators.minLength(2),
     Validators.maxLength(128),
     // Validators.pattern(this.regexSnakeCase),
   ];

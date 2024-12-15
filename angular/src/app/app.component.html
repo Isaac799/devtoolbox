@@ -10,42 +10,42 @@
 
     </div>
     <!-- Panel -->
-    <div class="fc g-2  p-2">
+    <div class="fc p-2">
         @for (s of schemas; track $index) {
         <!-- Schema -->
-        <div class="fc group">
+        <div class="fc p-2">
             <div>
                 <span class="title-1 hover-highlight" (click)="doShowModalSchema(s)">
                     {{ s.Name }}
                 </span>
             </div>
 
-            @for (t of s.Tables; track $index) {
-            <!-- Table -->
             <div class="fc group">
+                @for (t of s.Tables; track $index) {
+                <!-- Table -->
                 <div>
                     <span class="title-2 hover-highlight" (click)="doShowModalTable(s,t)">
                         {{ t.Name }}
                     </span>
                 </div>
-
-                @for (a of t.Attributes; track $index){
-                <!-- Attribute -->
                 <div class="fc group">
+
+                    @for (a of t.Attributes; track $index){
+                    <!-- Attribute -->
                     <div>
                         <span class="title-3 hover-highlight" (click)="doShowModalAttribute(s,t,a)">
                             {{ a.Name }}
                         </span>
                     </div>
+                    }
+                    <div>
+                        <button class="primary" (click)="doShowModalAttribute(s,t)"> + Attr </button>
+                    </div>
                 </div>
                 }
                 <div>
-                    <button class="primary" (click)="doShowModalAttribute(s,t)"> + Attr </button>
+                    <button class="primary" (click)="doShowModalTable(s)"> + Table </button>
                 </div>
-            </div>
-            }
-            <div>
-                <button class="primary" (click)="doShowModalTable(s)"> + Table </button>
             </div>
         </div>
         }
@@ -88,11 +88,6 @@
                 </div>
             </div>
         </div>
-        <div class="footer">
-            <button (click)="showSettingsModal = false" class="success-hover">
-                Okay
-            </button>
-        </div>
     </div>
 </div>
 }
@@ -117,11 +112,17 @@
             </div>
         </div>
         <div class="footer">
+            @if (selectedSchema) {
             <button (click)="clickDelSchema()" class="error-hover">
                 Delete
             </button>
+            } @else {
+            <button (click)="showModalSchema = false" class="info-hover">
+                Never Mind
+            </button>
+            }
             <button (click)="clickSaveSchema( )" class="success-hover" [disabled]="schemaForm.invalid">
-                Okay
+                Save
             </button>
         </div>
     </div>
@@ -148,11 +149,17 @@
             </div>
         </div>
         <div class="footer">
+            @if (selectedTable) {
             <button (click)="clickDelTable()" class="error-hover">
                 Delete
             </button>
+            } @else {
+            <button (click)="showModalTable = false" class="info-hover">
+                Never Mind
+            </button>
+            }
             <button (click)="clickSaveTable()" class="success-hover" [disabled]="tableForm.invalid">
-                Okay
+                Save
             </button>
         </div>
     </div>
@@ -170,65 +177,100 @@
                 X
             </button>
         </div>
-        <div class="content" [formGroup]="attributeForm">
-            <div class="controls">
-                <div class="control">
-                    <label for="attrName">Name</label>
-                    <input type="text" formControlName="Name" autocomplete="none" id="attrName" #attrName>
-                </div>
-                <div class="control">
-                    <label for="attrType">Type</label>
-                    <select id="attrType" formControlName="Type">
-                        @for (x of attrTypeOptions; track $index) {
-                        <option [ngValue]="x.value">{{x.name}}</option>
-                        }
-                    </select>
+        <div class="content fc g-2">
+            <div [formGroup]="attributeForm">
+                <div class="controls">
+                    <div class="control">
+                        <label for="attrName">Name</label>
+                        <input type="text" formControlName="Name" autocomplete="none" id="attrName" #attrName>
+                    </div>
+                    <div class="control">
+                        <label for="attrType">Type</label>
+                        <select id="attrType" formControlName="Type">
+                            @for (x of attrTypeOptions; track $index) {
+                            <option [ngValue]="x.value">{{x.name}}</option>
+                            }
+                        </select>
+                    </div>
                 </div>
 
                 @if (showAttrOptions) {
-                <div class="control">
-                    <label for="attrPrimaryKey">Primary Key</label>
-                    <input type="checkbox" id="attrPrimaryKey" formControlName="PrimaryKey">
+                <div class="controls">
+                    <div class="control">
+                        <label for="attrPrimaryKey">Primary Key</label>
+                        <input type="checkbox" id="attrPrimaryKey" formControlName="PrimaryKey">
+                    </div>
+                    <div class="control">
+                        <label for="attrReadonly">Readonly</label>
+                        <input type="checkbox" id="attrReadonly" formControlName="Readonly">
+                    </div>
+                    <div class="control">
+                        <label for="attrUnique">Unique</label>
+                        <input type="checkbox" id="attrUnique" formControlName="Unique">
+                    </div>
                 </div>
-                <div class="control">
-                    <label for="attrReadonly">Readonly</label>
-                    <input type="checkbox" id="attrReadonly" formControlName="Readonly">
-                </div>
-                <div class="control">
-                    <label for="attrUnique">Unique</label>
-                    <input type="checkbox" id="attrUnique" formControlName="Unique">
-                </div>
-                <button (click)="showAttrOptions = false">Remove Options</button>
-                } @else {
-                <button (click)="showAttrOptions = true">Add Options</button>
                 }
 
                 @if (showAttrValidation) {
-                <div class="control">
-                    <label for="attrRequired">Required</label>
-                    <input type="checkbox" id="attrRequired" formControlName="Required">
+                <div class="controls">
+                    <div class="control">
+                        <label for="attrRequired">Required</label>
+                        <input type="checkbox" id="attrRequired" formControlName="Required">
+                    </div>
+                    <div class="control ">
+                        <label for="attrMin">Min</label>
+                        <input type="number" id="attrMin" formControlName="Min">
+                    </div>
+                    <div class="control">
+                        <label for="attrMax">Max</label>
+                        <input type="number" id="attrMax" formControlName="Max">
+                    </div>
                 </div>
-                <div class="control ">
-                    <label for="attrMin">Min</label>
-                    <input type="number" id="attrMin" formControlName="Min">
-                </div>
-                <div class="control">
-                    <label for="attrMax">Max</label>
-                    <input type="number" id="attrMax" formControlName="Max">
-                </div>
-                <button (click)="showAttrValidation = false">Remove Options</button>
+                }
+            </div>
+
+            @if (showSmartAttributes) {
+            <div class="chips">
+                @for (x of smartSuggestions; track $index) {
+                <span (click)="clickSmartSuggestion(x)" class="chip clickable">
+                    {{ x.Name }}
+                </span>
+                }
+            </div>
+            }
+
+            <div class="fr g-2">
+                @if (!showSmartAttributes && smartSuggestions.length > 0) {
+                <button class="small-font" (click)="showSmartAttributes= true">Show Suggestions</button>
+                } @else if (showSmartAttributes) {
+                <button class="small-font" (click)="showSmartAttributes= false">Hide Suggestions</button>
+                }
+
+                @if (showAttrValidation) {
+                <button class="small-font" (click)="showAttrValidation = false">Remove Validation</button>
                 } @else {
-                <button (click)="showAttrValidation= true">Add Validation</button>
+                <button class="small-font" (click)="showAttrValidation= true">Add Validation</button>
+                }
+
+                @if (showAttrOptions){
+                <button class="small-font" (click)="showAttrOptions = false">Remove Options</button>
+                } @else {
+                <button class="small-font" (click)="showAttrOptions = true">Add Options</button>
                 }
             </div>
 
         </div>
         <div class="footer">
-            <button (click)="clickDelAttribute()" class="error-hover">
+            @if (selectedAttribute) { <button (click)="clickDelAttribute()" class="error-hover">
                 Delete
             </button>
+            } @else {
+            <button (click)="showModalAttribute = false" class="info-hover">
+                Never Mind
+            </button>
+            }
             <button (click)="clickSaveAttribute()" class="success-hover" [disabled]="attributeForm.invalid">
-                Okay
+                Save
             </button>
         </div>
     </div>
