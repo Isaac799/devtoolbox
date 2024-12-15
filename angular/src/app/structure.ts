@@ -8,8 +8,6 @@ export type Validation = {
 // Options holds additional options for attributes and tables
 export type AttributeOptions = {
   PrimaryKey?: boolean;
-  Readonly?: boolean;
-  // Unique?: string[];
   Unique?: boolean;
   Default?: string;
 };

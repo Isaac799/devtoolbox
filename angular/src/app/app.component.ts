@@ -160,7 +160,6 @@ export class AppComponent implements OnInit {
       Type: AttrType.SERIAL,
       Options: {
         PrimaryKey: true,
-        Readonly: true,
         Unique: true,
       },
     },
@@ -171,7 +170,6 @@ export class AppComponent implements OnInit {
       Type: AttrType.VARCHAR,
       Options: {
         PrimaryKey: false,
-        Readonly: true,
         Unique: true,
       },
       Validation: {
@@ -187,7 +185,6 @@ export class AppComponent implements OnInit {
       Type: AttrType.TIMESTAMP,
       Options: {
         PrimaryKey: false,
-        Readonly: true,
         Default: 'CURRENT_TIMESTAMP',
       },
     },
@@ -198,7 +195,6 @@ export class AppComponent implements OnInit {
       Type: AttrType.TIMESTAMP,
       Options: {
         PrimaryKey: false,
-        Readonly: true,
         Default: 'CURRENT_TIMESTAMP',
       },
     },
@@ -208,7 +204,6 @@ export class AppComponent implements OnInit {
       Name: 'email',
       Type: AttrType.VARCHAR,
       Options: {
-        Readonly: true,
         Unique: true,
       },
       Validation: {
@@ -224,7 +219,6 @@ export class AppComponent implements OnInit {
       Type: AttrType.INT,
       Options: {
         Unique: true,
-        Readonly: true,
       },
       Validation: {
         Min: 1,
@@ -395,9 +389,6 @@ export class AppComponent implements OnInit {
       if (a.Options.PrimaryKey !== undefined) {
         c.PrimaryKey.setValue(a.Options.PrimaryKey);
       }
-      if (a.Options.Readonly !== undefined) {
-        c.Readonly.setValue(a.Options.Readonly);
-      }
       if (a.Options.Unique !== undefined) {
         c.Unique.setValue(a.Options.Unique);
       }
@@ -508,11 +499,6 @@ export class AppComponent implements OnInit {
         } else {
           sa.Options.PrimaryKey = undefined;
         }
-        if (c.Readonly.value !== null) {
-          sa.Options.Readonly = c.Readonly.value;
-        } else {
-          sa.Options.Readonly = undefined;
-        }
         if (c.Unique.value !== null) {
           sa.Options.Unique = c.Unique.value;
         } else {
@@ -557,7 +543,6 @@ export class AppComponent implements OnInit {
           Default: c.Default.value!,
           Unique: c.Unique.value!,
           PrimaryKey: c.PrimaryKey.value!,
-          Readonly: c.Readonly.value!,
         };
       }
       if (this.showAttrValidation) {
