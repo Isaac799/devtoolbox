@@ -48,7 +48,7 @@ func GenerateCreateTableSQL(tableName string, table models.Table) string {
 		columnBuilder.WriteString(fmt.Sprintf("    %s %s", name, attr.Type))
 
 		// Handle attribute options
-		if attr.Validation.NotNull {
+		if attr.Validation.Required {
 			columnBuilder.WriteString(" NOT NULL")
 		}
 		if attr.Options.Default != nil {

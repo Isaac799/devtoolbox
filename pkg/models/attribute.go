@@ -2,7 +2,7 @@ package models
 
 // Validation holds validation rules for an attribute
 type Validation struct {
-	NotNull bool `yaml:"not_null,omitempty"`
+	Required bool `yaml:"not_null,omitempty"`
 	Min     int  `yaml:"min,omitempty"`
 	Max     int  `yaml:"max,omitempty"`
 }

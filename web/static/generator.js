@@ -61,7 +61,7 @@ function addAttribute(tableId) {
         <label>Attribute Type:</label>
         <input type="text" id="${attributeId}Type" placeholder="Enter attribute type" required>
         <label>Not Null:</label>
-        <input type="checkbox" id="${attributeId}NotNull">
+        <input type="checkbox" id="${attributeId}Required">
         <label>Min:</label>
         <input type="number" id="${attributeId}Min">
         <label>Max:</label>
@@ -150,7 +150,7 @@ function generateYAML() {
               : undefined,
           },
           validation: {
-            not_null: document.getElementById(`${attrId}NotNull`).checked,
+            not_null: document.getElementById(`${attrId}Required`).checked,
             min: document.getElementById(`${attrId}Min`).value
               ? parseInt(document.getElementById(`${attrId}Min`).value)
               : undefined,

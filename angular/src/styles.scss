@@ -1,0 +1,47 @@
+/* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+:root {
+  --white: rgb(255, 255, 255);
+  --black: rgb(0, 0, 0);
+  --primary: #0072b2;
+  --accent: #cc79a7;
+  --warn: #e69f00;
+  --success: #009e73;
+  --error: #d55e00;
+  --info: #56b4e9;
+  --highlight: #f0e442;
+
+  --transparency: 0.2;
+  --space: 0.5rem;
+  --space-sm: 0.2rem;
+  --border-radius: 0.5rem;
+
+  --white-transparent: rgba(255, 255, 255, var(--transparency));
+  --black-transparent: rgba(0, 0, 0, var(--transparency));
+  --primary-transparent: rgba(0, 114, 178, var(--transparency));
+  --accent-transparent: rgba(204, 121, 167, var(--transparency));
+  --warn-transparent: rgba(230, 159, 0, var(--transparency));
+  --success-transparent: rgba(0, 158, 115, var(--transparency));
+  --error-transparent: rgba(213, 94, 0, var(--transparency));
+  --info-transparent: rgba(86, 180, 233, var(--transparency));
+  --highlight-transparent: rgba(240, 228, 66, var(--transparency));
+}
+
+.mono-space {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.8rem;
+  overflow: auto;
+}
+
+
+* {
+  box-sizing: border-box;
+}

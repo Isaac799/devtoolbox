@@ -1,0 +1,236 @@
+<div class="split p-2">
+    <div class="fr g-2">
+        <div class="fc">
+            <button (click)="showSettingsModal = true">
+                Settings
+            </button>
+            <textarea class="mono-space" [(ngModel)]="editor" cols="35" rows="40"></textarea>
+
+        </div>
+
+    </div>
+    <!-- Panel -->
+    <div class="fc g-2  p-2">
+        @for (s of schemas; track $index) {
+        <!-- Schema -->
+        <div class="fc group">
+            <div>
+                <span class="title-1 hover-highlight" (click)="doShowModalSchema(s)">
+                    {{ s.Name }}
+                </span>
+            </div>
+
+            @for (t of s.Tables; track $index) {
+            <!-- Table -->
+            <div class="fc group">
+                <div>
+                    <span class="title-2 hover-highlight" (click)="doShowModalTable(s,t)">
+                        {{ t.Name }}
+                    </span>
+                </div>
+
+                @for (a of t.Attributes; track $index){
+                <!-- Attribute -->
+                <div class="fc group">
+                    <div>
+                        <span class="title-3 hover-highlight" (click)="doShowModalAttribute(s,t,a)">
+                            {{ a.Name }}
+                        </span>
+                    </div>
+                </div>
+                }
+                <div>
+                    <button class="primary" (click)="doShowModalAttribute(s,t)"> + Attr </button>
+                </div>
+            </div>
+            }
+            <div>
+                <button class="primary" (click)="doShowModalTable(s)"> + Table </button>
+            </div>
+        </div>
+        }
+        <div>
+            <button class="primary" (click)="doShowModalSchema()"> + Schema </button>
+        </div>
+    </div>
+</div>
+
+@if (showSettingsModal) {
+<div id="modaLSchema" class="fs-modal" #modaLSchema>
+    <div class="bd" (click)="showSettingsModal = false"></div>
+    <div class="box">
+        <div class="header">
+            <span>
+                Settings
+            </span>
+            <button (click)="showSettingsModal = false" class="error-hover">
+                X
+            </button>
+        </div>
+        <div class="content">
+            <!-- Text Editor -->
+            <div class="controls">
+                <div class="control">
+                    <label for="appComplexity">Complexity</label>
+                    <select [(ngModel)]="app.complexity" (ngModelChange)="saveConfig();" id="appComplexity">
+                        @for (x of complexityOptions; track $index) {
+                        <option [ngValue]="x.value">{{x.name}}</option>
+                        }
+                    </select>
+                </div>
+                <div class="control">
+                    <label for="appMode">Output</label>
+                    <select [(ngModel)]="app.mode" (ngModelChange)="updateEditor(); saveConfig();" id="appMode">
+                        @for (x of modeOptions; track $index) {
+                        <option [ngValue]="x.value">{{x.name}}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <button (click)="showSettingsModal = false" class="success-hover">
+                Okay
+            </button>
+        </div>
+    </div>
+</div>
+}
+@if (showModalSchema) {
+<div id="modaLSchema" class="fs-modal" #modaLSchema>
+    <div class="bd" (click)="showModalSchema = false"></div>
+    <div class="box">
+        <div class="header">
+            <span>
+                Schema
+            </span>
+            <button (click)="showModalSchema = false" class="error-hover">
+                X
+            </button>
+        </div>
+        <div class="content" [formGroup]="schemaForm">
+            <div class="controls">
+                <div class="control">
+                    <label for="schemaName">Name</label>
+                    <input type="text" formControlName="Name" autocomplete="none" id="schemaName" #schemaName>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <button (click)="clickDelSchema()" class="error-hover">
+                Delete
+            </button>
+            <button (click)="clickSaveSchema( )" class="success-hover" [disabled]="schemaForm.invalid">
+                Okay
+            </button>
+        </div>
+    </div>
+</div>
+}
+@if (showModalTable) {
+<div id="modaLTable" class="fs-modal" #modaLTable>
+    <div class="bd" (click)="showModalTable = false"></div>
+    <div class="box">
+        <div class="header">
+            <span>
+                Table
+            </span>
+            <button (click)="showModalTable = false" class="error-hover">
+                X
+            </button>
+        </div>
+        <div class="content" [formGroup]="tableForm">
+            <div class="controls">
+                <div class="control">
+                    <label for="tableName">Name</label>
+                    <input type="text" formControlName="Name" autocomplete="none" id="tableName" #tableName>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <button (click)="clickDelTable()" class="error-hover">
+                Delete
+            </button>
+            <button (click)="clickSaveTable()" class="success-hover" [disabled]="tableForm.invalid">
+                Okay
+            </button>
+        </div>
+    </div>
+</div>
+}
+@if (showModalAttribute) {
+<div id="modaLAttribute" class="fs-modal" #modaLAttribute>
+    <div class="bd" (click)="showModalAttribute = false"></div>
+    <div class="box">
+        <div class="header">
+            <span>
+                Attribute
+            </span>
+            <button (click)="showModalAttribute = false" class="error-hover">
+                X
+            </button>
+        </div>
+        <div class="content" [formGroup]="attributeForm">
+            <div class="controls">
+                <div class="control">
+                    <label for="attrName">Name</label>
+                    <input type="text" formControlName="Name" autocomplete="none" id="attrName" #attrName>
+                </div>
+                <div class="control">
+                    <label for="attrType">Type</label>
+                    <select id="attrType" formControlName="Type">
+                        @for (x of attrTypeOptions; track $index) {
+                        <option [ngValue]="x.value">{{x.name}}</option>
+                        }
+                    </select>
+                </div>
+
+                @if (showAttrOptions) {
+                <div class="control">
+                    <label for="attrPrimaryKey">Primary Key</label>
+                    <input type="checkbox" id="attrPrimaryKey" formControlName="PrimaryKey">
+                </div>
+                <div class="control">
+                    <label for="attrReadonly">Readonly</label>
+                    <input type="checkbox" id="attrReadonly" formControlName="Readonly">
+                </div>
+                <div class="control">
+                    <label for="attrUnique">Unique</label>
+                    <input type="checkbox" id="attrUnique" formControlName="Unique">
+                </div>
+                <button (click)="showAttrOptions = false">Remove Options</button>
+                } @else {
+                <button (click)="showAttrOptions = true">Add Options</button>
+                }
+
+                @if (showAttrValidation) {
+                <div class="control">
+                    <label for="attrRequired">Required</label>
+                    <input type="checkbox" id="attrRequired" formControlName="Required">
+                </div>
+                <div class="control ">
+                    <label for="attrMin">Min</label>
+                    <input type="number" id="attrMin" formControlName="Min">
+                </div>
+                <div class="control">
+                    <label for="attrMax">Max</label>
+                    <input type="number" id="attrMax" formControlName="Max">
+                </div>
+                <button (click)="showAttrValidation = false">Remove Options</button>
+                } @else {
+                <button (click)="showAttrValidation= true">Add Validation</button>
+                }
+            </div>
+
+        </div>
+        <div class="footer">
+            <button (click)="clickDelAttribute()" class="error-hover">
+                Delete
+            </button>
+            <button (click)="clickSaveAttribute()" class="success-hover" [disabled]="attributeForm.invalid">
+                Okay
+            </button>
+        </div>
+    </div>
+</div>
+}
