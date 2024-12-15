@@ -31,6 +31,8 @@ export class ModalComponent implements OnInit, OnDestroy {
     window.removeEventListener('keyup', this.keyListeners);
   }
 
+  @Input()  disableAccept = false;
+ 
   private _visible = false;
   public get visible() {
     return this._visible;

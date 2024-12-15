@@ -22,7 +22,7 @@
             <div>
                 <ng-content select="[footer]"></ng-content>
             </div>
-            <button (click)="doClickAccept()" class="success-hover">
+            <button (click)="doClickAccept()" class="success-hover" [disabled]="disableAccept">
                 {{ textAccept }}
             </button>
         </div>

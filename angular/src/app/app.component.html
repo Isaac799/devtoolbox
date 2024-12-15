@@ -93,7 +93,7 @@
 }
 
 @if (showModalSchema) {
-<app-modal [title]="'Schema'" [(visible)]="showModalSchema" (accepted)="clickSaveSchema()">
+<app-modal [title]="'Schema'" [(visible)]="showModalSchema" (accepted)="clickSaveSchema()" [disableAccept]="!schemaForm.valid">
     <ng-content body>
         <div class="controls" [formGroup]="schemaForm">
             <div class="control">
@@ -113,7 +113,7 @@
 }
 
 @if (showModalTable) {
-<app-modal [title]="'Table'" [(visible)]="showModalTable" (accepted)="clickSaveTable()">
+<app-modal [title]="'Table'" [(visible)]="showModalTable" (accepted)="clickSaveTable()" [disableAccept]="!tableForm.valid">
     <ng-content body>
         <div class="controls" [formGroup]="tableForm">
             <div class="control">
@@ -133,7 +133,7 @@
 }
 
 @if (showModalAttribute) {
-<app-modal [title]="'Attribute'" [(visible)]="showModalAttribute" (accepted)="clickSaveAttribute()">
+<app-modal [title]="'Attribute'" [(visible)]="showModalAttribute" (accepted)="clickSaveAttribute()" [disableAccept]="!attributeForm.valid">
     <ng-content body>
 
         <div class="fc g-2" [formGroup]="attributeForm">
