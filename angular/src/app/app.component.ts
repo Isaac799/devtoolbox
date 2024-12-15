@@ -18,10 +18,12 @@ import {
 } from './structure';
 import { CommonModule } from '@angular/common';
 import {
+  AbstractControl,
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  ValidationErrors,
   Validators,
 } from '@angular/forms';
 import YAML from 'yaml';
@@ -29,6 +31,8 @@ import { schemasToPostgreSQL } from './code';
 import { MinMaxLabelFromAttrTypePipe } from './pipes/min-max-label-from-attr-type.pipe';
 import { MinMaxRelevantPipe } from './pipes/min-max-relevant.pipe';
 import { ModalComponent } from './modal/modal.component';
+import { validationMap } from './constants';
+import { DefaultValueHintPipe } from './pipes/default-value-hint.pipe';
 
 @Component({
   selector: 'app-root',
@@ -39,6 +43,7 @@ import { ModalComponent } from './modal/modal.component';
     MinMaxLabelFromAttrTypePipe,
     MinMaxRelevantPipe,
     ModalComponent,
+    DefaultValueHintPipe,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -487,6 +492,11 @@ export class AppComponent implements OnInit {
         } else {
           sa.Options.Unique = undefined;
         }
+        if (c.Default.value !== null) {
+          sa.Options.Default = c.Default.value;
+        } else {
+          sa.Options.Default = undefined;
+        }
       } else {
         sa.Options = undefined;
       }
@@ -665,6 +675,48 @@ export class AppComponent implements OnInit {
     }
   }
 
+  private validDefault = () => {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!this.attributeForm) {
+        console.warn('missing attr form');
+        return null;
+      }
+
+      let c = this.attributeForm.controls;
+
+      if (!control.value) {
+        return null;
+      }
+
+      let t = c.Type.value;
+
+      if (t === null) {
+        return {
+          invalid: 'missing type of attribute',
+        };
+      }
+
+      const validatorFn = validationMap.get(t);
+
+      if (!validatorFn) {
+        console.error(`missing valid default fn for type ${t}`);
+        return {
+          'internal error':
+            'not able to handle default value validation for attribute type',
+        };
+      }
+
+      let a = validatorFn(control.value || '');
+      console.log('a :>> ', a);
+      let answer = a
+        ? null
+        : {
+            'invalid default value': 'please make another entry',
+          };
+      return answer;
+    };
+  };
+
   nameValidation = [
     Validators.required,
     Validators.minLength(2),
@@ -689,7 +741,7 @@ export class AppComponent implements OnInit {
     Readonly: new FormControl(false, []),
     // Unique: new FormControl<string[]>([], [Validators.required]),
     Unique: new FormControl(false, []),
-    Default: new FormControl('', []),
+    Default: new FormControl('', [this.validDefault()]),
     Required: new FormControl(true, []),
     Min: new FormControl(0, []),
     Max: new FormControl(1, []),

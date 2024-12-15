@@ -28,9 +28,14 @@ export const schemasToPostgreSQL = (schemas: Schema[]) => {
         }
 
         let attrLine = [`${a.Name} ${type}`];
+
         if (a.Options?.Default) {
+          let def = a.Options.Default;
+          if ([AttrType.VARCHAR, AttrType.CHAR].includes(a.Type)) {
+            def = `'${def.replace("'", "''")}'`;
+          }
           // todo better default handling
-          attrLine.push(`DEFAULT ${a.Options?.Default}`);
+          attrLine.push(`DEFAULT ${def}`);
         }
         if (a.Validation?.Required) {
           attrLine.push(`NOT NULL`);
