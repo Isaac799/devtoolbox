@@ -28,6 +28,7 @@ import YAML from 'yaml';
 import { schemasToPostgreSQL } from './code';
 import { MinMaxLabelFromAttrTypePipe } from './pipes/min-max-label-from-attr-type.pipe';
 import { MinMaxRelevantPipe } from './pipes/min-max-relevant.pipe';
+import { ModalComponent } from './modal/modal.component';
 
 @Component({
   selector: 'app-root',
@@ -37,6 +38,7 @@ import { MinMaxRelevantPipe } from './pipes/min-max-relevant.pipe';
     ReactiveFormsModule,
     MinMaxLabelFromAttrTypePipe,
     MinMaxRelevantPipe,
+    ModalComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -56,50 +58,14 @@ export class AppComponent implements OnInit {
     this._serial = value;
     this.saveConfig();
   }
-  private _showModalSchema: boolean = false;
-  private _showSettingsModal: boolean = false;
-  public get showSettingsModal(): boolean {
-    return this._showSettingsModal;
-  }
-  public set showSettingsModal(value: boolean) {
-    this._showSettingsModal = value;
-    this.saveConfig();
-  }
+  showModalSchema: boolean = false;
+  showSettingsModal: boolean = false;
+  showModalTable: boolean = false;
+  showModalAttribute: boolean = false;
+
   showAttrOptions: boolean = false;
   showAttrValidation: boolean = false;
   showSmartAttributes: boolean = false;
-  public get showModalSchema(): boolean {
-    return this._showModalSchema;
-  }
-  public set showModalSchema(value: boolean) {
-    if (!value) {
-      this.clearSelections();
-    }
-    this._showModalSchema = value;
-  }
-  @ViewChild('modaLSchema') modaLSchema!: HTMLDivElement;
-  private _showModalTable: boolean = false;
-  public get showModalTable(): boolean {
-    return this._showModalTable;
-  }
-  public set showModalTable(value: boolean) {
-    if (!value) {
-      this.clearSelections();
-    }
-    this._showModalTable = value;
-  }
-  @ViewChild('modaLTable') modaLTable!: HTMLDivElement;
-  private _showModalAttribute: boolean = false;
-  public get showModalAttribute(): boolean {
-    return this._showModalAttribute;
-  }
-  public set showModalAttribute(value: boolean) {
-    if (!value) {
-      this.clearSelections();
-    }
-    this._showModalAttribute = value;
-  }
-  @ViewChild('modaLAttribute') modaLAttribute!: HTMLDivElement;
 
   private _selectedAttribute: Attribute | null = null;
   public get selectedAttribute(): Attribute | null {
@@ -316,7 +282,6 @@ export class AppComponent implements OnInit {
     this.updateEditor();
     this.updateCodeGenerated();
     this.serial = AppComponent.discoverSerial(this.schemas);
-    this.addKeyboardListeners();
   }
 
   private get modalOpen() {
@@ -335,32 +300,6 @@ export class AppComponent implements OnInit {
     this.showModalSchema = false;
 
     this.showSmartAttributes = false;
-  }
-
-  addKeyboardListeners() {
-    window.addEventListener('keyup', (ev) => {
-      if (!this.modalOpen) {
-        return;
-      }
-      if (['Enter', 'Return'].includes(ev.key)) {
-        if (this.showModalAttribute) {
-          this.clickSaveAttribute();
-          return;
-        }
-        if (this.showModalTable) {
-          this.clickSaveTable();
-          return;
-        }
-        if (this.showModalSchema) {
-          this.clickSaveSchema();
-          return;
-        }
-      }
-      if (!['Escape'].includes(ev.key)) {
-        return;
-      }
-      this.closeAllModals();
-    });
   }
 
   doShowModalSchema(s?: Schema) {
@@ -520,10 +459,11 @@ export class AppComponent implements OnInit {
     }
     t.Attributes.splice(i, 1);
     this.showModalAttribute = false;
-    this.updateCodeGenerated()
-    this.updateEditor()
+    this.updateCodeGenerated();
+    this.updateEditor();
     this.saveState();
   }
+
   clickSaveAttribute() {
     if (!this.selectedTable) return;
     if (!this.attributeForm.valid) return;
@@ -555,7 +495,7 @@ export class AppComponent implements OnInit {
         if (!sa.Validation) {
           sa.Validation = {};
         }
-        
+
         let minMaxRelevant = new MinMaxRelevantPipe().transform(c.Type.value);
         if (c.Min.value !== null && minMaxRelevant) {
           sa.Validation.Min = c.Min.value;
@@ -601,8 +541,8 @@ export class AppComponent implements OnInit {
       this.serial += 1;
     }
     this.attributeForm.reset();
-    this.updateCodeGenerated()
-    this.updateEditor()
+    this.updateCodeGenerated();
+    this.updateEditor();
     this.saveState();
     this.showModalAttribute = false;
   }
@@ -622,8 +562,8 @@ export class AppComponent implements OnInit {
     }
     s.Tables.splice(i, 1);
     this.showModalTable = false;
-    this.updateCodeGenerated()
-    this.updateEditor()
+    this.updateCodeGenerated();
+    this.updateEditor();
     this.saveState();
   }
   clickSaveTable() {
@@ -647,8 +587,8 @@ export class AppComponent implements OnInit {
       this.serial += 1;
     }
     this.schemaForm.reset();
-    this.updateCodeGenerated()
-    this.updateEditor()
+    this.updateCodeGenerated();
+    this.updateEditor();
     this.saveState();
     this.showModalTable = false;
   }
@@ -664,8 +604,8 @@ export class AppComponent implements OnInit {
     }
     this.schemas.splice(i, 1);
     this.showModalSchema = false;
-    this.updateCodeGenerated()
-    this.updateEditor()
+    this.updateCodeGenerated();
+    this.updateEditor();
     this.saveState();
   }
   clickSaveSchema() {
@@ -683,8 +623,8 @@ export class AppComponent implements OnInit {
       this.serial += 1;
     }
     this.schemaForm.reset();
-    this.updateCodeGenerated()
-    this.updateEditor()
+    this.updateCodeGenerated();
+    this.updateEditor();
     this.saveState();
     this.showModalSchema = false;
   }

@@ -9,7 +9,6 @@
             </pre>
 
             <textarea class="mono-space scroll-box" [(ngModel)]="editor" cols="35" rows="20"></textarea>
-
         </div>
 
     </div>
@@ -60,136 +59,85 @@
 </div>
 
 @if (showSettingsModal) {
-<div id="modaLSchema" class="fs-modal" #modaLSchema>
-    <div class="bd" (click)="showSettingsModal = false"></div>
-    <div class="box">
-        <div class="header">
-            <span>
-                Settings
-            </span>
-            <button (click)="showSettingsModal = false" class="error-hover">
-                X
-            </button>
-        </div>
-        <div class="content">
-            <!-- Text Editor -->
-            <div class="controls">
-                <div class="control">
-                    <label for="appComplexity">Output: Language</label>
-                    <select [(ngModel)]="app.generatorMode" (ngModelChange)="saveConfig();" id="appComplexity">
-                        @for (x of generatorModeOptions; track $index) {
-                        <option [ngValue]="x.value">{{x.name}}</option>
-                        }
-                    </select>
-                </div>
-                <div class="control">
-                    <label for="appMode">Output: Config</label>
-                    <select [(ngModel)]="app.mode" (ngModelChange)="updateEditor(); saveConfig();" id="appMode">
-                        @for (x of modeOptions; track $index) {
-                        <option [ngValue]="x.value">{{x.name}}</option>
-                        }
-                    </select>
-                </div>
-                <div class="control">
-                    <label for="appComplexity">Input: Complexity</label>
-                    <select [(ngModel)]="app.complexity" (ngModelChange)="saveConfig();" id="appComplexity">
-                        @for (x of complexityOptions; track $index) {
-                        <option [ngValue]="x.value">{{x.name}}</option>
-                        }
-                    </select>
-                </div>
+<app-modal [title]="'Settings'" [(visible)]="showSettingsModal">
+    <ng-content body>
+        <!-- Text Editor -->
+        <div class="controls">
+            <div class="control">
+                <label for="appComplexity">Output: Language</label>
+                <select [(ngModel)]="app.generatorMode" (ngModelChange)="saveConfig();" id="appComplexity">
+                    @for (x of generatorModeOptions; track $index) {
+                    <option [ngValue]="x.value">{{x.name}}</option>
+                    }
+                </select>
+            </div>
+            <div class="control">
+                <label for="appMode">Output: Config</label>
+                <select [(ngModel)]="app.mode" (ngModelChange)="updateEditor(); saveConfig();" id="appMode">
+                    @for (x of modeOptions; track $index) {
+                    <option [ngValue]="x.value">{{x.name}}</option>
+                    }
+                </select>
+            </div>
+            <div class="control">
+                <label for="appComplexity">Input: Complexity</label>
+                <select [(ngModel)]="app.complexity" (ngModelChange)="saveConfig();" id="appComplexity">
+                    @for (x of complexityOptions; track $index) {
+                    <option [ngValue]="x.value">{{x.name}}</option>
+                    }
+                </select>
             </div>
         </div>
-    </div>
-</div>
+    </ng-content>
+</app-modal>
 }
+
 @if (showModalSchema) {
-<div id="modaLSchema" class="fs-modal" #modaLSchema>
-    <div class="bd" (click)="showModalSchema = false"></div>
-    <div class="box">
-        <div class="header">
-            <span>
-                Schema
-            </span>
-            <button (click)="showModalSchema = false" class="error-hover">
-                X
-            </button>
-        </div>
-        <div class="content" [formGroup]="schemaForm">
-            <div class="controls">
-                <div class="control">
-                    <label for="schemaName">Name</label>
-                    <input type="text" formControlName="Name" autocomplete="none" id="schemaName" #schemaName>
-                </div>
+<app-modal [title]="'Schema'" [(visible)]="showModalSchema" (accepted)="clickSaveSchema()">
+    <ng-content body>
+        <div class="controls" [formGroup]="schemaForm">
+            <div class="control">
+                <label for="schemaName">Name</label>
+                <input type="text" formControlName="Name" autocomplete="none" id="schemaName" #schemaName>
             </div>
         </div>
-        <div class="footer">
-            @if (selectedSchema) {
-            <button (click)="clickDelSchema()" class="error-hover">
-                Delete
-            </button>
-            } @else {
-            <button (click)="showModalSchema = false" class="info-hover">
-                Never Mind
-            </button>
-            }
-            <button (click)="clickSaveSchema( )" class="success-hover" [disabled]="schemaForm.invalid">
-                Save
-            </button>
-        </div>
-    </div>
-</div>
+    </ng-content>
+    <ng-content footer>
+        @if (selectedSchema) {
+        <button (click)="clickDelSchema()" class="error-hover">
+            Delete
+        </button>
+        }
+    </ng-content>
+</app-modal>
 }
+
 @if (showModalTable) {
-<div id="modaLTable" class="fs-modal" #modaLTable>
-    <div class="bd" (click)="showModalTable = false"></div>
-    <div class="box">
-        <div class="header">
-            <span>
-                Table
-            </span>
-            <button (click)="showModalTable = false" class="error-hover">
-                X
-            </button>
-        </div>
-        <div class="content" [formGroup]="tableForm">
-            <div class="controls">
-                <div class="control">
-                    <label for="tableName">Name</label>
-                    <input type="text" formControlName="Name" autocomplete="none" id="tableName" #tableName>
-                </div>
+<app-modal [title]="'Table'" [(visible)]="showModalTable" (accepted)="clickSaveTable()">
+    <ng-content body>
+        <div class="controls" [formGroup]="tableForm">
+            <div class="control">
+                <label for="tableName">Name</label>
+                <input type="text" formControlName="Name" autocomplete="none" id="tableName" #tableName>
             </div>
         </div>
-        <div class="footer">
-            @if (selectedTable) {
-            <button (click)="clickDelTable()" class="error-hover">
-                Delete
-            </button>
-            } @else {
-            <button (click)="showModalTable = false" class="info-hover">
-                Never Mind
-            </button>
-            }
-            <button (click)="clickSaveTable()" class="success-hover" [disabled]="tableForm.invalid">
-                Save
-            </button>
-        </div>
-    </div>
-</div>
+    </ng-content>
+    <ng-content footer>
+        @if (selectedTable) {
+        <button (click)="clickDelTable()" class="error-hover">
+            Delete
+        </button>
+        }
+    </ng-content>
+</app-modal>
 }
+
 @if (showModalAttribute) {
-<div id="modaLAttribute" class="fs-modal" #modaLAttribute>
-    <div class="bd" (click)="showModalAttribute = false"></div>
-    <div class="box">
-        <div class="header">
-            <span>
-                Attribute
-            </span>
-            <button (click)="showModalAttribute = false" class="error-hover">
-                X
-            </button>
-        </div>
-        <div class="content fc g-2">
+<app-modal [title]="'Attribute'" [(visible)]="showModalAttribute" (accepted)="clickSaveAttribute()">
+    <ng-content body>
+
+        <div class="fc g-2">
+
             <div [formGroup]="attributeForm">
                 <div class="controls">
                     <div class="control">
@@ -274,19 +222,14 @@
             </div>
 
         </div>
-        <div class="footer">
-            @if (selectedAttribute) { <button (click)="clickDelAttribute()" class="error-hover">
-                Delete
-            </button>
-            } @else {
-            <button (click)="showModalAttribute = false" class="info-hover">
-                Never Mind
-            </button>
-            }
-            <button (click)="clickSaveAttribute()" class="success-hover" [disabled]="attributeForm.invalid">
-                Save
-            </button>
-        </div>
-    </div>
-</div>
+    </ng-content>
+
+    <ng-content footer>
+        @if (selectedAttribute) {
+        <button (click)="clickDelAttribute()" class="error-hover">
+            Delete
+        </button>
+        }
+    </ng-content>
+</app-modal>
 }
