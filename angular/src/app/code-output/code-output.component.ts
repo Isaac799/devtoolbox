@@ -231,10 +231,38 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
     let lines: string[] = [];
     for (const s of schemas) {
       for (const t of s.Tables) {
+        lines.push(`type ${convertCase(t.Name, 'pascal')} = {`);
         for (const a of t.Attributes) {
+          if (a.Type === AttrType.REFERENCE) {
+            continue;
+          }
+          lines.push(
+            `${TAB}${convertCase(a.Name, 'pascal')}: ${SQL_TO_TS_TYPE[a.Type]}`
+          );
         }
+
+        let refs = t.Attributes.filter((e) => e.RefTo);
+        if (refs.length > 0) {
+          for (const e of refs) {
+            let r = e.RefTo!;
+            if (!r.Parent) {
+              console.warn('missing parent on gen go ref');
+              continue;
+            }
+            let rN = `${e.Name}_${r.Name}`;
+            let rStr = `${TAB}${convertCase(rN, 'pascal')}: ${convertCase(
+              r.Name,
+              'pascal'
+            )} | null`;
+            lines.push(rStr);
+          }
+        }
+        lines.push(`}`);
       }
     }
+    lines = alignKeywords(lines, Object.values(SQL_TO_TS_TYPE));
+    lines = alignKeyword(lines, ':');
+    lines = alignKeyword(lines, '| null');
     let str = lines.join('\n');
     return str;
   }
@@ -264,13 +292,13 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
         for (const a of t.Attributes) {
           if (a.Type === AttrType.REFERENCE) {
             continue;
-          } else {
-            lines.push(
-              `${TAB}${convertCase(a.Name, 'pascal')} ${
-                SQL_TO_GO_TYPE[a.Type]
-              } \`json:"${convertCase(a.Name, 'camel')}"\``
-            );
           }
+
+          lines.push(
+            `${TAB}${convertCase(a.Name, 'pascal')} ${
+              SQL_TO_GO_TYPE[a.Type]
+            } \`json:"${convertCase(a.Name, 'camel')}"\``
+          );
         }
 
         let refs = t.Attributes.filter((e) => e.RefTo);
