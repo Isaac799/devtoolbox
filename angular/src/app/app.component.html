@@ -2,6 +2,20 @@
   <div class="fr g-2">
     <div class="fc g-2">
       <button (click)="showSettingsModal = true">Settings</button>
+      <div class="controls">
+        <div class="control">
+          <label for="appComplexity">Output: Language</label>
+          <select
+            [(ngModel)]="data.app.generatorMode"
+            (ngModelChange)="data.ReloadAndSave()"
+            id="appComplexity"
+          >
+            @for (x of generatorModeOptions; track $index) {
+            <option [ngValue]="x.value">{{ x.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
       <app-code-output></app-code-output>
       <app-text-editor></app-text-editor>
     </div>
