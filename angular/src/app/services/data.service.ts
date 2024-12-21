@@ -57,6 +57,9 @@ export class DataService {
     this.initialized;
     this.loadConfig();
     this.loadLastSession();
+    setTimeout(() => {
+      this.Reload();
+    }, 0);
   }
 
   private loadConfig() {

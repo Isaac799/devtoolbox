@@ -67,6 +67,5 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.data.Initialize();
-    this.data.Reload();
   }
 }
