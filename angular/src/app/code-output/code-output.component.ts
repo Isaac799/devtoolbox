@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DataService } from '../services/data.service';
-import { alignKeywords, alignKeyword } from '../formatting';
+import { alignKeywords, alignKeyword, convertCase } from '../formatting';
 import {
   Schema,
   AttrType,
@@ -33,8 +33,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
           this.output = this.schemasToPostgreSQL(schemas);
           break;
         case AppGeneratorMode.Go:
+          this.output = this.schemasToGoStructs(schemas);
           break;
         case AppGeneratorMode.TS:
+          this.output = this.schemasToTsInterfaces(schemas);
           break;
       }
     });
@@ -52,11 +54,15 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
     let drops: string[] = [];
     let createTableLines: string[] = [];
     for (const s of schemas) {
-      drops.push(`DROP SCHEMA IF EXISTS ${s.Name};`);
-      createTableLines.push(`CREATE SCHEMA IF NOT EXISTS ${s.Name};`);
+      drops.push(`DROP SCHEMA IF EXISTS ${convertCase(s.Name, 'snake')};`);
+      createTableLines.push(
+        `CREATE SCHEMA IF NOT EXISTS ${convertCase(s.Name, 'snake')};`
+      );
       for (const t of s.Tables) {
-        drops.push(`DROP TABLE IF EXISTS ${t.Name};`);
-        createTableLines.push(`CREATE TABLE IF NOT EXISTS ${t.Name} (`);
+        drops.push(`DROP TABLE IF EXISTS ${convertCase(t.Name, 'snake')};`);
+        createTableLines.push(
+          `CREATE TABLE IF NOT EXISTS ${convertCase(t.Name, 'snake')} (`
+        );
         let attrs: string[] = this.generateAttributesForTable(t);
 
         let endThings: string[] = this.generateTableEndParts(t);
@@ -82,8 +88,8 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
   private generateTableEndParts(t: Table) {
     let endThings: string[] = [];
 
-    let pks = t.Attributes.filter((e) => e.Option?.PrimaryKey).map(
-      (e) => e.Name
+    let pks = t.Attributes.filter((e) => e.Option?.PrimaryKey).map((e) =>
+      convertCase(e.Name, 'snake')
     );
     if (pks.length > 0) {
       let pksStr = `PRIMARY KEY ( ${pks.join(', ')} )`;
@@ -95,7 +101,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
     );
     if (uniques.length > 0) {
       for (const e of uniques) {
-        let uniquesStr = `UNIQUE ( ${e} )`;
+        let uniquesStr = `UNIQUE ( ${convertCase(e, 'snake')} )`;
         endThings.push(uniquesStr);
       }
     }
@@ -106,9 +112,13 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
         let r = e.RefTo!;
         let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
         for (const rPk of rPks) {
-          let rStr = `FOREIGN KEY ( ${e.Name} ) REFERENCES ${TableFullName(
-            r
-          )} ( ${rPk.Name} ) ON DELETE CASCADE`;
+          let rStr = `FOREIGN KEY ( ${convertCase(
+            e.Name,
+            'snake'
+          )} ) REFERENCES ${TableFullName(r)} ( ${convertCase(
+            rPk.Name,
+            'snake'
+          )} ) ON DELETE CASCADE`;
           endThings.push(rStr);
         }
       }
@@ -127,9 +137,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
         let r = e.RefTo!;
         let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
         for (const rPk of rPks) {
-          let rStr = `CREATE INDEX idx_${AttributeNameWithSchemaAndTable(
-            rPk
-          ).replaceAll('.', '_')} ON ${TableFullName(r)} ( ${rPk.Name} );`;
+          let rStr = `CREATE INDEX  ${convertCase(
+            `idx_${AttributeNameWithSchemaAndTable(rPk)}`,
+            'snake'
+          )} ON ${TableFullName(r)} ( ${convertCase(rPk.Name, 'snake')} );`;
           endThings.push(rStr);
         }
       }
@@ -177,7 +188,9 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
         type = 'INT';
       }
 
-      let attrLine = [`${name} ${type}`];
+      let attrLine = [
+        `${convertCase(name, 'snake')} ${convertCase(type, 'upper')}`,
+      ];
 
       if (a.Option?.Default) {
         let def = a.Option.Default;
@@ -197,7 +210,24 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
     return attrs;
   }
 
-  schemasToGoStructs(schemas: Schema[]) {
+  schemasToTsInterfaces(schemas: Schema[]) {
+    const SQL_TO_TS_TYPE: Record<AttrType, string> = {
+      [AttrType.BIT]: 'boolean',
+      [AttrType.DATE]: 'Date',
+      [AttrType.CHAR]: 'string',
+      [AttrType.TIME]: 'Date',
+      [AttrType.TIMESTAMP]: 'Date',
+      [AttrType.SERIAL]: 'number',
+      [AttrType.DECIMAL]: 'number',
+      [AttrType.FLOAT]: 'number',
+      [AttrType.REAL]: 'number',
+      [AttrType.INT]: 'number',
+      [AttrType.BOOLEAN]: 'boolean',
+      [AttrType.VARCHAR]: 'string',
+      [AttrType.MONEY]: 'number',
+      [AttrType.REFERENCE]: '',
+    };
+
     let lines: string[] = [];
     for (const s of schemas) {
       for (const t of s.Tables) {
@@ -205,6 +235,65 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
         }
       }
     }
+    let str = lines.join('\n');
+    return str;
+  }
+
+  schemasToGoStructs(schemas: Schema[]) {
+    const SQL_TO_GO_TYPE: Record<AttrType, string> = {
+      [AttrType.BIT]: 'bool',
+      [AttrType.DATE]: 'time.Time',
+      [AttrType.CHAR]: 'string',
+      [AttrType.TIME]: 'time.Time',
+      [AttrType.TIMESTAMP]: 'time.Time',
+      [AttrType.SERIAL]: 'int',
+      [AttrType.DECIMAL]: 'float64',
+      [AttrType.FLOAT]: 'float64',
+      [AttrType.REAL]: 'float64',
+      [AttrType.INT]: 'int',
+      [AttrType.BOOLEAN]: 'bool',
+      [AttrType.VARCHAR]: 'string',
+      [AttrType.MONEY]: 'float64',
+      [AttrType.REFERENCE]: '',
+    };
+
+    let lines: string[] = [];
+    for (const s of schemas) {
+      for (const t of s.Tables) {
+        lines.push(`type ${convertCase(t.Name, 'pascal')} struct {`);
+        for (const a of t.Attributes) {
+          if (a.Type === AttrType.REFERENCE) {
+            continue;
+          } else {
+            lines.push(
+              `${TAB}${convertCase(a.Name, 'pascal')} ${
+                SQL_TO_GO_TYPE[a.Type]
+              } \`json:"${convertCase(a.Name, 'camel')}"\``
+            );
+          }
+        }
+
+        let refs = t.Attributes.filter((e) => e.RefTo);
+        if (refs.length > 0) {
+          for (const e of refs) {
+            let r = e.RefTo!;
+            if (!r.Parent) {
+              console.warn('missing parent on gen go ref');
+              continue;
+            }
+            let rN = `${e.Name}_${r.Name}`;
+            let rStr = `${TAB}${convertCase(rN, 'pascal')} *${convertCase(
+              r.Name,
+              'pascal'
+            )} \`json:"${convertCase(rN, 'camel')}"\``;
+            lines.push(rStr);
+          }
+        }
+        lines.push(`}`);
+      }
+    }
+    lines = alignKeywords(lines, ['*', ...Object.values(SQL_TO_GO_TYPE)]);
+    lines = alignKeyword(lines, '`json:');
     let str = lines.join('\n');
     return str;
   }

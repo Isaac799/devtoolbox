@@ -11,47 +11,50 @@
 </div>
 
 @if (showSettingsModal) {
-  <app-modal [title]="'Settings'" [(visible)]="showSettingsModal">
-    <ng-content body>
-      <!-- Text Editor -->
-      <div class="controls">
-        <div class="control">
-          <label for="appComplexity">Output: Language</label>
-          <select
-            [(ngModel)]="data.app.generatorMode"
-            (ngModelChange)="data.Save()"
-            id="appComplexity"
-          >
-            @for (x of generatorModeOptions; track $index) {
-              <option [ngValue]="x.value">{{ x.name }}</option>
-            }
-          </select>
-        </div>
-        <div class="control">
-          <label for="appMode">Output: Config</label>
-          <select
-            [(ngModel)]="data.app.mode"
-            (ngModelChange)="data.ReloadAndSave()"
-            id="appMode"
-          >
-            @for (x of modeOptions; track $index) {
-              <option [ngValue]="x.value">{{ x.name }}</option>
-            }
-          </select>
-        </div>
-        <div class="control">
-          <label for="appComplexity">Input: Complexity</label>
-          <select
-            [(ngModel)]="data.app.complexity"
-            (ngModelChange)="data.Save()"
-            id="appComplexity"
-          >
-            @for (x of complexityOptions; track $index) {
-              <option [ngValue]="x.value">{{ x.name }}</option>
-            }
-          </select>
-        </div>
+<app-modal
+  [title]="'Settings'"
+  [(visible)]="showSettingsModal"
+>
+  <ng-content body>
+    <!-- Text Editor -->
+    <div class="controls">
+      <div class="control">
+        <label for="appComplexity">Output: Language</label>
+        <select
+          [(ngModel)]="data.app.generatorMode"
+          (ngModelChange)="data.ReloadAndSave()"
+          id="appComplexity"
+        >
+          @for (x of generatorModeOptions; track $index) {
+          <option [ngValue]="x.value">{{ x.name }}</option>
+          }
+        </select>
       </div>
-    </ng-content>
-  </app-modal>
+      <div class="control">
+        <label for="appMode">Output: Config</label>
+        <select
+          [(ngModel)]="data.app.mode"
+          (ngModelChange)="data.ReloadAndSave()"
+          id="appMode"
+        >
+          @for (x of modeOptions; track $index) {
+          <option [ngValue]="x.value">{{ x.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="control">
+        <label for="appComplexity">Input: Complexity</label>
+        <select
+          [(ngModel)]="data.app.complexity"
+          (ngModelChange)="data.ReloadAndSave()"
+          id="appComplexity"
+        >
+          @for (x of complexityOptions; track $index) {
+          <option [ngValue]="x.value">{{ x.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </ng-content>
+</app-modal>
 }

@@ -18,7 +18,7 @@ export const alignKeyword = (strings: string[], keyword: string): string[] => {
 
 export const alignKeywords = (
   phrases: string[],
-  keywords: string[],
+  keywords: string[]
 ): string[] => {
   // Initialize the alignment reference point and mappings
   let alignTo = 0;
@@ -53,7 +53,7 @@ export const alignKeywords = (
 const findKeywordPosition = (
   phrase: string,
   keywords: string[],
-  alignTo: number,
+  alignTo: number
 ): number => {
   for (const word of keywords) {
     const pos = phrase.indexOf(word);
@@ -67,7 +67,7 @@ const findKeywordPosition = (
 // Helper function to find a backup keyword position
 const findBackupPosition = (
   phrase: string,
-  keywords: string[],
+  keywords: string[]
 ): number | undefined => {
   for (const word of keywords) {
     const pos = phrase.indexOf(word);
@@ -82,7 +82,7 @@ const findBackupPosition = (
 const constructAlignedPhrase = (
   phrase: string,
   position: number,
-  alignTo: number,
+  alignTo: number
 ): string => {
   const spacesToAdd = alignTo - position;
   let newPhraseParts: string[] = [];
@@ -113,3 +113,84 @@ export const trimAndRemoveBlankStrings = (obj: {
 
   return trimmedObj;
 };
+
+// List of acronyms to preserve uppercase
+const ACRONYMS = [
+  'id',
+  'html',
+  'css',
+  'js',
+  'api',
+  'http',
+  'ftp',
+  'url',
+  'sql',
+  'xml',
+];
+
+const isAcronym = (word: string): boolean => {
+  return ACRONYMS.includes(word.toLowerCase());
+};
+
+// Helper function to handle shared case conversion logic
+const convertString = (
+  str: string,
+  toCase: 'snake' | 'pascal' | 'camel' | 'upper'
+): string => {
+  // Remove spaces and dots and convert to lowercase
+  let result = str
+    .replace(/[\s\.]+/g, ' ') // Replace spaces and dots with spaces for easier processing
+    .replace(/_/g, ' ') // Treat underscores as space
+    .split(' ') // Split into words
+    .map((word) => word.toLowerCase()) // Convert all words to lowercase
+    .join(' ');
+
+  switch (toCase) {
+    case 'snake':
+      // Convert to snake_case by joining words with underscores
+      return result
+        .split(' ')
+        .map((word) => (isAcronym(word) ? word.toUpperCase() : word))
+        .join('_');
+    case 'pascal':
+      // Convert to PascalCase by capitalizing the first letter of each word
+      return result
+        .split(' ')
+        .map((word, index) => {
+          const capitalized = word.charAt(0).toUpperCase() + word.slice(1);
+          return isAcronym(word) ? capitalized.toUpperCase() : capitalized;
+        })
+        .join('');
+    case 'camel':
+      // Convert to camelCase: lowercase the first word and capitalize subsequent words
+      const words = result.split(' ');
+      const camelCased =
+        words[0] +
+        words
+          .slice(1)
+          .map((word) => {
+            const capitalized = word.charAt(0).toUpperCase() + word.slice(1);
+            return isAcronym(word) ? capitalized.toUpperCase() : capitalized;
+          })
+          .join('');
+      return camelCased.charAt(0).toLowerCase() + camelCased.slice(1);
+    case 'upper':
+      // Convert to UPPER_CASE with underscores between words
+      return result
+        .split(' ')
+        .map((word) =>
+          isAcronym(word) ? word.toUpperCase() : word.toUpperCase()
+        )
+        .join('_');
+    default:
+      throw new Error('Invalid case type');
+  }
+};
+
+// Main function to convert a string to the desired case
+export function convertCase(
+  str: string,
+  caseType: 'snake' | 'pascal' | 'camel' | 'upper'
+): string {
+  return convertString(str, caseType);
+}
