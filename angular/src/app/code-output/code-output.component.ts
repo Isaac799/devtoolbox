@@ -237,7 +237,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
             continue;
           }
           lines.push(
-            `${TAB}${convertCase(a.Name, 'pascal')}: ${SQL_TO_TS_TYPE[a.Type]}`
+            `${TAB}${convertCase(a.Name, 'camel')}: ${SQL_TO_TS_TYPE[a.Type]}`
           );
         }
 
@@ -250,7 +250,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
               continue;
             }
             let rN = `${e.Name}_${r.Name}`;
-            let rStr = `${TAB}${convertCase(rN, 'pascal')}: ${convertCase(
+            let rStr = `${TAB}${convertCase(rN, 'camel')}: ${convertCase(
               r.Name,
               'pascal'
             )} | null`;
