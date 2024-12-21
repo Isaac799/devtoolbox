@@ -394,9 +394,10 @@ button:hover:not(:disabled) {
   }
 }
 
-input.ng-touched.ng-invalid,
-select.ng-touched.ng-invalid // input.ng-invalid,select.ng-invalid
-{
+// input.ng-touched.ng-invalid,
+// select.ng-touched.ng-invalid 
+input.ng-invalid,
+select.ng-invalid {
   border-left: 0.35rem solid var(--warn) !important;
   background-color: var(--warn-transparent) !important;
 }

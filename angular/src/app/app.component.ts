@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AppComplexityMode, AppGeneratorMode, AppMode } from './structure';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -63,10 +63,7 @@ export class AppComponent implements OnInit {
     },
   ];
 
-  constructor(
-    private cdr: ChangeDetectorRef,
-    public data: DataService,
-  ) {}
+  constructor(public data: DataService) {}
 
   ngOnInit(): void {
     this.data.Initialize();
