@@ -36,7 +36,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
           this.output = this.schemasToGoStructs(schemas);
           break;
         case AppGeneratorMode.TS:
-          this.output = this.schemasToTsInterfaces(schemas);
+          this.output = this.schemasToTsStructs(schemas);
           break;
       }
     });
@@ -210,64 +210,12 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
     return attrs;
   }
 
-  schemasToTsInterfaces(schemas: Schema[]) {
-    const SQL_TO_TS_TYPE: Record<AttrType, string> = {
-      [AttrType.BIT]: 'boolean',
-      [AttrType.DATE]: 'Date',
-      [AttrType.CHAR]: 'string',
-      [AttrType.TIME]: 'Date',
-      [AttrType.TIMESTAMP]: 'Date',
-      [AttrType.SERIAL]: 'number',
-      [AttrType.DECIMAL]: 'number',
-      [AttrType.FLOAT]: 'number',
-      [AttrType.REAL]: 'number',
-      [AttrType.INT]: 'number',
-      [AttrType.BOOLEAN]: 'boolean',
-      [AttrType.VARCHAR]: 'string',
-      [AttrType.MONEY]: 'number',
-      [AttrType.REFERENCE]: '',
-    };
+  // * ---------------------------------------------------------------------
+  // * ---------------------------------------------------------------------
+  // * ---------------------------------------------------------------------
+  // * ---------------------------------------------------------------------
 
-    let lines: string[] = [];
-    for (const s of schemas) {
-      for (const t of s.Tables) {
-        lines.push(`type ${convertCase(t.Name, 'pascal')} = {`);
-        for (const a of t.Attributes) {
-          if (a.Type === AttrType.REFERENCE) {
-            continue;
-          }
-          lines.push(
-            `${TAB}${convertCase(a.Name, 'camel')}: ${SQL_TO_TS_TYPE[a.Type]}`
-          );
-        }
-
-        let refs = t.Attributes.filter((e) => e.RefTo);
-        if (refs.length > 0) {
-          for (const e of refs) {
-            let r = e.RefTo!;
-            if (!r.Parent) {
-              console.warn('missing parent on gen go ref');
-              continue;
-            }
-            let rN = `${e.Name}_${r.Name}`;
-            let rStr = `${TAB}${convertCase(rN, 'camel')}: ${convertCase(
-              r.Name,
-              'pascal'
-            )} | null`;
-            lines.push(rStr);
-          }
-        }
-        lines.push(`}`);
-      }
-    }
-    lines = alignKeywords(lines, Object.values(SQL_TO_TS_TYPE));
-    lines = alignKeyword(lines, ':');
-    lines = alignKeyword(lines, '| null');
-    let str = lines.join('\n');
-    return str;
-  }
-
-  schemasToGoStructs(schemas: Schema[]) {
+  private schemasToGoStructs(schemas: Schema[]) {
     const SQL_TO_GO_TYPE: Record<AttrType, string> = {
       [AttrType.BIT]: 'bool',
       [AttrType.DATE]: 'time.Time',
@@ -290,6 +238,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
       for (const t of s.Tables) {
         let structs = this.generateGoStructs(t, SQL_TO_GO_TYPE);
         lines = lines.concat(structs);
+        lines.push('');
         let fns = this.generateGoFns(t, SQL_TO_GO_TYPE);
         lines = lines.concat(fns);
         lines.push('');
@@ -492,6 +441,240 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
 
     lines = lines.concat(attrs);
     lines = alignKeyword(lines, ':');
+
+    lines.push(`${TAB}}`);
+    lines.push(`}`);
+
+    return lines;
+  }
+
+  // * ---------------------------------------------------------------------
+  // * ---------------------------------------------------------------------
+  // * ---------------------------------------------------------------------
+  // * ---------------------------------------------------------------------
+
+  private schemasToTsStructs(schemas: Schema[]) {
+    const SQL_TO_TS_TYPE: Record<AttrType, string> = {
+      [AttrType.BIT]: 'boolean',
+      [AttrType.DATE]: 'Date',
+      [AttrType.CHAR]: 'string',
+      [AttrType.TIME]: 'Date',
+      [AttrType.TIMESTAMP]: 'Date',
+      [AttrType.SERIAL]: 'number',
+      [AttrType.DECIMAL]: 'number',
+      [AttrType.FLOAT]: 'number',
+      [AttrType.REAL]: 'number',
+      [AttrType.INT]: 'number',
+      [AttrType.BOOLEAN]: 'boolean',
+      [AttrType.VARCHAR]: 'string',
+      [AttrType.MONEY]: 'number',
+      [AttrType.REFERENCE]: '',
+    };
+
+    let lines: string[] = [];
+    for (const s of schemas) {
+      for (const t of s.Tables) {
+        let structs = this.generateTsStructs(t, SQL_TO_TS_TYPE);
+        lines = lines.concat(structs);
+        lines.push('');
+        let fns = this.generateTsFns(t, SQL_TO_TS_TYPE);
+        lines = lines.concat(fns);
+        lines.push('');
+      }
+    }
+    let str = lines.join('\n');
+    return str;
+  }
+
+  private generateTsStructs(
+    t: Table,
+    SQL_TO_TS_TYPE: Record<AttrType, string>
+  ) {
+    let lines: string[] = [];
+    lines.push(`type ${convertCase(t.Name, 'pascal')} = {`);
+
+    for (const a of t.Attributes) {
+      let attrs = this.generateTsStructAttributes(a, false, SQL_TO_TS_TYPE);
+      lines = lines.concat(attrs);
+    }
+
+    if (t.RefBy) {
+      for (const tbl of t.RefBy) {
+        let added = false;
+        for (const a of tbl.Attributes) {
+          if (!a.RefTo) continue;
+          if (!a.Parent) continue;
+          if (a.RefTo.ID === t.ID) continue;
+          added = true;
+          // console.log(t.Name, 'has', a.RefTo.Name);
+          let many = `${TAB}${convertCase(
+            `${a.RefTo.Name}s`,
+            'pascal'
+          )}: ${convertCase(a.RefTo.Name, 'pascal')}[] | null`;
+          lines.push(many);
+        }
+        if (!added) {
+          let one = `${TAB}${convertCase(tbl.Name, 'pascal')}: ${convertCase(
+            tbl.Name,
+            'pascal'
+          )} | null`;
+          lines.push(one);
+        }
+      }
+    }
+
+    lines.push(`}`);
+    // lines = alignKeywords(lines, [...Object.values(SQL_TO_TS_TYPE)]);
+    lines = alignKeyword(lines, ':');
+    lines = alignKeyword(lines, '| null');
+    lines = alignKeyword(lines, '`json:');
+    return lines;
+  }
+
+  private generateTsStructAttributes(
+    a: Attribute,
+    recursive: boolean,
+    SQL_TO_TS_TYPE: Record<AttrType, string>
+  ): string[] {
+    let lines: string[] = [];
+
+    if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
+      for (const ra of a.RefTo.Attributes) {
+        if (!ra.Option?.PrimaryKey) {
+          continue;
+        }
+        let refAttrs = this.generateTsStructAttributes(
+          ra,
+          true,
+          SQL_TO_TS_TYPE
+        );
+        lines = lines.concat(refAttrs);
+      }
+      return lines;
+    }
+
+    if (recursive) {
+      lines.push(
+        `${TAB}${convertCase(AttributeNameWithTable(a), 'pascal')}: ${
+          SQL_TO_TS_TYPE[a.Type]
+        }`
+      );
+    } else {
+      lines.push(
+        `${TAB}${convertCase(a.Name, 'pascal')}: ${SQL_TO_TS_TYPE[a.Type]}`
+      );
+    }
+
+    return lines;
+  }
+
+  private generateTsFnStructAttributes(
+    a: Attribute,
+    recursive: boolean,
+    SQL_TO_TS_TYPE: Record<AttrType, string>
+  ): string[] {
+    let lines: string[] = [];
+
+    if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
+      a.RefTo.Attributes;
+      for (const ra of a.RefTo.Attributes) {
+        if (!ra.Option?.PrimaryKey) {
+          continue;
+        }
+        let refAttrs = this.generateTsFnStructAttributes(
+          ra,
+          true,
+          SQL_TO_TS_TYPE
+        );
+        lines = lines.concat(refAttrs);
+      }
+      return lines;
+    }
+
+    if (recursive) {
+      lines.push(
+        `${TAB}${TAB}${convertCase(
+          AttributeNameWithTable(a),
+          'pascal'
+        )}: ${convertCase(AttributeNameWithTable(a), 'camel')},`
+      );
+    } else {
+      lines.push(
+        `${TAB}${TAB}${convertCase(a.Name, 'pascal')}: ${convertCase(
+          a.Name,
+          'camel'
+        )},`
+      );
+    }
+
+    return lines;
+  }
+
+  private generateTsFns(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
+    let lines: string[] = [];
+    const n = convertCase(t.Name, 'pascal');
+
+    let params: string[] = [];
+
+    for (const a of t.Attributes) {
+      if (a.RefTo) {
+        for (const ra of a.RefTo.Attributes) {
+          if (!ra.Option?.PrimaryKey) continue;
+          params.push(
+            `${convertCase(AttributeNameWithTable(ra), 'camel')}: ${
+              SQL_TO_TS_TYPE[ra.Type]
+            }`
+          );
+        }
+
+        continue;
+      }
+      params.push(`${convertCase(a.Name, 'camel')}: ${SQL_TO_TS_TYPE[a.Type]}`);
+    }
+
+    lines.push(
+      `function ${convertCase(`New_${t.Name}`, 'pascal')} (${params.join(
+        ', '
+      )}): ${n} {`
+    );
+    lines.push(`${TAB}return {`);
+
+    let attrs: string[] = [];
+
+    for (const a of t.Attributes) {
+      let goFnStructAttributes = this.generateTsFnStructAttributes(
+        a,
+        false,
+        SQL_TO_TS_TYPE
+      );
+
+      attrs = attrs.concat(goFnStructAttributes);
+    }
+
+    if (t.RefBy) {
+      for (const tbl of t.RefBy) {
+        let added = false;
+        for (const a of tbl.Attributes) {
+          if (!a.RefTo) continue;
+          if (!a.Parent) continue;
+          if (a.RefTo.ID === t.ID) continue;
+          added = true;
+          // console.log(t.Name, 'has', a.RefTo.Name);
+          let many = `${TAB}${TAB}${convertCase(
+            `${a.RefTo.Name}s`,
+            'pascal'
+          )}: null,`;
+          attrs.push(many);
+        }
+        if (!added) {
+          let one = `${TAB}${TAB}${convertCase(tbl.Name, 'pascal')}: null,`;
+          attrs.push(one);
+        }
+      }
+    }
+
+    attrs = alignKeyword(attrs, ':');
+    lines = lines.concat(attrs);
 
     lines.push(`${TAB}}`);
     lines.push(`}`);
