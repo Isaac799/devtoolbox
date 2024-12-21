@@ -128,6 +128,7 @@ const ACRONYMS = [
   'xml',
 ];
 
+// Helper function to check if a word is an acronym
 const isAcronym = (word: string): boolean => {
   return ACRONYMS.includes(word.toLowerCase());
 };
@@ -148,10 +149,12 @@ const convertString = (
   switch (toCase) {
     case 'snake':
       // Convert to snake_case by joining words with underscores
-      return result
-        .split(' ')
-        .map((word) => (isAcronym(word) ? word.toUpperCase() : word))
-        .join('_');
+      return (
+        result
+          .split(' ')
+          // .map((word) => (isAcronym(word) ? word.toUpperCase() : word))
+          .join('_')
+      );
     case 'pascal':
       // Convert to PascalCase by capitalizing the first letter of each word
       return result

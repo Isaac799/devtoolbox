@@ -291,7 +291,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
         let structs = this.generateGoStructs(t, SQL_TO_GO_TYPE);
         lines = lines.concat(structs);
         let fns = this.generateGoFns(t, SQL_TO_GO_TYPE);
-        // lines = lines.concat(fns);
+        lines = lines.concat(fns);
         lines.push('');
       }
     }
@@ -325,7 +325,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
             'pascal'
           )} ~[]${convertCase(a.RefTo.Name, 'pascal')} \`json:"${convertCase(
             `${a.RefTo.Name}s`,
-            'camel'
+            'snake'
           )}"\``;
           lines.push(many);
         }
@@ -333,7 +333,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
           let one = `${TAB}${convertCase(tbl.Name, 'pascal')} ~*${convertCase(
             tbl.Name,
             'pascal'
-          )} \`json:"${convertCase(tbl.Name, 'camel')}"\``;
+          )} \`json:"${convertCase(tbl.Name, 'snake')}"\``;
           lines.push(one);
         }
       }
@@ -372,13 +372,55 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
       lines.push(
         `${TAB}${convertCase(AttributeNameWithTable(a), 'pascal')} ${
           SQL_TO_GO_TYPE[a.Type]
-        } \`json:"${convertCase(AttributeNameWithTable(a), 'camel')}"\``
+        } \`json:"${convertCase(AttributeNameWithTable(a), 'snake')}"\``
       );
     } else {
       lines.push(
         `${TAB}${convertCase(a.Name, 'pascal')} ${
           SQL_TO_GO_TYPE[a.Type]
-        } \`json:"${convertCase(a.Name, 'camel')}"\``
+        } \`json:"${convertCase(a.Name, 'snake')}"\``
+      );
+    }
+
+    return lines;
+  }
+
+  private generateGoFnStructAttributes(
+    a: Attribute,
+    recursive: boolean,
+    SQL_TO_GO_TYPE: Record<AttrType, string>
+  ): string[] {
+    let lines: string[] = [];
+
+    if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
+      a.RefTo.Attributes;
+      for (const ra of a.RefTo.Attributes) {
+        if (!ra.Option?.PrimaryKey) {
+          continue;
+        }
+        let refAttrs = this.generateGoFnStructAttributes(
+          ra,
+          true,
+          SQL_TO_GO_TYPE
+        );
+        lines = lines.concat(refAttrs);
+      }
+      return lines;
+    }
+
+    if (recursive) {
+      lines.push(
+        `${TAB}${TAB}${convertCase(
+          AttributeNameWithTable(a),
+          'pascal'
+        )}: ${convertCase(AttributeNameWithTable(a), 'camel')},`
+      );
+    } else {
+      lines.push(
+        `${TAB}${TAB}${convertCase(a.Name, 'pascal')}: ${convertCase(
+          a.Name,
+          'camel'
+        )},`
       );
     }
 
@@ -392,11 +434,19 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
     let params: string[] = [];
 
     for (const a of t.Attributes) {
-      if (a.Type === AttrType.REFERENCE) {
+      if (a.RefTo) {
+        for (const ra of a.RefTo.Attributes) {
+          if (!ra.Option?.PrimaryKey) continue;
+          params.push(
+            `${convertCase(AttributeNameWithTable(ra), 'camel')} ${
+              SQL_TO_GO_TYPE[ra.Type]
+            }`
+          );
+        }
+
         continue;
       }
-
-      params.push(`${convertCase(a.Name, 'pascal')} ${SQL_TO_GO_TYPE[a.Type]}`);
+      params.push(`${convertCase(a.Name, 'camel')} ${SQL_TO_GO_TYPE[a.Type]}`);
     }
 
     lines.push(
@@ -407,39 +457,42 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
     lines.push(`${TAB}return &${n} {`);
 
     let attrs: string[] = [];
+
     for (const a of t.Attributes) {
-      if (a.Type === AttrType.REFERENCE) {
-        continue;
-      }
-
-      attrs.push(
-        `${TAB}${TAB}${convertCase(a.Name, 'pascal')}: ${convertCase(
-          a.Name,
-          'pascal'
-        )},`
+      let goFnStructAttributes = this.generateGoFnStructAttributes(
+        a,
+        false,
+        SQL_TO_GO_TYPE
       );
-    }
-    attrs = alignKeyword(attrs, ':');
-    for (const e of attrs) {
-      lines.push(e);
+
+      attrs = attrs.concat(goFnStructAttributes);
     }
 
-    // let refs = t.Attributes.filter((e) => e.RefTo);
-    // if (refs.length > 0) {
-    //   for (const e of refs) {
-    //     let r = e.RefTo!;
-    //     if (!r.Parent) {
-    //       console.warn('missing parent on gen go ref');
-    //       continue;
-    //     }
-    //     let rN = `${e.Name}_${r.Name}`;
-    //     let rStr = `${TAB}${TAB}${convertCase(rN, 'pascal')} *${convertCase(
-    //       r.Name,
-    //       'pascal'
-    //     )} \`json:"${convertCase(rN, 'camel')}"\``;
-    //     lines.push(rStr);
-    //   }
-    // }
+    if (t.RefBy) {
+      for (const tbl of t.RefBy) {
+        let added = false;
+        for (const a of tbl.Attributes) {
+          if (!a.RefTo) continue;
+          if (!a.Parent) continue;
+          if (a.RefTo.ID === t.ID) continue;
+          added = true;
+          // console.log(t.Name, 'has', a.RefTo.Name);
+          let many = `${TAB}${TAB}${convertCase(
+            `${a.RefTo.Name}s`,
+            'pascal'
+          )}: []${convertCase(a.RefTo.Name, 'pascal')}{},`;
+          attrs.push(many);
+        }
+        if (!added) {
+          let one = `${TAB}${TAB}${convertCase(tbl.Name, 'pascal')}: nil,`;
+          attrs.push(one);
+        }
+      }
+    }
+
+    lines = lines.concat(attrs);
+    lines = alignKeyword(lines, ':');
+
     lines.push(`${TAB}}`);
     lines.push(`}`);
 
