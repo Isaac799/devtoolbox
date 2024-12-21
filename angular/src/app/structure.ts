@@ -62,6 +62,7 @@ export type TableConfig = {
 export type Table = {
   ID: number;
   Parent?: Schema;
+  RefBy?: Table[];
   Name: string;
   // Options: TableOptions;
   Attributes: Attribute[];

@@ -288,41 +288,161 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
     let lines: string[] = [];
     for (const s of schemas) {
       for (const t of s.Tables) {
-        lines.push(`type ${convertCase(t.Name, 'pascal')} struct {`);
-        for (const a of t.Attributes) {
-          if (a.Type === AttrType.REFERENCE) {
-            continue;
-          }
-
-          lines.push(
-            `${TAB}${convertCase(a.Name, 'pascal')} ${
-              SQL_TO_GO_TYPE[a.Type]
-            } \`json:"${convertCase(a.Name, 'camel')}"\``
-          );
-        }
-
-        let refs = t.Attributes.filter((e) => e.RefTo);
-        if (refs.length > 0) {
-          for (const e of refs) {
-            let r = e.RefTo!;
-            if (!r.Parent) {
-              console.warn('missing parent on gen go ref');
-              continue;
-            }
-            let rN = `${e.Name}_${r.Name}`;
-            let rStr = `${TAB}${convertCase(rN, 'pascal')} *${convertCase(
-              r.Name,
-              'pascal'
-            )} \`json:"${convertCase(rN, 'camel')}"\``;
-            lines.push(rStr);
-          }
-        }
-        lines.push(`}`);
+        let structs = this.generateGoStructs(t, SQL_TO_GO_TYPE);
+        lines = lines.concat(structs);
+        let fns = this.generateGoFns(t, SQL_TO_GO_TYPE);
+        // lines = lines.concat(fns);
+        lines.push('');
       }
     }
-    lines = alignKeywords(lines, ['*', ...Object.values(SQL_TO_GO_TYPE)]);
-    lines = alignKeyword(lines, '`json:');
     let str = lines.join('\n');
     return str;
+  }
+
+  private generateGoStructs(
+    t: Table,
+    SQL_TO_GO_TYPE: Record<AttrType, string>
+  ) {
+    let lines: string[] = [];
+    lines.push(`type ${convertCase(t.Name, 'pascal')} struct {`);
+
+    for (const a of t.Attributes) {
+      let attrs = this.generateGoStructAttributes(a, false, SQL_TO_GO_TYPE);
+      lines = lines.concat(attrs);
+    }
+
+    if (t.RefBy) {
+      for (const tbl of t.RefBy) {
+        let added = false;
+        for (const a of tbl.Attributes) {
+          if (!a.RefTo) continue;
+          if (!a.Parent) continue;
+          if (a.RefTo.ID === t.ID) continue;
+          added = true;
+          // console.log(t.Name, 'has', a.RefTo.Name);
+          let many = `${TAB}${convertCase(
+            `${a.RefTo.Name}s`,
+            'pascal'
+          )} ~[]${convertCase(a.RefTo.Name, 'pascal')} \`json:"${convertCase(
+            `${a.RefTo.Name}s`,
+            'camel'
+          )}"\``;
+          lines.push(many);
+        }
+        if (!added) {
+          let one = `${TAB}${convertCase(tbl.Name, 'pascal')} ~*${convertCase(
+            tbl.Name,
+            'pascal'
+          )} \`json:"${convertCase(tbl.Name, 'camel')}"\``;
+          lines.push(one);
+        }
+      }
+    }
+
+    lines.push(`}`);
+    lines = alignKeywords(lines, ['~', '*', ...Object.values(SQL_TO_GO_TYPE)]);
+    lines = lines.map((e) => e.replace('~', ''));
+    lines = alignKeyword(lines, '`json:');
+    return lines;
+  }
+
+  private generateGoStructAttributes(
+    a: Attribute,
+    recursive: boolean,
+    SQL_TO_GO_TYPE: Record<AttrType, string>
+  ): string[] {
+    let lines: string[] = [];
+
+    if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
+      for (const ra of a.RefTo.Attributes) {
+        if (!ra.Option?.PrimaryKey) {
+          continue;
+        }
+        let refAttrs = this.generateGoStructAttributes(
+          ra,
+          true,
+          SQL_TO_GO_TYPE
+        );
+        lines = lines.concat(refAttrs);
+      }
+      return lines;
+    }
+
+    if (recursive) {
+      lines.push(
+        `${TAB}${convertCase(AttributeNameWithTable(a), 'pascal')} ${
+          SQL_TO_GO_TYPE[a.Type]
+        } \`json:"${convertCase(AttributeNameWithTable(a), 'camel')}"\``
+      );
+    } else {
+      lines.push(
+        `${TAB}${convertCase(a.Name, 'pascal')} ${
+          SQL_TO_GO_TYPE[a.Type]
+        } \`json:"${convertCase(a.Name, 'camel')}"\``
+      );
+    }
+
+    return lines;
+  }
+
+  private generateGoFns(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
+    let lines: string[] = [];
+    const n = convertCase(t.Name, 'pascal');
+
+    let params: string[] = [];
+
+    for (const a of t.Attributes) {
+      if (a.Type === AttrType.REFERENCE) {
+        continue;
+      }
+
+      params.push(`${convertCase(a.Name, 'pascal')} ${SQL_TO_GO_TYPE[a.Type]}`);
+    }
+
+    lines.push(
+      `func ${convertCase(`New_${t.Name}`, 'pascal')} (${params.join(
+        ', '
+      )}) *${n} {`
+    );
+    lines.push(`${TAB}return &${n} {`);
+
+    let attrs: string[] = [];
+    for (const a of t.Attributes) {
+      if (a.Type === AttrType.REFERENCE) {
+        continue;
+      }
+
+      attrs.push(
+        `${TAB}${TAB}${convertCase(a.Name, 'pascal')}: ${convertCase(
+          a.Name,
+          'pascal'
+        )},`
+      );
+    }
+    attrs = alignKeyword(attrs, ':');
+    for (const e of attrs) {
+      lines.push(e);
+    }
+
+    // let refs = t.Attributes.filter((e) => e.RefTo);
+    // if (refs.length > 0) {
+    //   for (const e of refs) {
+    //     let r = e.RefTo!;
+    //     if (!r.Parent) {
+    //       console.warn('missing parent on gen go ref');
+    //       continue;
+    //     }
+    //     let rN = `${e.Name}_${r.Name}`;
+    //     let rStr = `${TAB}${TAB}${convertCase(rN, 'pascal')} *${convertCase(
+    //       r.Name,
+    //       'pascal'
+    //     )} \`json:"${convertCase(rN, 'camel')}"\``;
+    //     lines.push(rStr);
+    //   }
+    // }
+    lines.push(`${TAB}}`);
+    lines.push(`}`);
+
+    return lines;
   }
 }

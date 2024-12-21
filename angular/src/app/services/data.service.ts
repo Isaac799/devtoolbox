@@ -123,6 +123,13 @@ export class DataService {
           let r2 = [t2, ...s2.Tables, ...allTables].find(
             (e) => e.ID === a.RefToID
           );
+          if (r2) {
+            if (!r2.RefBy) {
+              r2.RefBy = [];
+            }
+            // console.log(r2.Name , ' is ref by ', t2.Name)
+            r2.RefBy.push(t2);
+          }
           let a2: Attribute = {
             ID: a.ID,
             Parent: a2p,
