@@ -50,47 +50,41 @@ function generateSqlFns(t: Table) {
   joinLines.push(convertCase(`${t.Name}`, 'snake'));
 
   for (const a of t.Attributes) {
-    if (a.RefTo) {
-      let j1 = `LEFT JOIN ${convertCase(`${a.RefTo.Name}`, 'snake')} ON`;
-      let j1ON = [];
-
-      for (const ra of a.RefTo.Attributes) {
-        if (!ra.Parent) continue;
-        returnTableLines.push(
-          `${convertCase(AttributeNameWithTable(ra), 'snake')} ${ra.Type}`
-        );
-        selectingLines.push(
-          `${AttributeNameWithTable(ra)} AS ${`${convertCase(
-            AttributeNameWithTable(ra),
-            'snake'
-          )}`}`
-        );
-      }
-      for (const ra of a.RefTo.Attributes) {
-        if (!ra.Parent) continue;
-        if (!ra.Option?.PrimaryKey) continue;
-        let left = `${convertCase(`${a.RefTo.Name}`, 'snake')}.${convertCase(
-          `${ra.Name}`,
-          'snake'
-        )}`;
-        j1ON.push(
-          `${left} = ${convertCase(t.Name, 'snake')}.${convertCase(
-            `${left}`,
-            'snake'
-          )}`
-        );
-      }
-      joinLines.push(`${j1} ${j1ON.join(' AND ')}`);
+    if (!a.RefTo) {
+      returnTableLines.push(`${convertCase(a.Name, 'camel')} ${a.Type}`);
+      selectingLines.push(`${AttributeNameWithTable(a)}`);
       continue;
     }
-    returnTableLines.push(`${convertCase(a.Name, 'camel')} ${a.Type}`);
-    // selectingLines.push(
-    //   `${AttributeNameWithTable(a)} AS ${`${convertCase(
-    //     AttributeNameWithTable(a),
-    //     'snake'
-    //   )}`}`
-    // );
-    selectingLines.push(`${AttributeNameWithTable(a)}`);
+
+    let j1 = `LEFT JOIN ${convertCase(`${a.RefTo.Name}`, 'snake')} ON`;
+    let j1ON = [];
+
+    for (const ra of a.RefTo.Attributes) {
+      returnTableLines.push(
+        `${convertCase(AttributeNameWithTable(ra), 'snake')} ${ra.Type}`
+      );
+      selectingLines.push(
+        `${AttributeNameWithTable(ra)} AS ${`${convertCase(
+          AttributeNameWithTable(ra),
+          'snake'
+        )}`}`
+      );
+    }
+    for (const ra of a.RefTo.Attributes) {
+      if (!ra.Parent) continue;
+      if (!ra.Option?.PrimaryKey) continue;
+      let left = `${convertCase(`${a.RefTo.Name}`, 'snake')}.${convertCase(
+        `${ra.Name}`,
+        'snake'
+      )}`;
+      j1ON.push(
+        `${left} = ${convertCase(t.Name, 'snake')}.${convertCase(
+          `${left}`,
+          'snake'
+        )}`
+      );
+    }
+    joinLines.push(`${j1} ${j1ON.join(' AND ')}`);
   }
 
   if (t.RefBy) {
@@ -115,13 +109,25 @@ function generateSqlFns(t: Table) {
 
         for (const a2 of t2.Attributes) {
           if (a2.Type === AttrType.REFERENCE) continue;
+          returnTableLines.push(
+            `${convertCase(AttributeNameWithTable(a2), 'snake')} ${a2.Type}`
+          );
+          selectingLines.push(
+            `${AttributeNameWithTable(a2)} AS ${`${convertCase(
+              AttributeNameWithTable(a2),
+              'snake'
+            )}`}`
+          );
+        }
+        for (const a2 of t2.Attributes) {
+          if (a2.Type === AttrType.REFERENCE) continue;
           if (!a2.Option?.PrimaryKey) continue;
 
           let l1 = `${convertCase(`${t.Name}`, 'snake')}.${convertCase(
             `${a2.Name}`,
             'snake'
           )}`;
-          let l2 = `${convertCase(`${tbl.Name}`, 'snake')}.${convertCase(
+          let l2 = `${convertCase(`${t2.Name}`, 'snake')}.${convertCase(
             `${a2.Name}`,
             'snake'
           )}`;
@@ -133,20 +139,10 @@ function generateSqlFns(t: Table) {
             )}`
           );
           j2ON.push(
-            `${l2} = ${convertCase(a.RefTo.Name, 'snake')}.${convertCase(
-              `${l1}`,
+            `${l2} = ${convertCase(tbl.Name, 'snake')}.${convertCase(
+              `${l2}`,
               'snake'
             )}`
-          );
-
-          returnTableLines.push(
-            `${convertCase(AttributeNameWithTable(a2), 'snake')} ${a2.Type}`
-          );
-          selectingLines.push(
-            `${AttributeNameWithTable(a2)} AS ${`${convertCase(
-              AttributeNameWithTable(a2),
-              'snake'
-            )}`}`
           );
         }
 
@@ -180,6 +176,10 @@ function generateSqlFns(t: Table) {
               'snake'
             )}`
           );
+        }
+        for (const a2 of tbl.Attributes) {
+          if (!a2.Parent) continue;
+          if (a2.Type === AttrType.REFERENCE) continue;
 
           returnTableLines.push(
             `${convertCase(AttributeNameWithTable(a2), 'snake')} ${a2.Type}`
@@ -200,59 +200,23 @@ function generateSqlFns(t: Table) {
   joinLines = alignKeyword(joinLines, '=');
   selectingLines = alignKeyword(selectingLines, 'AS');
 
-  let selecting = selectingLines.join(`,\n${TAB}${TAB}${TAB}`);
-  let returnTable = returnTableLines.join(', ');
+  let selecting = selectingLines.join(`,\n${TAB}${TAB}`);
+  let returnTable = returnTableLines.join(`,\n${TAB}${TAB}`);
   let paramsStr = params.join(', ');
-  let joinStr = joinLines.join(`\n${TAB}${TAB}${TAB}`);
+  let joinStr = joinLines.join(`\n${TAB}${TAB}`);
 
   let q = `CREATE OR REPLACE FUNCTION ${fnName} ( ${paramsStr} ) 
-    RETURNS TABLE ( ${returnTable} ) 
-    AS $$ BEGIN
-        SELECT 
-            ${selecting}
-        FROM
-            ${joinStr}
+    RETURNS TABLE ( 
+        ${returnTable}
+    ) AS $$ BEGIN
+    SELECT 
+        ${selecting}
+    FROM
+        ${joinStr}
     END; 
 $$ LANGUAGE plpgsql;`;
 
   q = q.replaceAll('SERIAL', 'INT');
 
   return q;
-}
-
-function generateSqlFnStructAttributes(
-  a: Attribute,
-  recursive: boolean
-): string[] {
-  let lines: string[] = [];
-
-  if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
-    a.RefTo.Attributes;
-    for (const ra of a.RefTo.Attributes) {
-      if (!ra.Option?.PrimaryKey) {
-        continue;
-      }
-      let refAttrs = generateSqlFnStructAttributes(ra, true);
-      lines = lines.concat(refAttrs);
-    }
-    return lines;
-  }
-
-  if (recursive) {
-    lines.push(
-      `${TAB}${TAB}${convertCase(
-        AttributeNameWithTable(a),
-        'pascal'
-      )}: ${convertCase(AttributeNameWithTable(a), 'camel')},`
-    );
-  } else {
-    lines.push(
-      `${TAB}${TAB}${convertCase(a.Name, 'pascal')}: ${convertCase(
-        a.Name,
-        'camel'
-      )},`
-    );
-  }
-
-  return lines;
 }
