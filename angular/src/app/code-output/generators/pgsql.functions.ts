@@ -36,10 +36,18 @@ function generateSqlFns(t: Table) {
   let selectingLines: string[] = [];
   let joinLines: string[] = [];
 
+  let whereAND = [];
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue;
     params.push(`${convertCase(a.Name, 'camel')} ${a.Type}`);
+    whereAND.push(
+      `${convertCase(t.Name, 'snake')}.${convertCase(
+        a.Name,
+        'snake'
+      )} = ${convertCase(a.Name, 'camel')}`
+    );
   }
+  let whereStr: string = whereAND.join(' AND ');
 
   if (params.length === 0) {
     return '';
@@ -208,11 +216,13 @@ function generateSqlFns(t: Table) {
   let q = `CREATE OR REPLACE FUNCTION ${fnName} ( ${paramsStr} ) 
     RETURNS TABLE ( 
         ${returnTable}
-    ) AS $$ BEGIN
+    ) AS $$ BEGIN RETURN QUERY
     SELECT 
         ${selecting}
     FROM
         ${joinStr}
+    WHERE
+        ${whereStr}
     END; 
 $$ LANGUAGE plpgsql;`;
 

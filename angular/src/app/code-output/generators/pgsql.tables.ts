@@ -25,8 +25,7 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
       let attrs: string[] = generateAttributesForTable(t);
 
       let endThings: string[] = generateTableEndParts(t);
-      let indexes: string[] = generateTableIndexes(t);
-      // let uniquesStr = `UNIQUE ( ${uniques.join(', ')} )`;
+      // let indexes: string[] = generateTableIndexes(t);
 
       if (attrs.length >= 1) {
         attrs[0] = `${TAB}${attrs[0]}`;
@@ -35,7 +34,7 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
 
       createTableLines.push(');');
 
-      createTableLines = createTableLines.concat(indexes);
+      // createTableLines = createTableLines.concat(indexes);
     }
   }
   drops = drops.reverse();
@@ -47,11 +46,24 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
 function generateTableEndParts(t: Table) {
   let endThings: string[] = [];
 
-  let pks = t.Attributes.filter((e) => e.Option?.PrimaryKey).map((e) =>
-    convertCase(e.Name, 'snake')
-  );
+  let pks: string[] = [];
+  for (const a of t.Attributes) {
+    if (!a.Option?.PrimaryKey) continue;
+    if (!a.RefTo) {
+      pks.push(convertCase(a.Name, 'snake'));
+      continue;
+    }
+
+    for (const ra of a.RefTo.Attributes) {
+      if (!ra.Option?.PrimaryKey) continue;
+      if (!ra.Parent) continue;
+      pks.push(convertCase(`${ra.Parent.Name}_${ra.Name}`, 'snake'));
+    }
+  }
+
   if (pks.length > 0) {
-    let pksStr = `PRIMARY KEY ( ${pks.join(', ')} )`;
+    let pksJoined = pks.join(', ');
+    let pksStr = `PRIMARY KEY ( ${pksJoined} )`;
     endThings.push(pksStr);
   }
 
@@ -85,27 +97,28 @@ function generateTableEndParts(t: Table) {
   return endThings;
 }
 
-function generateTableIndexes(t: Table) {
-  let endThings: string[] = [];
+// function generateTableIndexes(t: Table) {
+//   let endThings: string[] = [];
 
-  let refs = t.Attributes.filter((e) => e.RefTo);
-  if (refs.length > 0) {
-    for (const e of refs) {
-      let r = e.RefTo!;
-      let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
-      for (const rPk of rPks) {
-        let rStr = `CREATE INDEX  ${convertCase(
-          `idx_${AttributeNameWithSchemaAndTable(rPk)}`,
-          'snake'
-        )} ON ${TableFullName(r)} ( ${convertCase(rPk.Name, 'snake')} );`;
-        endThings.push(rStr);
-      }
-    }
-  }
+//   let refs = t.Attributes.filter((e) => e.RefTo);
+//   if (refs.length > 0) {
+//     for (const e of refs) {
+//       let r = e.RefTo!;
+//       let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
+//       for (const rPk of rPks) {
+//         if (rPk.Option?.PrimaryKey) continue;
+//         let rStr = `CREATE INDEX  ${convertCase(
+//           `idx_${AttributeNameWithSchemaAndTable(rPk)}`,
+//           'snake'
+//         )} ON ${TableFullName(r)} ( ${convertCase(rPk.Name, 'snake')} );`;
+//         endThings.push(rStr);
+//       }
+//     }
+//   }
 
-  endThings = alignKeyword(endThings, 'ON');
-  return endThings;
-}
+//   endThings = alignKeyword(endThings, 'ON');
+//   return endThings;
+// }
 
 function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
   let attrs: string[] = [];
