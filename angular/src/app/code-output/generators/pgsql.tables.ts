@@ -3,7 +3,6 @@ import { convertCase, alignKeyword, alignKeywords } from '../../formatting';
 import {
   Table,
   TableFullName,
-  AttributeNameWithSchemaAndTable,
   AttrType,
   Schema,
   Attribute,

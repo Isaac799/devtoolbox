@@ -222,7 +222,7 @@ function generateSqlFns(t: Table) {
     FROM
         ${joinStr}
     WHERE
-        ${whereStr}
+        ${whereStr};
     END; 
 $$ LANGUAGE plpgsql;`;
 
