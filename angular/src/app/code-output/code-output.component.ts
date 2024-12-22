@@ -2,9 +2,10 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DataService } from '../services/data.service';
 import { AppGeneratorMode } from '../structure';
 import { Subscription } from 'rxjs';
-import { SchemasToPostgreSQL } from './generators/pgsql';
+import { SchemasToPostgreSQL } from './generators/pgsql.tables';
 import { SchemasToGoStructs } from './generators/go';
 import { SchemasToTsStructs } from './generators/ts';
+import { SchemasToSqlFuncs } from './generators/pgsql.functions';
 
 @Component({
   selector: 'app-code-output',
@@ -29,6 +30,9 @@ export class CodeOutputComponent implements OnInit, OnDestroy {
           break;
         case AppGeneratorMode.TS:
           this.output = SchemasToTsStructs(schemas);
+          break;
+        case AppGeneratorMode.PostgresFunctions:
+          this.output = SchemasToSqlFuncs(schemas);
           break;
       }
     });

@@ -50,8 +50,12 @@ export class AppComponent implements OnInit {
 
   generatorModeOptions = [
     {
-      name: 'PostgreSQL',
+      name: 'PostgreSQL: Tables',
       value: AppGeneratorMode.Postgres,
+    },
+    {
+      name: 'PostgreSQL: Functions',
+      value: AppGeneratorMode.PostgresFunctions,
     },
     {
       name: 'Go',
