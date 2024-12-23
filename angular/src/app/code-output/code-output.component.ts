@@ -67,4 +67,8 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
       this.subscription.unsubscribe();
     }
   }
+
+  copy() {
+    navigator.clipboard.writeText(this.output);
+  }
 }

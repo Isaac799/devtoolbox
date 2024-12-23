@@ -4,8 +4,19 @@
   rows="20"
 ></textarea> -->
 
-<pre
-  #textEditor
-  class="mono-space scroll-box limit-height"
->
-</pre>
+
+<div class="relative-box">
+  <div class="abs-top-right p-2">
+    <button
+      class="info"
+      (click)="copy()"
+    >
+      Copy
+    </button>
+  </div>
+  <pre
+    #textEditor
+    class="mono-space scroll-box limit-height"
+  >
+  </pre>
+</div>

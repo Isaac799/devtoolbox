@@ -85,4 +85,8 @@ export class TextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
     }
   }
+
+  copy() {
+    navigator.clipboard.writeText(this.output);
+  }
 }
