@@ -390,7 +390,6 @@ export class GuiEditorComponent implements OnInit {
   private setAttributeForm(a: Attribute) {
     this.attributeForm.reset();
 
-    console.log('a.Options :>> ', a.Option);
     this.showAttrOptions = a.Option !== undefined;
     this.showAttrValidation = a.Validation !== undefined;
 
