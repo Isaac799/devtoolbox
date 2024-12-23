@@ -29,8 +29,12 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"],
-            "scripts": []
+            "styles": [
+              "src/styles.scss",
+              "node_modules/highlight.js/scss/a11y-light.scss"
+            ],
+            "scripts": [
+            ]
           },
           "configurations": {
             "production": {

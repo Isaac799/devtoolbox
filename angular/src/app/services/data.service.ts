@@ -11,7 +11,6 @@ import {
   TableConfig,
   AttributeConfig,
 } from '../structure';
-import YAML from 'yaml';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -24,8 +23,10 @@ export class DataService {
 
   schemas: Schema[] = [];
   schemasConfig: Record<string, SchemaConfig> = {};
-  editor = '';
-  regenerateOutput = new Subject<Schema[]>();
+  textEditorViewHtml: HTMLPreElement | null = null;
+  codeGeneratorViewHtml: HTMLPreElement | null = null;
+  schemasChange = new Subject<Schema[]>();
+  schemasConfigChange = new Subject<Record<string, SchemaConfig>>();
 
   app: App = {
     mode: AppMode.YAML,
@@ -41,8 +42,8 @@ export class DataService {
   }
 
   Reload() {
-    this.updateEditor();
-    this.regenerateOutput.next(this.schemas);
+    this.schemasChange.next(this.schemas);
+    this.schemasConfigChange.next(this.schemasConfig);
   }
 
   Save() {
@@ -54,7 +55,19 @@ export class DataService {
     if (this.initialized) {
       return;
     }
-    this.initialized;
+    this.initialized = true;
+    this.textEditorViewHtml = document.getElementById(
+      'text-editor-view-html'
+    ) as HTMLPreElement;
+    if (!this.textEditorViewHtml) {
+      console.warn('missing text-editor-view-html');
+    }
+    this.codeGeneratorViewHtml = document.getElementById(
+      'code-generator-view-html'
+    ) as HTMLPreElement;
+    if (!this.codeGeneratorViewHtml) {
+      console.warn('missing code-generator-view-html');
+    }
     this.loadConfig();
     this.loadLastSession();
     setTimeout(() => {
@@ -186,17 +199,6 @@ export class DataService {
   private saveConfig() {
     let s = JSON.stringify(this.app, null, 2);
     localStorage.setItem(this.configSessionKey, s);
-  }
-
-  private updateEditor() {
-    switch (this.app.mode) {
-      case AppMode.JSON:
-        this.editor = JSON.stringify(this.schemasConfig, null, 2);
-        break;
-      case AppMode.YAML:
-        this.editor = YAML.stringify(this.schemasConfig);
-        break;
-    }
   }
 
   getReference(id: number): Table | null {
