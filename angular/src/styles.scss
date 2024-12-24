@@ -46,7 +46,7 @@ body {
   font-family: 'Material Symbols Outlined';
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;
+  font-size: 1.5rem;
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;
@@ -56,6 +56,12 @@ body {
   direction: ltr;
   -moz-font-feature-settings: 'liga';
   -moz-osx-font-smoothing: grayscale;
+
+
+}
+
+.icon.small {
+  font-size: 1rem;
 }
 
 .mono-space {
@@ -99,31 +105,17 @@ body {
   min-width: 30rem;
 }
 
-
-
-
 .title-1 {
-  font-size: 1.6rem;
+  font-size: 1.3rem;
   // border-bottom: 0.1rem solid black;
 }
 
 .title-2 {
-  font-size: 1.4rem;
-}
-
-.title-3 {
   font-size: 1.2rem;
 }
 
-.group {
-  padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
-  border-left: 0.1rem solid black;
-  margin-left: var(--space);
-}
-
-.group:hover {
-  // border-left: 0.1rem solid black;
-  margin-left: var(--space);
+.title-3 {
+  font-size: 1.1rem;
 }
 
 input {
@@ -137,6 +129,42 @@ input {
 input:focus {
   outline: none;
   border-bottom-color: blue;
+}
+
+.hide-until-hover {
+  color: var(--black-transparent);
+}
+
+.hide-until-hover:hover {
+  color: black;
+}
+
+.warn-text {
+  color: var(--warn);
+}
+
+.error-text {
+  color: var(--error);
+}
+
+.info-text {
+  color: var(--info);
+}
+
+.success-text {
+  color: var(--success);
+}
+
+.highlight-text {
+  color: var(--highlight);
+}
+
+.primary-text {
+  color: var(--primary);
+}
+
+.accent-text {
+  color: var(--accent);
 }
 
 .warn {
@@ -208,7 +236,6 @@ input:focus {
   border-left-width: 0.2rem;
   padding-left: 0.35rem;
   padding-right: 0.35rem;
-  color: var(--black);
 }
 
 .error-hover:hover:not(:disabled) {
@@ -364,6 +391,10 @@ button:hover:not(:disabled) {
   padding-right: 0.35rem;
   color: var(--black);
   box-shadow: rgba(100, 100, 111, 0.2) 0 0.5rem 2rem 0px;
+
+  * {
+    color: var(--black);
+  }
 }
 
 .hover-highlight:hover:not(:disabled) {
@@ -477,6 +508,9 @@ select.ng-invalid {
 .limit-height {
   height: 20rem;
 }
+.limit-width {
+  width: 30rem;
+}
 
 .scroll-box {
   /* border-left: 0.1rem solid var(--primary); */
@@ -499,16 +533,19 @@ select.ng-invalid {
   right: 0;
 }
 
+@media (max-width: 680px) {
+  .split {
+    display: grid;
+    grid-template-columns: auto;
+  }
+
+}
+
 @media (max-width: 880px) {
   .controls {
     .control {
       margin-top: var(--space-sm);
     }
-  }
-
-  .split {
-    display: grid;
-    grid-template-columns: auto;
   }
 
   .scroll-box {
