@@ -7,6 +7,7 @@ import { DataService } from './services/data.service';
 import { ModalComponent } from './modal/modal.component';
 import { CodeOutputComponent } from './code-output/code-output.component';
 import { TextEditorComponent } from './text-editor/text-editor.component';
+import { NotificationService } from './services/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -67,7 +68,10 @@ export class AppComponent implements OnInit {
     },
   ];
 
-  constructor(public data: DataService) {}
+  constructor(
+    public data: DataService,
+    public notification: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.data.Initialize();

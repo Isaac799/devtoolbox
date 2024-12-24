@@ -11,8 +11,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import hljs from 'highlight.js';
-import { AppGeneratorMode, AppMode, SchemaConfig } from '../structure';
+import {
+  AppMode,
+  Notification,
+  NotificationKind,
+  NotificationLife,
+  SchemaConfig,
+} from '../structure';
 import YAML from 'yaml';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -23,10 +30,13 @@ import YAML from 'yaml';
 export class TextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   editor = '';
   output = '';
-  @ViewChild("textEditor") textEditor?: ElementRef<HTMLPreElement>;
+  @ViewChild('textEditor') textEditor?: ElementRef<HTMLPreElement>;
   subscription: Subscription | null = null;
 
-  constructor(public data: DataService) {}
+  constructor(
+    public data: DataService,
+    private notification: NotificationService
+  ) {}
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
@@ -88,5 +98,13 @@ export class TextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   copy() {
     navigator.clipboard.writeText(this.output);
+    this.notification.Add(
+      new Notification(
+        'Copied',
+        'The config was copied to your clipboard.',
+        NotificationKind.Info,
+        NotificationLife.Short
+      )
+    );
   }
 }

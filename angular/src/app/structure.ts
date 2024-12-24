@@ -128,3 +128,39 @@ export function TableFullName(x: Table): string {
   }
   return `${x.Parent.Name}.${x.Name}`;
 }
+
+export enum NotificationKind {
+  Primary = 'primary',
+  Accent = 'accent',
+  Warn = 'warn',
+  Success = 'success',
+  Error = 'error',
+  Info = 'info',
+  Highlight = 'highlight',
+}
+
+export enum NotificationLife {
+  Short = 2000,
+  Standard = 3500,
+}
+
+export class Notification {
+  id: number;
+  kind: NotificationKind;
+  title: string;
+  message: string;
+  life: NotificationLife;
+
+  constructor(
+    title: string,
+    message: string,
+    kind: NotificationKind = NotificationKind.Primary,
+    life: NotificationLife = NotificationLife.Standard
+  ) {
+    this.id = Date.now();
+    this.kind = kind;
+    this.title = title;
+    this.message = message;
+    this.life = life;
+  }
+}

@@ -72,3 +72,18 @@
   </ng-content>
 </app-modal>
 }
+
+<div class="fixed-top-right">
+  <div class="notifications m-2 ">
+    @for (x of notification.Notifications; track $index) {
+    <div [class]="x.kind">
+      <span class="title">
+        {{x.title}}
+      </span>
+      <span>
+        {{x.message}}
+      </span>
+    </div>
+    }
+  </div>
+</div>

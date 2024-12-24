@@ -7,13 +7,19 @@ import {
   ViewChild,
 } from '@angular/core';
 import { DataService } from '../services/data.service';
-import { AppGeneratorMode } from '../structure';
+import {
+  AppGeneratorMode,
+  Notification,
+  NotificationKind,
+  NotificationLife,
+} from '../structure';
 import { Subscription } from 'rxjs';
 import { SchemasToPostgreSQL } from './generators/pgsql.tables';
 import { SchemasToGoStructs } from './generators/go';
 import { SchemasToTsStructs } from './generators/ts';
 import { SchemasToSqlFuncs } from './generators/pgsql.functions';
 import hljs from 'highlight.js';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-code-output',
@@ -26,7 +32,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription | null = null;
   @ViewChild('codeOutput') codeOutput?: ElementRef<HTMLPreElement>;
 
-  constructor(public data: DataService) {}
+  constructor(
+    public data: DataService,
+    private notification: NotificationService
+  ) {}
   ngAfterViewInit(): void {
     this.subscription = this.data.schemasChange.subscribe((schemas) => {
       let ext = '';
@@ -70,5 +79,13 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
 
   copy() {
     navigator.clipboard.writeText(this.output);
+    this.notification.Add(
+      new Notification(
+        'Copied',
+        'The code was copied to your clipboard.',
+        NotificationKind.Info,
+        NotificationLife.Short
+      )
+    );
   }
 }
