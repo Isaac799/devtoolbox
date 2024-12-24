@@ -1,5 +1,5 @@
 <div class="split p-2">
-  <div class="fr g-2">
+  <div class="fr g-2 f-wrap">
     <div class="fc g-2">
       <button (click)="showSettingsModal = true">Settings</button>
       <div class="controls">
@@ -20,8 +20,10 @@
       <app-text-editor></app-text-editor>
     </div>
   </div>
-  <!-- Panel -->
-  <app-gui-editor></app-gui-editor>
+  <div>
+    <!-- Panel -->
+    <app-gui-editor></app-gui-editor>
+  </div>
 </div>
 
 @if (showSettingsModal) {

@@ -83,12 +83,20 @@ body {
   flex-direction: row;
 }
 
+.f-wrap {
+  flex-wrap: wrap;
+}
+
 .align-center {
   align-items: center;
 }
 
 .justify-center {
   justify-content: center;
+}
+
+.min-w {
+  min-width: 30rem;
 }
 
 
@@ -342,7 +350,7 @@ button {
   border: 0;
   font-size: 1rem;
   background-color: white;
-  padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
+  // padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
 
 .hover-highlight:hover:not(:disabled),
@@ -496,5 +504,14 @@ select.ng-invalid {
     .control {
       margin-top: var(--space-sm);
     }
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: auto;
+  }
+
+  .scroll-box {
+    max-width: calc(100vw - (var(--space) * 2));
   }
 }
