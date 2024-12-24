@@ -2,62 +2,90 @@
   @for (s of data.schemas; track $index) {
   <!-- Schema -->
   <div class="fc p-2">
-    <div>
-      <span
-        class="title-1 hover-highlight"
-        (click)="doShowModalSchema(s)"
-      >
+    <div
+      class="fr align-center g-1 hover-highlight"
+      (click)="doShowModalSchema(s)"
+    >
+      <span class="title-1 ">
         {{ s.Name }}
       </span>
     </div>
 
-    <div class="fc group">
+    <div class="fc group g-1 ">
       @for (t of s.Tables; track $index) {
       <!-- Table -->
-      <div>
-        <span
-          class="title-2 hover-highlight"
-          (click)="doShowModalTable(s, t)"
-        >
+      <div
+        class="fr align-center g-1 hover-highlight"
+        (click)="doShowModalTable(s, t)"
+      >
+        <span class="title-2 ">
           {{ t.Name }}
         </span>
       </div>
-      <div class="fc group">
+      <div class="fc group g-1">
         @for (a of t.Attributes; track $index) {
         <!-- Attribute -->
-        <div>
-          <span
-            class="title-3 hover-highlight"
-            (click)="doShowModalAttribute(s, t, a)"
-          >
+        <div
+          class="fr align-center g-1  hover-highlight"
+          (click)="doShowModalAttribute(s, t, a)"
+        >
+          @if (a.Type === "REF") {
+          <!-- <i class="icon">keyboard_arrow_up</i> -->
+          <i class="icon">switch_access_shortcut</i>
+          }
+          @if (a.Option?.PrimaryKey) {
+          <i class="icon">key</i>
+          }
+          @if (a.Option?.Unique) {
+          <i class="icon">verified</i>
+          <!-- <i class="icon">counter_1</i> -->
+          }
+          @if (a.Validation?.Required) {
+          <i class="icon">asterisk</i>
+          }
+          <span class="title-3">
             {{ a.Name }}
           </span>
         </div>
         }
         <div>
           <button
-            class="primary"
+            class="success fr align-center g-1"
             (click)="doShowModalAttribute(s, t)"
           >
-            + Attr
+
+            <i class="icon">add</i>
+            <span>
+              Attr
+            </span>
           </button>
         </div>
       </div>
       }
       <div>
         <button
-          class="primary"
+          class="success fr align-center g-1"
           (click)="doShowModalTable(s)"
-        >+ Table</button>
+        >
+          <i class="icon">add</i>
+          <span>
+            Table
+          </span>
+        </button>
       </div>
     </div>
   </div>
   }
   <div>
     <button
-      class="primary"
+      class="success fr align-center g-1"
       (click)="doShowModalSchema()"
-    >+ Schema</button>
+    >
+      <i class="icon">add</i>
+      <span>
+        Schema
+      </span>
+    </button>
   </div>
 </div>
 

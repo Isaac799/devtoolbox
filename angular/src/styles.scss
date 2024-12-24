@@ -35,6 +35,29 @@ body {
   --highlight-transparent: rgba(240, 228, 66, var(--transparency));
 }
 
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  src: url("../public/material-icons.woff2") format('woff2');
+}
+
+.icon {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -moz-font-feature-settings: 'liga';
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .mono-space {
   font-family: "Courier New", Courier, monospace;
   font-size: 0.8rem;
@@ -59,6 +82,17 @@ body {
   display: flex;
   flex-direction: row;
 }
+
+.align-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+
+
 
 .title-1 {
   font-size: 1.6rem;
