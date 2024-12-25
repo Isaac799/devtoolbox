@@ -21,6 +21,7 @@ import { SchemasToSqlFuncs } from './generators/pgsql.functions';
 import hljs from 'highlight.js';
 import { NotificationService } from '../services/notification.service';
 import { SchemasToAngularFormControls } from './generators/angular.form.controls';
+import { SchemasToTablesForTSQL } from './generators/tsql.tables';
 
 @Component({
   selector: 'app-code-output',
@@ -60,6 +61,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
         case AppGeneratorMode.AngularFormControl:
           this.output = SchemasToAngularFormControls(schemas);
           ext = 'TS';
+          break;
+        case AppGeneratorMode.TSQLTables:
+          this.output = SchemasToTablesForTSQL(schemas);
+          ext = 'SQL';
           break;
       }
 

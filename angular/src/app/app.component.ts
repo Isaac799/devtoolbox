@@ -70,6 +70,10 @@ export class AppComponent implements OnInit {
       name: 'Angular Reactive Form',
       value: AppGeneratorMode.AngularFormControl,
     },
+    {
+      name: 'TSQL: Tables',
+      value: AppGeneratorMode.TSQLTables,
+    },
   ];
 
   constructor(

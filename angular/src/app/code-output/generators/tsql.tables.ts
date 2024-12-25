@@ -8,19 +8,47 @@ import {
   Attribute,
 } from '../../structure';
 
-export function SchemasToPostgreSQL(schemas: Schema[]): string {
+const SQL_TO_TSQL_TYPE: Record<AttrType, string> = {
+  [AttrType.BIT]: 'boolean',
+  [AttrType.DATE]: 'Date',
+  [AttrType.CHAR]: 'string',
+  [AttrType.TIME]: 'Date',
+  [AttrType.TIMESTAMP]: 'Date',
+  [AttrType.SERIAL]: 'Identity(1,1)',
+  [AttrType.DECIMAL]: 'number',
+  [AttrType.FLOAT]: 'number',
+  [AttrType.REAL]: 'number',
+  [AttrType.INT]: 'number',
+  [AttrType.BOOLEAN]: 'boolean',
+  [AttrType.VARCHAR]: 'string',
+  [AttrType.MONEY]: 'number',
+  [AttrType.REFERENCE]: '',
+};
+
+export function SchemasToTablesForTSQL(schemas: Schema[]): string {
   let drops: string[] = [];
   let createTableLines: string[] = [];
   for (const s of schemas) {
-    drops.push(`DROP SCHEMA IF EXISTS ${convertCase(s.Name, 'snake')};`);
+    drops.push(
+      `IF EXISTS (SELECT * FROM sys.schemas WHERE name = '${convertCase(
+        s.Name,
+        'snake'
+      )}') 
+    DROP SCHEMA ${convertCase(s.Name, 'snake')};`
+    );
     createTableLines.push(
-      `CREATE SCHEMA IF NOT EXISTS ${convertCase(s.Name, 'snake')};`
+      `IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '${convertCase(
+        s.Name,
+        'snake'
+      )}') 
+    CREATE SCHEMA ${convertCase(s.Name, 'snake')};`
     );
     for (const t of s.Tables) {
-      drops.push(`DROP TABLE IF EXISTS ${convertCase(t.Name, 'snake')};`);
-      createTableLines.push(
-        `CREATE TABLE IF NOT EXISTS ${convertCase(t.Name, 'snake')} (`
+      drops.push(
+        `IF OBJECT_ID('${convertCase(t.Name, 'snake')}', 'U') IS NOT NULL 
+    DROP TABLE ${TableFullName(t)};`
       );
+      createTableLines.push(`CREATE TABLE ${TableFullName(t)} (`);
       let attrs: string[] = generateAttributesForTable(t);
 
       let endThings: string[] = generateTableEndParts(t);
@@ -38,7 +66,7 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
   }
   drops = drops.reverse();
   let all = [
-    'BEGIN;',
+    'BEGIN TRANSACTION;',
     '',
     '-- Drop Everything',
     ...drops,
@@ -161,7 +189,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
       attrs = attrs.concat(referencedAttrs);
       continue;
     } else {
-      type = a.Type;
+      type = SQL_TO_TSQL_TYPE[a.Type];
     }
 
     if (beingReferences && a.Type === AttrType.SERIAL) {

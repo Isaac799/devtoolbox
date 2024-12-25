@@ -1,3 +1,5 @@
+import { convertCase } from './formatting';
+
 // Validation holds validation rules for an attribute
 export type Validation = {
   Required?: boolean;
@@ -79,6 +81,7 @@ export enum AppGeneratorMode {
   AngularFormControl,
   Go,
   TS,
+  TSQLTables,
 }
 
 export enum AppComplexityMode {
@@ -120,14 +123,21 @@ export function AttributeNameWithSchemaAndTable(x: Attribute): string {
   if (!x.Parent?.Parent) {
     return 'unknown';
   }
-  return `${x.Parent.Parent.Name}.${x.Parent.Name}.${x.Name}`;
+  return `${convertCase(
+    x.Parent.Parent.Name,
+    'snake'
+  )}.convertCase(x.Parent.Name, 'snake')}.${convertCase(x.Name, 'snake')}`;
 }
 
 export function TableFullName(x: Table): string {
   if (!x.Parent) {
     return 'unknown';
   }
-  return `${x.Parent.Name}.${x.Name}`;
+  
+  return `${convertCase(x.Parent.Name, 'snake')}.${convertCase(
+    x.Name,
+    'snake'
+  )}`;
 }
 
 export enum NotificationKind {
