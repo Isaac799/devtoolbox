@@ -76,6 +76,7 @@ export enum AppMode {
 export enum AppGeneratorMode {
   PostgresFunctions,
   Postgres,
+  AngularFormControl,
   Go,
   TS,
 }
