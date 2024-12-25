@@ -82,6 +82,7 @@ export enum AppGeneratorMode {
   Go,
   TS,
   TSQLTables,
+  TSQLStoredProcedures,
 }
 
 export enum AppComplexityMode {

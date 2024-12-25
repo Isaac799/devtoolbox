@@ -74,6 +74,10 @@ export class AppComponent implements OnInit {
       name: 'TSQL: Tables',
       value: AppGeneratorMode.TSQLTables,
     },
+    {
+      name: 'TSQL: Stored Procedures',
+      value: AppGeneratorMode.TSQLStoredProcedures,
+    },
   ];
 
   constructor(

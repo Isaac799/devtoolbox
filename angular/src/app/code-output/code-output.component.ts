@@ -22,6 +22,7 @@ import hljs from 'highlight.js';
 import { NotificationService } from '../services/notification.service';
 import { SchemasToAngularFormControls } from './generators/angular.form.controls';
 import { SchemasToTablesForTSQL } from './generators/tsql.tables';
+import { SchemasToTSQLStoredProcedures } from './generators/tsql.stored.procedures';
 
 @Component({
   selector: 'app-code-output',
@@ -64,6 +65,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
           break;
         case AppGeneratorMode.TSQLTables:
           this.output = SchemasToTablesForTSQL(schemas);
+          ext = 'SQL';
+          break;
+        case AppGeneratorMode.TSQLStoredProcedures:
+          this.output = SchemasToTSQLStoredProcedures(schemas);
           ext = 'SQL';
           break;
       }
