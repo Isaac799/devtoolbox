@@ -1,10 +1,9 @@
 import { TAB } from '../../constants';
-import { convertCase, alignKeyword, alignKeywords } from '../../formatting';
+import { convertCase, alignKeyword } from '../../formatting';
 import {
   Table,
   AttrType,
   Schema,
-  Attribute,
   AttributeNameWithTable,
 } from '../../structure';
 
@@ -22,12 +21,6 @@ export function SchemasToTSQLStoredProcedures(schemas: Schema[]): string {
   let str = lines.join('\n');
   return str;
 }
-
-// CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer AS $$
-//         BEGIN
-//                 RETURN i + 1;
-//         END;
-// $$ LANGUAGE plpgsql;
 
 function generateSqlFns(t: Table) {
   let params: string[] = [];
