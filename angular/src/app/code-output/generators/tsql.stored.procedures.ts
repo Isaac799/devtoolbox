@@ -23,8 +23,15 @@ export function SchemasToTSQLStoredProcedures(schemas: Schema[]): string {
 }
 
 function generateSqlFns(t: Table) {
+  if (!t.Parent) {
+    return '';
+  }
+  
   let params: string[] = [];
-  let fnName = convertCase(`get_${t.Name}`, 'snake');
+  let fnName = `${convertCase(t.Parent.Name, 'snake')}.${convertCase(
+    `get_${t.Name}`,
+    'snake'
+  )}`;
   let selectingLines: string[] = [];
   let joinLines: string[] = [];
 
@@ -202,7 +209,7 @@ function generateSqlFns(t: Table) {
         ${joinStr}
     WHERE
         ${whereStr};
-    END; 
+END; 
 GO;`;
 
   q = q.replaceAll('SERIAL', 'INT');

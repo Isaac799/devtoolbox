@@ -51,24 +51,12 @@ export class AppComponent implements OnInit {
 
   generatorModeOptions = [
     {
-      name: 'PostgreSQL: Tables',
+      name: 'PgSQL: Tables',
       value: AppGeneratorMode.Postgres,
     },
     {
-      name: 'PostgreSQL: Functions',
+      name: 'PgSQL: Functions',
       value: AppGeneratorMode.PostgresFunctions,
-    },
-    {
-      name: 'Go',
-      value: AppGeneratorMode.Go,
-    },
-    {
-      name: 'Typescript',
-      value: AppGeneratorMode.TS,
-    },
-    {
-      name: 'Angular Reactive Form',
-      value: AppGeneratorMode.AngularFormControl,
     },
     {
       name: 'TSQL: Tables',
@@ -77,6 +65,18 @@ export class AppComponent implements OnInit {
     {
       name: 'TSQL: Stored Procedures',
       value: AppGeneratorMode.TSQLStoredProcedures,
+    },
+    {
+      name: 'GO structs & new fns',
+      value: AppGeneratorMode.Go,
+    },
+    {
+      name: 'TS types & new fns',
+      value: AppGeneratorMode.TS,
+    },
+    {
+      name: 'Angular reactive form',
+      value: AppGeneratorMode.AngularFormControl,
     },
   ];
 

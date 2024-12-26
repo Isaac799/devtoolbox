@@ -17,10 +17,8 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
       `CREATE SCHEMA IF NOT EXISTS ${convertCase(s.Name, 'snake')};`
     );
     for (const t of s.Tables) {
-      drops.push(`DROP TABLE IF EXISTS ${convertCase(t.Name, 'snake')};`);
-      createTableLines.push(
-        `CREATE TABLE IF NOT EXISTS ${convertCase(t.Name, 'snake')} (`
-      );
+      drops.push(`DROP TABLE IF EXISTS ${TableFullName(t)};`);
+      createTableLines.push(`CREATE TABLE IF NOT EXISTS ${TableFullName(t)} (`);
       let attrs: string[] = generateAttributesForTable(t);
 
       let endThings: string[] = generateTableEndParts(t);

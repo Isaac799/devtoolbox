@@ -78,8 +78,8 @@
 <div class="fixed-top-right">
   <div class="notifications m-2 ">
     @for (x of notification.Notifications; track $index) {
-    <div [class]="x.kind">
-      <span class="title">
+    <div [class]="'fc gap-1 p-1 ' + x.kind">
+      <span class="title-2">
         {{x.title}}
       </span>
       <span>

@@ -19,7 +19,6 @@ export function SchemasToSqlFuncs(schemas: Schema[]): string {
     }
   }
 
-  lines = ['BEGIN;', '', ...lines, 'COMMIT;'];
   let str = lines.join('\n');
   return str;
 }
@@ -31,8 +30,15 @@ export function SchemasToSqlFuncs(schemas: Schema[]): string {
 // $$ LANGUAGE plpgsql;
 
 function generateSqlFns(t: Table) {
+  if (!t.Parent) {
+    return '';
+  }
+
   let params: string[] = [];
-  let fnName = convertCase(`get_${t.Name}`, 'snake');
+  let fnName = `${convertCase(t.Parent.Name, 'snake')}.${convertCase(
+    `get_${t.Name}`,
+    'snake'
+  )}`;
   let selectingLines: string[] = [];
   let joinLines: string[] = [];
 
