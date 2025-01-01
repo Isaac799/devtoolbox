@@ -12,6 +12,7 @@ import {
   AttributeConfig,
 } from '../structure';
 import { Subject } from 'rxjs';
+import { defaultConfig } from '../constants';
 
 @Injectable({
   providedIn: 'root',
@@ -90,12 +91,13 @@ export class DataService {
 
   private loadLastSession() {
     let save = localStorage.getItem(this.stateSessionKey);
-    if (!save) {
-      return;
-    }
     let schemasConfig: Record<string, SchemaConfig> = {};
     try {
-      schemasConfig = JSON.parse(save);
+      if (!save) {
+        schemasConfig = defaultConfig;
+      } else {
+        schemasConfig = JSON.parse(save);
+      }
     } catch (err) {
       console.error(err);
       localStorage.removeItem(this.stateSessionKey);
@@ -108,23 +110,16 @@ export class DataService {
         continue;
       }
       const s = schemasConfig[sk];
-      let s2: Schema = {
-        ID: s.ID,
-        Name: sk,
-        Tables: [],
-      };
+      let s2 = new Schema(s.ID, sk);
       for (const tk in s.Tables) {
         if (!Object.prototype.hasOwnProperty.call(s.Tables, tk)) {
           continue;
         }
         const t = s.Tables[tk];
         let t2p = [s2, ...schemas].find((e) => e.ID === t.ParentID);
-        let t2: Table = {
-          ID: t.ID,
-          Parent: t2p,
-          Name: tk,
-          Attributes: [],
-        };
+        if (!t2p) continue;
+
+        let t2 = new Table(t.ID, tk, t2p);
         for (const ak in t.Attributes) {
           if (!Object.prototype.hasOwnProperty.call(t.Attributes, ak)) {
             continue;
@@ -140,18 +135,20 @@ export class DataService {
             if (!r2.RefBy) {
               r2.RefBy = [];
             }
-            // console.log(r2.Name , ' is ref by ', t2.Name)
+            // console.log(r2.Name, ' is ref by ', t2.Name);
             r2.RefBy.push(t2);
           }
-          let a2: Attribute = {
-            ID: a.ID,
-            Parent: a2p,
-            RefTo: r2,
-            Name: ak,
-            Type: a.Type,
-            Option: a.Option,
-            Validation: a.Validation,
-          };
+          if (!a2p) continue;
+          let a2 = new Attribute(a.ID, ak, a.Type, a2p);
+          if (r2) {
+            a2.RefTo = r2;
+          }
+          if (a.Option) {
+            a2.Option = a.Option;
+          }
+          if (a.Validation) {
+            a2.Validation = a.Validation;
+          }
           t2.Attributes.push(a2);
         }
         allTables.push(t2);
@@ -160,6 +157,7 @@ export class DataService {
       schemas.push(s2);
     }
     allTables = [];
+
     this.schemas = schemas;
   }
 
@@ -173,13 +171,13 @@ export class DataService {
       for (const t of s.Tables) {
         let t2: TableConfig = {
           ID: t.ID,
-          ParentID: t.Parent?.ID || 0,
+          ParentID: t.Parent.ID,
           Attributes: {},
         };
         for (const a of t.Attributes) {
           let a2: AttributeConfig = {
             ID: a.ID,
-            ParentID: a.Parent?.ID || 0,
+            ParentID: a.Parent.ID,
             RefToID: a.RefTo?.ID,
             Type: a.Type,
             Option: a.Option,

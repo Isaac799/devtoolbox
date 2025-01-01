@@ -1,12 +1,6 @@
 import { TAB } from '../../constants';
-import { convertCase, alignKeyword } from '../../formatting';
-import {
-  Table,
-  AttrType,
-  Schema,
-  Attribute,
-  AttributeNameWithTable,
-} from '../../structure';
+import { cc, alignKeyword, fixPluralGrammar } from '../../formatting';
+import { Table, AttrType, Schema, Attribute } from '../../structure';
 
 const NUMERICS = [
   AttrType.DECIMAL,
@@ -50,10 +44,10 @@ export function SchemasToAngularFormControls(schemas: Schema[]): string {
 
 function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
   let lines: string[] = [];
-  lines.push(`${convertCase(`${t.Name}_form`, 'pascal')} = new FormGroup({`);
+  lines.push(`${cc(`${t.FN}_form`, 'p')} = new FormGroup({`);
 
   for (const a of t.Attributes) {
-    let attrs = generateTsStructAttributes(a, false, SQL_TO_TS_TYPE);
+    let attrs = generateTsStructAttributes(a, null, SQL_TO_TS_TYPE);
     lines = lines.concat(attrs);
   }
 
@@ -62,19 +56,14 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
       let added = false;
       for (const a of tbl.Attributes) {
         if (!a.RefTo) continue;
-        if (!a.Parent) continue;
         if (a.RefTo.ID === t.ID) continue;
         added = true;
 
         let validatorsStr = GenerateValidatorsForAttribute(a);
 
-        // console.log(t.Name, 'has', a.RefTo.Name);
-        let many = `${TAB}${convertCase(
-          `${a.RefTo.Name}s`,
-          'pascal'
-        )}: new FormControl<${convertCase(
-          a.RefTo.Name,
-          'pascal'
+        let many = `${TAB}${fixPluralGrammar(cc(`${a.RefTo.FN}s`, 'c'))}: new FormControl<${cc(
+          a.RefTo.FN,
+          'p'
         )}[] | null>({ value: null, disabled: false }, [${validatorsStr}])`;
         lines.push(many);
       }
@@ -90,12 +79,9 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
           break;
         }
 
-        let one = `${TAB}${convertCase(
-          tbl.Name,
-          'pascal'
-        )}: new FormControl<${convertCase(
-          tbl.Name,
-          'pascal'
+        let one = `${TAB}${cc(tbl.FN, 'c')}: new FormControl<${cc(
+          tbl.FN,
+          'p'
         )} | null>({ value: null, disabled: false }, [${validatorsStr}])`;
         lines.push(one);
       }
@@ -107,7 +93,7 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
   );
 
   lines.push(`})`);
-  
+
   lines = alignKeyword(lines, ':');
 
   return lines;
@@ -115,7 +101,7 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
 
 function generateTsStructAttributes(
   a: Attribute,
-  recursive: boolean,
+  recursive: Attribute | null,
   SQL_TO_TS_TYPE: Record<AttrType, string>
 ): string[] {
   let lines: string[] = [];
@@ -125,7 +111,7 @@ function generateTsStructAttributes(
       if (!ra.Option?.PrimaryKey) {
         continue;
       }
-      let refAttrs = generateTsStructAttributes(ra, true, SQL_TO_TS_TYPE);
+      let refAttrs = generateTsStructAttributes(ra, a, SQL_TO_TS_TYPE);
       lines = lines.concat(refAttrs);
     }
     return lines;
@@ -135,16 +121,13 @@ function generateTsStructAttributes(
 
   if (recursive) {
     lines.push(
-      `${TAB}${convertCase(
-        AttributeNameWithTable(a),
-        'pascal'
-      )}: new FormControl<${
+      `${TAB}${cc(recursive.FN, 'c')}: new FormControl<${
         SQL_TO_TS_TYPE[a.Type]
       } | null>({ value: null, disabled: false }, [${validatorsStr}])`
     );
   } else {
     lines.push(
-      `${TAB}${convertCase(a.Name, 'pascal')}: new FormControl<${
+      `${TAB}${cc(a.PFN, 'c')}: new FormControl<${
         SQL_TO_TS_TYPE[a.Type]
       } | null>({ value: null, disabled: false }, [${validatorsStr}])`
     );

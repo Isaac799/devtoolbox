@@ -426,7 +426,7 @@ button:hover:not(:disabled) {
     position: relative;
     display: block;
     min-height: 2rem;
-    width: 13.5rem;
+    min-width: 13.5rem;
     border-bottom: 0.1rem solid black;
 
     input,
@@ -505,17 +505,24 @@ select.ng-invalid {
   font-size: 0.8rem;
 }
 
-.limit-height {
-  height: 20rem;
+.limit-height-a {
+  max-height: calc(70vh - var(--space) * 2);
 }
+
+.limit-height-b {
+  max-height: calc(30vh - var(--space) * 2);
+}
+
 .limit-width {
-  width: 30rem;
+  // width: 88rem;
+  width: 66rem;
+  // width: 55rem;
 }
 
 .scroll-box {
   /* border-left: 0.1rem solid var(--primary); */
   overflow: auto;
-  max-width: 50vw;
+  max-width: 75vw;
   border: 0.1rem solid var(--primary);
   box-shadow: rgba(0, 0, 0, 0.25) 0 0 0.5rem 0.05rem inset;
 }

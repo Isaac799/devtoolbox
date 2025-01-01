@@ -12,6 +12,8 @@ import {
   Table,
   Attribute,
   AppComplexityMode,
+  AttributeSuggestion,
+  AppGeneratorMode,
 } from '../structure';
 import {
   AbstractControl,
@@ -189,18 +191,15 @@ export class GuiEditorComponent implements OnInit {
     Max: new FormControl(1, []),
   });
 
-  private readonly presetAttributes: Attribute[] = [
+  private readonly presetAttributes: AttributeSuggestion[] = [
     {
-      ID: -1,
       Name: 'id',
       Type: AttrType.SERIAL,
       Option: {
         PrimaryKey: true,
-        Unique: true,
       },
     },
     {
-      ID: -1,
       Name: 'title',
       Type: AttrType.VARCHAR,
       Option: {
@@ -214,7 +213,6 @@ export class GuiEditorComponent implements OnInit {
       },
     },
     {
-      ID: -1,
       Name: 'inserted_at',
       Type: AttrType.TIMESTAMP,
       Option: {
@@ -223,7 +221,6 @@ export class GuiEditorComponent implements OnInit {
       },
     },
     {
-      ID: -1,
       Name: 'updated_at',
       Type: AttrType.TIMESTAMP,
       Option: {
@@ -232,7 +229,6 @@ export class GuiEditorComponent implements OnInit {
       },
     },
     {
-      ID: -1,
       Name: 'email',
       Type: AttrType.VARCHAR,
       Option: {
@@ -245,7 +241,6 @@ export class GuiEditorComponent implements OnInit {
       },
     },
     {
-      ID: -1,
       Name: 'parent',
       Type: AttrType.REFERENCE,
       Validation: {
@@ -298,6 +293,18 @@ export class GuiEditorComponent implements OnInit {
     //     this.handleReferenceAttr();
     //   }
     // });
+
+    /**
+     *
+     * Trigger detection again on default value if the type changedis ref by
+     *
+     */
+    this.attributeForm.controls.Type.valueChanges.subscribe((_) => {
+      this.attributeForm.controls.Default.setValue(
+        this.attributeForm.controls.Default.value
+      );
+      this.cdr.detectChanges();
+    });
 
     this.attributeForm.controls.ReferenceTo.addValidators(
       this.validReference()
@@ -506,12 +513,12 @@ export class GuiEditorComponent implements OnInit {
         sa.Validation = undefined;
       }
     } else {
-      let newAttr: Attribute = {
-        ID: this.serial,
-        Parent: this.selectedTable,
-        Name: c.Name.value!,
-        Type: c.Type.value!,
-      };
+      let newAttr = new Attribute(
+        this.serial,
+        c.Name.value!,
+        c.Type.value!,
+        this.selectedTable
+      );
 
       setRef: if (this.isReference) {
         if (!c.ReferenceTo.value) {
@@ -565,16 +572,8 @@ export class GuiEditorComponent implements OnInit {
     if (st) {
       st.Name = c.Name.value!.trim();
     } else {
-      this.selectedSchema.Tables.push({
-        ID: this.serial,
-        Parent: this.selectedSchema,
-        Name: c.Name.value!,
-        // Options: {
-        //   AutoPrimaryKey: false,
-        //   AutoTimestamps: false,
-        // },
-        Attributes: [],
-      });
+      let newTbl = new Table(this.serial, c.Name.value!, this.selectedSchema);
+      this.selectedSchema.Tables.push(newTbl);
       this.serial += 1;
     }
     this.schemaForm.reset();

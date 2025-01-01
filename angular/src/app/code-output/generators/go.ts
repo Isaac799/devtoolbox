@@ -1,12 +1,11 @@
 import { TAB } from '../../constants';
-import { convertCase, alignKeyword, alignKeywords } from '../../formatting';
 import {
-  Table,
-  AttrType,
-  Schema,
-  Attribute,
-  AttributeNameWithTable,
-} from '../../structure';
+  cc,
+  alignKeyword,
+  alignKeywords,
+  fixPluralGrammar,
+} from '../../formatting';
+import { Table, AttrType, Schema, Attribute } from '../../structure';
 
 export function SchemasToGoStructs(schemas: Schema[]): string {
   const SQL_TO_GO_TYPE: Record<AttrType, string> = {
@@ -43,7 +42,7 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
 
 function generateGoStructs(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
   let lines: string[] = [];
-  lines.push(`type ${convertCase(t.Name, 'pascal')} struct {`);
+  lines.push(`type ${cc(t.FN, 'p')} struct {`);
 
   for (const a of t.Attributes) {
     let attrs = generateGoStructAttributes(a, false, SQL_TO_GO_TYPE);
@@ -55,24 +54,21 @@ function generateGoStructs(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
       let added = false;
       for (const a of tbl.Attributes) {
         if (!a.RefTo) continue;
-        if (!a.Parent) continue;
         if (a.RefTo.ID === t.ID) continue;
         added = true;
-        // console.log(t.Name, 'has', a.RefTo.Name);
-        let many = `${TAB}${convertCase(
-          `${a.RefTo.Name}s`,
-          'pascal'
-        )} ~[]${convertCase(a.RefTo.Name, 'pascal')} \`json:"${convertCase(
-          `${a.RefTo.Name}s`,
-          'snake'
+        // console.log(t.FN, 'has', a.RefTo.FN);
+        let many = `${TAB}${fixPluralGrammar(
+          cc(`${a.RefTo.FN}s`, 'p')
+        )} ~[]${cc(a.RefTo.FN, 'p')} \`json:"${fixPluralGrammar(
+          cc(`${a.RefTo.FN}s`, 's')
         )}"\``;
         lines.push(many);
       }
       if (!added) {
-        let one = `${TAB}${convertCase(tbl.Name, 'pascal')} ~*${convertCase(
-          tbl.Name,
-          'pascal'
-        )} \`json:"${convertCase(tbl.Name, 'snake')}"\``;
+        let one = `${TAB}${cc(tbl.FN, 'p')} ~*${cc(tbl.FN, 'p')} \`json:"${cc(
+          tbl.FN,
+          's'
+        )}"\``;
         lines.push(one);
       }
     }
@@ -103,18 +99,12 @@ function generateGoStructAttributes(
     return lines;
   }
 
+  let nil = a.Validation?.Required || a.Option?.PrimaryKey ? '' : '*';
+  let ty = `${nil}${SQL_TO_GO_TYPE[a.Type]}`;
   if (recursive) {
-    lines.push(
-      `${TAB}${convertCase(AttributeNameWithTable(a), 'pascal')} ${
-        SQL_TO_GO_TYPE[a.Type]
-      } \`json:"${convertCase(AttributeNameWithTable(a), 'snake')}"\``
-    );
+    lines.push(`${TAB}${cc(a.FN, 'p')} ${ty} \`json:"${cc(a.FN, 's')}"\``);
   } else {
-    lines.push(
-      `${TAB}${convertCase(a.Name, 'pascal')} ${
-        SQL_TO_GO_TYPE[a.Type]
-      } \`json:"${convertCase(a.Name, 'snake')}"\``
-    );
+    lines.push(`${TAB}${cc(a.FN, 'p')} ${ty} \`json:"${cc(a.FN, 's')}"\``);
   }
 
   return lines;
@@ -122,7 +112,7 @@ function generateGoStructAttributes(
 
 function generateGoFnStructAttributes(
   a: Attribute,
-  recursive: boolean,
+  recursive: Attribute | null,
   SQL_TO_GO_TYPE: Record<AttrType, string>
 ): string[] {
   let lines: string[] = [];
@@ -133,26 +123,16 @@ function generateGoFnStructAttributes(
       if (!ra.Option?.PrimaryKey) {
         continue;
       }
-      let refAttrs = generateGoFnStructAttributes(ra, true, SQL_TO_GO_TYPE);
+      let refAttrs = generateGoFnStructAttributes(ra, a, SQL_TO_GO_TYPE);
       lines = lines.concat(refAttrs);
     }
     return lines;
   }
 
   if (recursive) {
-    lines.push(
-      `${TAB}${TAB}${convertCase(
-        AttributeNameWithTable(a),
-        'pascal'
-      )}: ${convertCase(AttributeNameWithTable(a), 'camel')},`
-    );
+    lines.push(`${TAB}${TAB}${cc(a.FN, 'p')}: ${cc(recursive.FN, 'c')},`);
   } else {
-    lines.push(
-      `${TAB}${TAB}${convertCase(a.Name, 'pascal')}: ${convertCase(
-        a.Name,
-        'camel'
-      )},`
-    );
+    lines.push(`${TAB}${TAB}${cc(a.FN, 'p')}: ${cc(a.FN, 'c')},`);
   }
 
   return lines;
@@ -160,7 +140,7 @@ function generateGoFnStructAttributes(
 
 function generateGoFns(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
   let lines: string[] = [];
-  const n = convertCase(t.Name, 'pascal');
+  const n = cc(t.FN, 'p');
 
   let params: string[] = [];
 
@@ -168,23 +148,15 @@ function generateGoFns(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
     if (a.RefTo) {
       for (const ra of a.RefTo.Attributes) {
         if (!ra.Option?.PrimaryKey) continue;
-        params.push(
-          `${convertCase(AttributeNameWithTable(ra), 'camel')} ${
-            SQL_TO_GO_TYPE[ra.Type]
-          }`
-        );
+        params.push(`${cc(a.FN, 'c')} ${SQL_TO_GO_TYPE[ra.Type]}`);
       }
 
       continue;
     }
-    params.push(`${convertCase(a.Name, 'camel')} ${SQL_TO_GO_TYPE[a.Type]}`);
+    params.push(`${cc(a.FN, 'c')} ${SQL_TO_GO_TYPE[a.Type]}`);
   }
 
-  lines.push(
-    `func ${convertCase(`New_${t.Name}`, 'pascal')} (${params.join(
-      ', '
-    )}) *${n} {`
-  );
+  lines.push(`func ${cc(`New_${t.FN}`, 'p')} (${params.join(', ')}) *${n} {`);
   lines.push(`${TAB}return &${n} {`);
 
   let attrs: string[] = [];
@@ -192,7 +164,7 @@ function generateGoFns(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
   for (const a of t.Attributes) {
     let goFnStructAttributes = generateGoFnStructAttributes(
       a,
-      false,
+      null,
       SQL_TO_GO_TYPE
     );
 
@@ -204,18 +176,16 @@ function generateGoFns(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
       let added = false;
       for (const a of tbl.Attributes) {
         if (!a.RefTo) continue;
-        if (!a.Parent) continue;
         if (a.RefTo.ID === t.ID) continue;
         added = true;
-        // console.log(t.Name, 'has', a.RefTo.Name);
-        let many = `${TAB}${TAB}${convertCase(
-          `${a.RefTo.Name}s`,
-          'pascal'
-        )}: []${convertCase(a.RefTo.Name, 'pascal')}{},`;
+        // console.log(t.FN, 'has', a.RefTo.FN);
+        let many = `${TAB}${TAB}${fixPluralGrammar(
+          cc(`${a.RefTo.FN}s`, 'p')
+        )}: []${cc(a.RefTo.FN, 'p')}{},`;
         attrs.push(many);
       }
       if (!added) {
-        let one = `${TAB}${TAB}${convertCase(tbl.Name, 'pascal')}: nil,`;
+        let one = `${TAB}${TAB}${cc(tbl.FN, 'p')}: nil,`;
         attrs.push(one);
       }
     }

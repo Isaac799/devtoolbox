@@ -1,24 +1,18 @@
 import { TAB } from '../../constants';
-import { convertCase, alignKeyword, alignKeywords } from '../../formatting';
-import {
-  Table,
-  TableFullName,
-  AttrType,
-  Schema,
-  Attribute,
-} from '../../structure';
+import { cc, alignKeyword, alignKeywords } from '../../formatting';
+import { Table, AttrType, Schema, Attribute } from '../../structure';
 
 export function SchemasToPostgreSQL(schemas: Schema[]): string {
   let drops: string[] = [];
   let createTableLines: string[] = [];
   for (const s of schemas) {
-    drops.push(`DROP SCHEMA IF EXISTS ${convertCase(s.Name, 'snake')};`);
-    createTableLines.push(
-      `CREATE SCHEMA IF NOT EXISTS ${convertCase(s.Name, 'snake')};`
-    );
+    drops.push(`DROP SCHEMA IF EXISTS ${cc(s.Name, 's')};`);
+    createTableLines.push('');
+    createTableLines.push(`CREATE SCHEMA IF NOT EXISTS ${cc(s.Name, 's')};`);
+    createTableLines.push('');
     for (const t of s.Tables) {
-      drops.push(`DROP TABLE IF EXISTS ${TableFullName(t)};`);
-      createTableLines.push(`CREATE TABLE IF NOT EXISTS ${TableFullName(t)} (`);
+      drops.push(`DROP TABLE IF EXISTS ${t.FN};`);
+      createTableLines.push(`CREATE TABLE IF NOT EXISTS ${t.FN} (`);
       let attrs: string[] = generateAttributesForTable(t);
 
       let endThings: string[] = generateTableEndParts(t);
@@ -39,6 +33,7 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
     'BEGIN;',
     '',
     '-- Drop Everything',
+    '',
     ...drops,
     '',
     '-- Create Everything',
@@ -54,17 +49,17 @@ function generateTableEndParts(t: Table) {
   let endThings: string[] = [];
 
   let pks: string[] = [];
+  
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey) continue;
     if (!a.RefTo) {
-      pks.push(convertCase(a.Name, 'snake'));
+      pks.push(cc(a.Name, 's'));
       continue;
     }
 
     for (const ra of a.RefTo.Attributes) {
       if (!ra.Option?.PrimaryKey) continue;
-      if (!ra.Parent) continue;
-      pks.push(convertCase(`${ra.Parent.Name}_${ra.Name}`, 'snake'));
+      pks.push(cc(`${a.Name}_${ra.Name}`, 's'));
     }
   }
 
@@ -77,7 +72,7 @@ function generateTableEndParts(t: Table) {
   let uniques = t.Attributes.filter((e) => e.Option?.Unique).map((e) => e.Name);
   if (uniques.length > 0) {
     for (const e of uniques) {
-      let uniquesStr = `UNIQUE ( ${convertCase(e, 'snake')} )`;
+      let uniquesStr = `UNIQUE ( ${cc(e, 's')} )`;
       endThings.push(uniquesStr);
     }
   }
@@ -88,14 +83,10 @@ function generateTableEndParts(t: Table) {
       let r = e.RefTo!;
       let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
       for (const rPk of rPks) {
-        if (!rPk.Parent) continue;
-
-        let rStr = `FOREIGN KEY ( ${convertCase(
-          rPk.Parent.Name,
-          'snake'
-        )}_${convertCase(rPk.Name, 'snake')} ) REFERENCES ${TableFullName(
-          r
-        )} ( ${convertCase(rPk.Name, 'snake')} ) ON DELETE CASCADE`;
+        let rStr = `FOREIGN KEY ( ${cc(e.Name, 's')}_${cc(
+          rPk.Name,
+          's'
+        )} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 's')} ) ON DELETE CASCADE`;
         endThings.push(rStr);
       }
     }
@@ -136,7 +127,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         continue;
       }
     }
-    let name = beingReferences ? `${beingReferences.Name}_${a.Name}` : a.Name;
+    let name = beingReferences ? `${cc(beingReferences.Name, 's')}_${cc(a.Name, 's')}` : cc(a.Name, 's');
     let type = '';
     if ([AttrType.VARCHAR].includes(a.Type)) {
       let max = 15;
@@ -166,9 +157,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
       type = 'INT';
     }
 
-    let attrLine = [
-      `${convertCase(name, 'snake')} ${convertCase(type, 'upper')}`,
-    ];
+    let attrLine = [`${cc(name, 's')} ${type}`];
 
     if (a.Option?.Default) {
       let def = a.Option.Default;

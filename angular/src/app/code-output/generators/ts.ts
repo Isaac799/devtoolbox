@@ -1,12 +1,6 @@
 import { TAB } from '../../constants';
-import { convertCase, alignKeyword } from '../../formatting';
-import {
-  Table,
-  AttrType,
-  Schema,
-  Attribute,
-  AttributeNameWithTable,
-} from '../../structure';
+import { cc, alignKeyword, fixPluralGrammar } from '../../formatting';
+import { Table, AttrType, Schema, Attribute } from '../../structure';
 
 export function SchemasToTsStructs(schemas: Schema[]): string {
   const SQL_TO_TS_TYPE: Record<AttrType, string> = {
@@ -43,10 +37,10 @@ export function SchemasToTsStructs(schemas: Schema[]): string {
 
 function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
   let lines: string[] = [];
-  lines.push(`type ${convertCase(t.Name, 'pascal')} = {`);
+  lines.push(`type ${cc(t.FN, 'p')} = {`);
 
   for (const a of t.Attributes) {
-    let attrs = generateTsStructAttributes(a, false, SQL_TO_TS_TYPE);
+    let attrs = generateTsStructAttributes(a, null, SQL_TO_TS_TYPE);
     lines = lines.concat(attrs);
   }
 
@@ -55,21 +49,17 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
       let added = false;
       for (const a of tbl.Attributes) {
         if (!a.RefTo) continue;
-        if (!a.Parent) continue;
         if (a.RefTo.ID === t.ID) continue;
         added = true;
-        // console.log(t.Name, 'has', a.RefTo.Name);
-        let many = `${TAB}${convertCase(
-          `${a.RefTo.Name}s`,
-          'pascal'
-        )}: ${convertCase(a.RefTo.Name, 'pascal')}[] | null`;
+
+        let many = `${TAB}${fixPluralGrammar(cc(`${a.RefTo.FN}s`, 'c'))}: ${cc(
+          a.RefTo.FN,
+          'p'
+        )}[] | null`;
         lines.push(many);
       }
       if (!added) {
-        let one = `${TAB}${convertCase(tbl.Name, 'pascal')}: ${convertCase(
-          tbl.Name,
-          'pascal'
-        )} | null`;
+        let one = `${TAB}${cc(tbl.FN, 'c')}: ${cc(tbl.FN, 'p')} | null`;
         lines.push(one);
       }
     }
@@ -85,7 +75,7 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
 
 function generateTsStructAttributes(
   a: Attribute,
-  recursive: boolean,
+  recursive: Attribute | null,
   SQL_TO_TS_TYPE: Record<AttrType, string>
 ): string[] {
   let lines: string[] = [];
@@ -95,22 +85,17 @@ function generateTsStructAttributes(
       if (!ra.Option?.PrimaryKey) {
         continue;
       }
-      let refAttrs = generateTsStructAttributes(ra, true, SQL_TO_TS_TYPE);
+      let refAttrs = generateTsStructAttributes(ra, a, SQL_TO_TS_TYPE);
       lines = lines.concat(refAttrs);
     }
     return lines;
   }
 
   if (recursive) {
-    lines.push(
-      `${TAB}${convertCase(AttributeNameWithTable(a), 'pascal')}: ${
-        SQL_TO_TS_TYPE[a.Type]
-      }`
-    );
+    lines.push(`${TAB}${cc(recursive.FN, 'c')}: ${SQL_TO_TS_TYPE[a.Type]}`);
   } else {
-    lines.push(
-      `${TAB}${convertCase(a.Name, 'pascal')}: ${SQL_TO_TS_TYPE[a.Type]}`
-    );
+    let nil = a.Validation?.Required || a.Option?.PrimaryKey ? '' : ' | null';
+    lines.push(`${TAB}${cc(a.PFN, 'c')}: ${SQL_TO_TS_TYPE[a.Type]}${nil}`);
   }
 
   return lines;
@@ -118,7 +103,7 @@ function generateTsStructAttributes(
 
 function generateTsFnStructAttributes(
   a: Attribute,
-  recursive: boolean,
+  recursive: Attribute | null,
   SQL_TO_TS_TYPE: Record<AttrType, string>
 ): string[] {
   let lines: string[] = [];
@@ -129,26 +114,17 @@ function generateTsFnStructAttributes(
       if (!ra.Option?.PrimaryKey) {
         continue;
       }
-      let refAttrs = generateTsFnStructAttributes(ra, true, SQL_TO_TS_TYPE);
+      let refAttrs = generateTsFnStructAttributes(ra, a, SQL_TO_TS_TYPE);
       lines = lines.concat(refAttrs);
     }
     return lines;
   }
 
   if (recursive) {
-    lines.push(
-      `${TAB}${TAB}${convertCase(
-        AttributeNameWithTable(a),
-        'pascal'
-      )}: ${convertCase(AttributeNameWithTable(a), 'camel')},`
-    );
+    // lines.push(`${TAB}${TAB}${cc(a.FN, 'c')}: ${cc(a.FN, 'c')},`);
+    lines.push(`${TAB}${TAB}${cc(recursive.FN, 'c')},`);
   } else {
-    lines.push(
-      `${TAB}${TAB}${convertCase(a.Name, 'pascal')}: ${convertCase(
-        a.Name,
-        'camel'
-      )},`
-    );
+    lines.push(`${TAB}${TAB}${cc(a.PFN, 'c')},`);
   }
 
   return lines;
@@ -156,7 +132,7 @@ function generateTsFnStructAttributes(
 
 function generateTsFns(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
   let lines: string[] = [];
-  const n = convertCase(t.Name, 'pascal');
+  const fnTy = cc(t.FN, 'p');
 
   let params: string[] = [];
 
@@ -164,22 +140,16 @@ function generateTsFns(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
     if (a.RefTo) {
       for (const ra of a.RefTo.Attributes) {
         if (!ra.Option?.PrimaryKey) continue;
-        params.push(
-          `${convertCase(AttributeNameWithTable(ra), 'camel')}: ${
-            SQL_TO_TS_TYPE[ra.Type]
-          }`
-        );
+        params.push(`${cc(a.FN, 'c')}: ${SQL_TO_TS_TYPE[ra.Type]}`);
       }
 
       continue;
     }
-    params.push(`${convertCase(a.Name, 'camel')}: ${SQL_TO_TS_TYPE[a.Type]}`);
+    params.push(`${cc(a.PFN, 'c')}: ${SQL_TO_TS_TYPE[a.Type]}`);
   }
 
   lines.push(
-    `function ${convertCase(`New_${t.Name}`, 'pascal')} (${params.join(
-      ', '
-    )}): ${n} {`
+    `function ${cc(`New_${t.FN}`, 'c')} (${params.join(', ')}): ${fnTy} {`
   );
   lines.push(`${TAB}return {`);
 
@@ -188,7 +158,7 @@ function generateTsFns(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
   for (const a of t.Attributes) {
     let goFnStructAttributes = generateTsFnStructAttributes(
       a,
-      false,
+      null,
       SQL_TO_TS_TYPE
     );
 
@@ -200,18 +170,16 @@ function generateTsFns(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
       let added = false;
       for (const a of tbl.Attributes) {
         if (!a.RefTo) continue;
-        if (!a.Parent) continue;
         if (a.RefTo.ID === t.ID) continue;
         added = true;
-        // console.log(t.Name, 'has', a.RefTo.Name);
-        let many = `${TAB}${TAB}${convertCase(
-          `${a.RefTo.Name}s`,
-          'pascal'
+
+        let many = `${TAB}${TAB}${fixPluralGrammar(
+          cc(`${a.RefTo.FN}s`, 'c')
         )}: null,`;
         attrs.push(many);
       }
       if (!added) {
-        let one = `${TAB}${TAB}${convertCase(tbl.Name, 'pascal')}: null,`;
+        let one = `${TAB}${TAB}${cc(tbl.FN, 'c')}: null,`;
         attrs.push(one);
       }
     }

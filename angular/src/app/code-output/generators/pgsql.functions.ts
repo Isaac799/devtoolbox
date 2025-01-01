@@ -1,12 +1,6 @@
 import { TAB } from '../../constants';
-import { convertCase, alignKeyword, alignKeywords } from '../../formatting';
-import {
-  Table,
-  AttrType,
-  Schema,
-  Attribute,
-  AttributeNameWithTable,
-} from '../../structure';
+import { cc, alignKeyword, alignKeywords } from '../../formatting';
+import { Table, AttrType, Schema, Attribute } from '../../structure';
 
 export function SchemasToSqlFuncs(schemas: Schema[]): string {
   let lines: string[] = [];
@@ -35,23 +29,14 @@ function generateSqlFns(t: Table) {
   }
 
   let params: string[] = [];
-  let fnName = `${convertCase(t.Parent.Name, 'snake')}.${convertCase(
-    `get_${t.Name}`,
-    'snake'
-  )}`;
+  let fnName = `${cc(t.Parent.Name, 's')}.${cc(`get_${t.Name}`, 's')}`;
   let selectingLines: string[] = [];
-  let joinLines: string[] = [];
 
   let whereAND = [];
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue;
-    params.push(`${convertCase(a.Name, 'camel')} ${a.Type}`);
-    whereAND.push(
-      `${convertCase(t.Name, 'snake')}.${convertCase(
-        a.Name,
-        'snake'
-      )} = ${convertCase(a.Name, 'camel')}`
-    );
+    params.push(`${cc(a.Name, 's')} ${a.Type}`);
+    whereAND.push(`${t.FN}.${cc(a.Name, 's')} = ${cc(a.Name, 's')}`);
   }
   let whereStr: string = whereAND.join(' AND ');
 
@@ -61,154 +46,26 @@ function generateSqlFns(t: Table) {
 
   let returnTableLines: string[] = [];
 
-  joinLines.push(convertCase(`${t.Name}`, 'snake'));
-
   for (const a of t.Attributes) {
     if (!a.RefTo) {
-      returnTableLines.push(`${convertCase(a.Name, 'camel')} ${a.Type}`);
-      selectingLines.push(`${AttributeNameWithTable(a)}`);
+      let n = cc(a.FN, 's');
+      returnTableLines.push(`${n} ${a.Type}`);
+      selectingLines.push(`${a.FN} AS ${n}`);
       continue;
     }
 
-    let j1 = `LEFT JOIN ${convertCase(`${a.RefTo.Name}`, 'snake')} ON`;
-    let j1ON = [];
-
     for (const ra of a.RefTo.Attributes) {
-      returnTableLines.push(
-        `${convertCase(AttributeNameWithTable(ra), 'snake')} ${ra.Type}`
-      );
-      selectingLines.push(
-        `${AttributeNameWithTable(ra)} AS ${`${convertCase(
-          AttributeNameWithTable(ra),
-          'snake'
-        )}`}`
-      );
+      let n = cc(a.FN, 's');
+      returnTableLines.push(`${n} ${ra.Type}`);
+      selectingLines.push(`${ra.FN} AS ${n}`);
     }
-    for (const ra of a.RefTo.Attributes) {
-      if (!ra.Parent) continue;
-      if (!ra.Option?.PrimaryKey) continue;
-      let left = `${convertCase(`${a.RefTo.Name}`, 'snake')}.${convertCase(
-        `${ra.Name}`,
-        'snake'
-      )}`;
-      j1ON.push(
-        `${left} = ${convertCase(t.Name, 'snake')}.${convertCase(
-          `${left}`,
-          'snake'
-        )}`
-      );
-    }
-    joinLines.push(`${j1} ${j1ON.join(' AND ')}`);
   }
 
-  if (t.RefBy) {
-    for (const tbl of t.RefBy) {
-      let added = false;
-
-      let j1 = `LEFT JOIN ${convertCase(`${tbl.Name}`, 'snake')} ON`;
-      let j1ON = [];
-
-      for (const a of tbl.Attributes) {
-        if (!a.RefTo) continue;
-        if (!a.Parent) continue;
-        if (a.RefTo.ID === t.ID) continue;
-        added = true;
-        let t2 = a.RefTo;
-
-        let j2 = `LEFT JOIN ${convertCase(
-          `${convertCase(`${t2.Name}`, 'snake')}`,
-          'snake'
-        )} ON`;
-        let j2ON = [];
-
-        for (const a2 of t2.Attributes) {
-          if (a2.Type === AttrType.REFERENCE) continue;
-          returnTableLines.push(
-            `${convertCase(AttributeNameWithTable(a2), 'snake')} ${a2.Type}`
-          );
-          selectingLines.push(
-            `${AttributeNameWithTable(a2)} AS ${`${convertCase(
-              AttributeNameWithTable(a2),
-              'snake'
-            )}`}`
-          );
-        }
-        for (const a2 of t2.Attributes) {
-          if (a2.Type === AttrType.REFERENCE) continue;
-          if (!a2.Option?.PrimaryKey) continue;
-
-          let l1 = `${convertCase(`${t.Name}`, 'snake')}.${convertCase(
-            `${a2.Name}`,
-            'snake'
-          )}`;
-          let l2 = `${convertCase(`${t2.Name}`, 'snake')}.${convertCase(
-            `${a2.Name}`,
-            'snake'
-          )}`;
-
-          j1ON.push(
-            `${l1} = ${convertCase(a.Parent.Name, 'snake')}.${convertCase(
-              `${l1}`,
-              'snake'
-            )}`
-          );
-          j2ON.push(
-            `${l2} = ${convertCase(tbl.Name, 'snake')}.${convertCase(
-              `${l2}`,
-              'snake'
-            )}`
-          );
-        }
-
-        if (added) {
-          if (j1ON.length === 0) {
-            continue;
-          }
-          if (j2ON.length === 0) {
-            continue;
-          }
-
-          j1 += ` ${j1ON.join(' AND ')}`;
-          j2 += ` ${j2ON.join(' AND ')}`;
-          joinLines.push(j1);
-          joinLines.push(j2);
-        }
-      }
-      if (!added) {
-        for (const a2 of tbl.Attributes) {
-          if (!a2.Parent) continue;
-          if (!a2.Option?.PrimaryKey) continue;
-          if (a2.Type === AttrType.REFERENCE) continue;
-
-          let left = `${convertCase(`${t.Name}`, 'snake')}.${convertCase(
-            `${a2.Name}`,
-            'snake'
-          )}`;
-          j1ON.push(
-            `${left} = ${convertCase(a2.Parent.Name, 'snake')}.${convertCase(
-              `${left}`,
-              'snake'
-            )}`
-          );
-        }
-        for (const a2 of tbl.Attributes) {
-          if (!a2.Parent) continue;
-          if (a2.Type === AttrType.REFERENCE) continue;
-
-          returnTableLines.push(
-            `${convertCase(AttributeNameWithTable(a2), 'snake')} ${a2.Type}`
-          );
-          selectingLines.push(
-            `${AttributeNameWithTable(a2)} AS ${`${convertCase(
-              AttributeNameWithTable(a2),
-              'snake'
-            )}`}`
-          );
-        }
-        joinLines.push(`${j1} ${j1ON.join(' AND ')}`);
-      }
-    }
-  }
+  let joinLines: string[] = GenerateJoinLines(
+    t,
+    returnTableLines,
+    selectingLines
+  );
 
   joinLines = alignKeyword(joinLines, 'ON');
   joinLines = alignKeyword(joinLines, '=');
@@ -235,4 +92,87 @@ $$ LANGUAGE plpgsql;`;
   q = q.replaceAll('SERIAL', 'INT');
 
   return q;
+}
+
+export function GenerateJoinLines(
+  t: Table,
+  returnTableLines: string[],
+  selectingLines: string[]
+) {
+  let joinLines: string[] = [];
+  joinLines.push(t.FN);
+
+  if (t.RefBy) {
+    for (const tbl of t.RefBy) {
+      let j1 = `LEFT JOIN ${tbl.FN} ON`;
+      let j1ON = [];
+
+      for (const a2 of tbl.Attributes) {
+        if (a2.Type === AttrType.REFERENCE && a2.RefTo) {
+          let pksForJoin = a2.RefTo.Attributes.filter(
+            (e) => e.Option?.PrimaryKey && e.Type !== AttrType.REFERENCE
+          );
+          for (const ra2 of pksForJoin) {
+            if (t.ID !== ra2.Parent.ID) continue;
+            j1ON.push(
+              `${tbl.FN}.${cc(`${a2.Name}_${ra2.Name}`, 's')} = ${ra2.FN}`
+            );
+          }
+          continue;
+        }
+
+        // let n =
+        //   a2.Parent.Parent.ID === t.Parent.ID
+        //     ? cc(a2.PFN, 's')
+        //     : cc(a2.FN, 's');
+        let n = cc(a2.FN, 's');
+        returnTableLines.push(`${n} ${a2.Type}`);
+        selectingLines.push(`${a2.FN} AS ${n}`);
+      }
+
+      if (j1ON.length > 0) {
+        joinLines.push(`${j1} ${j1ON.join('  !!AND ')}`);
+      } else {
+        console.log('__');
+        console.log('missing something\nj1 :>> ', j1);
+        console.log('tbl.Attributes :>> ', tbl.Attributes);
+        console.log(' ^ ^ ABOVE ^ ^ ');
+      }
+
+      for (const a of tbl.Attributes) {
+        if (!a.RefTo) continue;
+        if (a.RefTo.ID === t.ID) continue;
+
+        let t2 = a.RefTo;
+
+        let j2 = `LEFT JOIN ${t2.FN} ON`;
+        let j2ON = [];
+
+        for (const a2 of t2.Attributes) {
+          if (a2.Type === AttrType.REFERENCE) continue;
+
+          let n = cc(a2.FN, 's');
+          returnTableLines.push(`${n} ${a2.Type}`);
+          selectingLines.push(`${a2.FN} AS ${n}`);
+        }
+
+        for (const a2 of t2.Attributes) {
+          if (a2.Type === AttrType.REFERENCE) continue;
+          if (!a2.Option?.PrimaryKey) continue;
+
+          // WHAT (post)
+          // social.user_post.what_bbb_id      = social.post.id
+          j2ON.push(`${tbl.FN}.${cc(`${a.Name}_${a2.Name}`, 's')} = ${a2.FN}`);
+
+          // j2ON.push(`${a2.FN} = ${l1} -- HI`);
+        }
+
+        if (j2ON.length > 0) {
+          j2 += ` ${j2ON.join(' AND ')}`;
+          joinLines.push(j2);
+        }
+      }
+    }
+  }
+  return joinLines;
 }

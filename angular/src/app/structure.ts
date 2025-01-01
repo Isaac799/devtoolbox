@@ -1,4 +1,4 @@
-import { convertCase } from './formatting';
+import { cc } from './formatting';
 
 // Validation holds validation rules for an attribute
 export type Validation = {
@@ -24,15 +24,42 @@ export type AttributeConfig = {
   Validation?: Validation;
 };
 // Attribute represents an individual attribute of a table
-export type Attribute = {
+export class AttributeSuggestion {
+  Name: string;
+  Type: AttrType;
+  Option?: AttributeOptions;
+  Validation?: Validation;
+
+  constructor(Name: string, Type: AttrType) {
+    this.Name = Name;
+    this.Type = Type;
+  }
+}
+// Attribute represents an individual attribute of a table
+export class Attribute {
   ID: number;
-  Parent?: Table;
+  Parent: Table;
   RefTo?: Table;
   Name: string;
   Type: AttrType;
   Option?: AttributeOptions;
   Validation?: Validation;
-};
+
+  constructor(ID: number, Name: string, Type: AttrType, Parent: Table) {
+    this.ID = ID;
+    this.Name = Name;
+    this.Type = Type;
+    this.Parent = Parent;
+  }
+
+  get PFN(): string {
+    return [cc(this.Parent.Name, 's'), cc(this.Name, 's')].join('.');
+  }
+
+  get FN(): string {
+    return [cc(this.Parent.Parent.Name, 's'), this.PFN].join('.');
+  }
+}
 
 // Schema represents the entire schema containing multiple tables
 export type SchemaConfig = {
@@ -40,11 +67,18 @@ export type SchemaConfig = {
   Tables: Record<string, TableConfig>;
 };
 // Schema represents the entire schema containing multiple tables
-export type Schema = {
+export class Schema {
   ID: number;
   Name: string;
   Tables: Table[];
-};
+
+  constructor(ID: number, Name: string) {
+    this.ID = ID;
+    this.Name = Name;
+
+    this.Tables = [];
+  }
+}
 
 // // Options holds additional options for attributes and tables
 // export type TableOptions = {
@@ -61,14 +95,26 @@ export type TableConfig = {
 };
 
 // Table represents a database table with its attributes and options
-export type Table = {
+export class Table {
   ID: number;
-  Parent?: Schema;
+  Parent: Schema;
   RefBy?: Table[];
   Name: string;
   // Options: TableOptions;
   Attributes: Attribute[];
-};
+
+  constructor(ID: number, Name: string, Parent: Schema) {
+    this.ID = ID;
+    this.Name = Name;
+    this.Parent = Parent;
+
+    this.Attributes = [];
+  }
+
+  get FN(): string {
+    return [cc(this.Parent.Name, 's'), cc(this.Name, 's')].join('.');
+  }
+}
 
 export enum AppMode {
   JSON,
@@ -112,34 +158,6 @@ export type App = {
   generatorMode: AppGeneratorMode;
   complexity: AppComplexityMode;
 };
-
-export function AttributeNameWithTable(x: Attribute): string {
-  if (!x.Parent) {
-    return 'unknown';
-  }
-  return `${x.Parent.Name}.${x.Name}`;
-}
-
-export function AttributeNameWithSchemaAndTable(x: Attribute): string {
-  if (!x.Parent?.Parent) {
-    return 'unknown';
-  }
-  return `${convertCase(
-    x.Parent.Parent.Name,
-    'snake'
-  )}.convertCase(x.Parent.Name, 'snake')}.${convertCase(x.Name, 'snake')}`;
-}
-
-export function TableFullName(x: Table): string {
-  if (!x.Parent) {
-    return 'unknown';
-  }
-  
-  return `${convertCase(x.Parent.Name, 'snake')}.${convertCase(
-    x.Name,
-    'snake'
-  )}`;
-}
 
 export enum NotificationKind {
   Primary = 'primary',

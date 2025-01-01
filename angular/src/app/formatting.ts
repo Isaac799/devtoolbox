@@ -133,11 +133,19 @@ const isAcronym = (word: string): boolean => {
   return ACRONYMS.includes(word.toLowerCase());
 };
 
+export const fixPluralGrammar = (word: string): string => {
+  // Check for words ending with 'ys' (incorrect plural form like 'babys')
+  if (word.endsWith('ys') && word.length > 2) {
+    // Change 'ys' to 'ies' (correct plural form like 'babies')
+    return word.slice(0, -2) + 'ies';
+  }
+
+  // Return the word as is if it's already correctly plural or singular
+  return word;
+};
+
 // Helper function to handle shared case conversion logic
-const convertString = (
-  str: string,
-  toCase: 'snake' | 'pascal' | 'camel' | 'upper'
-): string => {
+const convertString = (str: string, toCase: 's' | 'p' | 'c' | 'u'): string => {
   // Remove spaces and dots and convert to lowercase
   let result = str
     .replace(/[\s\.]+/g, ' ') // Replace spaces and dots with spaces for easier processing
@@ -147,7 +155,7 @@ const convertString = (
     .join(' ');
 
   switch (toCase) {
-    case 'snake':
+    case 's':
       // Convert to snake_case by joining words with underscores
       return (
         result
@@ -155,7 +163,7 @@ const convertString = (
           // .map((word) => (isAcronym(word) ? word.toUpperCase() : word))
           .join('_')
       );
-    case 'pascal':
+    case 'p':
       // Convert to PascalCase by capitalizing the first letter of each word
       return result
         .split(' ')
@@ -164,7 +172,7 @@ const convertString = (
           return isAcronym(word) ? capitalized.toUpperCase() : capitalized;
         })
         .join('');
-    case 'camel':
+    case 'c':
       // Convert to camelCase: lowercase the first word and capitalize subsequent words
       const words = result.split(' ');
       const camelCased =
@@ -177,7 +185,7 @@ const convertString = (
           })
           .join('');
       return camelCased.charAt(0).toLowerCase() + camelCased.slice(1);
-    case 'upper':
+    case 'u':
       // Convert to UPPER_CASE with underscores between words
       return result
         .split(' ')
@@ -191,9 +199,7 @@ const convertString = (
 };
 
 // Main function to convert a string to the desired case
-export function convertCase(
-  str: string,
-  caseType: 'snake' | 'pascal' | 'camel' | 'upper'
-): string {
+export function cc(str: string, caseType: 's' | 'p' | 'c' | 'u'): string {
   return convertString(str, caseType);
 }
+
