@@ -104,7 +104,7 @@ function generateGoStructAttributes(
   if (recursive) {
     lines.push(`${TAB}${cc(a.FN, 'p')} ${ty} \`json:"${cc(a.FN, 's')}"\``);
   } else {
-    lines.push(`${TAB}${cc(a.FN, 'p')} ${ty} \`json:"${cc(a.FN, 's')}"\``);
+    lines.push(`${TAB}${cc(a.PFN, 'p')} ${ty} \`json:"${cc(a.FN, 's')}"\``);
   }
 
   return lines;
@@ -132,7 +132,7 @@ function generateGoFnStructAttributes(
   if (recursive) {
     lines.push(`${TAB}${TAB}${cc(a.FN, 'p')}: ${cc(recursive.FN, 'c')},`);
   } else {
-    lines.push(`${TAB}${TAB}${cc(a.FN, 'p')}: ${cc(a.FN, 'c')},`);
+    lines.push(`${TAB}${TAB}${cc(a.PFN, 'p')}: ${cc(a.FN, 'c')},`);
   }
 
   return lines;
