@@ -44,7 +44,7 @@ export function SchemasToAngularFormControls(schemas: Schema[]): string {
 
 function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
   let lines: string[] = [];
-  lines.push(`${cc(`${t.FN}_form`, 'p')} = new FormGroup({`);
+  lines.push(`${cc(`${t.FN}_form`, 'pl')} = new FormGroup({`);
 
   for (const a of t.Attributes) {
     let attrs = generateTsStructAttributes(a, null, SQL_TO_TS_TYPE);
@@ -61,9 +61,9 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
 
         let validatorsStr = GenerateValidatorsForAttribute(a);
 
-        let many = `${TAB}${fixPluralGrammar(cc(`${a.RefTo.FN}s`, 'c'))}: new FormControl<${cc(
+        let many = `${TAB}${fixPluralGrammar(cc(`${a.RefTo.FN}s`, 'cm'))}: new FormControl<${cc(
           a.RefTo.FN,
-          'p'
+          'pl'
         )}[] | null>({ value: null, disabled: false }, [${validatorsStr}])`;
         lines.push(many);
       }
@@ -79,9 +79,9 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
           break;
         }
 
-        let one = `${TAB}${cc(tbl.FN, 'c')}: new FormControl<${cc(
+        let one = `${TAB}${cc(tbl.FN, 'cm')}: new FormControl<${cc(
           tbl.FN,
-          'p'
+          'pl'
         )} | null>({ value: null, disabled: false }, [${validatorsStr}])`;
         lines.push(one);
       }
@@ -121,13 +121,13 @@ function generateTsStructAttributes(
 
   if (recursive) {
     lines.push(
-      `${TAB}${cc(recursive.FN, 'c')}: new FormControl<${
+      `${TAB}${cc(recursive.FN, 'cm')}: new FormControl<${
         SQL_TO_TS_TYPE[a.Type]
       } | null>({ value: null, disabled: false }, [${validatorsStr}])`
     );
   } else {
     lines.push(
-      `${TAB}${cc(a.PFN, 'c')}: new FormControl<${
+      `${TAB}${cc(a.PFN, 'cm')}: new FormControl<${
         SQL_TO_TS_TYPE[a.Type]
       } | null>({ value: null, disabled: false }, [${validatorsStr}])`
     );

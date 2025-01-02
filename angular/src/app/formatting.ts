@@ -145,7 +145,10 @@ export const fixPluralGrammar = (word: string): string => {
 };
 
 // Helper function to handle shared case conversion logic
-const convertString = (str: string, toCase: 's' | 'p' | 'c' | 'u'): string => {
+const convertString = (
+  str: string,
+  toCase: 'sk' | 'pl' | 'cm' | 'up'
+): string => {
   // Remove spaces and dots and convert to lowercase
   let result = str
     .replace(/[\s\.]+/g, ' ') // Replace spaces and dots with spaces for easier processing
@@ -155,7 +158,7 @@ const convertString = (str: string, toCase: 's' | 'p' | 'c' | 'u'): string => {
     .join(' ');
 
   switch (toCase) {
-    case 's':
+    case 'sk':
       // Convert to snake_case by joining words with underscores
       return (
         result
@@ -163,7 +166,7 @@ const convertString = (str: string, toCase: 's' | 'p' | 'c' | 'u'): string => {
           // .map((word) => (isAcronym(word) ? word.toUpperCase() : word))
           .join('_')
       );
-    case 'p':
+    case 'pl':
       // Convert to PascalCase by capitalizing the first letter of each word
       return result
         .split(' ')
@@ -172,7 +175,7 @@ const convertString = (str: string, toCase: 's' | 'p' | 'c' | 'u'): string => {
           return isAcronym(word) ? capitalized.toUpperCase() : capitalized;
         })
         .join('');
-    case 'c':
+    case 'cm':
       // Convert to camelCase: lowercase the first word and capitalize subsequent words
       const words = result.split(' ');
       const camelCased =
@@ -185,7 +188,7 @@ const convertString = (str: string, toCase: 's' | 'p' | 'c' | 'u'): string => {
           })
           .join('');
       return camelCased.charAt(0).toLowerCase() + camelCased.slice(1);
-    case 'u':
+    case 'up':
       // Convert to UPPER_CASE with underscores between words
       return result
         .split(' ')
@@ -199,7 +202,6 @@ const convertString = (str: string, toCase: 's' | 'p' | 'c' | 'u'): string => {
 };
 
 // Main function to convert a string to the desired case
-export function cc(str: string, caseType: 's' | 'p' | 'c' | 'u'): string {
+export function cc(str: string, caseType: 'sk' | 'pl' | 'cm' | 'up'): string {
   return convertString(str, caseType);
 }
-

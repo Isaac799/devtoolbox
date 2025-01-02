@@ -29,14 +29,14 @@ function generateSqlFns(t: Table) {
   }
 
   let params: string[] = [];
-  let fnName = `${cc(t.Parent.Name, 's')}.${cc(`get_${t.Name}`, 's')}`;
+  let fnName = `${cc(t.Parent.Name, 'sk')}.${cc(`get_${t.Name}`, 'sk')}`;
   let selectingLines: string[] = [];
 
   let whereAND = [];
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue;
-    params.push(`${cc(a.Name, 's')} ${a.Type}`);
-    whereAND.push(`${t.FN}.${cc(a.Name, 's')} = ${cc(a.Name, 's')}`);
+    params.push(`${cc(a.Name, 'sk')} ${a.Type}`);
+    whereAND.push(`${t.FN}.${cc(a.Name, 'sk')} = ${cc(a.Name, 'sk')}`);
   }
   let whereStr: string = whereAND.join(' AND ');
 
@@ -48,14 +48,14 @@ function generateSqlFns(t: Table) {
 
   for (const a of t.Attributes) {
     if (!a.RefTo) {
-      let n = cc(a.FN, 's');
+      let n = cc(a.FN, 'sk');
       returnTableLines.push(`${n} ${a.Type}`);
       selectingLines.push(`${a.FN} AS ${n}`);
       continue;
     }
 
     for (const ra of a.RefTo.Attributes) {
-      let n = cc(a.FN, 's');
+      let n = cc(a.FN, 'sk');
       returnTableLines.push(`${n} ${ra.Type}`);
       selectingLines.push(`${ra.FN} AS ${n}`);
     }
@@ -115,7 +115,7 @@ export function GenerateJoinLines(
           for (const ra2 of pksForJoin) {
             if (t.ID !== ra2.Parent.ID) continue;
             j1ON.push(
-              `${tbl.FN}.${cc(`${a2.Name}_${ra2.Name}`, 's')} = ${ra2.FN}`
+              `${tbl.FN}.${cc(`${a2.Name}_${ra2.Name}`, 'sk')} = ${ra2.FN}`
             );
           }
           continue;
@@ -125,7 +125,7 @@ export function GenerateJoinLines(
         //   a2.Parent.Parent.ID === t.Parent.ID
         //     ? cc(a2.PFN, 's')
         //     : cc(a2.FN, 's');
-        let n = cc(a2.FN, 's');
+        let n = cc(a2.FN, 'sk');
         returnTableLines.push(`${n} ${a2.Type}`);
         selectingLines.push(`${a2.FN} AS ${n}`);
       }
@@ -151,7 +151,7 @@ export function GenerateJoinLines(
         for (const a2 of t2.Attributes) {
           if (a2.Type === AttrType.REFERENCE) continue;
 
-          let n = cc(a2.FN, 's');
+          let n = cc(a2.FN, 'sk');
           returnTableLines.push(`${n} ${a2.Type}`);
           selectingLines.push(`${a2.FN} AS ${n}`);
         }
@@ -162,7 +162,7 @@ export function GenerateJoinLines(
 
           // WHAT (post)
           // social.user_post.what_bbb_id      = social.post.id
-          j2ON.push(`${tbl.FN}.${cc(`${a.Name}_${a2.Name}`, 's')} = ${a2.FN}`);
+          j2ON.push(`${tbl.FN}.${cc(`${a.Name}_${a2.Name}`, 'sk')} = ${a2.FN}`);
 
           // j2ON.push(`${a2.FN} = ${l1} -- HI`);
         }

@@ -1,6 +1,6 @@
-import { SQL_TO_TSQL_TYPE, TAB } from '../../constants';
+import { TAB } from '../../constants';
 import { cc, alignKeyword } from '../../formatting';
-import { Table, AttrType, Schema } from '../../structure';
+import { Table, AttrType, Schema, SQL_TO_TSQL_TYPE } from '../../structure';
 import { GenerateJoinLines } from './pgsql.functions';
 
 export function SchemasToTSQLStoredProcedures(schemas: Schema[]): string {
@@ -24,7 +24,7 @@ function generateSqlFns(t: Table) {
   }
 
   let params: string[] = [];
-  let fnName = `${cc(t.Parent.Name, 's')}.${cc(`get_${t.Name}`, 's')}`;
+  let fnName = `${cc(t.Parent.Name, 'sk')}.${cc(`get_${t.Name}`, 'sk')}`;
   let selectingLines: string[] = [];
 
   let whereAND = [];
@@ -36,8 +36,8 @@ function generateSqlFns(t: Table) {
       type = SQL_TO_TSQL_TYPE[AttrType.INT];
     }
 
-    params.push(`@${cc(a.FN, 's')} ${type}`);
-    whereAND.push(`${t.FN}.${cc(a.Name, 's')} = @${cc(a.FN, 's')}`);
+    params.push(`@${cc(a.FN, 'sk')} ${type}`);
+    whereAND.push(`${t.FN}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`);
   }
   let whereStr: string = whereAND.join(' AND ');
 
@@ -47,13 +47,13 @@ function generateSqlFns(t: Table) {
 
   for (const a of t.Attributes) {
     if (!a.RefTo) {
-      let n = cc(a.FN, 's');
+      let n = cc(a.FN, 'sk');
       selectingLines.push(`${a.FN} AS ${n}`);
       continue;
     }
 
     for (const ra of a.RefTo.Attributes) {
-      let n = cc(a.FN, 's');
+      let n = cc(a.FN, 'sk');
       selectingLines.push(`${ra.FN} AS ${n}`);
     }
   }

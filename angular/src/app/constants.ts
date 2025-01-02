@@ -1,4 +1,4 @@
-import { AttrType, SchemaConfig } from './structure';
+import { AttrType } from './structure';
 
 export const TAB = '    ';
 
@@ -108,23 +108,6 @@ defaultValueValidatorHintMap.set(
   AttrType.MONEY,
   "Money: e.g., '12.34', or '-12.34'"
 );
-
-export const SQL_TO_TSQL_TYPE: Record<AttrType, string> = {
-  [AttrType.BIT]: 'BIT',
-  [AttrType.DATE]: 'DATE',
-  [AttrType.CHAR]: 'CHAR',
-  [AttrType.TIME]: 'TIME',
-  [AttrType.TIMESTAMP]: 'DATETIME',
-  [AttrType.SERIAL]: 'INT IDENTITY(1,1)',
-  [AttrType.DECIMAL]: 'DECIMAL',
-  [AttrType.FLOAT]: 'FLOAT',
-  [AttrType.REAL]: 'REAL',
-  [AttrType.INT]: 'INT',
-  [AttrType.BOOLEAN]: 'BIT',
-  [AttrType.VARCHAR]: 'VARCHAR',
-  [AttrType.MONEY]: 'MONEY',
-  [AttrType.REFERENCE]: '',
-};
 
 export const defaultConfig: any = {
   public: {

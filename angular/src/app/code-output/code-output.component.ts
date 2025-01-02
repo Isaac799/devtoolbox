@@ -9,6 +9,7 @@ import {
 import { DataService } from '../services/data.service';
 import {
   AppGeneratorMode,
+  Func,
   Notification,
   NotificationKind,
   NotificationLife,
@@ -71,6 +72,13 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
           this.output = SchemasToTSQLStoredProcedures(schemas);
           ext = 'SQL';
           break;
+      }
+
+      for (const s of schemas) {
+        for (const t of s.Tables) {
+          let func = new Func(t, this.data.app.generatorMode);
+          console.log(func);
+        }
       }
 
       if (!this.codeOutput?.nativeElement) {

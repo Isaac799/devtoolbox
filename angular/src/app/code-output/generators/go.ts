@@ -5,33 +5,22 @@ import {
   alignKeywords,
   fixPluralGrammar,
 } from '../../formatting';
-import { Table, AttrType, Schema, Attribute } from '../../structure';
+import {
+  Table,
+  AttrType,
+  Schema,
+  Attribute,
+  SQL_TO_GO_TYPE,
+} from '../../structure';
 
 export function SchemasToGoStructs(schemas: Schema[]): string {
-  const SQL_TO_GO_TYPE: Record<AttrType, string> = {
-    [AttrType.BIT]: 'bool',
-    [AttrType.DATE]: 'time.Time',
-    [AttrType.CHAR]: 'string',
-    [AttrType.TIME]: 'time.Time',
-    [AttrType.TIMESTAMP]: 'time.Time',
-    [AttrType.SERIAL]: 'int',
-    [AttrType.DECIMAL]: 'float64',
-    [AttrType.FLOAT]: 'float64',
-    [AttrType.REAL]: 'float64',
-    [AttrType.INT]: 'int',
-    [AttrType.BOOLEAN]: 'bool',
-    [AttrType.VARCHAR]: 'string',
-    [AttrType.MONEY]: 'float64',
-    [AttrType.REFERENCE]: '',
-  };
-
   let lines: string[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let structs = generateGoStructs(t, SQL_TO_GO_TYPE);
+      let structs = generateGoStructs(t);
       lines = lines.concat(structs);
       lines.push('');
-      let fns = generateGoFns(t, SQL_TO_GO_TYPE);
+      let fns = generateGoFns(t);
       lines = lines.concat(fns);
       lines.push('');
     }
@@ -40,12 +29,12 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
   return str;
 }
 
-function generateGoStructs(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
+function generateGoStructs(t: Table) {
   let lines: string[] = [];
-  lines.push(`type ${cc(t.FN, 'p')} struct {`);
+  lines.push(`type ${cc(t.FN, 'pl')} struct {`);
 
   for (const a of t.Attributes) {
-    let attrs = generateGoStructAttributes(a, false, SQL_TO_GO_TYPE);
+    let attrs = generateGoStructAttributes(a, false);
     lines = lines.concat(attrs);
   }
 
@@ -58,16 +47,16 @@ function generateGoStructs(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
         added = true;
         // console.log(t.FN, 'has', a.RefTo.FN);
         let many = `${TAB}${fixPluralGrammar(
-          cc(`${a.RefTo.FN}s`, 'p')
-        )} ~[]${cc(a.RefTo.FN, 'p')} \`json:"${fixPluralGrammar(
-          cc(`${a.RefTo.FN}s`, 's')
+          cc(`${a.RefTo.FN}s`, 'pl')
+        )} ~[]${cc(a.RefTo.FN, 'pl')} \`json:"${fixPluralGrammar(
+          cc(`${a.RefTo.FN}s`, 'sk')
         )}"\``;
         lines.push(many);
       }
       if (!added) {
-        let one = `${TAB}${cc(tbl.FN, 'p')} ~*${cc(tbl.FN, 'p')} \`json:"${cc(
+        let one = `${TAB}${cc(tbl.FN, 'pl')} ~*${cc(tbl.FN, 'pl')} \`json:"${cc(
           tbl.FN,
-          's'
+          'sk'
         )}"\``;
         lines.push(one);
       }
@@ -83,8 +72,7 @@ function generateGoStructs(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
 
 function generateGoStructAttributes(
   a: Attribute,
-  recursive: boolean,
-  SQL_TO_GO_TYPE: Record<AttrType, string>
+  recursive: boolean
 ): string[] {
   let lines: string[] = [];
 
@@ -93,7 +81,7 @@ function generateGoStructAttributes(
       if (!ra.Option?.PrimaryKey) {
         continue;
       }
-      let refAttrs = generateGoStructAttributes(ra, true, SQL_TO_GO_TYPE);
+      let refAttrs = generateGoStructAttributes(ra, true);
       lines = lines.concat(refAttrs);
     }
     return lines;
@@ -101,10 +89,11 @@ function generateGoStructAttributes(
 
   let nil = a.Validation?.Required || a.Option?.PrimaryKey ? '' : '*';
   let ty = `${nil}${SQL_TO_GO_TYPE[a.Type]}`;
+
   if (recursive) {
-    lines.push(`${TAB}${cc(a.FN, 'p')} ${ty} \`json:"${cc(a.FN, 's')}"\``);
+    lines.push(`${TAB}${cc(a.FN, 'pl')} ${ty} \`json:"${cc(a.FN, 'sk')}"\``);
   } else {
-    lines.push(`${TAB}${cc(a.PFN, 'p')} ${ty} \`json:"${cc(a.FN, 's')}"\``);
+    lines.push(`${TAB}${cc(a.PFN, 'pl')} ${ty} \`json:"${cc(a.FN, 'sk')}"\``);
   }
 
   return lines;
@@ -112,8 +101,7 @@ function generateGoStructAttributes(
 
 function generateGoFnStructAttributes(
   a: Attribute,
-  recursive: Attribute | null,
-  SQL_TO_GO_TYPE: Record<AttrType, string>
+  recursive: Attribute | null
 ): string[] {
   let lines: string[] = [];
 
@@ -123,24 +111,24 @@ function generateGoFnStructAttributes(
       if (!ra.Option?.PrimaryKey) {
         continue;
       }
-      let refAttrs = generateGoFnStructAttributes(ra, a, SQL_TO_GO_TYPE);
+      let refAttrs = generateGoFnStructAttributes(ra, a);
       lines = lines.concat(refAttrs);
     }
     return lines;
   }
 
   if (recursive) {
-    lines.push(`${TAB}${TAB}${cc(a.FN, 'p')}: ${cc(recursive.FN, 'c')},`);
+    lines.push(`${TAB}${TAB}${cc(a.FN, 'pl')}: ${cc(recursive.FN, 'cm')},`);
   } else {
-    lines.push(`${TAB}${TAB}${cc(a.PFN, 'p')}: ${cc(a.FN, 'c')},`);
+    lines.push(`${TAB}${TAB}${cc(a.PFN, 'pl')}: ${cc(a.FN, 'cm')},`);
   }
 
   return lines;
 }
 
-function generateGoFns(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
+function generateGoFns(t: Table) {
   let lines: string[] = [];
-  const n = cc(t.FN, 'p');
+  const n = cc(t.FN, 'pl');
 
   let params: string[] = [];
 
@@ -148,25 +136,21 @@ function generateGoFns(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
     if (a.RefTo) {
       for (const ra of a.RefTo.Attributes) {
         if (!ra.Option?.PrimaryKey) continue;
-        params.push(`${cc(a.FN, 'c')} ${SQL_TO_GO_TYPE[ra.Type]}`);
+        params.push(`${cc(a.FN, 'cm')} ${SQL_TO_GO_TYPE[ra.Type]}`);
       }
 
       continue;
     }
-    params.push(`${cc(a.FN, 'c')} ${SQL_TO_GO_TYPE[a.Type]}`);
+    params.push(`${cc(a.FN, 'cm')} ${SQL_TO_GO_TYPE[a.Type]}`);
   }
 
-  lines.push(`func ${cc(`New_${t.FN}`, 'p')} (${params.join(', ')}) *${n} {`);
+  lines.push(`func ${cc(`New_${t.FN}`, 'pl')} (${params.join(', ')}) *${n} {`);
   lines.push(`${TAB}return &${n} {`);
 
   let attrs: string[] = [];
 
   for (const a of t.Attributes) {
-    let goFnStructAttributes = generateGoFnStructAttributes(
-      a,
-      null,
-      SQL_TO_GO_TYPE
-    );
+    let goFnStructAttributes = generateGoFnStructAttributes(a, null);
 
     attrs = attrs.concat(goFnStructAttributes);
   }
@@ -180,12 +164,12 @@ function generateGoFns(t: Table, SQL_TO_GO_TYPE: Record<AttrType, string>) {
         added = true;
         // console.log(t.FN, 'has', a.RefTo.FN);
         let many = `${TAB}${TAB}${fixPluralGrammar(
-          cc(`${a.RefTo.FN}s`, 'p')
-        )}: []${cc(a.RefTo.FN, 'p')}{},`;
+          cc(`${a.RefTo.FN}s`, 'pl')
+        )}: []${cc(a.RefTo.FN, 'pl')}{},`;
         attrs.push(many);
       }
       if (!added) {
-        let one = `${TAB}${TAB}${cc(tbl.FN, 'p')}: nil,`;
+        let one = `${TAB}${TAB}${cc(tbl.FN, 'pl')}: nil,`;
         attrs.push(one);
       }
     }

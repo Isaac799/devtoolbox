@@ -1,27 +1,27 @@
-import { SQL_TO_TSQL_TYPE, TAB } from '../../constants';
+import { TAB } from '../../constants';
 import { cc, alignKeyword, alignKeywords } from '../../formatting';
-import { Table, AttrType, Schema, Attribute } from '../../structure';
+import { Table, AttrType, Schema, Attribute, SQL_TO_TSQL_TYPE } from '../../structure';
 
 export function SchemasToTablesForTSQL(schemas: Schema[]): string {
   let drops: string[] = [];
   let createTableLines: string[] = [];
   for (const s of schemas) {
     drops.push(
-      `IF EXISTS (SELECT * FROM sys.schemas WHERE name = '${cc(s.Name, 's')}') 
-    DROP SCHEMA ${cc(s.Name, 's')};`
+      `IF EXISTS (SELECT * FROM sys.schemas WHERE name = '${cc(s.Name, 'sk')}') 
+    DROP SCHEMA ${cc(s.Name, 'sk')};`
     );
     createTableLines.push('');
     createTableLines.push(
       `IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '${cc(
         s.Name,
-        's'
+        'sk'
       )}') 
-    CREATE SCHEMA ${cc(s.Name, 's')};`
+    CREATE SCHEMA ${cc(s.Name, 'sk')};`
     );
     createTableLines.push('');
     for (const t of s.Tables) {
       drops.push(
-        `IF OBJECT_ID('${cc(t.Name, 's')}', 'U') IS NOT NULL 
+        `IF OBJECT_ID('${cc(t.Name, 'sk')}', 'U') IS NOT NULL 
     DROP TABLE ${t.FN};`
       );
       createTableLines.push(`CREATE TABLE ${t.FN} (`);
@@ -65,13 +65,13 @@ function generateTableEndParts(t: Table) {
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey) continue;
     if (!a.RefTo) {
-      pks.push(cc(a.Name, 's'));
+      pks.push(cc(a.Name, 'sk'));
       continue;
     }
 
     for (const ra of a.RefTo.Attributes) {
       if (!ra.Option?.PrimaryKey) continue;
-      pks.push(cc(`${a.Name}_${ra.Name}`, 's'));
+      pks.push(cc(`${a.Name}_${ra.Name}`, 'sk'));
     }
   }
 
@@ -84,7 +84,7 @@ function generateTableEndParts(t: Table) {
   let uniques = t.Attributes.filter((e) => e.Option?.Unique).map((e) => e.Name);
   if (uniques.length > 0) {
     for (const e of uniques) {
-      let uniquesStr = `UNIQUE ( ${cc(e, 's')} )`;
+      let uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`;
       endThings.push(uniquesStr);
     }
   }
@@ -95,10 +95,10 @@ function generateTableEndParts(t: Table) {
       let r = e.RefTo!;
       let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
       for (const rPk of rPks) {
-        let rStr = `FOREIGN KEY ( ${cc(e.Name, 's')}_${cc(
+        let rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(
           rPk.Name,
-          's'
-        )} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 's')} ) ON DELETE CASCADE`;
+          'sk'
+        )} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 'sk')} ) ON DELETE CASCADE`;
         endThings.push(rStr);
       }
     }
@@ -116,7 +116,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         continue;
       }
     }
-    let name = beingReferences ? `${cc(beingReferences.Name, 's')}_${cc(a.Name, 's')}` : cc(a.Name, 's');
+    let name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk');
     let type = '';
     if ([AttrType.VARCHAR].includes(a.Type)) {
       let max = 15;
@@ -146,7 +146,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
       type = 'INT';
     }
 
-    let attrLine = [`${cc(name, 's')} ${type}`];
+    let attrLine = [`${cc(name, 'sk')} ${type}`];
 
     if (a.Option?.Default) {
       let def = a.Option.Default;

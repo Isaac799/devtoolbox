@@ -1,32 +1,21 @@
 import { TAB } from '../../constants';
 import { cc, alignKeyword, fixPluralGrammar } from '../../formatting';
-import { Table, AttrType, Schema, Attribute } from '../../structure';
+import {
+  Table,
+  AttrType,
+  Schema,
+  Attribute,
+  SQL_TO_TS_TYPE,
+} from '../../structure';
 
 export function SchemasToTsStructs(schemas: Schema[]): string {
-  const SQL_TO_TS_TYPE: Record<AttrType, string> = {
-    [AttrType.BIT]: 'boolean',
-    [AttrType.DATE]: 'Date',
-    [AttrType.CHAR]: 'string',
-    [AttrType.TIME]: 'Date',
-    [AttrType.TIMESTAMP]: 'Date',
-    [AttrType.SERIAL]: 'number',
-    [AttrType.DECIMAL]: 'number',
-    [AttrType.FLOAT]: 'number',
-    [AttrType.REAL]: 'number',
-    [AttrType.INT]: 'number',
-    [AttrType.BOOLEAN]: 'boolean',
-    [AttrType.VARCHAR]: 'string',
-    [AttrType.MONEY]: 'number',
-    [AttrType.REFERENCE]: '',
-  };
-
   let lines: string[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let structs = generateTsStructs(t, SQL_TO_TS_TYPE);
+      let structs = generateTsStructs(t);
       lines = lines.concat(structs);
       lines.push('');
-      let fns = generateTsFns(t, SQL_TO_TS_TYPE);
+      let fns = generateTsFns(t);
       lines = lines.concat(fns);
       lines.push('');
     }
@@ -35,12 +24,12 @@ export function SchemasToTsStructs(schemas: Schema[]): string {
   return str;
 }
 
-function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
+function generateTsStructs(t: Table) {
   let lines: string[] = [];
-  lines.push(`type ${cc(t.FN, 'p')} = {`);
+  lines.push(`type ${cc(t.FN, 'pl')} = {`);
 
   for (const a of t.Attributes) {
-    let attrs = generateTsStructAttributes(a, null, SQL_TO_TS_TYPE);
+    let attrs = generateTsStructAttributes(a, null);
     lines = lines.concat(attrs);
   }
 
@@ -52,14 +41,14 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
         if (a.RefTo.ID === t.ID) continue;
         added = true;
 
-        let many = `${TAB}${fixPluralGrammar(cc(`${a.RefTo.FN}s`, 'c'))}: ${cc(
+        let many = `${TAB}${fixPluralGrammar(cc(`${a.RefTo.FN}s`, 'cm'))}: ${cc(
           a.RefTo.FN,
-          'p'
+          'pl'
         )}[] | null`;
         lines.push(many);
       }
       if (!added) {
-        let one = `${TAB}${cc(tbl.FN, 'c')}: ${cc(tbl.FN, 'p')} | null`;
+        let one = `${TAB}${cc(tbl.FN, 'cm')}: ${cc(tbl.FN, 'pl')} | null`;
         lines.push(one);
       }
     }
@@ -75,8 +64,7 @@ function generateTsStructs(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
 
 function generateTsStructAttributes(
   a: Attribute,
-  recursive: Attribute | null,
-  SQL_TO_TS_TYPE: Record<AttrType, string>
+  recursive: Attribute | null
 ): string[] {
   let lines: string[] = [];
 
@@ -85,17 +73,17 @@ function generateTsStructAttributes(
       if (!ra.Option?.PrimaryKey) {
         continue;
       }
-      let refAttrs = generateTsStructAttributes(ra, a, SQL_TO_TS_TYPE);
+      let refAttrs = generateTsStructAttributes(ra, a);
       lines = lines.concat(refAttrs);
     }
     return lines;
   }
 
   if (recursive) {
-    lines.push(`${TAB}${cc(recursive.FN, 'c')}: ${SQL_TO_TS_TYPE[a.Type]}`);
+    lines.push(`${TAB}${cc(recursive.FN, 'cm')}: ${SQL_TO_TS_TYPE[a.Type]}`);
   } else {
     let nil = a.Validation?.Required || a.Option?.PrimaryKey ? '' : ' | null';
-    lines.push(`${TAB}${cc(a.PFN, 'c')}: ${SQL_TO_TS_TYPE[a.Type]}${nil}`);
+    lines.push(`${TAB}${cc(a.PFN, 'cm')}: ${SQL_TO_TS_TYPE[a.Type]}${nil}`);
   }
 
   return lines;
@@ -103,8 +91,7 @@ function generateTsStructAttributes(
 
 function generateTsFnStructAttributes(
   a: Attribute,
-  recursive: Attribute | null,
-  SQL_TO_TS_TYPE: Record<AttrType, string>
+  recursive: Attribute | null
 ): string[] {
   let lines: string[] = [];
 
@@ -114,7 +101,7 @@ function generateTsFnStructAttributes(
       if (!ra.Option?.PrimaryKey) {
         continue;
       }
-      let refAttrs = generateTsFnStructAttributes(ra, a, SQL_TO_TS_TYPE);
+      let refAttrs = generateTsFnStructAttributes(ra, a);
       lines = lines.concat(refAttrs);
     }
     return lines;
@@ -122,17 +109,17 @@ function generateTsFnStructAttributes(
 
   if (recursive) {
     // lines.push(`${TAB}${TAB}${cc(a.FN, 'c')}: ${cc(a.FN, 'c')},`);
-    lines.push(`${TAB}${TAB}${cc(recursive.FN, 'c')},`);
+    lines.push(`${TAB}${TAB}${cc(recursive.FN, 'cm')},`);
   } else {
-    lines.push(`${TAB}${TAB}${cc(a.PFN, 'c')},`);
+    lines.push(`${TAB}${TAB}${cc(a.PFN, 'cm')},`);
   }
 
   return lines;
 }
 
-function generateTsFns(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
+function generateTsFns(t: Table) {
   let lines: string[] = [];
-  const fnTy = cc(t.FN, 'p');
+  const fnTy = cc(t.FN, 'pl');
 
   let params: string[] = [];
 
@@ -140,27 +127,23 @@ function generateTsFns(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
     if (a.RefTo) {
       for (const ra of a.RefTo.Attributes) {
         if (!ra.Option?.PrimaryKey) continue;
-        params.push(`${cc(a.FN, 'c')}: ${SQL_TO_TS_TYPE[ra.Type]}`);
+        params.push(`${cc(a.FN, 'cm')}: ${SQL_TO_TS_TYPE[ra.Type]}`);
       }
 
       continue;
     }
-    params.push(`${cc(a.PFN, 'c')}: ${SQL_TO_TS_TYPE[a.Type]}`);
+    params.push(`${cc(a.PFN, 'cm')}: ${SQL_TO_TS_TYPE[a.Type]}`);
   }
 
   lines.push(
-    `function ${cc(`New_${t.FN}`, 'c')} (${params.join(', ')}): ${fnTy} {`
+    `function ${cc(`New_${t.FN}`, 'cm')} (${params.join(', ')}): ${fnTy} {`
   );
   lines.push(`${TAB}return {`);
 
   let attrs: string[] = [];
 
   for (const a of t.Attributes) {
-    let goFnStructAttributes = generateTsFnStructAttributes(
-      a,
-      null,
-      SQL_TO_TS_TYPE
-    );
+    let goFnStructAttributes = generateTsFnStructAttributes(a, null);
 
     attrs = attrs.concat(goFnStructAttributes);
   }
@@ -174,12 +157,12 @@ function generateTsFns(t: Table, SQL_TO_TS_TYPE: Record<AttrType, string>) {
         added = true;
 
         let many = `${TAB}${TAB}${fixPluralGrammar(
-          cc(`${a.RefTo.FN}s`, 'c')
+          cc(`${a.RefTo.FN}s`, 'cm')
         )}: null,`;
         attrs.push(many);
       }
       if (!added) {
-        let one = `${TAB}${TAB}${cc(tbl.FN, 'c')}: null,`;
+        let one = `${TAB}${TAB}${cc(tbl.FN, 'cm')}: null,`;
         attrs.push(one);
       }
     }
