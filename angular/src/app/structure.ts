@@ -45,12 +45,14 @@ export class Func {
   mode: AppGeneratorMode;
   inputs: FuncIn[];
   outputs: FuncOut[];
+  title: string;
 
   constructor(t: Table, mode: AppGeneratorMode) {
     this.mode = mode;
     this.table = t;
 
     this.lang = Func.determineLanguage(mode);
+    this.title = this.determineTitle();
 
     this.inputs = this.genFnInputs();
     this.outputs = this.genFnOutputs();
@@ -134,7 +136,6 @@ export class Func {
             Required: true,
           };
 
-          console.log('l :>> ', l);
           let { label, type } = genLabelType(
             'out',
             fakeA,
@@ -144,7 +145,6 @@ export class Func {
             Cardinality.Many,
             a.RefTo.FN
           );
-          console.log('label :>> ', label);
           outputs.push(new FuncOut(label, type));
           // inputs.push(
           //   new FuncIn(
@@ -238,6 +238,15 @@ export class Func {
     return answer;
   }
 
+  private determineTitle(): string {
+    let map: Record<Lang, string> = {
+      [Lang.PGSQL]: cc(this.table.Name, 'sk'),
+      [Lang.TSQL]: cc(this.table.Name, 'sk'),
+      [Lang.GO]: cc(this.table.Name, 'pl'),
+      [Lang.TS]: cc(this.table.Name, 'cm'),
+    };
+    return map[this.lang];
+  }
   private static determineLanguage(mode: AppGeneratorMode): Lang {
     let isGo = [AppGeneratorMode.Go].includes(mode);
     if (isGo) {
@@ -665,15 +674,15 @@ function genLabelType(
 
   map.set(Lang.TS | Rel.SameTable | Cardinality.Self, {
     label: cc(aL.Name, tsCase),
-    type: tsType,
+    type: tsType + tsNullable,
   });
   map.set(Lang.TS | Rel.SameSchema | Cardinality.Self, {
     label: cc(aL.PFN, tsCase),
-    type: tsType,
+    type: tsType + tsNullable,
   });
   map.set(Lang.TS | Rel.DiffSchema | Cardinality.Self, {
     label: cc(aL.FN, tsCase),
-    type: tsType,
+    type: tsType + tsNullable,
   });
 
   //    -    -
@@ -732,15 +741,15 @@ function genLabelType(
 
   map.set(Lang.GO | Rel.SameTable | Cardinality.Self, {
     label: cc(aL.Name, goCase),
-    type: goType,
+    type: goNullable + goType,
   });
   map.set(Lang.GO | Rel.SameSchema | Cardinality.Self, {
     label: cc(aL.PFN, goCase),
-    type: goType,
+    type: goNullable + goType,
   });
   map.set(Lang.GO | Rel.DiffSchema | Cardinality.Self, {
     label: cc(aL.FN, goCase),
-    type: goType,
+    type: goNullable + goType,
   });
 
   //    -    -

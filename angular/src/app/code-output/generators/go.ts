@@ -1,185 +1,84 @@
-import { TAB } from '../../constants';
-import {
-  cc,
-  alignKeyword,
-  alignKeywords,
-  fixPluralGrammar,
-} from '../../formatting';
-import {
-  Table,
-  AttrType,
-  Schema,
-  Attribute,
-  SQL_TO_GO_TYPE,
-} from '../../structure';
+import { groupBy, TAB } from '../../constants';
+import { cc, alignKeyword } from '../../formatting';
+import { Schema, Func, AppGeneratorMode } from '../../structure';
 
 export function SchemasToGoStructs(schemas: Schema[]): string {
-  let lines: string[] = [];
+  let funcs: Func[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let structs = generateGoStructs(t);
-      lines = lines.concat(structs);
-      lines.push('');
-      let fns = generateGoFns(t);
-      lines = lines.concat(fns);
-      lines.push('');
+      let func = new Func(t, AppGeneratorMode.Go);
+      funcs.push(func);
     }
   }
+
+  let lines: string[] = [];
+
+  for (const f of funcs) {
+    // Struct
+
+    lines.push(`type ${f.title} = struct {`);
+    let attrs: string[] = generateStructAttributes(f);
+    lines = lines.concat(attrs);
+    lines.push(`}\n`);
+
+    // Func
+
+    let funcAttrs: string[] = generateFuncReturnStruct(f);
+    let { title, params } = generateTitleAndParams(f);
+
+    lines.push(`func ${title} (${params}) *${f.title} {`);
+    lines.push(`${TAB}return &${f.title} {`);
+
+    funcAttrs = alignKeyword(funcAttrs, ' :');
+    lines = lines.concat(funcAttrs);
+
+    lines.push(`${TAB}}`);
+    lines.push(`}\n`);
+  }
+
   let str = lines.join('\n');
   return str;
 }
 
-function generateGoStructs(t: Table) {
-  let lines: string[] = [];
-  lines.push(`type ${cc(t.FN, 'pl')} struct {`);
+function generateTitleAndParams(f: Func) {
+  let params = Object.entries(groupBy(f.inputs, 'type'))
+    // .sort((a, b) => a[0].localeCompare(b[0]))
+    // .map((e) => {
+    //   e[1] = e[1].sort((a, b) => a.label.localeCompare(b.label));
+    //   return e;
+    // })
+    .map((e) => {
+      return `${e[1].map((r) => r.label).join(', ')} ${e[0]}`;
+    })
+    .join(', ');
 
-  for (const a of t.Attributes) {
-    let attrs = generateGoStructAttributes(a, false);
-    lines = lines.concat(attrs);
-  }
-
-  if (t.RefBy) {
-    for (const tbl of t.RefBy) {
-      let added = false;
-      for (const a of tbl.Attributes) {
-        if (!a.RefTo) continue;
-        if (a.RefTo.ID === t.ID) continue;
-        added = true;
-        // console.log(t.FN, 'has', a.RefTo.FN);
-        let many = `${TAB}${fixPluralGrammar(
-          cc(`${a.RefTo.FN}s`, 'pl')
-        )} ~[]${cc(a.RefTo.FN, 'pl')} \`json:"${fixPluralGrammar(
-          cc(`${a.RefTo.FN}s`, 'sk')
-        )}"\``;
-        lines.push(many);
-      }
-      if (!added) {
-        let one = `${TAB}${cc(tbl.FN, 'pl')} ~*${cc(tbl.FN, 'pl')} \`json:"${cc(
-          tbl.FN,
-          'sk'
-        )}"\``;
-        lines.push(one);
-      }
-    }
-  }
-
-  lines.push(`}`);
-  lines = alignKeywords(lines, ['~', '*', ...Object.values(SQL_TO_GO_TYPE)]);
-  lines = lines.map((e) => e.replace('~', ''));
-  lines = alignKeyword(lines, '`json:');
-  return lines;
+  const title = cc(`New_${f.title}`, 'pl');
+  return { title, params };
 }
 
-function generateGoStructAttributes(
-  a: Attribute,
-  recursive: boolean
-): string[] {
-  let lines: string[] = [];
-
-  if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
-    for (const ra of a.RefTo.Attributes) {
-      if (!ra.Option?.PrimaryKey) {
-        continue;
-      }
-      let refAttrs = generateGoStructAttributes(ra, true);
-      lines = lines.concat(refAttrs);
+function generateFuncReturnStruct(f: Func) {
+  let funcAttrs: string[] = [];
+  for (let i = 0; i < f.outputs.length; i++) {
+    const output = f.outputs[i];
+    let input = '';
+    if (f.inputs[i]) {
+      input = f.inputs[i].label;
+    } else {
+      input = output.type.includes('[]') ? output.type : 'nil';
     }
-    return lines;
+
+    funcAttrs.push(`${TAB}${TAB}${output.label} : ${input},`);
   }
-
-  let nil = a.Validation?.Required || a.Option?.PrimaryKey ? '' : '*';
-  let ty = `${nil}${SQL_TO_GO_TYPE[a.Type]}`;
-
-  if (recursive) {
-    lines.push(`${TAB}${cc(a.FN, 'pl')} ${ty} \`json:"${cc(a.FN, 'sk')}"\``);
-  } else {
-    lines.push(`${TAB}${cc(a.PFN, 'pl')} ${ty} \`json:"${cc(a.FN, 'sk')}"\``);
-  }
-
-  return lines;
+  return funcAttrs;
 }
 
-function generateGoFnStructAttributes(
-  a: Attribute,
-  recursive: Attribute | null
-): string[] {
-  let lines: string[] = [];
-
-  if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
-    a.RefTo.Attributes;
-    for (const ra of a.RefTo.Attributes) {
-      if (!ra.Option?.PrimaryKey) {
-        continue;
-      }
-      let refAttrs = generateGoFnStructAttributes(ra, a);
-      lines = lines.concat(refAttrs);
-    }
-    return lines;
-  }
-
-  if (recursive) {
-    lines.push(`${TAB}${TAB}${cc(a.FN, 'pl')}: ${cc(recursive.FN, 'cm')},`);
-  } else {
-    lines.push(`${TAB}${TAB}${cc(a.PFN, 'pl')}: ${cc(a.FN, 'cm')},`);
-  }
-
-  return lines;
-}
-
-function generateGoFns(t: Table) {
-  let lines: string[] = [];
-  const n = cc(t.FN, 'pl');
-
-  let params: string[] = [];
-
-  for (const a of t.Attributes) {
-    if (a.RefTo) {
-      for (const ra of a.RefTo.Attributes) {
-        if (!ra.Option?.PrimaryKey) continue;
-        params.push(`${cc(a.FN, 'cm')} ${SQL_TO_GO_TYPE[ra.Type]}`);
-      }
-
-      continue;
-    }
-    params.push(`${cc(a.FN, 'cm')} ${SQL_TO_GO_TYPE[a.Type]}`);
-  }
-
-  lines.push(`func ${cc(`New_${t.FN}`, 'pl')} (${params.join(', ')}) *${n} {`);
-  lines.push(`${TAB}return &${n} {`);
-
+function generateStructAttributes(f: Func) {
   let attrs: string[] = [];
-
-  for (const a of t.Attributes) {
-    let goFnStructAttributes = generateGoFnStructAttributes(a, null);
-
-    attrs = attrs.concat(goFnStructAttributes);
+  for (const e of f.outputs) {
+    attrs.push(`${TAB}${e.label} ~~${e.type} \`json:"${cc(e.label, 'sk')}"\``);
   }
-
-  if (t.RefBy) {
-    for (const tbl of t.RefBy) {
-      let added = false;
-      for (const a of tbl.Attributes) {
-        if (!a.RefTo) continue;
-        if (a.RefTo.ID === t.ID) continue;
-        added = true;
-        // console.log(t.FN, 'has', a.RefTo.FN);
-        let many = `${TAB}${TAB}${fixPluralGrammar(
-          cc(`${a.RefTo.FN}s`, 'pl')
-        )}: []${cc(a.RefTo.FN, 'pl')}{},`;
-        attrs.push(many);
-      }
-      if (!added) {
-        let one = `${TAB}${TAB}${cc(tbl.FN, 'pl')}: nil,`;
-        attrs.push(one);
-      }
-    }
-  }
-
-  lines = lines.concat(attrs);
-  lines = alignKeyword(lines, ':');
-
-  lines.push(`${TAB}}`);
-  lines.push(`}`);
-
-  return lines;
+  attrs = alignKeyword(attrs, '~~');
+  attrs = attrs.map((e) => e.replace('~~', ''));
+  attrs = alignKeyword(attrs, '`json:');
+  return attrs;
 }

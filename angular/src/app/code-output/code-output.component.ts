@@ -74,13 +74,6 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
           break;
       }
 
-      for (const s of schemas) {
-        for (const t of s.Tables) {
-          let func = new Func(t, this.data.app.generatorMode);
-          console.log(func);
-        }
-      }
-
       if (!this.codeOutput?.nativeElement) {
         console.error('Missing this.codeGeneratorViewHtml');
         return;

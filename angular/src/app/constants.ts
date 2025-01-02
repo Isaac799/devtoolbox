@@ -274,3 +274,28 @@ export const defaultConfig: any = {
     },
   },
 };
+
+// Define a type for the input array of objects
+export type Grouped<T> = {
+  [key: string]: T[];
+};
+
+// Function to group items by a property
+export const groupBy = <T, K extends keyof T>(
+  arr: T[],
+  prop: K
+): Grouped<T> => {
+  return arr.reduce((acc, item) => {
+    const key = item[prop] as unknown as string; // Get the value of the property to group by
+
+    // If the group doesn't exist, create it
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+
+    // Add the item to the corresponding group
+    acc[key].push(item);
+
+    return acc;
+  }, {} as Grouped<T>);
+};
