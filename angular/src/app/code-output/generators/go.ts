@@ -1,6 +1,6 @@
 import { groupBy, TAB } from '../../constants';
 import { cc, alignKeyword } from '../../formatting';
-import { Schema, Func, AppGeneratorMode } from '../../structure';
+import { Schema, Func, AppGeneratorMode, AttrType } from '../../structure';
 
 export function SchemasToGoStructs(schemas: Schema[]): string {
   let funcs: Func[] = [];
@@ -41,7 +41,8 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
 }
 
 function generateTitleAndParams(f: Func) {
-  let params = Object.entries(groupBy(f.inputs, 'type'))
+  let relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
+  let params = Object.entries(groupBy(relevantInputs, 'type'))
     // .sort((a, b) => a[0].localeCompare(b[0]))
     // .map((e) => {
     //   e[1] = e[1].sort((a, b) => a.label.localeCompare(b.label));
@@ -58,17 +59,14 @@ function generateTitleAndParams(f: Func) {
 
 function generateFuncReturnStruct(f: Func) {
   let funcAttrs: string[] = [];
-  for (let i = 0; i < f.outputs.length; i++) {
-    const output = f.outputs[i];
-    let input = '';
-    if (f.inputs[i]) {
-      input = f.inputs[i].label;
-    } else {
-      input = output.type.includes('[]') ? output.type : 'nil';
+  for (const o of f.outputs) {
+    if (o.relatedInput === null) {
+      funcAttrs.push(`${TAB}${TAB}${o.label} : ${o.defaultValue},`);
+      continue;
     }
-
-    funcAttrs.push(`${TAB}${TAB}${output.label} : ${input},`);
+    funcAttrs.push(`${TAB}${TAB}${o.label} : ${o.relatedInput.label},`);
   }
+
   return funcAttrs;
 }
 
