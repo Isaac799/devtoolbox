@@ -22,10 +22,19 @@ export enum Cardinality {
 export class FuncIn {
   label: string;
   type: string;
+  validation?: Validation;
+  isNumerical: boolean;
 
-  constructor(l: string, t: string) {
+  constructor(
+    l: string,
+    t: string,
+    validation: Validation | undefined,
+    isNumerical: boolean
+  ) {
     this.label = l;
     this.type = t;
+    this.validation = validation;
+    this.isNumerical = isNumerical;
   }
 }
 
@@ -87,7 +96,7 @@ export class Func {
             relation,
             Cardinality.One
           );
-          inputs.push(new FuncIn(label, type));
+          inputs.push(new FuncIn(label, type, a.Validation, a.isNumerical()));
         }
 
         continue;
@@ -100,7 +109,7 @@ export class Func {
         Rel.SameTable,
         Cardinality.Self
       );
-      inputs.push(new FuncIn(label, type));
+      inputs.push(new FuncIn(label, type, a.Validation, a.isNumerical()));
     }
 
     return inputs;
@@ -373,6 +382,18 @@ export class Attribute {
       cc(this.Parent.Name, 'sk'),
       cc(this.Name, 'sk'),
     ].join('.');
+  }
+
+  isNumerical(): boolean {
+    return [
+      AttrType.DECIMAL,
+      AttrType.REAL,
+      AttrType.FLOAT,
+      AttrType.SERIAL,
+      AttrType.INT,
+      // AttrType.VARCHAR,
+      AttrType.MONEY,
+    ].includes(this.Type);
   }
 }
 
