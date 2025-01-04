@@ -168,7 +168,7 @@ export class Func {
             this.lang,
             relation,
             Cardinality.Many,
-            a.RefTo.FN
+            a.RefTo.Name
           );
           outputs.push(new FuncOut(label, type, null, defaultValue));
           // inputs.push(
@@ -204,7 +204,7 @@ export class Func {
             this.lang,
             relation,
             Cardinality.One,
-            tbl.FN
+            tbl.Name
           );
           outputs.push(new FuncOut(label, type, null, defaultValue));
 
@@ -779,17 +779,17 @@ function genLabelType(
 
   map.set(Lang.TS | Rel.SameTable | Cardinality.One, {
     label: cc(aL.Name, tsCase),
-    type: tsType + tsNullable,
+    type: tsType + ' | null',
     defaultValue: 'null',
   });
   map.set(Lang.TS | Rel.SameSchema | Cardinality.One, {
     label: cc(aL.PFN, tsCase),
-    type: tsType + tsNullable,
+    type: tsType + ' | null',
     defaultValue: 'null',
   });
   map.set(Lang.TS | Rel.DiffSchema | Cardinality.One, {
     label: cc(aL.FN, tsCase),
-    type: tsType + tsNullable,
+    type: tsType + ' | null',
     defaultValue: 'null',
   });
 
@@ -799,21 +799,21 @@ function genLabelType(
     label: overrideType
       ? tsOverrideTypeRelatedLabel
       : fixPluralGrammar(cc(aL.Name, tsCase) + 's'),
-    type: `Array<${tsType}>` + tsNullable,
+    type: `${tsType}[]` + tsNullable,
     defaultValue: '[]',
   });
   map.set(Lang.TS | Rel.SameSchema | Cardinality.Many, {
     label: overrideType
       ? tsOverrideTypeRelatedLabel
       : fixPluralGrammar(cc(aL.PFN, tsCase) + 's'),
-    type: `Array<${tsType}>` + tsNullable,
+    type: `${tsType}[]` + tsNullable,
     defaultValue: '[]',
   });
   map.set(Lang.TS | Rel.DiffSchema | Cardinality.Many, {
     label: overrideType
       ? tsOverrideTypeRelatedLabel
       : fixPluralGrammar(cc(aL.FN, tsCase) + 's'),
-    type: `Array<${tsType}>` + tsNullable,
+    type: `${tsType}[]` + tsNullable,
     defaultValue: '[]',
   });
 
@@ -855,17 +855,17 @@ function genLabelType(
 
   map.set(Lang.GO | Rel.SameTable | Cardinality.One, {
     label: cc(aL.Name, goCase),
-    type: io === 'in' ? goNullable + goType : goNullable + goType + '{}',
+    type: io === 'in' ? '*' + goType : '*' + goType,
     defaultValue: 'nil',
   });
   map.set(Lang.GO | Rel.SameSchema | Cardinality.One, {
     label: cc(aL.PFN, goCase),
-    type: io === 'in' ? goNullable + goType : goNullable + goType + '{}',
+    type: io === 'in' ? '*' + goType : '*' + goType,
     defaultValue: 'nil',
   });
   map.set(Lang.GO | Rel.DiffSchema | Cardinality.One, {
     label: cc(aL.FN, goCase),
-    type: io === 'in' ? goNullable + goType : goNullable + goType + '{}',
+    type: io === 'in' ? '*' + goType : '*' + goType,
     defaultValue: 'nil',
   });
 
@@ -875,21 +875,21 @@ function genLabelType(
     label: overrideType
       ? goOverrideTypeRelatedLabel
       : fixPluralGrammar(cc(aL.Name, goCase) + 's'),
-    type: '[]' + goType + '{}',
+    type: '[]' + goType,
     defaultValue: '[]' + goType + '{}',
   });
   map.set(Lang.GO | Rel.SameSchema | Cardinality.Many, {
     label: overrideType
       ? goOverrideTypeRelatedLabel
       : fixPluralGrammar(cc(aL.PFN, goCase) + 's'),
-    type: '[]' + goType + '{}',
+    type: '[]' + goType,
     defaultValue: '[]' + goType + '{}',
   });
   map.set(Lang.GO | Rel.DiffSchema | Cardinality.Many, {
     label: overrideType
       ? goOverrideTypeRelatedLabel
       : fixPluralGrammar(cc(aL.FN, goCase) + 's'),
-    type: '[]' + goType + '{}',
+    type: '[]' + goType,
     defaultValue: '[]' + goType + '{}',
   });
 
@@ -1005,7 +1005,7 @@ export const GenerateDefaultValue = (
         break;
       case AttrType.CHAR:
         if (d.length === 1) {
-          return `'${d}'`;
+          return `"${d}"`;
         }
         break;
       case AttrType.TIME:
@@ -1053,7 +1053,7 @@ export const GenerateDefaultValue = (
       case AttrType.BOOLEAN:
         return `${d}`;
       case AttrType.VARCHAR:
-        return `'${d.replaceAll("'", "''")}'`;
+        return `"${d.replaceAll('"', '\\"')}"`;
       case AttrType.MONEY:
         return `${d}`;
     }

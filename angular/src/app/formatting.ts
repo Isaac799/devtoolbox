@@ -149,12 +149,18 @@ const convertString = (
   str: string,
   toCase: 'sk' | 'pl' | 'cm' | 'up'
 ): string => {
-  // Remove spaces and dots and convert to lowercase
   let result = str
-    .replace(/[\s\.]+/g, ' ') // Replace spaces and dots with spaces for easier processing
-    .replace(/_/g, ' ') // Treat underscores as space
-    .split(' ') // Split into words
-    .map((word) => word.toLowerCase()) // Convert all words to lowercase
+    // Replace dots and multiple spaces with a single space
+    .replace(/[\s\.]+/g, ' ')
+    // Replace underscores with spaces (snake_case)
+    .replace(/_/g, ' ')
+    // Break PascalCase by adding a space before each uppercase letter (except the first one)
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    // Split into words based on spaces
+    .split(' ')
+    // Convert all words to lowercase
+    .map((word) => word.toLowerCase())
+    // Join the words back into a single string
     .join(' ');
 
   switch (toCase) {

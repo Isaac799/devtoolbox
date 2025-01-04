@@ -73,7 +73,7 @@ function generateFuncReturnStruct(f: Func) {
 function generateStructAttributes(f: Func) {
   let attrs: string[] = [];
   for (const e of f.outputs) {
-    attrs.push(`${TAB}${e.label} ~~${e.type} \`json:"${cc(e.label, 'sk')}"\``);
+    attrs.push(`${TAB}${e.label} ~~${e.relatedInput ? e.relatedInput.type : e.type} \`json:"${cc(e.label, 'sk')}"\``);
   }
   attrs = alignKeyword(attrs, '~~');
   attrs = attrs.map((e) => e.replace('~~', ''));
