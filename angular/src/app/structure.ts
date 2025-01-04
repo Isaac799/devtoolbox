@@ -545,6 +545,9 @@ function genLabelType(
   overrideType: string = ''
 ): { label: string; type: string } {
   let map = new Map<number, { label: string; type: string }>();
+  const isNullable =
+    aL.Validation?.Required ||
+    (aL.Option?.PrimaryKey && aL.Type !== AttrType.REFERENCE);
 
   //#region PostgreSQL
 
@@ -664,8 +667,7 @@ function genLabelType(
 
   //#region Typescript
 
-  const tsNullable =
-    aL.Validation?.Required || aL.Option?.PrimaryKey ? '' : ' | null';
+  const tsNullable = isNullable ? '' : ' | null';
   let tsType = overrideType ? cc(overrideType, 'pl') : SQL_TO_TS_TYPE[aT.Type];
   const tsCase = io === 'in' ? 'cm' : 'cm';
   const tsOverrideTypeRelatedLabel = fixPluralGrammar(
@@ -729,8 +731,8 @@ function genLabelType(
 
   //#region Go Lang
 
-  const goNullable =
-    aL.Validation?.Required || aL.Option?.PrimaryKey ? '' : '*';
+  const goNullable = isNullable ? '' : '*';
+
   let goType = overrideType
     ? cc(overrideType, 'pl')
     : SQL_TO_GO_TYPE[aT.Type] || SQL_TO_GO_TYPE[aL.Type];
@@ -760,15 +762,15 @@ function genLabelType(
 
   map.set(Lang.GO | Rel.SameTable | Cardinality.One, {
     label: cc(aL.Name, goCase),
-    type: io === 'in' ? goType : goNullable + goType + '{}',
+    type: io === 'in' ? goNullable + goType : goNullable + goType + '{}',
   });
   map.set(Lang.GO | Rel.SameSchema | Cardinality.One, {
     label: cc(aL.PFN, goCase),
-    type: io === 'in' ? goType : goNullable + goType + '{}',
+    type: io === 'in' ? goNullable + goType : goNullable + goType + '{}',
   });
   map.set(Lang.GO | Rel.DiffSchema | Cardinality.One, {
     label: cc(aL.FN, goCase),
-    type: io === 'in' ? goType : goNullable + goType + '{}',
+    type: io === 'in' ? goNullable + goType : goNullable + goType + '{}',
   });
 
   //    -    -
