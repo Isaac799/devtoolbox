@@ -14,6 +14,7 @@ import {
   AppComplexityMode,
   AttributeSuggestion,
   AppGeneratorMode,
+  validationMap,
 } from '../structure';
 import {
   AbstractControl,
@@ -24,7 +25,6 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { validationMap } from '../constants';
 import { MinMaxRelevantPipe } from '../pipes/min-max-relevant.pipe';
 import { ModalComponent } from '../modal/modal.component';
 import { CommonModule } from '@angular/common';

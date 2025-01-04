@@ -272,7 +272,7 @@ export class Func {
       [Lang.PGSQL]: cc(this.table.Name, 'sk'),
       [Lang.TSQL]: cc(this.table.Name, 'sk'),
       [Lang.GO]: cc(this.table.Name, 'pl'),
-      [Lang.TS]: cc(this.table.Name, 'cm'),
+      [Lang.TS]: cc(this.table.Name, 'pl'),
     };
     return map[this.lang];
   }
@@ -910,14 +910,384 @@ function genLabelType(
     };
   }
 
-  let def = aL.Option?.Default;
-  if (def && aL.Type !== AttrType.REFERENCE) {
-    if ([AttrType.VARCHAR, AttrType.CHAR].includes(aL.Type)) {
-      def = `'${def.replaceAll("'", "''")}'`;
-    }
-    // todo better default handling
+  let def = GenerateDefaultValue(aL, lang);
+  if (def) {
     answer.defaultValue = def;
+    return answer;
   }
 
   return answer;
 }
+
+export const GenerateDefaultValue = (
+  a: Attribute,
+  lang: Lang
+): string | null => {
+  let d = a.Option?.Default;
+
+  if (!d) {
+    return null;
+  }
+
+  let validFn = validationMap.get(a.Type);
+  if (!validFn) {
+    return null;
+  }
+
+  let valid = validFn(d);
+  if (!valid) {
+    return null;
+  }
+
+  if ([Lang.PGSQL, Lang.TSQL].includes(lang)) {
+    switch (a.Type) {
+      case AttrType.CHAR:
+        return `'${d.replaceAll("'", "''")}'`;
+      case AttrType.VARCHAR:
+        return `'${d.replaceAll("'", "''")}'`;
+      default:
+        return `${d}`;
+    }
+  }
+
+  if (lang === Lang.GO) {
+    function getMonthString(month: string): string {
+      const months: { [key: string]: string } = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '01': 'January',
+        '02': 'February',
+        '03': 'March',
+        '04': 'April',
+        '05': 'May',
+        '06': 'June',
+        '07': 'July',
+        '08': 'August',
+        '09': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+      };
+
+      const monthName = months[month];
+
+      if (monthName) {
+        return `time.${monthName}`;
+      } else {
+        return 'Invalid month';
+      }
+    }
+
+    switch (a.Type) {
+      case AttrType.BIT:
+        return `${d}`;
+      case AttrType.DATE:
+        {
+          let s = d.split('-');
+          if (s.length === 3) {
+            // Parameters: year, month, day, hour, minute, second, nanosecond
+            return `time.Date(${s[0]}, ${getMonthString(s[1])}, ${
+              s[2]
+            }, 0, 0, 0, 0, time.UTC)`;
+          } else if (d === 'CURRENT_DATE') {
+            return `time.Now()`;
+          } else if (d === 'NOW()') {
+            return `time.Now()`;
+          }
+        }
+        break;
+      case AttrType.CHAR:
+        if (d.length === 1) {
+          return `'${d}'`;
+        }
+        break;
+      case AttrType.TIME:
+        {
+          let s = d.split(':');
+          if (s.length === 3) {
+            // Parameters: year, month, day, hour, minute, second, nanosecond
+            return `time.Date(1, 1, 1, ${s[0]}, ${s[1]}, ${s[2]}, 0, time.UTC)`;
+          } else if (d === 'CURRENT_TIME') {
+            return `time.Now()`;
+          } else if (d === 'NOW()') {
+            return `time.Now()`;
+          }
+        }
+        return `${d}`;
+      case AttrType.TIMESTAMP:
+        {
+          let s = d.split(' ');
+          if (s.length === 2) {
+            let date = s[0].split('-');
+            let time = s[1].split(':');
+            if (date.length === 3 && time.length === 3) {
+              // Parameters: year, month, day, hour, minute, second, nanosecond
+              return `time.Date(${date[0]}, ${getMonthString(date[1])}, ${
+                date[2]
+              }, ${time[0]}, ${time[1]}, ${time[2]}, 0, time.UTC)`;
+            }
+          } else if (d === 'CURRENT_TIMESTAMP') {
+            return `time.Now()`;
+          } else if (d === 'NOW()') {
+            return `time.Now()`;
+          }
+        }
+        return `${d}`;
+      case AttrType.DECIMAL:
+        return `${d}`;
+      case AttrType.REAL:
+        return `${d}`;
+      case AttrType.FLOAT:
+        return `${d}`;
+      case AttrType.SERIAL:
+        return `${d}`;
+      case AttrType.INT:
+        return `${d}`;
+      case AttrType.BOOLEAN:
+        return `${d}`;
+      case AttrType.VARCHAR:
+        return `'${d.replaceAll("'", "''")}'`;
+      case AttrType.MONEY:
+        return `${d}`;
+    }
+  }
+
+  if (lang === Lang.TS) {
+    function getMonthString(month: string): string {
+      const months: { [key: string]: string } = {
+        '1': '0',
+        '2': '1',
+        '3': '2',
+        '4': '3',
+        '5': '4',
+        '6': '5',
+        '7': '6',
+        '8': '7',
+        '9': '8',
+        '01': '0',
+        '02': '1',
+        '03': '2',
+        '04': '3',
+        '05': '4',
+        '06': '5',
+        '07': '6',
+        '08': '7',
+        '09': '8',
+        '10': '9',
+        '11': '10',
+        '12': '11',
+      };
+
+      const monthName = months[month];
+
+      if (monthName) {
+        return `time.${monthName}`;
+      } else {
+        return 'Invalid month';
+      }
+    }
+
+    switch (a.Type) {
+      case AttrType.BIT:
+        return `${d}`;
+      case AttrType.DATE:
+        {
+          let s = d.split('-');
+          if (s.length === 3) {
+            // const specificDate = new Date(Date.UTC(2021, 0, 1, 10, 45, 22, 0)); // January 1, 2021, 10:45:22 UTC
+            return `new Date(Date.UTC(${s[0]}, ${getMonthString(s[1])}, ${
+              s[2]
+            }, 0, 0, 0, 0))`;
+          } else if (d === 'CURRENT_DATE') {
+            return `new Date()`;
+          } else if (d === 'NOW()') {
+            return `new Date()`;
+          }
+        }
+        break;
+      case AttrType.CHAR:
+        if (d.length === 1) {
+          return `'${d}'`;
+        }
+        break;
+      case AttrType.TIME:
+        {
+          let s = d.split(':');
+          if (s.length === 3) {
+            // const specificDate = new Date(Date.UTC(2021, 0, 1, 10, 45, 22, 0)); // January 1, 2021, 10:45:22 UTC
+            return `new Date(Date.UTC(1970, 0, 1, ${s[0]}, ${s[1]}, ${s[2]}, 0))`;
+          } else if (d === 'CURRENT_TIME') {
+            return `new Date()`;
+          } else if (d === 'NOW()') {
+            return `new Date()`;
+          }
+        }
+        return `${d}`;
+      case AttrType.TIMESTAMP:
+        {
+          let s = d.split(' ');
+          if (s.length === 2) {
+            let date = s[0].split('-');
+            let time = s[1].split(':');
+            if (date.length === 3 && time.length === 3) {
+              // Parameters: year, month, day, hour, minute, second, nanosecond
+              return `new Date(Date.UTC(${date[0]}, ${getMonthString(
+                date[1]
+              )}, ${date[2]}, ${time[0]}, ${time[1]}, ${time[2]}, 0))`;
+            }
+          } else if (d === 'CURRENT_TIMESTAMP') {
+            return `new Date()`;
+          } else if (d === 'NOW()') {
+            return `new Date()`;
+          }
+        }
+        return `${d}`;
+      case AttrType.DECIMAL:
+        return `${d}`;
+      case AttrType.REAL:
+        return `${d}`;
+      case AttrType.FLOAT:
+        return `${d}`;
+      case AttrType.SERIAL:
+        return `${d}`;
+      case AttrType.INT:
+        return `${d}`;
+      case AttrType.BOOLEAN:
+        return `${d}`;
+      case AttrType.VARCHAR:
+        return `'${d.replaceAll("'", "''")}'`;
+      case AttrType.MONEY:
+        return `${d}`;
+    }
+  }
+
+  return null;
+};
+
+export const validationMap = new Map<AttrType, (x: string) => boolean>();
+const validationMapPatterns = {
+  date: /^\d{4}-\d{2}-\d{2}$/,
+  time: /^([01]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/,
+  timestamp: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
+  decimal: /^-?\d+(\.\d+)?$/,
+  real: /^-?\d+(\.\d+)?$/,
+  float: /^-?\d+(\.\d+)?$/,
+  serial: /^[1-9]\d*$/,
+  integer: /^-?\d+$/,
+  boolean: /^(true|false)$/i,
+  varchar: /^.*$/,
+  money: /^-?\d+(\.\d{1,2})?$/,
+};
+
+const isSpecialValue = (x: string, specialValues: string[]): boolean => {
+  return specialValues.includes(x.toUpperCase());
+};
+
+const matchesRegex = (x: string, regex: RegExp): boolean => {
+  return regex.test(x);
+};
+
+// Function to get special values for each attribute type
+const getSpecialValues = (attrType: AttrType): string[] => {
+  switch (attrType) {
+    case AttrType.DATE:
+      return ['CURRENT_DATE', 'NOW()'];
+    case AttrType.TIME:
+      return ['CURRENT_TIME', 'NOW()'];
+    case AttrType.TIMESTAMP:
+      return ['CURRENT_TIMESTAMP', 'NOW()'];
+    default:
+      return [];
+  }
+};
+
+validationMap.set(AttrType.BIT, (x: string) => ['1', '0'].includes(x));
+validationMap.set(AttrType.DATE, (x: string) => {
+  const specialValues = getSpecialValues(AttrType.DATE);
+  if (isSpecialValue(x, specialValues)) return true;
+  return matchesRegex(x, validationMapPatterns.date);
+});
+validationMap.set(AttrType.CHAR, (x: string) => x.length === 1);
+validationMap.set(AttrType.TIME, (x: string) => {
+  const specialValues = getSpecialValues(AttrType.TIME);
+  if (isSpecialValue(x, specialValues)) return true;
+  return matchesRegex(x, validationMapPatterns.time);
+});
+
+validationMap.set(AttrType.TIMESTAMP, (x: string) => {
+  const specialValues = getSpecialValues(AttrType.TIMESTAMP);
+  if (isSpecialValue(x, specialValues)) return true;
+  return matchesRegex(x, validationMapPatterns.timestamp);
+});
+
+validationMap.set(AttrType.DECIMAL, (x: string) =>
+  matchesRegex(x, validationMapPatterns.decimal)
+);
+validationMap.set(AttrType.REAL, (x: string) =>
+  matchesRegex(x, validationMapPatterns.real)
+);
+validationMap.set(AttrType.FLOAT, (x: string) =>
+  matchesRegex(x, validationMapPatterns.float)
+);
+validationMap.set(AttrType.SERIAL, (x: string) =>
+  matchesRegex(x, validationMapPatterns.serial)
+);
+validationMap.set(AttrType.INT, (x: string) =>
+  matchesRegex(x, validationMapPatterns.integer)
+);
+validationMap.set(AttrType.BOOLEAN, (x: string) =>
+  matchesRegex(x, validationMapPatterns.boolean)
+);
+validationMap.set(AttrType.VARCHAR, (x: string) => typeof x === 'string');
+validationMap.set(AttrType.MONEY, (x: string) =>
+  matchesRegex(x, validationMapPatterns.money)
+);
+
+export const defaultValueValidatorHintMap = new Map<AttrType, string>();
+defaultValueValidatorHintMap.set(AttrType.BIT, "'0' or '1'");
+defaultValueValidatorHintMap.set(
+  AttrType.DATE,
+  "YYYY-MM-DD, 'CURRENT_DATE', or 'NOW()'"
+);
+defaultValueValidatorHintMap.set(
+  AttrType.CHAR,
+  'A fixed length string (e.g., 1 character)'
+);
+defaultValueValidatorHintMap.set(
+  AttrType.TIME,
+  "HH:MM:SS, 'CURRENT_TIME', or 'NOW()'"
+);
+defaultValueValidatorHintMap.set(
+  AttrType.TIMESTAMP,
+  "YYYY-MM-DD HH:MM:SS, 'CURRENT_TIMESTAMP', or 'NOW()'"
+);
+defaultValueValidatorHintMap.set(
+  AttrType.DECIMAL,
+  'A decimal point (e.g., 123.45, -12.3)'
+);
+defaultValueValidatorHintMap.set(
+  AttrType.REAL,
+  'A real number (e.g., 123.45, -12.3)'
+);
+defaultValueValidatorHintMap.set(
+  AttrType.FLOAT,
+  'A floating-point number (e.g., 123.45, -12.3)'
+);
+defaultValueValidatorHintMap.set(AttrType.SERIAL, 'A positive integer');
+defaultValueValidatorHintMap.set(
+  AttrType.INT,
+  'Integer value (e.g., -123, 456)'
+);
+defaultValueValidatorHintMap.set(AttrType.BOOLEAN, "'true' or 'false'");
+defaultValueValidatorHintMap.set(AttrType.VARCHAR, 'Any string is acceptable');
+defaultValueValidatorHintMap.set(
+  AttrType.MONEY,
+  "Money: e.g., '12.34', or '-12.34'"
+);

@@ -1,6 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { AttrType } from '../structure';
-import { defaultValueValidatorHintMap } from '../constants';
+import { AttrType, defaultValueValidatorHintMap } from '../structure';
 
 const none = 'No hint available for this type.';
 
