@@ -1,69 +1,90 @@
-type PublicUser = {
-    userID       : number
-    userName     : string
-    publicProfile: PublicProfile | null
-    publicBabies : PublicBaby[]  | null
-    internalGame : InternalGame  | null
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  userProfile: Profile | null;
+  listingItems: Array<Item>;
+  financePurchaseItems: Array<Item>;
 }
 
-function newPublicUser (userID: number, userName: string): PublicUser {
-    return {
-        userID,
-        userName,
-        publicProfile: null,
-        publicBabies : null,
-        internalGame : null,
-    }
+function NewUser(name: string, email: string): User {
+  return {
+    id: 0,
+    name: name,
+    email: email,
+    userProfile: null,
+    listingItems: [],
+    financePurchaseItems: [],
+  };
 }
 
-type PublicProfile = {
-    profileID        : number
-    profileBio       : string
-    publicProfileUser: number
+interface Profile {
+  userID: number | null;
+  bio: string | null;
+  status: string;
 }
 
-function newPublicProfile (profileID: number, profileBio: string, publicProfileUser: number): PublicProfile {
-    return {
-        profileID,
-        profileBio,
-        publicProfileUser,
-    }
+function NewProfile(profileUser: number | null, bio: string | null): Profile {
+  return {
+    userID: profileUser,
+    bio: bio,
+    status: "z",
+  };
 }
 
-type PublicBaby = {
-    babyID     : number
-    babyTitle  : string
-    publicUsers: PublicUser[] | null
+interface Item {
+  id: number;
+  description: string;
+  listingUsers: Array<User>;
+  financePurchaseUsers: Array<User>;
 }
 
-function newPublicBaby (babyID: number, babyTitle: string): PublicBaby {
-    return {
-        babyID,
-        babyTitle,
-        publicUsers: null,
-    }
+function NewItem(description: string): Item {
+  return {
+    id: 0,
+    description: description,
+    listingUsers: [],
+    financePurchaseUsers: [],
+  };
 }
 
-type PublicUserPost = {
-    publicUserPostUser: number
-    publicUserPostPost: number
+interface Listing {
+  userID: number | null;
+  itemID: number | null;
+  insertedAt: Date;
+  sold: boolean;
 }
 
-function newPublicUserPost (publicUserPostUser: number, publicUserPostPost: number): PublicUserPost {
-    return {
-        publicUserPostUser,
-        publicUserPostPost,
-    }
+function NewListing(
+  listingListee: number | null,
+  listingItem: number | null
+): Listing {
+  return {
+    userID: listingListee,
+    itemID: listingItem,
+    insertedAt: new Date(),
+    sold: false,
+  };
 }
 
-type InternalGame = {
-    internalGamePlayers: number
-    gameGold           : number
+interface Purchase {
+  publicUserID: number | null;
+  publicItemID: number | null;
+  when: Date;
+  amount: number;
+  status: string;
 }
 
-function newInternalGame (internalGamePlayers: number, gameGold: number): InternalGame {
-    return {
-        internalGamePlayers,
-        gameGold,
-    }
+function NewPurchase(
+  financePurchasePayer: number | null,
+  financePurchaseWhat: number | null,
+  amount: number
+): Purchase {
+  return {
+    publicUserID: financePurchasePayer,
+    publicItemID: financePurchaseWhat,
+    when: new Date(),
+    amount: amount,
+    status: "p",
+  };
 }

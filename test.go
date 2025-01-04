@@ -1,57 +1,87 @@
-package devtoolboxorg
+package animalTest
 
-type User struct {
-	ID      int      `json:"id"`
-	Name    string   `json:"name"`
-	Profile *Profile `json:"profile"`
-	Posts   []Post   `json:"posts"`
+import "time"
+
+type User = struct {
+	ID                   int      `json:"id"`
+	Name                 string   `json:"name"`
+	Email                string   `json:"email"`
+	UserProfile          *Profile `json:"userprofile"`
+	ListingItems         []Item   `json:"listingitems"`
+	FinancePurchaseItems []Item   `json:"financepurchaseitems"`
 }
 
-func NewUser(id int, name string) *User {
+func NewUser(name, email string) *User {
 	return &User{
-		ID:      id,
-		Name:    name,
-		Profile: nil,
-		Posts:   []Post{},
+		ID:                   0,
+		Name:                 name,
+		Email:                email,
+		UserProfile:          nil,
+		ListingItems:         []Item{},
+		FinancePurchaseItems: []Item{},
 	}
 }
 
-type Profile struct {
-	ID     int    `json:"id"`
-	Bio    string `json:"bio"`
-	UserID int    `json:"user_id"`
+type Profile = struct {
+	UserID *int    `json:"userid"`
+	Bio    *string `json:"bio"`
+	Status string  `json:"status"`
 }
 
-func NewProfile(id int, bio string, userID int) *Profile {
+func NewProfile(profileUser *int, bio *string) *Profile {
 	return &Profile{
-		ID:     id,
+		UserID: profileUser,
 		Bio:    bio,
-		UserID: userID,
+		Status: "z",
 	}
 }
 
-type Post struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
-	Users []User `json:"users"`
+type Item = struct {
+	ID                   int    `json:"id"`
+	Description          string `json:"description"`
+	ListingUsers         []User `json:"listingusers"`
+	FinancePurchaseUsers []User `json:"financepurchaseusers"`
 }
 
-func NewPost(id int, title string) *Post {
-	return &Post{
-		ID:    id,
-		Title: title,
-		Users: []User{},
+func NewItem(description string) *Item {
+	return &Item{
+		ID:                   0,
+		Description:          description,
+		ListingUsers:         []User{},
+		FinancePurchaseUsers: []User{},
 	}
 }
 
-type UserPost struct {
-	UserID int `json:"user_id"`
-	PostID int `json:"post_id"`
+type Listing = struct {
+	UserID     *int      `json:"userid"`
+	ItemID     *int      `json:"itemid"`
+	InsertedAt time.Time `json:"insertedat"`
+	Sold       bool      `json:"sold"`
 }
 
-func NewUserPost(userID int, postID int) *UserPost {
-	return &UserPost{
-		UserID: userID,
-		PostID: postID,
+func NewListing(listingListee, listingItem *int) *Listing {
+	return &Listing{
+		UserID:     listingListee,
+		ItemID:     listingItem,
+		InsertedAt: time.Now(),
+		Sold:       false,
+	}
+}
+
+type Purchase = struct {
+	PublicUserID *int      `json:"publicuserid"`
+	PublicItemID *int      `json:"publicitemid"`
+	When         time.Time `json:"when"`
+	Amount       float64   `json:"amount"`
+	Status       string    `json:"status"`
+}
+
+func NewPurchase(financePurchasePayer, financePurchaseWhat *int, amount float64) *Purchase {
+	return &Purchase{
+		PublicUserID: financePurchasePayer,
+		PublicItemID: financePurchaseWhat,
+		When:         time.Now(),
+		Amount:       amount,
+		Status:       "p",
 	}
 }
