@@ -62,6 +62,9 @@ export class Func {
     let inputs: FuncIn[] = [];
 
     for (const a of this.table.Attributes) {
+      if (a.Option?.SystemField) {
+        continue;
+      }
       if (a.RefTo) {
         for (const ra of a.RefTo.Attributes) {
           if (!ra.Option?.PrimaryKey) continue;
@@ -293,6 +296,7 @@ export type AttributeOptions = {
   PrimaryKey?: boolean;
   Unique?: boolean;
   Default?: string;
+  SystemField?: boolean;
 };
 
 // Attribute represents an individual attribute of a table

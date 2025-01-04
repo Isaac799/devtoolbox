@@ -185,6 +185,7 @@ export class GuiEditorComponent implements OnInit {
     // Unique: new FormControl<string[]>([], [Validators.required]),
     Unique: new FormControl(false, []),
     Default: new FormControl('', []),
+    SystemField: new FormControl(false, []),
     Required: new FormControl(true, []),
     ReferenceTo: new FormControl<Table | null>(null, []),
     Min: new FormControl(0, []),
@@ -197,6 +198,7 @@ export class GuiEditorComponent implements OnInit {
       Type: AttrType.SERIAL,
       Option: {
         PrimaryKey: true,
+        SystemField: true,
       },
     },
     {
@@ -218,6 +220,7 @@ export class GuiEditorComponent implements OnInit {
       Option: {
         PrimaryKey: false,
         Default: 'CURRENT_TIMESTAMP',
+        SystemField: true,
       },
     },
     {
@@ -226,6 +229,7 @@ export class GuiEditorComponent implements OnInit {
       Option: {
         PrimaryKey: false,
         Default: 'CURRENT_TIMESTAMP',
+        SystemField: true,
       },
     },
     {
@@ -416,6 +420,9 @@ export class GuiEditorComponent implements OnInit {
       if (a.Option.Default !== undefined) {
         c.Default.setValue(a.Option.Default);
       }
+      if (a.Option.SystemField !== undefined) {
+        c.SystemField.setValue(a.Option.SystemField);
+      }
     }
     if (a.Validation) {
       if (a.Validation.Required !== undefined) {
@@ -482,6 +489,11 @@ export class GuiEditorComponent implements OnInit {
           sa.Option.Default = c.Default.value;
         } else {
           sa.Option.Default = undefined;
+        }
+        if (c.SystemField.value !== null) {
+          sa.Option.SystemField = c.SystemField.value;
+        } else {
+          sa.Option.SystemField = undefined;
         }
       } else {
         sa.Option = undefined;
