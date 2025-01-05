@@ -13,7 +13,6 @@ import {
   Attribute,
   AppComplexityMode,
   AttributeSuggestion,
-  AppGeneratorMode,
   validationMap,
 } from '../structure';
 import {
@@ -46,8 +45,63 @@ import { DefaultValueHintPipe } from '../pipes/default-value-hint.pipe';
   styleUrl: './gui-editor.component.scss',
 })
 export class GuiEditorComponent implements OnInit {
+  draggingAttribute: Attribute | null = null;
+  hoveredTable: Table | null = null;
+
   get isReference(): boolean {
     return this.attributeForm.controls.Type.value === AttrType.REFERENCE;
+  }
+
+  clearIfNeeded() {
+    this.draggingAttribute = null;
+  }
+
+  attrMouseDown(x: Attribute) {
+    this.draggingAttribute = x;
+  }
+
+  attrMouseUp() {
+    if (!this.hoveredTable) {
+      return;
+    }
+
+    let a = this.draggingAttribute;
+
+    if (!a) {
+      console.log('exit: no dragging attr');
+      return;
+    }
+
+    if (this.hoveredTable.ID === a.Parent.ID) {
+      this.draggingAttribute = null;
+      console.log('exit: matching drag id to parent');
+      return;
+    }
+
+    let newAttr = new Attribute(this.serial, a.Name, a.Type, this.hoveredTable);
+
+    if (a.Option) {
+      newAttr.Option = { ...a.Option };
+    }
+    if (a.RefTo) {
+      newAttr.RefTo = a.RefTo;
+    }
+    if (a.Validation) {
+      newAttr.Validation = a.Validation;
+    }
+
+    let index = a.Parent.Attributes.findIndex((e) => e.ID === a.ID);
+    if (index === -1) {
+      return;
+    }
+    a.Parent.Attributes.splice(index, 1);
+
+    this.hoveredTable.Attributes.push(newAttr);
+
+    this.serial += 1;
+
+    this.data.ReloadAndSave();
+    this.cdr.detectChanges();
   }
 
   showModalSchema: boolean = false;

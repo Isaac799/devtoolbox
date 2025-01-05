@@ -1,4 +1,4 @@
-<div class="fc p-2">
+<div class="fc p-2" (mouseup)="clearIfNeeded()">
   @for (s of data.schemas; track $index) {
   <!-- Schema -->
   <div class="fc">
@@ -15,8 +15,13 @@
       @for (t of s.Tables; track $index) {
       <!-- Table -->
       <div
+        (mouseover)="hoveredTable = t"
         class="fr align-center g-1 hover-highlight"
         (click)="doShowModalTable(s, t)"
+        [ngClass]="{
+          'blink': draggingAttribute !== null
+        }"
+        (mouseup)="attrMouseUp()"
       >
         <span class="title-2 primary-text">
           {{ t.Name }}
@@ -28,6 +33,7 @@
         <div
           class="fr align-center g-1  hover-highlight"
           (click)="doShowModalAttribute(s, t, a)"
+          (mousedown)="attrMouseDown(a)"
         >
           <span>
             {{ a.Name }}
