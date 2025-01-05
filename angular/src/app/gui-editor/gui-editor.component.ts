@@ -45,8 +45,10 @@ import { DefaultValueHintPipe } from '../pipes/default-value-hint.pipe';
   styleUrl: './gui-editor.component.scss',
 })
 export class GuiEditorComponent implements OnInit {
+  draggingTable: Table | null = null;
   draggingAttribute: Attribute | null = null;
   hoveredTable: Table | null = null;
+  hoveredSchema: Schema | null = null;
 
   get isReference(): boolean {
     return this.attributeForm.controls.Type.value === AttrType.REFERENCE;
@@ -54,6 +56,7 @@ export class GuiEditorComponent implements OnInit {
 
   clearIfNeeded() {
     this.draggingAttribute = null;
+    this.draggingTable = null;
   }
 
   attrMouseDown(x: Attribute) {
@@ -78,7 +81,26 @@ export class GuiEditorComponent implements OnInit {
       return;
     }
 
-    let newAttr = new Attribute(this.serial, a.Name, a.Type, this.hoveredTable);
+    let newAttr = this.cloneAttrToNewParent(a, this.hoveredTable);
+
+    let index = a.Parent.Attributes.findIndex((e) => e.ID === a.ID);
+    if (index === -1) {
+      return;
+    }
+    a.Parent.Attributes.splice(index, 1);
+
+    this.hoveredTable.Attributes.push(newAttr);
+
+    this.draggingAttribute = null;
+
+    this.serial += 1;
+
+    this.data.ReloadAndSave();
+    this.cdr.detectChanges();
+  }
+
+  cloneAttrToNewParent(a: Attribute, t: Table) {
+    let newAttr = new Attribute(this.serial, a.Name, a.Type, t);
 
     if (a.Option) {
       newAttr.Option = { ...a.Option };
@@ -90,13 +112,72 @@ export class GuiEditorComponent implements OnInit {
       newAttr.Validation = a.Validation;
     }
 
-    let index = a.Parent.Attributes.findIndex((e) => e.ID === a.ID);
+    return newAttr;
+  }
+
+  tblMouseDown(x: Table) {
+    this.draggingTable = x;
+  }
+
+  tblMouseUp() {
+    if (!this.hoveredSchema) {
+      return;
+    }
+
+    let t = this.draggingTable;
+
+    if (!t) {
+      return;
+    }
+
+    if (this.hoveredSchema.ID === t.Parent.ID) {
+      this.draggingTable = null;
+      return;
+    }
+
+    let newTbl = new Table(this.serial, t.Name, this.hoveredSchema);
+
+    if (t.RefBy) {
+      newTbl.RefBy = [...t.RefBy];
+    }
+
+    for (const a of t.Attributes) {
+      let newAttr = this.cloneAttrToNewParent(a, newTbl);
+      newTbl.Attributes.push(newAttr);
+    }
+
+    let index = t.Parent.Tables.findIndex((e) => e.ID === t.ID);
     if (index === -1) {
       return;
     }
-    a.Parent.Attributes.splice(index, 1);
 
-    this.hoveredTable.Attributes.push(newAttr);
+    t.Parent.Tables.splice(index, 1);
+
+    this.hoveredSchema.Tables.push(newTbl);
+
+    for (const sch of this.data.schemas) {
+      for (const tbl of sch.Tables) {
+        for (const attr of tbl.Attributes) {
+          if (!attr.RefTo) {
+            continue;
+          }
+          if (attr.RefTo.ID === t.ID) {
+            attr.RefTo = newTbl;
+          }
+        }
+
+        if (!tbl.RefBy) continue;
+
+        for (let i = 0; i < tbl.RefBy.length; i++) {
+          const refTbl = tbl.RefBy[i];
+          if (refTbl.ID === t.ID) {
+            tbl.RefBy[i] = newTbl;
+          }
+        }
+      }
+    }
+
+    this.draggingTable = null;
 
     this.serial += 1;
 

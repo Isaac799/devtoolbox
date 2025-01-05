@@ -1,10 +1,18 @@
-<div class="fc p-2" (mouseup)="clearIfNeeded()">
+<div
+  class="fc p-2"
+  (mouseup)="clearIfNeeded()"
+>
   @for (s of data.schemas; track $index) {
   <!-- Schema -->
   <div class="fc">
     <div
       class="fr align-center g-1 hover-highlight"
       (click)="doShowModalSchema(s)"
+      (mouseover)="hoveredSchema = s"
+      [ngClass]="{
+        'blink': draggingTable !== null
+      }"
+      (mouseup)="tblMouseUp()"
     >
       <span class="title-1 success-text">
         {{ s.Name }}
@@ -22,6 +30,7 @@
           'blink': draggingAttribute !== null
         }"
         (mouseup)="attrMouseUp()"
+        (mousedown)="tblMouseDown(t)"
       >
         <span class="title-2 primary-text">
           {{ t.Name }}
