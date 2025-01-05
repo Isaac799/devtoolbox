@@ -1,6 +1,13 @@
 import { TAB } from '../../constants';
 import { cc, alignKeyword, alignKeywords } from '../../formatting';
-import { Table, AttrType, Schema, Attribute } from '../../structure';
+import {
+  Table,
+  AttrType,
+  Schema,
+  Attribute,
+  GenerateDefaultValue,
+  Lang,
+} from '../../structure';
 
 export function SchemasToPostgreSQL(schemas: Schema[]): string {
   let drops: string[] = [];
@@ -156,12 +163,10 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
     let attrLine = [`${cc(name, 'sk')} ${type}`];
 
     if (a.Option?.Default) {
-      let def = a.Option.Default;
-      if ([AttrType.VARCHAR, AttrType.CHAR].includes(a.Type)) {
-        def = `'${def.replaceAll("'", "''")}'`;
+      let def = GenerateDefaultValue(a, Lang.PGSQL);
+      if (def !== null) {
+        attrLine.push(`DEFAULT ${def}`);
       }
-      // todo better default handling
-      attrLine.push(`DEFAULT ${def}`);
     }
     if (a.Validation?.Required) {
       attrLine.push(`NOT NULL`);

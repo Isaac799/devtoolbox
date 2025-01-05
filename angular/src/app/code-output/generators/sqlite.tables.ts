@@ -6,6 +6,8 @@ import {
   Schema,
   Attribute,
   SQL_TO_SQL_LITE_TYPE,
+  GenerateDefaultValue,
+  Lang,
 } from '../../structure';
 import { GenerateUniqueAttributes } from './pgsql.tables';
 
@@ -139,12 +141,10 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
     let attrLine = [`${cc(name, 'sk')} ${type}`];
 
     if (a.Option?.Default) {
-      let def = a.Option.Default;
-      if ([AttrType.VARCHAR, AttrType.CHAR].includes(a.Type)) {
-        def = `'${def.replaceAll("'", "''")}'`;
+      let def = GenerateDefaultValue(a, Lang.SQLite);
+      if (def !== null) {
+        attrLine.push(`DEFAULT ${def}`);
       }
-      // todo better default handling
-      attrLine.push(`DEFAULT ${def}`);
     }
     if (a.Validation?.Required) {
       attrLine.push(`NOT NULL`);

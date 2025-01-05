@@ -1080,12 +1080,73 @@ export const GenerateDefaultValue = (
     return null;
   }
 
+  if (d.toUpperCase() === 'NOW()') {
+    d = 'NOW()';
+  }
+
+  if (d.toUpperCase() === 'CURRENT_DATE') {
+    d = 'CURRENT_DATE';
+  }
+
+  if (d.toUpperCase() === 'CURRENT_TIME') {
+    d = 'CURRENT_TIME';
+  }
+
+  if (d.toUpperCase() === 'CURRENT_TIMESTAMP') {
+    d = 'CURRENT_TIMESTAMP';
+  }
+
   if ([Lang.PGSQL, Lang.TSQL].includes(lang)) {
     switch (a.Type) {
       case AttrType.CHAR:
         return `'${d.replaceAll("'", "''")}'`;
       case AttrType.VARCHAR:
         return `'${d.replaceAll("'", "''")}'`;
+      default:
+        return `${d}`;
+    }
+  }
+
+  if (lang === Lang.SQLite) {
+    switch (a.Type) {
+      case AttrType.CHAR:
+        return `'${d.replaceAll("'", "''")}'`;
+      case AttrType.VARCHAR:
+        return `'${d.replaceAll("'", "''")}'`;
+      case AttrType.DATE:
+        {
+          let s = d.split('-');
+          if (d === 'NOW()') {
+            return `CURRENT_DATE`;
+          } else if (s.length === 3) {
+            return `'${d}'`;
+          }
+        }
+        break;
+      case AttrType.TIME:
+        {
+          let t = d.split(':');
+          if (d === 'NOW()') {
+            return `CURRENT_TIME`;
+          } else if (t.length === 3) {
+            return `'${d}'`;
+          }
+        }
+        break;
+      case AttrType.TIMESTAMP:
+        {
+          let s = d.split(' ');
+          if (d === 'NOW()') {
+            return `CURRENT_TIMESTAMP`;
+          } else if (s.length === 2) {
+            let dt = s[0].split('-');
+            let t = s[1].split(':');
+            if (dt.length === 3 && t.length === 3) {
+              return `'${d}'`;
+            }
+          }
+        }
+        break;
       default:
         return `${d}`;
     }
