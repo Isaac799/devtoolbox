@@ -30,7 +30,7 @@ function generateSqlFns(t: Table) {
   let whereAND = [];
 
   let useI = new UseI();
-  useI.increment(t);
+  useI.increment(t, true);
 
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue;
