@@ -66,7 +66,7 @@ export class GuiEditorComponent implements OnInit {
     this.draggingTable = null;
     this.draggingTableIndex = -1;
     this.draggingAttributeIndex = -1;
-    this.showMoves = false
+    this.showMoves = false;
   }
 
   attrMouseDown(x: Attribute, i: number) {
@@ -210,7 +210,7 @@ export class GuiEditorComponent implements OnInit {
   }
 
   tblMouseUpReorder(draggingTable: Table, newIndex: number) {
-    if (this.draggingTableIndex <= 0) {
+    if (this.draggingTableIndex < 0) {
       return;
     }
     array_move(draggingTable.Parent.Tables, this.draggingTableIndex, newIndex);
@@ -223,15 +223,11 @@ export class GuiEditorComponent implements OnInit {
   }
 
   attrMouseUpReorder(draggingAttribute: Attribute, newIndex: number) {
-    let index = draggingAttribute.Parent.Attributes.findIndex(
-      (e) => e.ID === draggingAttribute.ID
-    );
-
-    if (index === -1) {
+    if (this.draggingAttributeIndex < 0) {
       return;
     }
 
-    array_move(draggingAttribute.Parent.Attributes, index, newIndex);
+    array_move(draggingAttribute.Parent.Attributes, this.draggingAttributeIndex, newIndex);
 
     this.draggingAttribute = null;
     this.draggingAttributeIndex = -1;
