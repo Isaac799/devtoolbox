@@ -191,7 +191,6 @@ export function GenerateUniqueAttributes(t: Table): string[] {
 
     if (a.Type === AttrType.REFERENCE && a.RefTo) {
       for (const ra of a.RefTo.Attributes.filter((e) => e.Option?.PrimaryKey)) {
-        console.log('ra :>> ', ra);
         uniques.push(`${a.Name}_${ra.Name}`);
       }
       continue;
@@ -201,7 +200,6 @@ export function GenerateUniqueAttributes(t: Table): string[] {
       continue;
     }
 
-    console.log('a :>> ', a);
     uniques.push(a.Name);
   }
   return uniques;
