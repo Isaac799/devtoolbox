@@ -25,6 +25,7 @@ import { SchemasToAngularFormControls } from './generators/angular.form.controls
 import { SchemasToTablesForTSQL } from './generators/tsql.tables';
 import { SchemasToTSQLStoredProcedures } from './generators/tsql.stored.procedures';
 import { SchemasToTsClasses } from './generators/ts.class';
+import { SchemasToJsClasses } from './generators/js.class';
 
 @Component({
   selector: 'app-code-output',
@@ -60,6 +61,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
         case AppGeneratorMode.TSClasses:
           this.output = SchemasToTsClasses(schemas);
           ext = 'TS';
+          break;
+        case AppGeneratorMode.JSClasses:
+          this.output = SchemasToJsClasses(schemas);
+          ext = 'JS';
           break;
         case AppGeneratorMode.PostgresFunctions:
           this.output = SchemasToSqlFuncs(schemas);

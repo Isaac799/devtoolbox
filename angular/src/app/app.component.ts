@@ -79,6 +79,10 @@ export class AppComponent implements OnInit {
       value: AppGeneratorMode.TSClasses,
     },
     {
+      name: 'JavaScript: Classes',
+      value: AppGeneratorMode.JSClasses,
+    },
+    {
       name: 'Angular: Reactive Form',
       value: AppGeneratorMode.AngularFormControl,
     },

@@ -294,6 +294,7 @@ export class Func {
       AppGeneratorMode.AngularFormControl,
       AppGeneratorMode.TSClasses,
       AppGeneratorMode.TSTypesAndFns,
+      AppGeneratorMode.JSClasses,
     ].includes(mode);
     if (isTs) {
       return Lang.TS;
@@ -496,6 +497,7 @@ export enum AppGeneratorMode {
   GoStructsAndFns,
   TSTypesAndFns,
   TSClasses,
+  JSClasses,
   TSQLTables,
   TSQLStoredProcedures,
 }
