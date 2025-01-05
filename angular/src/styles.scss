@@ -506,7 +506,8 @@ select.ng-invalid {
 }
 
 .limit-height-a {
-  max-height: calc(70vh - var(--space) * 2);
+  // max-height: calc(70vh - var(--space) * 2);
+  max-height: calc(100vh - var(--space) * 2);
 }
 
 .limit-height-b {
@@ -522,7 +523,7 @@ select.ng-invalid {
 .scroll-box {
   /* border-left: 0.1rem solid var(--primary); */
   overflow: auto;
-  max-width: 75vw;
+  max-width: 45rem;
   border: 0.1rem solid var(--primary);
   box-shadow: rgba(0, 0, 0, 0.25) 0 0 0.5rem 0.05rem inset;
 }
@@ -544,6 +545,11 @@ select.ng-invalid {
   .split {
     display: grid;
     grid-template-columns: auto;
+  }
+
+  .limit-height-a {
+    // max-height: calc(70vh - var(--space) * 2);
+    max-height: calc(65vh - var(--space) * 2);
   }
 
 }
