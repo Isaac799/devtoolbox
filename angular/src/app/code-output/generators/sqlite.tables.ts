@@ -75,15 +75,13 @@ function generateTableEndParts(t: Table) {
   }
 
   let uniques = GenerateUniqueAttributes(t);
-
-  t.Attributes.filter((e) => e.Option?.Unique).map((e) => {});
   if (uniques.length > 0) {
     for (const e of uniques) {
       let uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`;
       endThings.push(uniquesStr);
     }
   }
-
+  
   let refs = t.Attributes.filter((e) => e.RefTo);
   if (refs.length > 0) {
     for (const e of refs) {

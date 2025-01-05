@@ -77,6 +77,12 @@ function generateTableEndParts(t: Table) {
   }
 
   let uniques = GenerateUniqueAttributes(t);
+  if (uniques.length > 0) {
+    for (const e of uniques) {
+      let uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`;
+      endThings.push(uniquesStr);
+    }
+  }
 
   let refs = t.Attributes.filter((e) => e.RefTo);
   if (refs.length > 0) {
@@ -181,13 +187,22 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
 export function GenerateUniqueAttributes(t: Table): string[] {
   let uniques: string[] = [];
   for (const a of t.Attributes) {
-    if (a.Type === AttrType.REFERENCE && a.RefTo && !a.Option?.PrimaryKey) {
+    if (a.Option?.PrimaryKey) continue;
+
+    if (a.Type === AttrType.REFERENCE && a.RefTo) {
       for (const ra of a.RefTo.Attributes.filter((e) => e.Option?.PrimaryKey)) {
+        console.log('ra :>> ', ra);
         uniques.push(`${a.Name}_${ra.Name}`);
       }
-    } else if (a.Option?.Unique) {
-      uniques.push(a.Name);
+      continue;
     }
+
+    if (!a.Option?.Unique) {
+      continue;
+    }
+
+    console.log('a :>> ', a);
+    uniques.push(a.Name);
   }
   return uniques;
 }
