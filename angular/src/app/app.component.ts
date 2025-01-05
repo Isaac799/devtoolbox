@@ -65,6 +65,10 @@ export class AppComponent implements OnInit {
       value: AppGeneratorMode.PostgresFunctions,
     },
     {
+      name: 'SQLite: Tables',
+      value: AppGeneratorMode.SQLiteTables,
+    },
+    {
       name: 'T-SQL: Tables',
       value: AppGeneratorMode.TSQLTables,
     },

@@ -1,18 +1,20 @@
 import { TAB } from '../../constants';
 import { cc, alignKeyword, alignKeywords } from '../../formatting';
-import { Table, AttrType, Schema, Attribute } from '../../structure';
+import {
+  Table,
+  AttrType,
+  Schema,
+  Attribute,
+  SQL_TO_SQL_LITE_TYPE,
+} from '../../structure';
 
-export function SchemasToPostgreSQL(schemas: Schema[]): string {
+export function SchemasToTablesForSQLite(schemas: Schema[]): string {
   let drops: string[] = [];
   let createTableLines: string[] = [];
   for (const s of schemas) {
-    drops.push(`DROP SCHEMA IF EXISTS ${cc(s.Name, 'sk')};`);
-    createTableLines.push('');
-    createTableLines.push(`CREATE SCHEMA IF NOT EXISTS ${cc(s.Name, 'sk')};`);
-    createTableLines.push('');
     for (const t of s.Tables) {
-      drops.push(`DROP TABLE IF EXISTS ${t.FN};`);
-      createTableLines.push(`CREATE TABLE IF NOT EXISTS ${t.FN} (`);
+      drops.push(`DROP TABLE IF EXISTS ${cc(t.FN, 'sk')};`);
+      createTableLines.push(`\nCREATE TABLE IF NOT EXISTS ${cc(t.FN, 'sk')} (`);
       let attrs: string[] = generateAttributesForTable(t);
 
       let endThings: string[] = generateTableEndParts(t);
@@ -30,7 +32,7 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
   }
   drops = drops.reverse();
   let all = [
-    'BEGIN;',
+    'BEGIN TRANSACTION;',
     '',
     '-- Drop Everything',
     '',
@@ -49,7 +51,7 @@ function generateTableEndParts(t: Table) {
   let endThings: string[] = [];
 
   let pks: string[] = [];
-  
+
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey) continue;
     if (!a.RefTo) {
@@ -80,6 +82,14 @@ function generateTableEndParts(t: Table) {
     }
   }
 
+  t.Attributes.filter((e) => e.Option?.Unique).map((e) => {});
+  if (uniques.length > 0) {
+    for (const e of uniques) {
+      let uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`;
+      endThings.push(uniquesStr);
+    }
+  }
+
   let refs = t.Attributes.filter((e) => e.RefTo);
   if (refs.length > 0) {
     for (const e of refs) {
@@ -89,7 +99,10 @@ function generateTableEndParts(t: Table) {
         let rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(
           rPk.Name,
           'sk'
-        )} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 'sk')} ) ON DELETE CASCADE`;
+        )} ) REFERENCES ${cc(r.FN, 'sk')} ( ${cc(
+          rPk.Name,
+          'sk'
+        )} ) ON DELETE CASCADE`;
         endThings.push(rStr);
       }
     }
@@ -99,29 +112,6 @@ function generateTableEndParts(t: Table) {
   return endThings;
 }
 
-// function generateTableIndexes(t: Table) {
-//   let endThings: string[] = [];
-
-//   let refs = t.Attributes.filter((e) => e.RefTo);
-//   if (refs.length > 0) {
-//     for (const e of refs) {
-//       let r = e.RefTo!;
-//       let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
-//       for (const rPk of rPks) {
-//         if (rPk.Option?.PrimaryKey) continue;
-//         let rStr = `CREATE INDEX  ${convertCase(
-//           `idx_${AttributeNameWithSchemaAndTable(rPk)}`,
-//           'snake'
-//         )} ON ${TableFullName(r)} ( ${convertCase(rPk.Name, 'snake')} );`;
-//         endThings.push(rStr);
-//       }
-//     }
-//   }
-
-//   endThings = alignKeyword(endThings, 'ON');
-//   return endThings;
-// }
-
 function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
   let attrs: string[] = [];
   for (const a of t.Attributes) {
@@ -130,17 +120,11 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         continue;
       }
     }
-    let name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk');
+    let name = beingReferences
+      ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}`
+      : cc(a.Name, 'sk');
     let type = '';
-    if ([AttrType.VARCHAR].includes(a.Type)) {
-      let max = 15;
-      if (!a.Validation || !a.Validation.Max) {
-        console.warn(`missing max validation on "${name}"`);
-      } else {
-        max = a.Validation.Max;
-      }
-      type = [a.Type, `(${max || '15'})`].join('');
-    } else if (a.Type === AttrType.REFERENCE) {
+    if (a.Type === AttrType.REFERENCE) {
       if (beingReferences) {
         // prevents endless recursion
         continue;
@@ -153,7 +137,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
       attrs = attrs.concat(referencedAttrs);
       continue;
     } else {
-      type = a.Type;
+      type = SQL_TO_SQL_LITE_TYPE[a.Type];
     }
 
     if (beingReferences && a.Type === AttrType.SERIAL) {
@@ -176,6 +160,6 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
     attrs.push(attrLine.join(' '));
   }
 
-  attrs = alignKeywords(attrs, Object.values(AttrType));
+  attrs = alignKeywords(attrs, Object.values(SQL_TO_SQL_LITE_TYPE));
   return attrs;
 }

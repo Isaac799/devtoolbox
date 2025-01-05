@@ -81,11 +81,14 @@ function generateTableEndParts(t: Table) {
     endThings.push(pksStr);
   }
 
-  let uniques = t.Attributes.filter((e) => e.Option?.Unique).map((e) => e.Name);
-  if (uniques.length > 0) {
-    for (const e of uniques) {
-      let uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`;
-      endThings.push(uniquesStr);
+  let uniques: string[] = [];
+  for (const a of t.Attributes) {
+    if (a.Type === AttrType.REFERENCE && a.RefTo) {
+      for (const ra of a.RefTo.Attributes.filter((e) => e.Option?.PrimaryKey)) {
+        uniques.push(`${a.Name}_${ra.Name}`);
+      }
+    } else if (a.Option?.Unique) {
+      uniques.push(a.Name);
     }
   }
 

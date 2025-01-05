@@ -11,6 +11,7 @@ export enum Lang {
   TSQL = 1 << 5,
   GO = 1 << 6,
   TS = 1 << 7,
+  SQLite = 1 << 11,
 }
 
 export enum Cardinality {
@@ -278,6 +279,7 @@ export class Func {
 
   private determineTitle(): string {
     let map: Record<Lang, string> = {
+      [Lang.SQLite]: cc(this.table.Name, 'sk'),
       [Lang.PGSQL]: cc(this.table.Name, 'sk'),
       [Lang.TSQL]: cc(this.table.Name, 'sk'),
       [Lang.GO]: cc(this.table.Name, 'pl'),
@@ -366,7 +368,7 @@ export class Attribute {
   Type: AttrType;
   Option?: AttributeOptions;
   Validation?: Validation;
-  warnings: string[] = []
+  warnings: string[] = [];
 
   constructor(ID: number, Name: string, Type: AttrType, Parent: Table) {
     this.ID = ID;
@@ -498,6 +500,7 @@ export enum AppGeneratorMode {
   GoStructsAndFns,
   TSTypesAndFns,
   TSClasses,
+  SQLiteTables,
   JSClasses,
   TSQLTables,
   TSQLStoredProcedures,
@@ -581,6 +584,23 @@ export const SQL_TO_TSQL_TYPE: Record<AttrType, string> = {
   [AttrType.BOOLEAN]: 'BIT',
   [AttrType.VARCHAR]: 'VARCHAR',
   [AttrType.MONEY]: 'MONEY',
+  [AttrType.REFERENCE]: '',
+};
+
+export const SQL_TO_SQL_LITE_TYPE: Record<AttrType, string> = {
+  [AttrType.BIT]: 'BIT',
+  [AttrType.DATE]: 'DATE',
+  [AttrType.CHAR]: 'TEXT',
+  [AttrType.TIME]: 'TIME',
+  [AttrType.TIMESTAMP]: 'TIMESTAMP',
+  [AttrType.SERIAL]: 'INT AUTOINCREMENT',
+  [AttrType.DECIMAL]: 'DECIMAL',
+  [AttrType.FLOAT]: 'FLOAT',
+  [AttrType.REAL]: 'REAL',
+  [AttrType.INT]: 'INT',
+  [AttrType.BOOLEAN]: 'BOOLEAN',
+  [AttrType.VARCHAR]: 'TEXT',
+  [AttrType.MONEY]: 'REAL',
   [AttrType.REFERENCE]: '',
 };
 
@@ -668,6 +688,69 @@ function genLabelType(
   const isNullable =
     aL.Validation?.Required ||
     (aL.Option?.PrimaryKey && aL.Type !== AttrType.REFERENCE);
+
+  //#region PostgreSQL
+
+  const sqliteCase = io === 'in' ? 'sk' : 'sk';
+  let sqliteType: string = SQL_TO_SQL_LITE_TYPE[aT.Type];
+
+  if (!sqliteType) {
+    sqliteType = SQL_TO_SQL_LITE_TYPE[aL.Type];
+  }
+
+  map.set(Lang.SQLite | Rel.SameTable | Cardinality.Self, {
+    label: cc(aL.Name, sqliteCase),
+    type: sqliteType,
+    defaultValue: '',
+  });
+  map.set(Lang.SQLite | Rel.SameSchema | Cardinality.Self, {
+    label: cc(aL.PFN, sqliteCase),
+    type: sqliteType,
+    defaultValue: '',
+  });
+  map.set(Lang.SQLite | Rel.DiffSchema | Cardinality.Self, {
+    label: cc(aL.FN, sqliteCase),
+    type: sqliteType,
+    defaultValue: '',
+  });
+
+  //    -    -
+
+  map.set(Lang.SQLite | Rel.SameTable | Cardinality.One, {
+    label: cc(aL.Name, sqliteCase),
+    type: sqliteType,
+    defaultValue: '',
+  });
+  map.set(Lang.SQLite | Rel.SameSchema | Cardinality.One, {
+    label: cc(aL.PFN, sqliteCase),
+    type: sqliteType,
+    defaultValue: '',
+  });
+  map.set(Lang.SQLite | Rel.DiffSchema | Cardinality.One, {
+    label: cc(aL.FN, sqliteCase),
+    type: sqliteType,
+    defaultValue: '',
+  });
+
+  //    -    -
+
+  map.set(Lang.SQLite | Rel.SameTable | Cardinality.Many, {
+    label: fixPluralGrammar(cc(aL.Name, sqliteCase) + 's'),
+    type: sqliteType,
+    defaultValue: '',
+  });
+  map.set(Lang.SQLite | Rel.SameSchema | Cardinality.Many, {
+    label: fixPluralGrammar(cc(aL.PFN, sqliteCase) + 's'),
+    type: sqliteType,
+    defaultValue: '',
+  });
+  map.set(Lang.SQLite | Rel.DiffSchema | Cardinality.Many, {
+    label: fixPluralGrammar(cc(aL.FN, sqliteCase) + 's'),
+    type: sqliteType,
+    defaultValue: '',
+  });
+
+  //#endregion
 
   //#region PostgreSQL
 
