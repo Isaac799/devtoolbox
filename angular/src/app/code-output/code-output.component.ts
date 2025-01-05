@@ -94,7 +94,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.data.Reload();
+    this.data.EmitChangesForApp();
   }
 
   ngOnDestroy(): void {

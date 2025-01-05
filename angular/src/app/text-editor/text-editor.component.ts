@@ -28,10 +28,9 @@ import { NotificationService } from '../services/notification.service';
   styleUrl: './text-editor.component.scss',
 })
 export class TextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
-  editor = '';
-  output = '';
-  @ViewChild('textEditor') textEditor?: ElementRef<HTMLPreElement>;
+  @ViewChild('textViewer') textViewer?: ElementRef<HTMLPreElement>;
   subscription: Subscription | null = null;
+  debounceReloadTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     public data: DataService,
@@ -51,11 +50,6 @@ export class TextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    if (!this.textEditor?.nativeElement) {
-      console.error('Missing this.editorText');
-      return;
-    }
-
     let ext = '';
     switch (this.data.app.mode) {
       case AppMode.JSON:
@@ -66,8 +60,21 @@ export class TextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
     }
 
-    let code = hljs.highlight(this.output, { language: ext }).value;
-    this.textEditor.nativeElement.innerHTML = code;
+    // let code = hljs.highlight(this.data.editor, { language: ext }).value;
+
+    // if (!this.textViewer?.nativeElement) {
+    //   console.error('Missing el');
+    //   return;
+    // }
+
+    // this.textViewer.nativeElement.innerHTML = code;
+  }
+
+  debounceReload() {
+    clearTimeout(this.debounceReloadTimeout || undefined);
+    this.debounceReloadTimeout = setTimeout(() => {
+      this.data.ReloadAndSave();
+    }, 500);
   }
 
   private updateEditor(data: Record<string, SchemaConfig>) {
@@ -75,21 +82,22 @@ export class TextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
       case AppMode.JSON:
         {
           let txt = JSON.stringify(data, null, 2);
-          this.editor = txt;
+          this.data.editor = txt;
 
-          if (this.textEditor?.nativeElement) {
+          if (this.textViewer?.nativeElement) {
             let code = hljs.highlight(txt, { language: 'JSON' }).value;
-            this.textEditor.nativeElement.innerHTML = code;
+            this.textViewer.nativeElement.innerHTML = code;
           }
         }
         break;
       case AppMode.YAML:
         {
           let txt = YAML.stringify(data, null, 2);
-          this.editor = txt;
-          if (this.textEditor) {
+          this.data.editor = txt;
+
+          if (this.textViewer?.nativeElement) {
             let code = hljs.highlight(txt, { language: 'YAML' }).value;
-            this.textEditor.nativeElement.innerHTML = code;
+            this.textViewer.nativeElement.innerHTML = code;
           }
         }
         break;
@@ -97,7 +105,7 @@ export class TextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   copy() {
-    navigator.clipboard.writeText(this.output);
+    navigator.clipboard.writeText(this.data.editor);
     this.notification.Add(
       new Notification(
         'Copied',

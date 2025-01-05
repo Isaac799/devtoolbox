@@ -6,7 +6,7 @@
     <button (click)="showSettingsModal = true">Settings & Help</button>
     <div class="controls">
       <div class="control">
-        <label for="appComplexity">Output: Language</label>
+        <label for="appComplexity">Output</label>
         <select
           [(ngModel)]="data.app.generatorMode"
           (ngModelChange)="data.ReloadAndSave()"
@@ -18,7 +18,11 @@
         </select>
       </div>
     </div>
+    @if (data.app.inputMode === 0) {
     <app-gui-editor></app-gui-editor>
+    } @else if(data.app.inputMode === 1){
+    <app-text-editor></app-text-editor>
+    }
   </div>
 </div>
 
@@ -40,7 +44,7 @@
     <!-- Text Editor -->
     <div class="controls">
       <div class="control">
-        <label for="appComplexity">Output: Language</label>
+        <label for="appComplexity">Output</label>
         <select
           [(ngModel)]="data.app.generatorMode"
           (ngModelChange)="data.ReloadAndSave()"
@@ -59,6 +63,18 @@
           id="appMode"
         >
           @for (x of modeOptions; track $index) {
+          <option [ngValue]="x.value">{{ x.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="control">
+        <label for="appInputMode">Input Mode</label>
+        <select
+          [(ngModel)]="data.app.inputMode"
+          (ngModelChange)="data.ReloadAndSave();"
+          id="appInputMode"
+        >
+          @for (x of inputOptions; track $index) {
           <option [ngValue]="x.value">{{ x.name }}</option>
           }
         </select>

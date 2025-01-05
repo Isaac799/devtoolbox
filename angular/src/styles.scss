@@ -506,22 +506,6 @@ select.ng-invalid {
   font-size: 0.8rem;
 }
 
-.limit-height-a {
-  // max-height: calc(70vh - var(--space) * 2);
-  max-height: calc(100vh - var(--space) * 2);
-}
-
-.limit-height-b {
-  max-height: calc(100vh - var(--space) * 2);
-  // max-height: calc(30vh - var(--space) * 2);
-}
-
-.limit-width {
-  // width: 88rem;
-  width: 66rem;
-  // width: 55rem;
-}
-
 .scroll-box {
   /* border-left: 0.1rem solid var(--primary); */
   overflow: auto;

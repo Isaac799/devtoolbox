@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { AppComplexityMode, AppGeneratorMode, AppMode } from './structure';
+import {
+  AppComplexityMode,
+  AppGeneratorMode,
+  AppInputMode,
+  AppMode,
+} from './structure';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { GuiEditorComponent } from './gui-editor/gui-editor.component';
@@ -27,6 +32,16 @@ export class AppComponent implements OnInit {
   readonly title = 'devtoolbox';
   showSettingsModal: boolean = false;
 
+  inputOptions = [
+    {
+      name: 'Graphical (recommended)',
+      value: AppInputMode.GUI,
+    },
+    {
+      name: 'Text Editor',
+      value: AppInputMode.TUI,
+    },
+  ];
   modeOptions = [
     {
       name: 'JSON',

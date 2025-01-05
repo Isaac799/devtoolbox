@@ -227,7 +227,11 @@ export class GuiEditorComponent implements OnInit {
       return;
     }
 
-    array_move(draggingAttribute.Parent.Attributes, this.draggingAttributeIndex, newIndex);
+    array_move(
+      draggingAttribute.Parent.Attributes,
+      this.draggingAttributeIndex,
+      newIndex
+    );
 
     this.draggingAttribute = null;
     this.draggingAttributeIndex = -1;
@@ -250,7 +254,7 @@ export class GuiEditorComponent implements OnInit {
   }
   private set serial(value) {
     this._serial = value;
-    this.data.Save();
+    this.data.SaveFromGUI();
   }
 
   private _selectedAttribute: Attribute | null = null;

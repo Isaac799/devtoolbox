@@ -11,9 +11,11 @@ import {
   TableConfig,
   AttributeConfig,
   AttrType,
+  AppInputMode,
 } from '../structure';
 import { Subject } from 'rxjs';
 import { defaultConfig } from '../constants';
+import YAML from 'yaml';
 
 @Injectable({
   providedIn: 'root',
@@ -23,14 +25,14 @@ export class DataService {
   private readonly configSessionKey = 'devtoolboxAppConfig';
   private initialized: boolean = false;
 
+  editor = '';
   schemas: Schema[] = [];
   schemasConfig: Record<string, SchemaConfig> = {};
-  textEditorViewHtml: HTMLPreElement | null = null;
-  codeGeneratorViewHtml: HTMLPreElement | null = null;
   schemasChange = new Subject<Schema[]>();
   schemasConfigChange = new Subject<Record<string, SchemaConfig>>();
 
   app: App = {
+    inputMode: AppInputMode.GUI,
     mode: AppMode.YAML,
     generatorMode: AppGeneratorMode.Postgres,
     complexity: AppComplexityMode.Advanced,
@@ -39,22 +41,58 @@ export class DataService {
   constructor() {}
 
   ReloadAndSave() {
-    this.Save();
-    this.loadLastSession();
-    setTimeout(() => {
-      this.Reload();
-    }, 0);
-    this.Reload();
+    this.saveConfig();
+
+    if (this.app.inputMode === AppInputMode.GUI) {
+      this.SaveFromGUI();
+      this.EmitChangesForApp();
+      return;
+    }
+
+    if (this.app.inputMode === AppInputMode.TUI) {
+      this.saveFromTUI();
+      if (this.app.mode === AppMode.JSON) {
+        this.loadLastSession(this.editor);
+      }
+
+      if (this.app.mode === AppMode.YAML) {
+        try {
+          let json = YAML.parse(this.editor);
+          this.loadLastSession(JSON.stringify(json));
+        } catch (err) {
+          // console.error(err);
+        }
+      }
+      this.EmitChangesForApp();
+      return;
+    }
   }
 
-  Reload() {
+  EmitChangesForApp() {
     this.schemasChange.next(this.schemas);
     this.schemasConfigChange.next(this.schemasConfig);
   }
 
-  Save() {
-    this.saveConfig();
+  SaveFromGUI() {
     this.saveState();
+  }
+
+  private saveFromTUI() {
+    if (this.app.mode === AppMode.JSON) {
+      localStorage.setItem(this.stateSessionKey, this.editor);
+      return;
+    }
+
+    if (this.app.mode === AppMode.YAML) {
+      try {
+        let json = YAML.parse(this.editor);
+        localStorage.setItem(this.stateSessionKey, json);
+      } catch (err) {
+        console.error(err);
+      }
+
+      return;
+    }
   }
 
   Initialize() {
@@ -62,22 +100,10 @@ export class DataService {
       return;
     }
     this.initialized = true;
-    this.textEditorViewHtml = document.getElementById(
-      'text-editor-view-html'
-    ) as HTMLPreElement;
-    if (!this.textEditorViewHtml) {
-      console.warn('missing text-editor-view-html');
-    }
-    this.codeGeneratorViewHtml = document.getElementById(
-      'code-generator-view-html'
-    ) as HTMLPreElement;
-    if (!this.codeGeneratorViewHtml) {
-      console.warn('missing code-generator-view-html');
-    }
     this.loadConfig();
     this.loadLastSession();
     setTimeout(() => {
-      this.Reload();
+      this.EmitChangesForApp();
     }, 0);
   }
 
@@ -87,29 +113,49 @@ export class DataService {
       return;
     }
     try {
-      this.app = JSON.parse(save);
+      let parsed = JSON.parse(save);
+      if (!parsed) {
+        throw new Error('failed parsing app config');
+      }
+      this.app = parsed;
     } catch (err) {
       console.error(err);
       localStorage.removeItem(this.configSessionKey);
     }
   }
 
-  private loadLastSession() {
-    let save = localStorage.getItem(this.stateSessionKey);
+  private loadLastSession(hot?: string) {
+    let validHot =
+      hot !== undefined &&
+      ![null, 'null', '', undefined, 'undefined'].includes(hot || '');
+    let stateStr = validHot ? hot : localStorage.getItem(this.stateSessionKey);
     let schemasConfig: Record<string, SchemaConfig> = {};
+
     try {
-      if (!save) {
+      if (!stateStr) {
+        console.log('save was falsy, reset to default');
         schemasConfig = defaultConfig;
+        localStorage.removeItem(this.stateSessionKey);
+        localStorage.setItem(
+          this.stateSessionKey,
+          JSON.stringify(defaultConfig)
+        );
       } else {
-        schemasConfig = JSON.parse(save);
+        schemasConfig = JSON.parse(stateStr);
       }
     } catch (err) {
-      console.error(err);
-      localStorage.removeItem(this.stateSessionKey);
+      if (hot) {
+        console.warn('failed parsing tui');
+        return;
+      } else {
+        console.error(err);
+        localStorage.removeItem(this.stateSessionKey);
+      }
     }
 
     let schemas: Schema[] = ParseSchemaConfig(schemasConfig);
 
+    this.schemasConfig = schemasConfig;
     this.schemas = schemas;
   }
 
@@ -143,12 +189,16 @@ export class DataService {
     }
     this.schemasConfig = schemasConfig;
     let s = JSON.stringify(schemasConfig, null, 2);
-    localStorage.setItem(this.stateSessionKey, s);
+    if (s) {
+      localStorage.setItem(this.stateSessionKey, s);
+    }
   }
 
   private saveConfig() {
     let s = JSON.stringify(this.app, null, 2);
-    localStorage.setItem(this.configSessionKey, s);
+    if (s) {
+      localStorage.setItem(this.stateSessionKey, s);
+    }
   }
 
   getReference(id: number): Table | null {

@@ -4,8 +4,7 @@
   rows="20"
 ></textarea> -->
 
-
-<div class="relative-box">
+<div class="relative-box scroll-box limit-height-b limit-width">
   <div class="abs-top-right p-2">
     <button
       class="info"
@@ -14,9 +13,13 @@
       Copy
     </button>
   </div>
-  <pre
-    #textEditor
-    class="mono-space scroll-box limit-height-b limit-width"
+  <textarea
+    [(ngModel)]="data.editor"
+    (ngModelChange)="debounceReload()"
+    class="mono-space no-border limit-height limit-width"
   >
-  </pre>
+  </textarea>
+  <!-- <pre #textViewer>
+    
+    </pre> -->
 </div>

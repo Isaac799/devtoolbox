@@ -1,0 +1,12 @@
+.no-border {
+    border: 0;
+}
+
+
+.limit-height {
+    height: calc(90vh - var(--space) * 2);
+}
+
+.limit-width {
+    width: 33rem;
+}
