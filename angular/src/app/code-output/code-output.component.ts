@@ -9,7 +9,6 @@ import {
 import { DataService } from '../services/data.service';
 import {
   AppGeneratorMode,
-  Func,
   Notification,
   NotificationKind,
   NotificationLife,

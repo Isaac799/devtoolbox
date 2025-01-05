@@ -4,16 +4,18 @@
 
 <div class="relative-box">
   <div class="abs-top-right p-2">
-    <button
-      class="info"
-      (click)="copy()"
-    >
-      Copy
-    </button>
+    <div class=" fc g-2 align-center justify-center">
+      <button
+        class="info"
+        (click)="copy()"
+      >
+        Copy
+      </button>
+    </div>
   </div>
   <pre
     #codeOutput
-    class="mono-space scroll-box limit-height-a limit-width"
+    class="mono-space scroll-box limit-height limit-width"
   >
   </pre>
 </div>

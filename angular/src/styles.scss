@@ -532,12 +532,6 @@ select.ng-invalid {
     display: grid;
     grid-template-columns: auto;
   }
-
-  .limit-height-a {
-    // max-height: calc(70vh - var(--space) * 2);
-    max-height: calc(65vh - var(--space) * 2);
-  }
-
 }
 
 @media (max-width: 880px) {

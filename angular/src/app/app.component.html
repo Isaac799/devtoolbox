@@ -3,7 +3,27 @@
     <app-code-output></app-code-output>
   </div>
   <div class="fc g-2 p-2">
-    <button (click)="showSettingsModal = true">Settings & Help</button>
+    <button
+      class="info"
+      (click)="showSettingsModal = true"
+    >
+      <span>Settings & Help</span>
+    </button>
+    <button
+      class="info"
+      (click)="copyConfig()"
+    >
+      <span>
+        Copy
+        @if (data.app.mode === 0) {
+        JSON
+        } @else if (data.app.mode === 1) {
+        YAML
+        }
+      </span>
+
+    </button>
+
     <div class="controls">
       <div class="control">
         <label for="appComplexity">Output</label>
@@ -18,11 +38,7 @@
         </select>
       </div>
     </div>
-    @if (data.app.inputMode === 0) {
     <app-gui-editor></app-gui-editor>
-    } @else if(data.app.inputMode === 1){
-    <app-text-editor></app-text-editor>
-    }
   </div>
 </div>
 
@@ -63,18 +79,6 @@
           id="appMode"
         >
           @for (x of modeOptions; track $index) {
-          <option [ngValue]="x.value">{{ x.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="control">
-        <label for="appInputMode">Input Mode</label>
-        <select
-          [(ngModel)]="data.app.inputMode"
-          (ngModelChange)="data.ReloadAndSave();"
-          id="appInputMode"
-        >
-          @for (x of inputOptions; track $index) {
           <option [ngValue]="x.value">{{ x.name }}</option>
           }
         </select>

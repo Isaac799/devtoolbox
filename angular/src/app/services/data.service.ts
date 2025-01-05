@@ -11,7 +11,6 @@ import {
   TableConfig,
   AttributeConfig,
   AttrType,
-  AppInputMode,
 } from '../structure';
 import { Subject } from 'rxjs';
 import { defaultConfig } from '../constants';
@@ -32,7 +31,6 @@ export class DataService {
   schemasConfigChange = new Subject<Record<string, SchemaConfig>>();
 
   app: App = {
-    inputMode: AppInputMode.GUI,
     mode: AppMode.YAML,
     generatorMode: AppGeneratorMode.Postgres,
     complexity: AppComplexityMode.Advanced,
@@ -43,29 +41,8 @@ export class DataService {
   ReloadAndSave() {
     this.saveConfig();
 
-    if (this.app.inputMode === AppInputMode.GUI) {
-      this.SaveFromGUI();
-      this.EmitChangesForApp();
-      return;
-    }
-
-    if (this.app.inputMode === AppInputMode.TUI) {
-      this.saveFromTUI();
-      if (this.app.mode === AppMode.JSON) {
-        this.loadLastSession(this.editor);
-      }
-
-      if (this.app.mode === AppMode.YAML) {
-        try {
-          let json = YAML.parse(this.editor);
-          this.loadLastSession(JSON.stringify(json));
-        } catch (err) {
-          // console.error(err);
-        }
-      }
-      this.EmitChangesForApp();
-      return;
-    }
+    this.SaveFromGUI();
+    this.EmitChangesForApp();
   }
 
   EmitChangesForApp() {
@@ -75,24 +52,6 @@ export class DataService {
 
   SaveFromGUI() {
     this.saveState();
-  }
-
-  private saveFromTUI() {
-    if (this.app.mode === AppMode.JSON) {
-      localStorage.setItem(this.stateSessionKey, this.editor);
-      return;
-    }
-
-    if (this.app.mode === AppMode.YAML) {
-      try {
-        let json = YAML.parse(this.editor);
-        localStorage.setItem(this.stateSessionKey, json);
-      } catch (err) {
-        console.error(err);
-      }
-
-      return;
-    }
   }
 
   Initialize() {
@@ -124,11 +83,8 @@ export class DataService {
     }
   }
 
-  private loadLastSession(hot?: string) {
-    let validHot =
-      hot !== undefined &&
-      ![null, 'null', '', undefined, 'undefined'].includes(hot || '');
-    let stateStr = validHot ? hot : localStorage.getItem(this.stateSessionKey);
+  private loadLastSession() {
+    let stateStr = localStorage.getItem(this.stateSessionKey);
     let schemasConfig: Record<string, SchemaConfig> = {};
 
     try {
@@ -144,13 +100,8 @@ export class DataService {
         schemasConfig = JSON.parse(stateStr);
       }
     } catch (err) {
-      if (hot) {
-        console.warn('failed parsing tui');
-        return;
-      } else {
-        console.error(err);
-        localStorage.removeItem(this.stateSessionKey);
-      }
+      console.error(err);
+      localStorage.removeItem(this.stateSessionKey);
     }
 
     let schemas: Schema[] = ParseSchemaConfig(schemasConfig);
@@ -197,7 +148,7 @@ export class DataService {
   private saveConfig() {
     let s = JSON.stringify(this.app, null, 2);
     if (s) {
-      localStorage.setItem(this.stateSessionKey, s);
+      localStorage.setItem(this.configSessionKey, s);
     }
   }
 

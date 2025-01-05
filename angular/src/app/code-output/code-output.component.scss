@@ -1,0 +1,21 @@
+.limit-height {
+    height: calc(100vh - var(--spacing) * 2);
+}
+
+
+.limit-width {
+    width: 70vw;
+}
+
+
+@media (max-width: 680px) {
+    .limit-height {
+        max-height: calc(65vh - var(--space) * 2);
+    }
+
+
+    .limit-width {
+        width: calc(100vw - var(--spacing) * 2);
+    }
+
+}

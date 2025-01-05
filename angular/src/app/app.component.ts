@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import {
   AppComplexityMode,
   AppGeneratorMode,
-  AppInputMode,
   AppMode,
+  NotificationKind,
+  NotificationLife,
 } from './structure';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -11,8 +12,9 @@ import { GuiEditorComponent } from './gui-editor/gui-editor.component';
 import { DataService } from './services/data.service';
 import { ModalComponent } from './modal/modal.component';
 import { CodeOutputComponent } from './code-output/code-output.component';
-import { TextEditorComponent } from './text-editor/text-editor.component';
 import { NotificationService } from './services/notification.service';
+import YAML from 'yaml';
+import { Notification } from './structure';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +25,6 @@ import { NotificationService } from './services/notification.service';
     GuiEditorComponent,
     ModalComponent,
     CodeOutputComponent,
-    TextEditorComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -32,16 +33,6 @@ export class AppComponent implements OnInit {
   readonly title = 'devtoolbox';
   showSettingsModal: boolean = false;
 
-  inputOptions = [
-    {
-      name: 'Graphical (recommended)',
-      value: AppInputMode.GUI,
-    },
-    {
-      name: 'Text Editor',
-      value: AppInputMode.TUI,
-    },
-  ];
   modeOptions = [
     {
       name: 'JSON',
@@ -110,5 +101,23 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.data.Initialize();
+  }
+
+  copyConfig() {
+    let str = '';
+    if (this.data.app.mode === AppMode.JSON) {
+      str = JSON.stringify(this.data.schemasConfig, null, 4);
+    } else if (this.data.app.mode === AppMode.YAML) {
+      str = YAML.stringify(this.data.schemasConfig);
+    }
+    navigator.clipboard.writeText(str);
+    this.notification.Add(
+      new Notification(
+        'Copied',
+        'The config was copied to your clipboard.',
+        NotificationKind.Info,
+        NotificationLife.Short
+      )
+    );
   }
 }

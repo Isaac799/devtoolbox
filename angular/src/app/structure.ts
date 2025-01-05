@@ -1,10 +1,5 @@
 import { cc, fixPluralGrammar } from './formatting';
 
-export enum AppInputMode {
-  GUI,
-  TUI
-}
-
 export enum Rel {
   SameTable = 1 << 1,
   SameSchema = 1 << 2,
@@ -532,7 +527,6 @@ export enum AttrType {
 
 export type App = {
   mode: AppMode;
-  inputMode: AppInputMode;
   generatorMode: AppGeneratorMode;
   complexity: AppComplexityMode;
 };

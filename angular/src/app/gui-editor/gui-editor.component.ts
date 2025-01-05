@@ -14,6 +14,9 @@ import {
   AppComplexityMode,
   AttributeSuggestion,
   validationMap,
+  AppMode,
+  NotificationKind,
+  NotificationLife,
 } from '../structure';
 import {
   AbstractControl,
@@ -30,6 +33,8 @@ import { CommonModule } from '@angular/common';
 import { MinMaxLabelFromAttrTypePipe } from '../pipes/min-max-label-from-attr-type.pipe';
 import { DefaultValueHintPipe } from '../pipes/default-value-hint.pipe';
 import { array_move } from '../constants';
+import { NotificationService } from '../services/notification.service';
+import { Notification } from '../structure';
 
 @Component({
   selector: 'app-gui-editor',
@@ -478,7 +483,11 @@ export class GuiEditorComponent implements OnInit {
       : this.attrTypeOptionsAdvanced;
   }
 
-  constructor(private cdr: ChangeDetectorRef, public data: DataService) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public data: DataService,
+    private notification: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.serial = GuiEditorComponent.discoverSerial(this.data.schemas);
