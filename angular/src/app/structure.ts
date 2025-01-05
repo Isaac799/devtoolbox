@@ -1080,19 +1080,19 @@ export const GenerateDefaultValue = (
     return null;
   }
 
-  if (d.toUpperCase() === 'NOW()') {
+  if (d.trim().toUpperCase() === 'NOW()') {
     d = 'NOW()';
   }
 
-  if (d.toUpperCase() === 'CURRENT_DATE') {
+  if (d.trim().toUpperCase() === 'CURRENT_DATE') {
     d = 'CURRENT_DATE';
   }
 
-  if (d.toUpperCase() === 'CURRENT_TIME') {
+  if (d.trim().toUpperCase() === 'CURRENT_TIME') {
     d = 'CURRENT_TIME';
   }
 
-  if (d.toUpperCase() === 'CURRENT_TIMESTAMP') {
+  if (d.trim().toUpperCase() === 'CURRENT_TIMESTAMP') {
     d = 'CURRENT_TIMESTAMP';
   }
 
