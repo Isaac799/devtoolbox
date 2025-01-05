@@ -259,7 +259,6 @@ export class GuiEditorComponent implements OnInit {
   }
   private set serial(value) {
     this._serial = value;
-    this.data.SaveFromGUI();
   }
 
   private _selectedAttribute: Attribute | null = null;

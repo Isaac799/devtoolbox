@@ -40,18 +40,14 @@ export class DataService {
 
   ReloadAndSave() {
     this.saveConfig();
-
-    this.SaveFromGUI();
+    this.saveState();
+    this.loadLastSession();
     this.EmitChangesForApp();
   }
 
   EmitChangesForApp() {
     this.schemasChange.next(this.schemas);
     this.schemasConfigChange.next(this.schemasConfig);
-  }
-
-  SaveFromGUI() {
-    this.saveState();
   }
 
   Initialize() {
@@ -89,19 +85,13 @@ export class DataService {
 
     try {
       if (!stateStr) {
-        console.log('save was falsy, reset to default');
-        schemasConfig = defaultConfig;
-        localStorage.removeItem(this.stateSessionKey);
-        localStorage.setItem(
-          this.stateSessionKey,
-          JSON.stringify(defaultConfig)
-        );
-      } else {
-        schemasConfig = JSON.parse(stateStr);
+        throw new Error('save was falsy, reset to default');
       }
+      schemasConfig = JSON.parse(stateStr);
     } catch (err) {
       console.error(err);
-      localStorage.removeItem(this.stateSessionKey);
+      schemasConfig = defaultConfig;
+      localStorage.setItem(this.stateSessionKey, JSON.stringify(defaultConfig));
     }
 
     let schemas: Schema[] = ParseSchemaConfig(schemasConfig);
@@ -271,7 +261,7 @@ function CheckForBadReferences(
     } else if (!r) {
       realAttr.warnings.push(`reference to does not exist`);
     } else {
-      realAttr.warnings.push(`reference to is made too soon`);
+      realAttr.warnings.push(`"${r.Name}" must exist before referencing`);
       realAttr.RefTo = r;
     }
   }
