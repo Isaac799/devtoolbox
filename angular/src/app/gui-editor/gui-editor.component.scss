@@ -4,6 +4,7 @@
     margin-left: var(--space);
 }
 
+
 .group:hover {
     // border-left: 0.1rem solid black;
     margin-left: var(--space);
@@ -25,12 +26,35 @@
                                     supported by Chrome, Edge, Opera and Firefox */
 }
 
-.blink {
-    animation: blinker 1s linear infinite;
+.slot {
+    cursor: pointer;
+    height: 1rem;
+    font-size: 0;
+    background-color: var(--accent-transparent);
 }
 
-@keyframes blinker {
-    50% {
-        opacity: 0.35;
-    }
+.slot:hover {
+    height: 2rem;
+    font-size: 1rem;
+    transition: ease-in-out 100ms;
+}
+
+.pink {
+    background-color: var(--accent-transparent);
+    border-left-width: 0.2rem;
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+    color: var(--black);
+}
+
+.pink:hover {
+    transition: ease-in-out 100ms;
+}
+
+.can-hover {
+    cursor: pointer;
+}
+
+.dragging * {
+    cursor: move;
 }

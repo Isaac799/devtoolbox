@@ -29,6 +29,7 @@ import { ModalComponent } from '../modal/modal.component';
 import { CommonModule } from '@angular/common';
 import { MinMaxLabelFromAttrTypePipe } from '../pipes/min-max-label-from-attr-type.pipe';
 import { DefaultValueHintPipe } from '../pipes/default-value-hint.pipe';
+import { array_move } from '../constants';
 
 @Component({
   selector: 'app-gui-editor',
@@ -46,9 +47,15 @@ import { DefaultValueHintPipe } from '../pipes/default-value-hint.pipe';
 })
 export class GuiEditorComponent implements OnInit {
   draggingTable: Table | null = null;
+  draggingTableIndex: number = -1;
   draggingAttribute: Attribute | null = null;
+  draggingAttributeIndex: number = -1;
+
   hoveredTable: Table | null = null;
   hoveredSchema: Schema | null = null;
+
+  showMoves: boolean = false;
+  readonly showMovesTimeoutMS: number = 500;
 
   get isReference(): boolean {
     return this.attributeForm.controls.Type.value === AttrType.REFERENCE;
@@ -57,10 +64,19 @@ export class GuiEditorComponent implements OnInit {
   clearIfNeeded() {
     this.draggingAttribute = null;
     this.draggingTable = null;
+    this.draggingTableIndex = -1;
+    this.draggingAttributeIndex = -1;
+    this.showMoves = false
   }
 
-  attrMouseDown(x: Attribute) {
+  attrMouseDown(x: Attribute, i: number) {
     this.draggingAttribute = x;
+    this.draggingAttributeIndex = i;
+    setTimeout(() => {
+      if (this.draggingAttribute?.ID === x.ID) {
+        this.showMoves = true;
+      }
+    }, this.showMovesTimeoutMS);
   }
 
   attrMouseUp() {
@@ -71,13 +87,12 @@ export class GuiEditorComponent implements OnInit {
     let a = this.draggingAttribute;
 
     if (!a) {
-      console.log('exit: no dragging attr');
       return;
     }
 
     if (this.hoveredTable.ID === a.Parent.ID) {
       this.draggingAttribute = null;
-      console.log('exit: matching drag id to parent');
+      this.draggingAttributeIndex = -1;
       return;
     }
 
@@ -92,6 +107,7 @@ export class GuiEditorComponent implements OnInit {
     this.hoveredTable.Attributes.push(newAttr);
 
     this.draggingAttribute = null;
+    this.draggingAttributeIndex = -1;
 
     this.serial += 1;
 
@@ -115,8 +131,14 @@ export class GuiEditorComponent implements OnInit {
     return newAttr;
   }
 
-  tblMouseDown(x: Table) {
+  tblMouseDown(x: Table, i: number) {
     this.draggingTable = x;
+    this.draggingTableIndex = i;
+    setTimeout(() => {
+      if (this.draggingTable?.ID === x.ID) {
+        this.showMoves = true;
+      }
+    }, this.showMovesTimeoutMS);
   }
 
   tblMouseUp() {
@@ -132,6 +154,7 @@ export class GuiEditorComponent implements OnInit {
 
     if (this.hoveredSchema.ID === t.Parent.ID) {
       this.draggingTable = null;
+      this.draggingTableIndex = -1;
       return;
     }
 
@@ -178,8 +201,40 @@ export class GuiEditorComponent implements OnInit {
     }
 
     this.draggingTable = null;
+    this.draggingTableIndex = -1;
 
     this.serial += 1;
+
+    this.data.ReloadAndSave();
+    this.cdr.detectChanges();
+  }
+
+  tblMouseUpReorder(draggingTable: Table, newIndex: number) {
+    if (this.draggingTableIndex <= 0) {
+      return;
+    }
+    array_move(draggingTable.Parent.Tables, this.draggingTableIndex, newIndex);
+
+    this.draggingTable = null;
+    this.draggingTableIndex = -1;
+
+    this.data.ReloadAndSave();
+    this.cdr.detectChanges();
+  }
+
+  attrMouseUpReorder(draggingAttribute: Attribute, newIndex: number) {
+    let index = draggingAttribute.Parent.Attributes.findIndex(
+      (e) => e.ID === draggingAttribute.ID
+    );
+
+    if (index === -1) {
+      return;
+    }
+
+    array_move(draggingAttribute.Parent.Attributes, index, newIndex);
+
+    this.draggingAttribute = null;
+    this.draggingAttributeIndex = -1;
 
     this.data.ReloadAndSave();
     this.cdr.detectChanges();
