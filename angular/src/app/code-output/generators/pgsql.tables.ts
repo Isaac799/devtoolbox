@@ -49,7 +49,7 @@ function generateTableEndParts(t: Table) {
   let endThings: string[] = [];
 
   let pks: string[] = [];
-  
+
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey) continue;
     if (!a.RefTo) {
@@ -69,16 +69,7 @@ function generateTableEndParts(t: Table) {
     endThings.push(pksStr);
   }
 
-  let uniques: string[] = [];
-  for (const a of t.Attributes) {
-    if (a.Type === AttrType.REFERENCE && a.RefTo) {
-      for (const ra of a.RefTo.Attributes.filter((e) => e.Option?.PrimaryKey)) {
-        uniques.push(`${a.Name}_${ra.Name}`);
-      }
-    } else if (a.Option?.Unique) {
-      uniques.push(a.Name);
-    }
-  }
+  let uniques = GenerateUniqueAttributes(t);
 
   let refs = t.Attributes.filter((e) => e.RefTo);
   if (refs.length > 0) {
@@ -130,7 +121,9 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         continue;
       }
     }
-    let name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk');
+    let name = beingReferences
+      ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}`
+      : cc(a.Name, 'sk');
     let type = '';
     if ([AttrType.VARCHAR].includes(a.Type)) {
       let max = 15;
@@ -178,4 +171,18 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
 
   attrs = alignKeywords(attrs, Object.values(AttrType));
   return attrs;
+}
+
+export function GenerateUniqueAttributes(t: Table): string[] {
+  let uniques: string[] = [];
+  for (const a of t.Attributes) {
+    if (a.Type === AttrType.REFERENCE && a.RefTo && !a.Option?.PrimaryKey) {
+      for (const ra of a.RefTo.Attributes.filter((e) => e.Option?.PrimaryKey)) {
+        uniques.push(`${a.Name}_${ra.Name}`);
+      }
+    } else if (a.Option?.Unique) {
+      uniques.push(a.Name);
+    }
+  }
+  return uniques;
 }

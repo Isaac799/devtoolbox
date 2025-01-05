@@ -1,6 +1,13 @@
 import { TAB } from '../../constants';
 import { cc, alignKeyword, alignKeywords } from '../../formatting';
-import { Table, AttrType, Schema, Attribute, SQL_TO_TSQL_TYPE } from '../../structure';
+import {
+  Table,
+  AttrType,
+  Schema,
+  Attribute,
+  SQL_TO_TSQL_TYPE,
+} from '../../structure';
+import { GenerateUniqueAttributes } from './pgsql.tables';
 
 export function SchemasToTablesForTSQL(schemas: Schema[]): string {
   let drops: string[] = [];
@@ -81,16 +88,7 @@ function generateTableEndParts(t: Table) {
     endThings.push(pksStr);
   }
 
-  let uniques: string[] = [];
-  for (const a of t.Attributes) {
-    if (a.Type === AttrType.REFERENCE && a.RefTo) {
-      for (const ra of a.RefTo.Attributes.filter((e) => e.Option?.PrimaryKey)) {
-        uniques.push(`${a.Name}_${ra.Name}`);
-      }
-    } else if (a.Option?.Unique) {
-      uniques.push(a.Name);
-    }
-  }
+  let uniques = GenerateUniqueAttributes(t);
 
   let refs = t.Attributes.filter((e) => e.RefTo);
   if (refs.length > 0) {
@@ -119,7 +117,9 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         continue;
       }
     }
-    let name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk');
+    let name = beingReferences
+      ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}`
+      : cc(a.Name, 'sk');
     let type = '';
     if ([AttrType.VARCHAR].includes(a.Type)) {
       let max = 15;

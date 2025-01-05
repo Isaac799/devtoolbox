@@ -500,10 +500,11 @@ export enum AppGeneratorMode {
   GoStructsAndFns,
   TSTypesAndFns,
   TSClasses,
-  SQLiteTables,
   JSClasses,
   TSQLTables,
   TSQLStoredProcedures,
+  SQLiteTables,
+  SQLiteJoinQuery,
 }
 
 export enum AppComplexityMode {

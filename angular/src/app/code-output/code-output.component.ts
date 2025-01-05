@@ -26,6 +26,7 @@ import { SchemasToTSQLStoredProcedures } from './generators/tsql.stored.procedur
 import { SchemasToTsClasses } from './generators/ts.class';
 import { SchemasToJsClasses } from './generators/js.class';
 import { SchemasToTablesForSQLite } from './generators/sqlite.tables';
+import { SchemasToSQLiteJoinQuery } from './generators/sqlite.join.query';
 
 @Component({
   selector: 'app-code-output',
@@ -80,6 +81,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
           break;
         case AppGeneratorMode.SQLiteTables:
           this.output = SchemasToTablesForSQLite(schemas);
+          ext = 'SQL';
+          break;
+        case AppGeneratorMode.SQLiteJoinQuery:
+          this.output = SchemasToSQLiteJoinQuery(schemas);
           ext = 'SQL';
           break;
         case AppGeneratorMode.TSQLStoredProcedures:

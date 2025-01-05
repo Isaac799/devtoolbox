@@ -65,16 +65,20 @@ export class AppComponent implements OnInit {
       value: AppGeneratorMode.PostgresFunctions,
     },
     {
-      name: 'SQLite: Tables',
-      value: AppGeneratorMode.SQLiteTables,
-    },
-    {
       name: 'T-SQL: Tables',
       value: AppGeneratorMode.TSQLTables,
     },
     {
       name: ' T-SQL: Stored Procedures',
       value: AppGeneratorMode.TSQLStoredProcedures,
+    },
+    {
+      name: 'SQLite: Tables',
+      value: AppGeneratorMode.SQLiteTables,
+    },
+    {
+      name: 'SQLite: Queries',
+      value: AppGeneratorMode.SQLiteJoinQuery,
     },
     {
       name: 'Go: Structs and ƒ',

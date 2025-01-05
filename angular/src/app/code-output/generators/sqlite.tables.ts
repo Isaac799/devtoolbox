@@ -7,6 +7,7 @@ import {
   Attribute,
   SQL_TO_SQL_LITE_TYPE,
 } from '../../structure';
+import { GenerateUniqueAttributes } from './pgsql.tables';
 
 export function SchemasToTablesForSQLite(schemas: Schema[]): string {
   let drops: string[] = [];
@@ -71,16 +72,7 @@ function generateTableEndParts(t: Table) {
     endThings.push(pksStr);
   }
 
-  let uniques: string[] = [];
-  for (const a of t.Attributes) {
-    if (a.Type === AttrType.REFERENCE && a.RefTo) {
-      for (const ra of a.RefTo.Attributes.filter((e) => e.Option?.PrimaryKey)) {
-        uniques.push(`${a.Name}_${ra.Name}`);
-      }
-    } else if (a.Option?.Unique) {
-      uniques.push(a.Name);
-    }
-  }
+  let uniques = GenerateUniqueAttributes(t);
 
   t.Attributes.filter((e) => e.Option?.Unique).map((e) => {});
   if (uniques.length > 0) {

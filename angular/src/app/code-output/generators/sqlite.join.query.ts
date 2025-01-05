@@ -3,7 +3,7 @@ import { cc, alignKeyword } from '../../formatting';
 import { Table, AttrType, Schema, SQL_TO_TSQL_TYPE } from '../../structure';
 import { GenerateJoinLines, UseI } from './pgsql.functions';
 
-export function SchemasToTSQLStoredProcedures(schemas: Schema[]): string {
+export function SchemasToSQLiteJoinQuery(schemas: Schema[]): string {
   let lines: string[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
@@ -23,8 +23,6 @@ function generateSqlFns(t: Table): string {
     return '';
   }
 
-  let params: string[] = [];
-  let fnName = `${cc(t.Parent.Name, 'sk')}.${cc(`get_${t.Name}`, 'sk')}`;
   let selectingLines: string[] = [];
 
   let whereAND = [];
@@ -32,24 +30,19 @@ function generateSqlFns(t: Table): string {
   let useI = new UseI();
   useI.increment(t);
 
+  let i = 0;
+
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue;
-    let type = SQL_TO_TSQL_TYPE[a.Type];
-
-    if (a.Type === AttrType.SERIAL) {
-      type = SQL_TO_TSQL_TYPE[AttrType.INT];
-    }
-
-    params.push(`@${cc(a.FN, 'sk')} ${type}`);
-    whereAND.push(
-      `${useI.get(t)}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`
-    );
+    i += 1;
+    whereAND.push(`${useI.get(t)}.${cc(a.Name, 'sk')} = ${cc(a.FN, 'up')}`);
   }
-  let whereStr: string = whereAND.join(' AND ');
 
-  if (params.length === 0) {
+  if (i === 0) {
     return '';
   }
+
+  let whereStr: string = whereAND.join(' AND ');
 
   for (const a of t.Attributes) {
     if (!a.RefTo) {
@@ -64,29 +57,27 @@ function generateSqlFns(t: Table): string {
     }
   }
 
-  let joinLines: string[] = GenerateJoinLines(t, [], selectingLines, useI);
+  let joinLines: string[] = GenerateJoinLines(
+    t,
+    [],
+    selectingLines,
+    useI,
+    true
+  );
 
   joinLines = alignKeyword(joinLines, 'ON');
   joinLines = alignKeyword(joinLines, '=');
   selectingLines = alignKeyword(selectingLines, 'AS');
 
-  let selecting = selectingLines.join(`,\n${TAB}${TAB}`);
-  let paramsStr = params.join(', ');
-  let joinStr = joinLines.join(`\n${TAB}${TAB}`);
+  let selecting = selectingLines.join(`,\n${TAB}`);
+  let joinStr = joinLines.join(`\n${TAB}`);
 
-  let q = `CREATE PROCEDURE ${fnName} ( ${paramsStr} ) 
-    AS BEGIN
-    SET NOCOUNT ON;
-    SELECT 
-        ${selecting}
-    FROM
-        ${joinStr}
-    WHERE
-        ${whereStr};
-END; 
-GO;`;
-
-  q = q.replaceAll('SERIAL', 'INT');
+  let q = `SELECT 
+    ${selecting}
+FROM
+    ${joinStr}
+WHERE
+    ${whereStr}; -- replace with desired identifiers`;
 
   return q;
 }
