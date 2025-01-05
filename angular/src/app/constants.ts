@@ -2,7 +2,6 @@ import { AttrType } from './structure';
 
 export const TAB = '    ';
 
-
 export const defaultConfig: any = {
   public: {
     ID: 13,
@@ -15,13 +14,18 @@ export const defaultConfig: any = {
             ID: 16,
             ParentID: 14,
             Type: 'SERIAL',
-            Option: { Unique: false, PrimaryKey: true },
+            Option: {
+              Unique: false,
+              PrimaryKey: true,
+              SystemField: true,
+              Default: '',
+            },
           },
           name: {
             ID: 18,
             ParentID: 14,
             Type: 'VARCHAR',
-            Option: { Unique: true, PrimaryKey: false },
+            Option: { Unique: true, PrimaryKey: false, Default: '' },
             Validation: { Min: 3, Max: 31, Required: true },
           },
           email: {
@@ -37,20 +41,20 @@ export const defaultConfig: any = {
         ID: 15,
         ParentID: 13,
         Attributes: {
+          user: {
+            ID: 20,
+            ParentID: 15,
+            RefToID: 14,
+            Type: 'REF',
+            Option: { PrimaryKey: true, SystemField: false },
+            Validation: { Required: true },
+          },
           bio: {
             ID: 19,
             ParentID: 15,
             Type: 'VARCHAR',
             Option: { PrimaryKey: false },
             Validation: { Max: 255, Required: false },
-          },
-          user: {
-            ID: 20,
-            ParentID: 15,
-            RefToID: 14,
-            Type: 'REF',
-            Option: { PrimaryKey: true },
-            Validation: { Required: false },
           },
           status: {
             ID: 32,
@@ -69,7 +73,7 @@ export const defaultConfig: any = {
             ID: 22,
             ParentID: 21,
             Type: 'SERIAL',
-            Option: { Unique: false, PrimaryKey: true },
+            Option: { Unique: false, PrimaryKey: true, SystemField: true },
           },
           description: {
             ID: 23,
@@ -105,9 +109,10 @@ export const defaultConfig: any = {
             Type: 'TIMESTAMP',
             Option: {
               Default: 'CURRENT_TIMESTAMP',
-              Unique: null,
               PrimaryKey: false,
+              SystemField: true,
             },
+            Validation: { Required: true },
           },
           sold: {
             ID: 37,
@@ -147,7 +152,12 @@ export const defaultConfig: any = {
             ID: 31,
             ParentID: 28,
             Type: 'TIMESTAMP',
-            Option: { Default: 'CURRENT_TIMESTAMP', PrimaryKey: false },
+            Option: {
+              Default: 'CURRENT_TIMESTAMP',
+              PrimaryKey: false,
+              SystemField: true,
+            },
+            Validation: { Required: true },
           },
           amount: {
             ID: 34,
