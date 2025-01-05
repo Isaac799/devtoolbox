@@ -10,6 +10,7 @@ import {
   SchemaConfig,
   TableConfig,
   AttributeConfig,
+  AttrType,
 } from '../structure';
 import { Subject } from 'rxjs';
 import { defaultConfig } from '../constants';
@@ -38,8 +39,12 @@ export class DataService {
   constructor() {}
 
   ReloadAndSave() {
-    this.Reload();
     this.Save();
+    this.loadLastSession();
+    setTimeout(() => {
+      this.Reload();
+    }, 0);
+    this.Reload();
   }
 
   Reload() {
@@ -103,60 +108,7 @@ export class DataService {
       localStorage.removeItem(this.stateSessionKey);
     }
 
-    let schemas: Schema[] = [];
-    let allTables: Table[] = [];
-    for (const sk in schemasConfig) {
-      if (!Object.prototype.hasOwnProperty.call(schemasConfig, sk)) {
-        continue;
-      }
-      const s = schemasConfig[sk];
-      let s2 = new Schema(s.ID, sk);
-      for (const tk in s.Tables) {
-        if (!Object.prototype.hasOwnProperty.call(s.Tables, tk)) {
-          continue;
-        }
-        const t = s.Tables[tk];
-        let t2p = [s2, ...schemas].find((e) => e.ID === t.ParentID);
-        if (!t2p) continue;
-
-        let t2 = new Table(t.ID, tk, t2p);
-        for (const ak in t.Attributes) {
-          if (!Object.prototype.hasOwnProperty.call(t.Attributes, ak)) {
-            continue;
-          }
-          const a = t.Attributes[ak];
-          let a2p = [t2, ...s2.Tables, ...allTables].find(
-            (e) => e.ID === a.ParentID
-          );
-          let r2 = [t2, ...s2.Tables, ...allTables].find(
-            (e) => e.ID === a.RefToID
-          );
-          if (r2) {
-            if (!r2.RefBy) {
-              r2.RefBy = [];
-            }
-            // console.log(r2.Name, ' is ref by ', t2.Name);
-            r2.RefBy.push(t2);
-          }
-          if (!a2p) continue;
-          let a2 = new Attribute(a.ID, ak, a.Type, a2p);
-          if (r2) {
-            a2.RefTo = r2;
-          }
-          if (a.Option) {
-            a2.Option = a.Option;
-          }
-          if (a.Validation) {
-            a2.Validation = a.Validation;
-          }
-          t2.Attributes.push(a2);
-        }
-        allTables.push(t2);
-        s2.Tables.push(t2);
-      }
-      schemas.push(s2);
-    }
-    allTables = [];
+    let schemas: Schema[] = ParseSchemaConfig(schemasConfig);
 
     this.schemas = schemas;
   }
@@ -213,5 +165,113 @@ export class DataService {
 
   getPrimaryKeys(table: Table): Attribute[] {
     return table.Attributes.filter((e) => e.Option?.PrimaryKey);
+  }
+}
+
+function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
+  let schemas: Schema[] = [];
+  let allTables: Table[] = [];
+
+  let recheckAttrs: AttributeConfig[] = [];
+
+  for (const sk in schemasConfig) {
+    if (!Object.prototype.hasOwnProperty.call(schemasConfig, sk)) {
+      continue;
+    }
+    const s = schemasConfig[sk];
+    let s2 = new Schema(s.ID, sk);
+    for (const tk in s.Tables) {
+      if (!Object.prototype.hasOwnProperty.call(s.Tables, tk)) {
+        continue;
+      }
+      const t = s.Tables[tk];
+      let t2p = [s2, ...schemas].find((e) => e.ID === t.ParentID);
+      if (!t2p) continue;
+
+      let t2 = new Table(t.ID, tk, t2p);
+      for (const ak in t.Attributes) {
+        if (!Object.prototype.hasOwnProperty.call(t.Attributes, ak)) {
+          continue;
+        }
+        const a = t.Attributes[ak];
+        let a2p = [t2, ...s2.Tables, ...allTables].find(
+          (e) => e.ID === a.ParentID
+        );
+        let r2 = [t2, ...s2.Tables, ...allTables].find(
+          (e) => e.ID === a.RefToID
+        );
+        if (r2) {
+          if (!r2.RefBy) {
+            r2.RefBy = [];
+          }
+          // console.log(r2.Name, ' is ref by ', t2.Name);
+          r2.RefBy.push(t2);
+        }
+        if (!a2p) {
+          continue;
+        }
+        let a2 = new Attribute(a.ID, ak, a.Type, a2p);
+
+        if (!r2 && a2.Type === AttrType.REFERENCE) {
+          recheckAttrs.push(a);
+        }
+
+        if (r2) {
+          a2.RefTo = r2;
+        }
+        if (a.Option) {
+          a2.Option = a.Option;
+        }
+        if (a.Validation) {
+          a2.Validation = a.Validation;
+        }
+        t2.Attributes.push(a2);
+      }
+      allTables.push(t2);
+      s2.Tables.push(t2);
+    }
+    schemas.push(s2);
+  }
+
+  CheckForBadReferences(recheckAttrs, allTables, schemas);
+
+  allTables = [];
+  return schemas;
+}
+
+function CheckForBadReferences(
+  recheckAttrs: AttributeConfig[],
+  allTables: Table[],
+  schemas: Schema[]
+) {
+  for (const a of recheckAttrs) {
+    let r = allTables.find((e) => e.ID === a.RefToID);
+
+    let realAttr: Attribute | null = null;
+
+    search: for (const s of schemas) {
+      for (const t of s.Tables) {
+        for (const atr of t.Attributes) {
+          if (atr.ID !== a.ID) {
+            continue;
+          }
+          realAttr = atr;
+          break search;
+        }
+      }
+    }
+
+    if (!realAttr) {
+      continue;
+    }
+
+    if (realAttr.Type === AttrType.REFERENCE && !r) {
+      realAttr.warnings.push(`failed to find reference`);
+    } else if (!r) {
+      realAttr.warnings.push(`reference to does not exist`);
+    } else {
+      realAttr.warnings.push(`reference to is made too soon`);
+      realAttr.RefTo = r;
+    }
   }
 }

@@ -83,7 +83,7 @@
 
     <!-- Attribute -->
     <div
-      class="fr align-center g-1  can-hover"
+      class="fr align-center g-2  can-hover"
       (click)="doShowModalAttribute(s, t, a)"
       (mousedown)="attrMouseDown(a, ai)"
     >
@@ -103,6 +103,16 @@
       }
       @if (a.Validation?.Required) {
       <i class="icon small accent-text">asterisk</i>
+      }
+
+      @if (a.warnings.length > 0) {
+      <div class="fc align-center justify-center">
+        @for (w of a.warnings; track $index) {
+        <span class="error">
+          {{ w }}
+        </span>
+        }
+      </div>
       }
     </div>
 

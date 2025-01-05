@@ -377,6 +377,7 @@ button {
   border: 0;
   font-size: 1rem;
   background-color: white;
+  max-width: 13.5rem;
   // padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
 
@@ -507,8 +508,7 @@ select.ng-invalid {
 
 .limit-height-a {
   // max-height: calc(70vh - var(--space) * 2);
-  // max-height: calc(100vh - var(--space) * 2);
-  max-height: calc(30vh - var(--space) * 2);
+  max-height: calc(100vh - var(--space) * 2);
 }
 
 .limit-height-b {

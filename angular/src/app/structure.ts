@@ -366,6 +366,7 @@ export class Attribute {
   Type: AttrType;
   Option?: AttributeOptions;
   Validation?: Validation;
+  warnings: string[] = []
 
   constructor(ID: number, Name: string, Type: AttrType, Parent: Table) {
     this.ID = ID;

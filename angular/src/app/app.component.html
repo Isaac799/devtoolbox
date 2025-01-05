@@ -1,10 +1,9 @@
 <div class="split p-2">
   <div class="fr g-2 f-wrap">
     <app-code-output></app-code-output>
-    <app-text-editor></app-text-editor>
   </div>
-  <div class="fc g-2">
-    <button (click)="showSettingsModal = true">Settings</button>
+  <div class="fc g-2 p-2">
+    <button (click)="showSettingsModal = true">Settings & Help</button>
     <div class="controls">
       <div class="control">
         <label for="appComplexity">Output: Language</label>
@@ -29,6 +28,15 @@
   [(visible)]="showSettingsModal"
 >
   <ng-content body>
+    <div class="info m-2 p-2 fc g-2 align-center justify-center">
+      <span>
+        Click and hold an attribute or table to move it around
+      </span>
+      <span>
+        The order of items is significant
+      </span>
+    </div>
+
     <!-- Text Editor -->
     <div class="controls">
       <div class="control">
