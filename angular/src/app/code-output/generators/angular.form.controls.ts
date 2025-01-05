@@ -5,7 +5,7 @@ export function SchemasToAngularFormControls(schemas: Schema[]): string {
   let funcs: Func[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let func = new Func(t, AppGeneratorMode.TS);
+      let func = new Func(t, AppGeneratorMode.TSTypesAndFns);
       funcs.push(func);
     }
   }

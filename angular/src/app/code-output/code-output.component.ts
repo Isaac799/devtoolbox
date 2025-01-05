@@ -16,8 +16,8 @@ import {
 } from '../structure';
 import { Subscription } from 'rxjs';
 import { SchemasToPostgreSQL } from './generators/pgsql.tables';
-import { SchemasToGoStructs } from './generators/go';
-import { SchemasToTsStructs } from './generators/ts';
+import { SchemasToGoStructs } from './generators/go.structs.fns';
+import { SchemasToTsTypesAndFns } from './generators/ts.types.fns';
 import { SchemasToSqlFuncs } from './generators/pgsql.functions';
 import hljs from 'highlight.js';
 import { NotificationService } from '../services/notification.service';
@@ -49,12 +49,12 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
           this.output = SchemasToPostgreSQL(schemas);
           ext = 'SQL';
           break;
-        case AppGeneratorMode.Go:
+        case AppGeneratorMode.GoStructsAndFns:
           this.output = SchemasToGoStructs(schemas);
           ext = 'GO';
           break;
-        case AppGeneratorMode.TS:
-          this.output = SchemasToTsStructs(schemas);
+        case AppGeneratorMode.TSTypesAndFns:
+          this.output = SchemasToTsTypesAndFns(schemas);
           ext = 'TS';
           break;
         case AppGeneratorMode.TSClasses:

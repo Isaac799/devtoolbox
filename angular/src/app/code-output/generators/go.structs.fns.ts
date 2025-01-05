@@ -6,7 +6,7 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
   let funcs: Func[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let func = new Func(t, AppGeneratorMode.Go);
+      let func = new Func(t, AppGeneratorMode.GoStructsAndFns);
       funcs.push(func);
     }
   }

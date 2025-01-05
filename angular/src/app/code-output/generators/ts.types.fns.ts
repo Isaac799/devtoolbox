@@ -2,11 +2,11 @@ import { TAB } from '../../constants';
 import { cc, alignKeyword } from '../../formatting';
 import { Schema, AppGeneratorMode, Func } from '../../structure';
 
-export function SchemasToTsStructs(schemas: Schema[]): string {
+export function SchemasToTsTypesAndFns(schemas: Schema[]): string {
   let funcs: Func[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let func = new Func(t, AppGeneratorMode.TS);
+      let func = new Func(t, AppGeneratorMode.TSTypesAndFns);
       funcs.push(func);
     }
   }
@@ -16,7 +16,7 @@ export function SchemasToTsStructs(schemas: Schema[]): string {
   for (const f of funcs) {
     // Struct
 
-    lines.push(`interface ${f.title} {`);
+    lines.push(`type ${f.title} = {`);
     let attrs: string[] = generateStructAttributes(f);
     lines = lines.concat(attrs);
     lines.push(`}\n`);

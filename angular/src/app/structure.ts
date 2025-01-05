@@ -286,14 +286,14 @@ export class Func {
     return map[this.lang];
   }
   private static determineLanguage(mode: AppGeneratorMode): Lang {
-    let isGo = [AppGeneratorMode.Go].includes(mode);
+    let isGo = [AppGeneratorMode.GoStructsAndFns].includes(mode);
     if (isGo) {
       return Lang.GO;
     }
     let isTs = [
       AppGeneratorMode.AngularFormControl,
       AppGeneratorMode.TSClasses,
-      AppGeneratorMode.TS,
+      AppGeneratorMode.TSTypesAndFns,
     ].includes(mode);
     if (isTs) {
       return Lang.TS;
@@ -493,8 +493,8 @@ export enum AppGeneratorMode {
   PostgresFunctions,
   Postgres,
   AngularFormControl,
-  Go,
-  TS,
+  GoStructsAndFns,
+  TSTypesAndFns,
   TSClasses,
   TSQLTables,
   TSQLStoredProcedures,
