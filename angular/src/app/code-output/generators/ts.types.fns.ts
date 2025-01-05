@@ -26,7 +26,9 @@ export function SchemasToTsTypesAndFns(schemas: Schema[]): string {
     let funcAttrs: string[] = generateFuncReturnStruct(f);
     let { title, params } = generateTitleAndParams(f);
 
-    lines.push(`function ${title} (${params}): ${f.title} {`);
+    lines.push(`function ${title} (
+${TAB}${params}
+): ${f.title} {`);
     lines.push(`${TAB}return {`);
 
     funcAttrs = alignKeyword(funcAttrs, ' :');
@@ -42,7 +44,9 @@ export function SchemasToTsTypesAndFns(schemas: Schema[]): string {
 
 function generateTitleAndParams(f: Func) {
   let relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
-  let params = relevantInputs.map((e) => `${e.label}: ${e.type}`).join(', ');
+  let params = relevantInputs
+    .map((e) => `${e.label}: ${e.type}`)
+    .join(`,\n${TAB}`);
 
   const title = cc(`New_${f.title}`, 'pl');
   return { title, params };

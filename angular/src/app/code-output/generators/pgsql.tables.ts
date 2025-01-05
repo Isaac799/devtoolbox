@@ -12,6 +12,7 @@ import {
 export function SchemasToPostgreSQL(schemas: Schema[]): string {
   let drops: string[] = [];
   let createTableLines: string[] = [];
+  
   for (const s of schemas) {
     drops.push(`DROP SCHEMA IF EXISTS ${cc(s.Name, 'sk')};`);
     createTableLines.push('');
