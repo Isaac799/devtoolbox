@@ -450,6 +450,37 @@ export class Table {
   get FN(): string {
     return [cc(this.Parent.Name, 'sk'), cc(this.Name, 'sk')].join('.');
   }
+  get FNInitials(): string {
+    return cc(
+      [
+        // cc(createAbbreviation(this.Parent.Name), 'sk'),
+        // cc(createAbbreviation(this.Name), 'sk'),
+        cc(this.Parent.Name, 'sk'),
+        cc(this.Name, 'sk'),
+      ].join('_'),
+      'pl'
+    );
+  }
+  get SimpleInitials(): string {
+    // return cc([cc(createAbbreviation(this.Name), 'sk')].join('_'), 'pl');
+    return cc([cc(this.Name, 'sk')].join('_'), 'pl');
+  }
+}
+
+function createAbbreviation(input: string): string {
+  // Remove vowels (a, e, i, o, u) and keep the first and last letter
+  const vowels = /[aeiouAEIOU]/g;
+
+  // Remove vowels and leave the first and last character intact
+  const filtered = input
+    .split('')
+    .filter((char, index) => {
+      // Keep the first and last character, and keep the consonants
+      return index === 0 || index === input.length - 1 || !vowels.test(char);
+    })
+    .join('');
+
+  return filtered.toLowerCase(); // Convert the result to lowercase
 }
 
 export enum AppMode {

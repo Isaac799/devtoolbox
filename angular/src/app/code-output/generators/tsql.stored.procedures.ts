@@ -1,7 +1,7 @@
 import { TAB } from '../../constants';
 import { cc, alignKeyword } from '../../formatting';
 import { Table, AttrType, Schema, SQL_TO_TSQL_TYPE } from '../../structure';
-import { GenerateJoinLines } from './pgsql.functions';
+import { GenerateJoinLines, UseI } from './pgsql.functions';
 
 export function SchemasToTSQLStoredProcedures(schemas: Schema[]): string {
   let lines: string[] = [];
@@ -28,6 +28,10 @@ function generateSqlFns(t: Table) {
   let selectingLines: string[] = [];
 
   let whereAND = [];
+
+  let useI = new UseI();
+  useI.increment(t);
+
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue;
     let type = SQL_TO_TSQL_TYPE[a.Type];
@@ -37,7 +41,9 @@ function generateSqlFns(t: Table) {
     }
 
     params.push(`@${cc(a.FN, 'sk')} ${type}`);
-    whereAND.push(`${t.FN}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`);
+    whereAND.push(
+      `${useI.get(t, true)}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`
+    );
   }
   let whereStr: string = whereAND.join(' AND ');
 
@@ -48,17 +54,17 @@ function generateSqlFns(t: Table) {
   for (const a of t.Attributes) {
     if (!a.RefTo) {
       let n = cc(a.FN, 'sk');
-      selectingLines.push(`${a.FN} AS ${n}`);
+      selectingLines.push(`${useI.get(t, true)}.${cc(a.Name, 'sk')} AS ${n}`);
       continue;
     }
 
     for (const ra of a.RefTo.Attributes) {
       let n = cc(a.FN, 'sk');
-      selectingLines.push(`${ra.FN} AS ${n}`);
+      selectingLines.push(`${useI.get(t, true)}.${cc(ra.Name, 'sk')} AS ${n}`);
     }
   }
 
-  let joinLines: string[] = GenerateJoinLines(t, [], selectingLines);
+  let joinLines: string[] = GenerateJoinLines(t, [], selectingLines, useI);
 
   joinLines = alignKeyword(joinLines, 'ON');
   joinLines = alignKeyword(joinLines, '=');

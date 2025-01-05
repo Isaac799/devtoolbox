@@ -2,6 +2,36 @@ import { TAB } from '../../constants';
 import { cc, alignKeyword, alignKeywords } from '../../formatting';
 import { Table, AttrType, Schema, Attribute } from '../../structure';
 
+export class UseI {
+  iUsages: Record<string, number> = {};
+
+  increment = (t: Table): void => {
+    let x = t.FNInitials;
+    if (!this.iUsages[x]) {
+      this.iUsages[x] = 0;
+    }
+    this.iUsages[x] += 1;
+  };
+
+  get = (t: Table, sameSchema: boolean, t2?: Table): string => {
+    let x = t.FNInitials;
+
+    let r = t.SimpleInitials;
+
+    if (!this.iUsages[x]) {
+      if (sameSchema) {
+        return t2 ? `${t2.SimpleInitials}${r}` : r;
+      }
+      return t2 ? `${t2.SimpleInitials}${x}` : x;
+    }
+    let num = this.iUsages[x] > 1 ? this.iUsages[x] : '';
+    if (sameSchema) {
+      return (t2 ? `${t2.SimpleInitials}${r}` : r) + num;
+    }
+    return t2 ? `${t2.SimpleInitials}${x}` : x + num;
+  };
+}
+
 export function SchemasToSqlFuncs(schemas: Schema[]): string {
   let lines: string[] = [];
   for (const s of schemas) {
@@ -32,11 +62,16 @@ function generateSqlFns(t: Table) {
   let fnName = `${cc(t.Parent.Name, 'sk')}.${cc(`get_${t.Name}`, 'sk')}`;
   let selectingLines: string[] = [];
 
+  let useI = new UseI();
+  useI.increment(t);
+
   let whereAND = [];
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue;
     params.push(`${cc(a.Name, 'sk')} ${a.Type}`);
-    whereAND.push(`${t.FN}.${cc(a.Name, 'sk')} = ${cc(a.Name, 'sk')}`);
+    whereAND.push(
+      `${useI.get(t, true)}.${cc(a.Name, 'sk')} = ${cc(a.Name, 'sk')}`
+    );
   }
   let whereStr: string = whereAND.join(' AND ');
 
@@ -48,23 +83,24 @@ function generateSqlFns(t: Table) {
 
   for (const a of t.Attributes) {
     if (!a.RefTo) {
-      let n = cc(a.FN, 'sk');
+      let n = cc(`${useI.get(t, true)}_${cc(a.Name, 'sk')}`, 'sk');
       returnTableLines.push(`${n} ${a.Type}`);
-      selectingLines.push(`${a.FN} AS ${n}`);
+      selectingLines.push(`${useI.get(t, true)}.${cc(a.Name, 'sk')} AS ${n}`);
       continue;
     }
 
     for (const ra of a.RefTo.Attributes) {
-      let n = cc(a.FN, 'sk');
+      let n = cc(`${useI.get(t, true)}_${cc(ra.Name, 'sk')}`, 'sk');
       returnTableLines.push(`${n} ${ra.Type}`);
-      selectingLines.push(`${ra.FN} AS ${n}`);
+      selectingLines.push(`${useI.get(t, true)}.${cc(ra.Name, 'sk')} AS ${n}`);
     }
   }
 
   let joinLines: string[] = GenerateJoinLines(
     t,
     returnTableLines,
-    selectingLines
+    selectingLines,
+    useI
   );
 
   joinLines = alignKeyword(joinLines, 'ON');
@@ -97,14 +133,19 @@ $$ LANGUAGE plpgsql;`;
 export function GenerateJoinLines(
   t: Table,
   returnTableLines: string[],
-  selectingLines: string[]
+  selectingLines: string[],
+  useI: UseI
 ) {
   let joinLines: string[] = [];
-  joinLines.push(t.FN);
+  joinLines.push(`${t.FN} ${useI.get(t, true)}`);
 
   if (t.RefBy) {
     for (const tbl of t.RefBy) {
-      let j1 = `LEFT JOIN ${tbl.FN} ON`;
+      useI.increment(tbl);
+
+      let sameSchema = tbl.Parent.ID === t.Parent.ID;
+
+      let j1 = `LEFT JOIN ${tbl.FN} ${useI.get(tbl, sameSchema)} ON`;
       let j1ON = [];
 
       for (const a2 of tbl.Attributes) {
@@ -115,7 +156,10 @@ export function GenerateJoinLines(
           for (const ra2 of pksForJoin) {
             if (t.ID !== ra2.Parent.ID) continue;
             j1ON.push(
-              `${tbl.FN}.${cc(`${a2.Name}_${ra2.Name}`, 'sk')} = ${ra2.FN}`
+              `${useI.get(tbl, sameSchema)}.${cc(
+                `${a2.Name}_${ra2.Name}`,
+                'sk'
+              )} = ${useI.get(t, true)}.${cc(ra2.Name, 'sk')}`
             );
           }
           continue;
@@ -125,9 +169,11 @@ export function GenerateJoinLines(
         //   a2.Parent.Parent.ID === t.Parent.ID
         //     ? cc(a2.PFN, 's')
         //     : cc(a2.FN, 's');
-        let n = cc(a2.FN, 'sk');
+        let n = cc(`${useI.get(tbl, sameSchema)}_${cc(a2.Name, 'sk')}`, 'sk');
         returnTableLines.push(`${n} ${a2.Type}`);
-        selectingLines.push(`${a2.FN} AS ${n}`);
+        selectingLines.push(
+          `${useI.get(tbl, sameSchema)}.${cc(a2.Name, 'sk')} AS ${n}`
+        );
       }
 
       if (j1ON.length > 0) {
@@ -144,16 +190,24 @@ export function GenerateJoinLines(
         if (a.RefTo.ID === t.ID) continue;
 
         let t2 = a.RefTo;
+        useI.increment(t2);
 
-        let j2 = `LEFT JOIN ${t2.FN} ON`;
+        let sameSchema = t2.Parent.ID === t.Parent.ID;
+
+        let j2 = `LEFT JOIN ${t2.FN} ${useI.get(t2, sameSchema, tbl)} ON`;
         let j2ON = [];
 
         for (const a2 of t2.Attributes) {
           if (a2.Type === AttrType.REFERENCE) continue;
 
-          let n = cc(a2.FN, 'sk');
+          let n = cc(
+            `${useI.get(t2, sameSchema, tbl)}_${cc(a2.Name, 'sk')}`,
+            'sk'
+          );
           returnTableLines.push(`${n} ${a2.Type}`);
-          selectingLines.push(`${a2.FN} AS ${n}`);
+          selectingLines.push(
+            `${useI.get(t2, sameSchema, tbl)}.${cc(a2.Name, 'sk')} AS ${n}`
+          );
         }
 
         for (const a2 of t2.Attributes) {
@@ -162,7 +216,12 @@ export function GenerateJoinLines(
 
           // WHAT (post)
           // social.user_post.what_bbb_id      = social.post.id
-          j2ON.push(`${tbl.FN}.${cc(`${a.Name}_${a2.Name}`, 'sk')} = ${a2.FN}`);
+          j2ON.push(
+            `${useI.get(t2, sameSchema, tbl)}.${cc(a2.Name, 'sk')} = ${useI.get(
+              tbl,
+              true
+            )}.${cc(`${a.Name}_${a2.Name}`, 'sk')}`
+          );
 
           // j2ON.push(`${a2.FN} = ${l1} -- HI`);
         }
