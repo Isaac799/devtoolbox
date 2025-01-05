@@ -24,6 +24,7 @@ import { NotificationService } from '../services/notification.service';
 import { SchemasToAngularFormControls } from './generators/angular.form.controls';
 import { SchemasToTablesForTSQL } from './generators/tsql.tables';
 import { SchemasToTSQLStoredProcedures } from './generators/tsql.stored.procedures';
+import { SchemasToTsClasses } from './generators/ts.class';
 
 @Component({
   selector: 'app-code-output',
@@ -54,6 +55,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
           break;
         case AppGeneratorMode.TS:
           this.output = SchemasToTsStructs(schemas);
+          ext = 'TS';
+          break;
+        case AppGeneratorMode.TSClasses:
+          this.output = SchemasToTsClasses(schemas);
           ext = 'TS';
           break;
         case AppGeneratorMode.PostgresFunctions:

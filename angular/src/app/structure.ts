@@ -292,6 +292,7 @@ export class Func {
     }
     let isTs = [
       AppGeneratorMode.AngularFormControl,
+      AppGeneratorMode.TSClasses,
       AppGeneratorMode.TS,
     ].includes(mode);
     if (isTs) {
@@ -494,6 +495,7 @@ export enum AppGeneratorMode {
   AngularFormControl,
   Go,
   TS,
+  TSClasses,
   TSQLTables,
   TSQLStoredProcedures,
 }

@@ -71,8 +71,12 @@ export class AppComponent implements OnInit {
       value: AppGeneratorMode.Go,
     },
     {
-      name: 'Structs and Functions (TypeScript)',
+      name: 'Interfaces and Functions (TypeScript)',
       value: AppGeneratorMode.TS,
+    },
+    {
+      name: 'Classes (TypeScript)',
+      value: AppGeneratorMode.TSClasses,
     },
     {
       name: 'Angular Reactive Form (TypeScript)',

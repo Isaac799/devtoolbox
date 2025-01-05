@@ -3,8 +3,8 @@ interface User {
   name: string;
   email: string;
   userProfile: Profile | null;
-  listingItems: Array<Item>;
-  financePurchaseItems: Array<Item>;
+  listingItems: Item[];
+  financePurchaseItems: Item[];
 }
 
 function NewUser(name: string, email: string): User {
@@ -35,8 +35,8 @@ function NewProfile(profileUser: number | null, bio: string | null): Profile {
 interface Item {
   id: number;
   description: string;
-  listingUsers: Array<User>;
-  financePurchaseUsers: Array<User>;
+  listingUsers: User[];
+  financePurchaseUsers: User[];
 }
 
 function NewItem(description: string): Item {
