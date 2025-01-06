@@ -65,43 +65,43 @@ export class AppComponent implements OnInit {
       value: AppGeneratorMode.PostgresFunctions,
     },
     {
-      name: 'T-SQL: Tables',
+      name: 'T-SQL: tables',
       value: AppGeneratorMode.TSQLTables,
     },
     {
-      name: ' T-SQL: Stored Procedures',
+      name: ' T-SQL: procedures',
       value: AppGeneratorMode.TSQLStoredProcedures,
     },
     {
-      name: 'SQLite: Tables',
+      name: 'SQLite: tables',
       value: AppGeneratorMode.SQLiteTables,
     },
     {
-      name: 'SQLite: Queries',
+      name: 'SQLite: queries',
       value: AppGeneratorMode.SQLiteJoinQuery,
     },
     {
-      name: 'Rust: Structs and Impl',
-      value: AppGeneratorMode.RustStructAndImpl,
-    },
-    {
-      name: 'Go: Structs and ƒ',
-      value: AppGeneratorMode.GoStructsAndFns,
-    },
-    {
-      name: 'TypeScript: Types and ƒ',
-      value: AppGeneratorMode.TSTypesAndFns,
-    },
-    {
-      name: 'TypeScript: Classes',
-      value: AppGeneratorMode.TSClasses,
-    },
-    {
-      name: 'JavaScript: Classes',
+      name: 'JavaScript: classes',
       value: AppGeneratorMode.JSClasses,
     },
     {
-      name: 'Angular: Reactive Form',
+      name: 'TypeScript: classes',
+      value: AppGeneratorMode.TSClasses,
+    },
+    {
+      name: 'TypeScript: types & ƒ',
+      value: AppGeneratorMode.TSTypesAndFns,
+    },
+    {
+      name: 'Go: structs & ƒ',
+      value: AppGeneratorMode.GoStructsAndFns,
+    },
+    {
+      name: 'Rust: structs & impl ƒ',
+      value: AppGeneratorMode.RustStructAndImpl,
+    },
+    {
+      name: 'Angular: reactive form',
       value: AppGeneratorMode.AngularFormControl,
     },
   ];
