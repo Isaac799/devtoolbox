@@ -1224,9 +1224,9 @@ export const GenerateDefaultValue = (
   if ([Lang.Rust].includes(lang)) {
     switch (a.Type) {
       case AttrType.CHAR:
-        return `'${d.replaceAll("'", "''")}'`;
+        return `String::from("${d.replaceAll('"', '\\"')}")`;
       case AttrType.VARCHAR:
-        return `'${d.replaceAll("'", "''")}'`;
+        return `String::from("${d.replaceAll('"', '\\"')}")`;
       case AttrType.DATE:
         {
           let s = d.split('-');
