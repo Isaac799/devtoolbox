@@ -1224,7 +1224,7 @@ export const GenerateDefaultValue = (
   if ([Lang.Rust].includes(lang)) {
     switch (a.Type) {
       case AttrType.CHAR:
-        return `String::from("${d.replaceAll('"', '\\"')}")`;
+        return `'${d.replaceAll("'", "\'").replaceAll('\\', '\\\\')}'`;
       case AttrType.VARCHAR:
         return `String::from("${d.replaceAll('"', '\\"')}")`;
       case AttrType.DATE:
@@ -1269,7 +1269,7 @@ export const GenerateDefaultValue = (
   if ([Lang.PGSQL, Lang.TSQL].includes(lang)) {
     switch (a.Type) {
       case AttrType.CHAR:
-        return `'${d.replaceAll("'", "''")}'`;
+        return `'${d.replaceAll("'", "\'").replaceAll('\\', '\\\\')}'`;
       case AttrType.VARCHAR:
         return `'${d.replaceAll("'", "''")}'`;
       default:
@@ -1280,7 +1280,7 @@ export const GenerateDefaultValue = (
   if (lang === Lang.SQLite) {
     switch (a.Type) {
       case AttrType.CHAR:
-        return `'${d.replaceAll("'", "''")}'`;
+        return `'${d.replaceAll("'", "\'").replaceAll('\\', '\\\\')}'`;
       case AttrType.VARCHAR:
         return `'${d.replaceAll("'", "''")}'`;
       case AttrType.DATE:
