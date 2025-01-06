@@ -406,6 +406,15 @@ export class Attribute {
       AttrType.MONEY,
     ].includes(this.Type);
   }
+
+  isNullable() {
+    const isRequired = this.Validation?.Required === true;
+    const isPk = this.Option?.PrimaryKey === true;
+    const isReqOrPk = isRequired || isPk;
+    const isRef = this.Type === AttrType.REFERENCE;
+    const isNullable = !isReqOrPk || (isPk && isRef);
+    return isNullable;
+  }
 }
 
 // Schema represents the entire schema containing multiple tables
@@ -727,11 +736,8 @@ function genLabelType(
     number,
     { label: string; type: string; defaultValue: string }
   >();
-  const isRequired = aL.Validation?.Required === true;
-  const isPk = aL.Option?.PrimaryKey === true;
-  const isReqOrPk = isRequired || isPk;
-  const isRef = aL.Type === AttrType.REFERENCE;
-  const isNullable = !isReqOrPk || (isPk && isRef);
+
+  const isNullable = aL.isNullable();
 
   // console.log(' ');
   // console.log(aL.Name);
@@ -1186,16 +1192,18 @@ function genLabelType(
 }
 
 export const GenerateDefaultValue = (
-  a: Attribute,
+  attr: Attribute,
   lang: Lang
 ): string | null => {
-  let d = a.Option?.Default;
+  const isNullable = attr.isNullable();
+
+  let d = attr.Option?.Default;
 
   if (!d) {
     return null;
   }
 
-  let validFn = validationMap.get(a.Type);
+  let validFn = validationMap.get(attr.Type);
   if (!validFn) {
     return null;
   }
@@ -1222,18 +1230,21 @@ export const GenerateDefaultValue = (
   }
 
   if ([Lang.Rust].includes(lang)) {
-    switch (a.Type) {
+    let answer = '';
+    switch (attr.Type) {
       case AttrType.CHAR:
-        return `'${d.replaceAll("'", "\'").replaceAll('\\', '\\\\')}'`;
+        answer = `'${d.replaceAll("'", "'").replaceAll('\\', '\\\\')}'`;
+        break;
       case AttrType.VARCHAR:
-        return `String::from("${d.replaceAll('"', '\\"')}")`;
+        answer = `String::from("${d.replaceAll('"', '\\"')}")`;
+        break;
       case AttrType.DATE:
         {
           let s = d.split('-');
           if (d === 'NOW()' || d === 'CURRENT_DATE') {
-            return `Utc::now()`;
+            answer = `Utc::now()`;
           } else if (s.length === 3) {
-            return `Utc.from_utc_naive(&NaiveDate::from_ymd(${s[0]}, ${s[1]}, ${s[2]}))`;
+            answer = `Utc.from_utc_naive(&NaiveDate::from_ymd(${s[0]}, ${s[1]}, ${s[2]}))`;
           }
         }
         break;
@@ -1241,9 +1252,9 @@ export const GenerateDefaultValue = (
         {
           let t = d.split(':');
           if (d === 'NOW()' || d === 'CURRENT_TIME') {
-            return `Utc::now()`;
+            answer = `Utc::now()`;
           } else if (t.length === 3) {
-            return `Utc.from_utc_naive(&NaiveDateTime::new(NaiveDate::from_ymd(1970, 1, 1), NaiveTime::from_hms(${t[0]}, ${t[1]}, ${t[2]})))`;
+            answer = `Utc.from_utc_naive(&NaiveDateTime::new(NaiveDate::from_ymd(1970, 1, 1), NaiveTime::from_hms(${t[0]}, ${t[1]}, ${t[2]})))`;
           }
         }
         break;
@@ -1251,25 +1262,33 @@ export const GenerateDefaultValue = (
         {
           let s = d.split(' ');
           if (d === 'NOW()' || d === 'CURRENT_TIMESTAMP') {
-            return `Utc::now()`;
+            answer = `Utc::now()`;
           } else if (s.length === 2) {
             let dt = s[0].split('-');
             let t = s[1].split(':');
             if (dt.length === 3 && t.length === 3) {
-              return `Utc.from_utc_naive(&NaiveDateTime::new(NaiveDate::from_ymd(${dt[0]}, ${dt[1]}, ${dt[2]}), NaiveTime::from_hms(${t[0]}, ${t[1]}, ${t[2]})))`;
+              answer = `Utc.from_utc_naive(&NaiveDateTime::new(NaiveDate::from_ymd(${dt[0]}, ${dt[1]}, ${dt[2]}), NaiveTime::from_hms(${t[0]}, ${t[1]}, ${t[2]})))`;
             }
           }
         }
         break;
       default:
-        return `${d}`;
+        answer = `${d}`;
+        break;
+    }
+    if (answer && isNullable) {
+      return `Some(${answer})`;
+    } else if (!answer && isNullable) {
+      return 'None';
+    } else {
+      return answer;
     }
   }
 
   if ([Lang.PGSQL, Lang.TSQL].includes(lang)) {
-    switch (a.Type) {
+    switch (attr.Type) {
       case AttrType.CHAR:
-        return `'${d.replaceAll("'", "\'").replaceAll('\\', '\\\\')}'`;
+        return `'${d.replaceAll("'", "'").replaceAll('\\', '\\\\')}'`;
       case AttrType.VARCHAR:
         return `'${d.replaceAll("'", "''")}'`;
       default:
@@ -1278,9 +1297,9 @@ export const GenerateDefaultValue = (
   }
 
   if (lang === Lang.SQLite) {
-    switch (a.Type) {
+    switch (attr.Type) {
       case AttrType.CHAR:
-        return `'${d.replaceAll("'", "\'").replaceAll('\\', '\\\\')}'`;
+        return `'${d.replaceAll("'", "'").replaceAll('\\', '\\\\')}'`;
       case AttrType.VARCHAR:
         return `'${d.replaceAll("'", "''")}'`;
       case AttrType.DATE:
@@ -1357,7 +1376,7 @@ export const GenerateDefaultValue = (
       }
     }
 
-    switch (a.Type) {
+    switch (attr.Type) {
       case AttrType.BIT:
         return `${d}`;
       case AttrType.DATE:
@@ -1466,7 +1485,7 @@ export const GenerateDefaultValue = (
       }
     }
 
-    switch (a.Type) {
+    switch (attr.Type) {
       case AttrType.BIT:
         return `${d}`;
       case AttrType.DATE:
