@@ -11,13 +11,14 @@ export enum Lang {
   TSQL = 1 << 5,
   GO = 1 << 6,
   TS = 1 << 7,
-  SQLite = 1 << 11,
+  SQLite = 1 << 8,
+  Rust = 1 << 9,
 }
 
 export enum Cardinality {
-  One = 1 << 8,
-  Many = 1 << 9,
-  Self = 1 << 10,
+  One = 1 << 10,
+  Many = 1 << 11,
+  Self = 1 << 12,
 }
 
 export class FuncIn {
@@ -279,6 +280,7 @@ export class Func {
 
   private determineTitle(): string {
     let map: Record<Lang, string> = {
+      [Lang.Rust]: cc(this.table.Name, 'sk'),
       [Lang.SQLite]: cc(this.table.Name, 'sk'),
       [Lang.PGSQL]: cc(this.table.Name, 'sk'),
       [Lang.TSQL]: cc(this.table.Name, 'sk'),
@@ -314,6 +316,10 @@ export class Func {
     ].includes(mode);
     if (isPostgres) {
       return Lang.PGSQL;
+    }
+    let isRust = [AppGeneratorMode.RustStructAndImpl].includes(mode);
+    if (isRust) {
+      return Lang.Rust;
     }
 
     console.error(
@@ -505,6 +511,7 @@ export enum AppGeneratorMode {
   TSQLStoredProcedures,
   SQLiteTables,
   SQLiteJoinQuery,
+  RustStructAndImpl,
 }
 
 export enum AppComplexityMode {
@@ -605,6 +612,23 @@ export const SQL_TO_SQL_LITE_TYPE: Record<AttrType, string> = {
   [AttrType.REFERENCE]: '',
 };
 
+export const SQL_TO_RUST_TYPE: Record<AttrType, string> = {
+  [AttrType.BIT]: 'bool',
+  [AttrType.DATE]: 'DateTime<Utc>',
+  [AttrType.CHAR]: 'char',
+  [AttrType.TIME]: 'DateTime<Utc>',
+  [AttrType.TIMESTAMP]: 'DateTime<Utc>',
+  [AttrType.SERIAL]: 'i32',
+  [AttrType.DECIMAL]: 'f64',
+  [AttrType.FLOAT]: 'f32',
+  [AttrType.REAL]: 'f64',
+  [AttrType.INT]: 'i32',
+  [AttrType.BOOLEAN]: 'bool',
+  [AttrType.VARCHAR]: 'String',
+  [AttrType.MONEY]: 'f64',
+  [AttrType.REFERENCE]: 'i32',
+};
+
 export const SQL_TO_GO_TYPE: Record<AttrType, string> = {
   [AttrType.BIT]: 'bool',
   [AttrType.DATE]: 'time.Time',
@@ -637,6 +661,23 @@ export const SQL_TO_GO_DEFAULT_VALUE: Record<AttrType, string> = {
   [AttrType.VARCHAR]: "''",
   [AttrType.MONEY]: '0',
   [AttrType.REFERENCE]: '',
+};
+
+export const SQL_TO_RUST_DEFAULT_VALUE: Record<AttrType, string> = {
+  [AttrType.BIT]: 'false',
+  [AttrType.DATE]: '"1970-01-01"',
+  [AttrType.CHAR]: "' '",
+  [AttrType.TIME]: '"00:00:00"',
+  [AttrType.TIMESTAMP]: '"1970-01-01 00:00:00"',
+  [AttrType.SERIAL]: '0',
+  [AttrType.DECIMAL]: '0.0',
+  [AttrType.FLOAT]: '0.0',
+  [AttrType.REAL]: '0.0',
+  [AttrType.INT]: '0',
+  [AttrType.BOOLEAN]: 'false',
+  [AttrType.VARCHAR]: "''",
+  [AttrType.MONEY]: '0.0',
+  [AttrType.REFERENCE]: '0',
 };
 
 export const SQL_TO_TS_TYPE: Record<AttrType, string> = {
@@ -686,11 +727,18 @@ function genLabelType(
     number,
     { label: string; type: string; defaultValue: string }
   >();
-  const isNullable =
-    aL.Validation?.Required ||
-    (aL.Option?.PrimaryKey && aL.Type !== AttrType.REFERENCE);
+  const isRequired = aL.Validation?.Required === true;
+  const isPk = aL.Option?.PrimaryKey === true;
+  const isReqOrPk = isRequired || isPk;
+  const isRef = aL.Type === AttrType.REFERENCE;
+  const isNullable = !isReqOrPk || (isPk && isRef);
 
-  //#region PostgreSQL
+  // console.log(' ');
+  // console.log(aL.Name);
+  // console.log('    nullable due to required or primary: ', !isReqOrPk);
+  // console.log('    nullable due to primary and reference: ', isPk && isRef);
+
+  //#region SQLite
 
   const sqliteCase = io === 'in' ? 'sk' : 'sk';
   let sqliteType: string = SQL_TO_SQL_LITE_TYPE[aT.Type];
@@ -1036,6 +1084,83 @@ function genLabelType(
 
   //#endregion
 
+  //#region Rust
+
+  let rustType = overrideType
+    ? cc(overrideType, 'pl')
+    : SQL_TO_RUST_TYPE[aT.Type] || SQL_TO_RUST_TYPE[aL.Type];
+  const rustCase = io === 'in' ? 'sk' : 'sk';
+  const rustOverrideTypeRelatedLabel = fixPluralGrammar(
+    cc(aT.Name, rustCase) + 's'
+  );
+
+  if (!rustType) {
+    rustType = SQL_TO_RUST_TYPE[aL.Type];
+  }
+
+  map.set(Lang.Rust | Rel.SameTable | Cardinality.Self, {
+    label: cc(aL.Name, rustCase),
+    type: isNullable ? `Option<${rustType}>` : rustType,
+    defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type],
+  });
+  map.set(Lang.Rust | Rel.SameSchema | Cardinality.Self, {
+    label: cc(aL.PFN, rustCase),
+    type: isNullable ? `Option<${rustType}>` : rustType,
+    defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type],
+  });
+  map.set(Lang.Rust | Rel.DiffSchema | Cardinality.Self, {
+    label: cc(aL.FN, rustCase),
+    type: isNullable ? `Option<${rustType}>` : rustType,
+    defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type],
+  });
+
+  //    -    -
+
+  map.set(Lang.Rust | Rel.SameTable | Cardinality.One, {
+    label: cc(aL.Name, rustCase),
+    // type: isNullable ? `Option<${rustType}>` : rustType,
+    type: `Option<${rustType}>`,
+    defaultValue: 'None',
+  });
+  map.set(Lang.Rust | Rel.SameSchema | Cardinality.One, {
+    label: cc(aL.PFN, rustCase),
+    // type: isNullable ? `Option<${rustType}>` : rustType,
+    type: `Option<${rustType}>`,
+    defaultValue: 'None',
+  });
+  map.set(Lang.Rust | Rel.DiffSchema | Cardinality.One, {
+    label: cc(aL.FN, rustCase),
+    // type: isNullable ? `Option<${rustType}>` : rustType,
+    type: `Option<${rustType}>`,
+    defaultValue: 'None',
+  });
+
+  //    -    -
+
+  map.set(Lang.Rust | Rel.SameTable | Cardinality.Many, {
+    label: overrideType
+      ? rustOverrideTypeRelatedLabel
+      : fixPluralGrammar(cc(aL.Name, rustCase) + 's'),
+    type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
+    defaultValue: 'Vec::new()',
+  });
+  map.set(Lang.Rust | Rel.SameSchema | Cardinality.Many, {
+    label: overrideType
+      ? rustOverrideTypeRelatedLabel
+      : fixPluralGrammar(cc(aL.PFN, rustCase) + 's'),
+    type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
+    defaultValue: 'Vec::new()',
+  });
+  map.set(Lang.Rust | Rel.DiffSchema | Cardinality.Many, {
+    label: overrideType
+      ? rustOverrideTypeRelatedLabel
+      : fixPluralGrammar(cc(aL.FN, rustCase) + 's'),
+    type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
+    defaultValue: 'Vec::new()',
+  });
+
+  //#endregion
+
   let answer = map.get(lang | relation | cardinality);
 
   if (!answer) {
@@ -1094,6 +1219,51 @@ export const GenerateDefaultValue = (
 
   if (d.trim().toUpperCase() === 'CURRENT_TIMESTAMP') {
     d = 'CURRENT_TIMESTAMP';
+  }
+
+  if ([Lang.Rust].includes(lang)) {
+    switch (a.Type) {
+      case AttrType.CHAR:
+        return `'${d.replaceAll("'", "''")}'`;
+      case AttrType.VARCHAR:
+        return `'${d.replaceAll("'", "''")}'`;
+      case AttrType.DATE:
+        {
+          let s = d.split('-');
+          if (d === 'NOW()' || d === 'CURRENT_DATE') {
+            return `Utc::now()`;
+          } else if (s.length === 3) {
+            return `Utc.from_utc_naive(&NaiveDate::from_ymd(${s[0]}, ${s[1]}, ${s[2]}))`;
+          }
+        }
+        break;
+      case AttrType.TIME:
+        {
+          let t = d.split(':');
+          if (d === 'NOW()' || d === 'CURRENT_TIME') {
+            return `Utc::now()`;
+          } else if (t.length === 3) {
+            return `Utc.from_utc_naive(&NaiveDateTime::new(NaiveDate::from_ymd(1970, 1, 1), NaiveTime::from_hms(${t[0]}, ${t[1]}, ${t[2]})))`;
+          }
+        }
+        break;
+      case AttrType.TIMESTAMP:
+        {
+          let s = d.split(' ');
+          if (d === 'NOW()' || d === 'CURRENT_TIMESTAMP') {
+            return `Utc::now()`;
+          } else if (s.length === 2) {
+            let dt = s[0].split('-');
+            let t = s[1].split(':');
+            if (dt.length === 3 && t.length === 3) {
+              return `Utc.from_utc_naive(&NaiveDateTime::new(NaiveDate::from_ymd(${dt[0]}, ${dt[1]}, ${dt[2]}), NaiveTime::from_hms(${t[0]}, ${t[1]}, ${t[2]})))`;
+            }
+          }
+        }
+        break;
+      default:
+        return `${d}`;
+    }
   }
 
   if ([Lang.PGSQL, Lang.TSQL].includes(lang)) {

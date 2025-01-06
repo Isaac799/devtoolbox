@@ -81,6 +81,10 @@ export class AppComponent implements OnInit {
       value: AppGeneratorMode.SQLiteJoinQuery,
     },
     {
+      name: 'Rust: Structs and Impl',
+      value: AppGeneratorMode.RustStructAndImpl,
+    },
+    {
       name: 'Go: Structs and ƒ',
       value: AppGeneratorMode.GoStructsAndFns,
     },
