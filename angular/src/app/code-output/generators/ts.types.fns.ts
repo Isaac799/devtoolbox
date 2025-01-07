@@ -1,77 +1,77 @@
-import { TAB } from '../../constants';
-import { cc, alignKeyword } from '../../formatting';
-import { Schema, AppGeneratorMode, Func } from '../../structure';
+import {TAB} from '../../constants'
+import {cc, alignKeyword} from '../../formatting'
+import {Schema, AppGeneratorMode, Func} from '../../structure'
 
 export function SchemasToTsTypesAndFns(schemas: Schema[]): string {
-  const funcs: Func[] = [];
-  for (const s of schemas) {
-    for (const t of s.Tables) {
-      const func = new Func(t, AppGeneratorMode.TSTypesAndFns);
-      funcs.push(func);
+    const funcs: Func[] = []
+    for (const s of schemas) {
+        for (const t of s.Tables) {
+            const func = new Func(t, AppGeneratorMode.TSTypesAndFns)
+            funcs.push(func)
+        }
     }
-  }
 
-  let lines: string[] = [];
+    let lines: string[] = []
 
-  for (const f of funcs) {
-    // Struct
+    for (const f of funcs) {
+        // Struct
 
-    lines.push(`type ${f.title} = {`);
-    const attrs: string[] = generateStructAttributes(f);
-    lines = lines.concat(attrs);
-    lines.push(`}\n`);
+        lines.push(`type ${f.title} = {`)
+        const attrs: string[] = generateStructAttributes(f)
+        lines = lines.concat(attrs)
+        lines.push(`}\n`)
 
-    // Func
+        // Func
 
-    let funcAttrs: string[] = generateFuncReturnStruct(f);
-    const { title, params } = generateTitleAndParams(f);
+        let funcAttrs: string[] = generateFuncReturnStruct(f)
+        const {title, params} = generateTitleAndParams(f)
 
-    lines.push(`function ${title} (
+        lines.push(`function ${title} (
 ${TAB}${params}
-): ${f.title} {`);
-    lines.push(`${TAB}return {`);
+): ${f.title} {`)
+        lines.push(`${TAB}return {`)
 
-    funcAttrs = alignKeyword(funcAttrs, ' :');
-    lines = lines.concat(funcAttrs);
+        funcAttrs = alignKeyword(funcAttrs, ' :')
+        lines = lines.concat(funcAttrs)
 
-    lines.push(`${TAB}}`);
-    lines.push(`}\n`);
-  }
+        lines.push(`${TAB}}`)
+        lines.push(`}\n`)
+    }
 
-  const str = lines.join('\n');
-  return str;
+    const str = lines.join('\n')
+    return str
 }
 
 function generateTitleAndParams(f: Func) {
-  const relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
-  const params = relevantInputs
-    .map((e) => `${e.label}: ${e.type}`)
-    .join(`,\n${TAB}`);
+    const relevantInputs = f.outputs.map(e => e.relatedInput).filter(e => !!e)
+    const params = relevantInputs
+        .map(e => `${e.label}: ${e.type}`)
+        .join(`,\n${TAB}`)
 
-  const title = cc(`New_${f.title}`, 'pl');
-  return { title, params };
+    const title = cc(`New_${f.title}`, 'pl')
+    return {title, params}
 }
 
 function generateFuncReturnStruct(f: Func) {
-  const funcAttrs: string[] = [];
-  for (const o of f.outputs) {
-    if (o.relatedInput === null) {
-      funcAttrs.push(`${TAB}${TAB}${o.label} : ${o.defaultValue},`);
-      continue;
+    const funcAttrs: string[] = []
+    for (const o of f.outputs) {
+        if (o.relatedInput === null) {
+            funcAttrs.push(`${TAB}${TAB}${o.label} : ${o.defaultValue},`)
+            continue
+        }
+        funcAttrs.push(`${TAB}${TAB}${o.label} : ${o.relatedInput.label},`)
     }
-    funcAttrs.push(`${TAB}${TAB}${o.label} : ${o.relatedInput.label},`);
-  }
 
-  return funcAttrs;
+    return funcAttrs
 }
 
 function generateStructAttributes(f: Func) {
-  let attrs: string[] = [];
-  for (const e of f.outputs) {
-    attrs.push(
-      `${TAB}${e.label}: ${e.relatedInput ? e.relatedInput.type : e.type},`
-    );
-  }
-  attrs = alignKeyword(attrs, ':');
-  return attrs;
+    let attrs: string[] = []
+    for (const e of f.outputs) {
+        attrs.push(
+            `${TAB}${e.label}: ${e.relatedInput ? e.relatedInput.type : e.type},`
+        )
+    }
+    attrs = alignKeyword(attrs, ':')
+    return attrs
 }

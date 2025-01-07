@@ -1,8 +1,8 @@
-import { MinMaxLabelFromAttrTypePipe } from './min-max-label-from-attr-type.pipe';
+import {MinMaxLabelFromAttrTypePipe} from './min-max-label-from-attr-type.pipe'
 
 describe('MinMaxLabelFromAttrTypePipe', () => {
-  it('create an instance', () => {
-    const pipe = new MinMaxLabelFromAttrTypePipe();
-    expect(pipe).toBeTruthy();
-  });
-});
+    it('create an instance', () => {
+        const pipe = new MinMaxLabelFromAttrTypePipe()
+        expect(pipe).toBeTruthy()
+    })
+})

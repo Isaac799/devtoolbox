@@ -2,20 +2,16 @@
     height: calc(100vh - 1rem);
 }
 
-
 .limit-width {
     width: 70vw;
 }
-
 
 @media (max-width: 680px) {
     .limit-height {
         height: calc(65vh - 1rem);
     }
 
-
     .limit-width {
         width: calc(100vw - 1rem);
     }
-
 }

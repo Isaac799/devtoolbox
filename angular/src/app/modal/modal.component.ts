@@ -1,68 +1,68 @@
 import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+    Component,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output
+} from '@angular/core'
 
 @Component({
-  selector: 'app-modal',
-  imports: [],
-  templateUrl: './modal.component.html',
-  styleUrl: './modal.component.scss',
+    selector: 'app-modal',
+    imports: [],
+    templateUrl: './modal.component.html',
+    styleUrl: './modal.component.scss'
 })
 export class ModalComponent implements OnInit, OnDestroy {
-  private keyListeners = (ev: KeyboardEvent) => {
-    if (['Enter', 'Return'].includes(ev.key)) {
-      this.doClickAccept();
+    private keyListeners = (ev: KeyboardEvent) => {
+        if (['Enter', 'Return'].includes(ev.key)) {
+            this.doClickAccept()
+        }
+        if (['Escape'].includes(ev.key)) {
+            this.doClickAway()
+        }
     }
-    if (['Escape'].includes(ev.key)) {
-      this.doClickAway();
+
+    ngOnInit(): void {
+        window.addEventListener('keyup', this.keyListeners)
     }
-  };
 
-  ngOnInit(): void {
-    window.addEventListener('keyup', this.keyListeners);
-  }
-
-  ngOnDestroy(): void {
-    window.removeEventListener('keyup', this.keyListeners);
-  }
-
-  @Input() disableAccept = false;
-
-  private _visible = false;
-  public get visible() {
-    return this._visible;
-  }
-  @Input() public set visible(value) {
-    if (this._visible !== value) {
-      this.visibleChange.emit(value);
+    ngOnDestroy(): void {
+        window.removeEventListener('keyup', this.keyListeners)
     }
-    this._visible = value;
-  }
-  @Output() visibleChange = new EventEmitter<boolean>();
 
-  @Input() title = '';
-  @Input() textAccept = 'Save';
-  @Input() textReject = 'Cancel';
+    @Input() disableAccept = false
 
-  @Output() accepted = new EventEmitter<void>();
-  @Output() rejected = new EventEmitter<void>();
-  @Output() close = new EventEmitter<void>();
+    private _visible = false
+    public get visible() {
+        return this._visible
+    }
+    @Input() public set visible(value) {
+        if (this._visible !== value) {
+            this.visibleChange.emit(value)
+        }
+        this._visible = value
+    }
+    @Output() visibleChange = new EventEmitter<boolean>()
 
-  doClickAccept() {
-    this.visible = false;
-    this.accepted.emit();
-  }
-  doClickReject() {
-    this.visible = false;
-    this.rejected.emit();
-  }
-  doClickAway() {
-    this.visible = false;
-    this.close.emit();
-  }
+    @Input() title = ''
+    @Input() textAccept = 'Save'
+    @Input() textReject = 'Cancel'
+
+    @Output() accepted = new EventEmitter<void>()
+    @Output() rejected = new EventEmitter<void>()
+    @Output() close = new EventEmitter<void>()
+
+    doClickAccept() {
+        this.visible = false
+        this.accepted.emit()
+    }
+    doClickReject() {
+        this.visible = false
+        this.rejected.emit()
+    }
+    doClickAway() {
+        this.visible = false
+        this.close.emit()
+    }
 }

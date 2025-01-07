@@ -1,22 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing'
 
-import { GuiEditorComponent } from './gui-editor.component';
+import {GuiEditorComponent} from './gui-editor.component'
 
 describe('GuiEditorComponent', () => {
-  let component: GuiEditorComponent;
-  let fixture: ComponentFixture<GuiEditorComponent>;
+    let component: GuiEditorComponent
+    let fixture: ComponentFixture<GuiEditorComponent>
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [GuiEditorComponent],
-    }).compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [GuiEditorComponent]
+        }).compileComponents()
 
-    fixture = TestBed.createComponent(GuiEditorComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(GuiEditorComponent)
+        component = fixture.componentInstance
+        fixture.detectChanges()
+    })
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+    it('should create', () => {
+        expect(component).toBeTruthy()
+    })
+})
