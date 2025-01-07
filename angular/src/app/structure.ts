@@ -6,19 +6,20 @@ export enum Rel {
     DiffSchema = 1 << 3
 }
 
-export enum Lang {
-    PGSQL = 1 << 4,
-    TSQL = 1 << 5,
-    GO = 1 << 6,
-    TS = 1 << 7,
-    SQLite = 1 << 8,
-    Rust = 1 << 9
+export enum Cardinality {
+    One = 1 << 4,
+    Many = 1 << 5,
+    Self = 1 << 6
 }
 
-export enum Cardinality {
-    One = 1 << 10,
-    Many = 1 << 11,
-    Self = 1 << 12
+export enum Lang {
+    PGSQL = 1 << 7,
+    TSQL = 1 << 8,
+    GO = 1 << 9,
+    TS = 1 << 10,
+    SQLite = 1 << 11,
+    Rust = 1 << 12,
+    CS = 1 << 13
 }
 
 export class FuncIn {
@@ -164,8 +165,8 @@ export class Func {
                     const relation = sameSchema
                         ? Rel.SameSchema
                         : sameTable
-                          ? Rel.SameTable
-                          : Rel.DiffSchema
+                        ? Rel.SameTable
+                        : Rel.DiffSchema
 
                     let lPrefix = tbl.FN
                     if (
@@ -209,8 +210,8 @@ export class Func {
                     const relation = sameSchema
                         ? Rel.SameSchema
                         : sameTable
-                          ? Rel.SameTable
-                          : Rel.DiffSchema
+                        ? Rel.SameTable
+                        : Rel.DiffSchema
 
                     let l = tbl.FN
                     if (
@@ -273,8 +274,8 @@ export class Func {
             const relation = sameSchema
                 ? Rel.SameSchema
                 : sameTable
-                  ? Rel.SameTable
-                  : Rel.DiffSchema
+                ? Rel.SameTable
+                : Rel.DiffSchema
 
             const {label, type, defaultValue} = genLabelType(
                 'out',
@@ -301,6 +302,7 @@ export class Func {
 
     private determineTitle(): string {
         const map: Record<Lang, string> = {
+            [Lang.CS]: cc(this.table.Name, 'pl'),
             [Lang.Rust]: cc(this.table.Name, 'sk'),
             [Lang.SQLite]: cc(this.table.Name, 'sk'),
             [Lang.PGSQL]: cc(this.table.Name, 'sk'),
@@ -323,6 +325,10 @@ export class Func {
         ].includes(mode)
         if (isTs) {
             return Lang.TS
+        }
+        const isCs = [AppGeneratorMode.CSClasses].includes(mode)
+        if (isCs) {
+            return Lang.CS
         }
         const isTSQL = [
             AppGeneratorMode.TSQLTables,
@@ -536,6 +542,7 @@ export enum AppGeneratorMode {
     GoStructsAndFns,
     TSTypesAndFns,
     TSClasses,
+    CSClasses,
     JSClasses,
     TSQLTables,
     TSQLStoredProcedures,
@@ -679,7 +686,7 @@ export const SQL_TO_GO_TYPE: Record<AttrType, string> = {
 export const SQL_TO_GO_DEFAULT_VALUE: Record<AttrType, string> = {
     [AttrType.BIT]: 'false',
     [AttrType.DATE]: 'time.Time{}',
-    [AttrType.CHAR]: "''",
+    [AttrType.CHAR]: "' '",
     [AttrType.TIME]: 'time.Time{}',
     [AttrType.TIMESTAMP]: 'time.Time{}',
     [AttrType.SERIAL]: '0',
@@ -727,10 +734,27 @@ export const SQL_TO_TS_TYPE: Record<AttrType, string> = {
     [AttrType.REFERENCE]: ''
 }
 
+export const SQL_TO_CS_TYPE: Record<AttrType, string> = {
+    [AttrType.BIT]: 'bool',
+    [AttrType.DATE]: 'DateTime',
+    [AttrType.CHAR]: 'string',
+    [AttrType.TIME]: 'DateTime',
+    [AttrType.TIMESTAMP]: 'DateTime',
+    [AttrType.SERIAL]: 'int',
+    [AttrType.DECIMAL]: 'int',
+    [AttrType.FLOAT]: 'int',
+    [AttrType.REAL]: 'int',
+    [AttrType.INT]: 'int',
+    [AttrType.BOOLEAN]: 'bool',
+    [AttrType.VARCHAR]: 'string',
+    [AttrType.MONEY]: 'int',
+    [AttrType.REFERENCE]: ''
+}
+
 export const SQL_TO_TS_DEFAULT_VALUE: Record<AttrType, string> = {
     [AttrType.BIT]: 'false',
     [AttrType.DATE]: 'new Date()',
-    [AttrType.CHAR]: "''",
+    [AttrType.CHAR]: "' '",
     [AttrType.TIME]: 'new Date()',
     [AttrType.TIMESTAMP]: 'new Date()',
     [AttrType.SERIAL]: '0',
@@ -741,6 +765,23 @@ export const SQL_TO_TS_DEFAULT_VALUE: Record<AttrType, string> = {
     [AttrType.BOOLEAN]: 'false',
     [AttrType.VARCHAR]: "''",
     [AttrType.MONEY]: '0',
+    [AttrType.REFERENCE]: ''
+}
+
+export const SQL_TO_CS_DEFAULT_VALUE: Record<AttrType, string> = {
+    [AttrType.BIT]: 'false',
+    [AttrType.DATE]: 'DateTime.UtcNow',
+    [AttrType.CHAR]: '" "',
+    [AttrType.TIME]: 'DateTime.UtcNow',
+    [AttrType.TIMESTAMP]: 'DateTime.UtcNow',
+    [AttrType.SERIAL]: '0',
+    [AttrType.DECIMAL]: '0.0',
+    [AttrType.FLOAT]: '0.0',
+    [AttrType.REAL]: '0.0',
+    [AttrType.INT]: '0',
+    [AttrType.BOOLEAN]: 'false',
+    [AttrType.VARCHAR]: '""',
+    [AttrType.MONEY]: '0.00',
     [AttrType.REFERENCE]: ''
 }
 
@@ -1031,6 +1072,79 @@ function genLabelType(
             : fixPluralGrammar(cc(aL.FN, tsCase) + 's'),
         type: `${tsType}[]` + tsNullable,
         defaultValue: '[]'
+    })
+
+    //#endregion
+
+    //#region C#
+
+    const csNullable = isNullable ? '' : '?'
+    let csType = overrideType ? cc(overrideType, 'pl') : SQL_TO_CS_TYPE[aT.Type]
+    const csCase = io === 'in' ? 'cm' : 'pl'
+    const csOverrideTypeRelatedLabel = fixPluralGrammar(
+        cc(aT.Name, csCase) + 's'
+    )
+
+    if (!csType) {
+        csType = SQL_TO_CS_TYPE[aL.Type]
+    }
+
+    map.set(Lang.CS | Rel.SameTable | Cardinality.Self, {
+        label: cc(aL.Name, csCase),
+        type: csType + csNullable,
+        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type]
+    })
+    map.set(Lang.CS | Rel.SameSchema | Cardinality.Self, {
+        label: cc(aL.PFN, csCase),
+        type: csType + csNullable,
+        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type]
+    })
+    map.set(Lang.CS | Rel.DiffSchema | Cardinality.Self, {
+        label: cc(aL.FN, csCase),
+        type: csType + csNullable,
+        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type]
+    })
+
+    //    -    -
+
+    map.set(Lang.CS | Rel.SameTable | Cardinality.One, {
+        label: cc(aL.Name, csCase),
+        type: csType + '?',
+        defaultValue: 'null'
+    })
+    map.set(Lang.CS | Rel.SameSchema | Cardinality.One, {
+        label: cc(aL.PFN, csCase),
+        type: csType + '?',
+        defaultValue: 'null'
+    })
+    map.set(Lang.CS | Rel.DiffSchema | Cardinality.One, {
+        label: cc(aL.FN, csCase),
+        type: csType + '?',
+        defaultValue: 'null'
+    })
+
+    //    -    -
+
+    map.set(Lang.CS | Rel.SameTable | Cardinality.Many, {
+        label: overrideType
+            ? csOverrideTypeRelatedLabel
+            : fixPluralGrammar(cc(aL.Name, csCase) + 's'),
+        type: `List<${csType}>` + csNullable,
+        defaultValue: `new List<${csType}>()`
+    })
+    map.set(Lang.CS | Rel.SameSchema | Cardinality.Many, {
+        label: overrideType
+            ? csOverrideTypeRelatedLabel
+            : fixPluralGrammar(cc(aL.PFN, csCase) + 's'),
+        type: `List<${csType}>` + csNullable,
+        defaultValue: `new List<${csType}>()`
+    })
+    map.set(Lang.CS | Rel.DiffSchema | Cardinality.Many, {
+        label: overrideType
+            ? csOverrideTypeRelatedLabel
+            : fixPluralGrammar(cc(aL.FN, csCase) + 's'),
+        type: `List<${csType}>` + csNullable,
+        defaultValue: `new List<${csType}>()`
     })
 
     //#endregion
@@ -1441,9 +1555,11 @@ export const GenerateDefaultValue = (
                         const time = s[1].split(':')
                         if (date.length === 3 && time.length === 3) {
                             // Parameters: year, month, day, hour, minute, second, nanosecond
-                            return `time.Date(${date[0]}, ${getMonthString(date[1])}, ${
-                                date[2]
-                            }, ${time[0]}, ${time[1]}, ${time[2]}, 0, time.UTC)`
+                            return `time.Date(${date[0]}, ${getMonthString(
+                                date[1]
+                            )}, ${date[2]}, ${time[0]}, ${time[1]}, ${
+                                time[2]
+                            }, 0, time.UTC)`
                         }
                     } else if (d === 'CURRENT_TIMESTAMP') {
                         return `time.Now()`
@@ -1514,9 +1630,9 @@ export const GenerateDefaultValue = (
                     const s = d.split('-')
                     if (s.length === 3) {
                         // const specificDate = new Date(Date.UTC(2021, 0, 1, 10, 45, 22, 0)); // January 1, 2021, 10:45:22 UTC
-                        return `new Date(Date.UTC(${s[0]}, ${getMonthString(s[1])}, ${
-                            s[2]
-                        }, 0, 0, 0, 0))`
+                        return `new Date(Date.UTC(${s[0]}, ${getMonthString(
+                            s[1]
+                        )}, ${s[2]}, 0, 0, 0, 0))`
                     } else if (d === 'CURRENT_DATE') {
                         return `new Date()`
                     } else if (d === 'NOW()') {
@@ -1550,9 +1666,11 @@ export const GenerateDefaultValue = (
                         const time = s[1].split(':')
                         if (date.length === 3 && time.length === 3) {
                             // Parameters: year, month, day, hour, minute, second, nanosecond
-                            return `new Date(Date.UTC(${date[0]}, ${getMonthString(
-                                date[1]
-                            )}, ${date[2]}, ${time[0]}, ${time[1]}, ${time[2]}, 0))`
+                            return `new Date(Date.UTC(${
+                                date[0]
+                            }, ${getMonthString(date[1])}, ${date[2]}, ${
+                                time[0]
+                            }, ${time[1]}, ${time[2]}, 0))`
                         }
                     } else if (d === 'CURRENT_TIMESTAMP') {
                         return `new Date()`
@@ -1575,6 +1693,74 @@ export const GenerateDefaultValue = (
                 return `${d}`
             case AttrType.VARCHAR:
                 return `'${d.replaceAll("'", "''")}'`
+            case AttrType.MONEY:
+                return `${d}`
+        }
+    }
+
+    if (lang === Lang.CS) {
+        switch (attr.Type) {
+            case AttrType.BIT:
+                return `${d}`
+            case AttrType.DATE:
+                {
+                    const s = d.split('-')
+                    if (s.length === 3) {
+                        return `new DateTime(${s[0]}, ${s[1]}, ${s[2]}, 0, 0, 0, 0, DateTimeKind.Utc)`
+                    } else if (d === 'CURRENT_DATE') {
+                        return `DateTime.UtcNow`
+                    } else if (d === 'NOW()') {
+                        return `DateTime.UtcNow`
+                    }
+                }
+                break
+            case AttrType.CHAR:
+                if (d.length === 1) {
+                    return `"${d}"`
+                }
+                break
+            case AttrType.TIME:
+                {
+                    const s = d.split(':')
+                    if (s.length === 3) {
+                        return `new DateTime(1970, 0, 1, ${s[0]}, ${s[1]}, ${s[2]}, 0, DateTimeKind.Utc)`
+                    } else if (d === 'CURRENT_TIME') {
+                        return `DateTime.UtcNow`
+                    } else if (d === 'NOW()') {
+                        return `DateTime.UtcNow`
+                    }
+                }
+                return `${d}`
+            case AttrType.TIMESTAMP:
+                {
+                    const s = d.split(' ')
+                    if (s.length === 2) {
+                        const date = s[0].split('-')
+                        const time = s[1].split(':')
+                        if (date.length === 3 && time.length === 3) {
+                            return `new DateTime(${date[0]}, ${date[1]}, ${date[2]}, ${time[0]}, ${time[1]}, ${time[2]}, 0, DateTimeKind.Utc)`
+                        }
+                    } else if (d === 'CURRENT_TIMESTAMP') {
+                        return `DateTime.UtcNow`
+                    } else if (d === 'NOW()') {
+                        return `DateTime.UtcNow`
+                    }
+                }
+                return `${d}`
+            case AttrType.DECIMAL:
+                return `${d}`
+            case AttrType.REAL:
+                return `${d}`
+            case AttrType.FLOAT:
+                return `${d}`
+            case AttrType.SERIAL:
+                return `${d}`
+            case AttrType.INT:
+                return `${d}`
+            case AttrType.BOOLEAN:
+                return `${d}`
+            case AttrType.VARCHAR:
+                return `"${d.replaceAll("'", "''")}"`
             case AttrType.MONEY:
                 return `${d}`
         }

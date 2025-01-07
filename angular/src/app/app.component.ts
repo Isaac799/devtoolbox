@@ -93,6 +93,10 @@ export class AppComponent implements OnInit {
             value: AppGeneratorMode.TSTypesAndFns
         },
         {
+            name: 'C#: classes',
+            value: AppGeneratorMode.CSClasses
+        },
+        {
             name: 'Go: structs & ƒ',
             value: AppGeneratorMode.GoStructsAndFns
         },

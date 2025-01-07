@@ -28,6 +28,7 @@ import {SchemasToJsClasses} from './generators/js.class'
 import {SchemasToTablesForSQLite} from './generators/sqlite.tables'
 import {SchemasToSQLiteJoinQuery} from './generators/sqlite.join.query'
 import {SchemasToRustStructsImpl} from './generators/rust.structs.impls'
+import { SchemasToCSClasses } from './generators/cs.class'
 
 @Component({
     selector: 'app-code-output',
@@ -95,6 +96,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
                 case AppGeneratorMode.RustStructAndImpl:
                     this.output = SchemasToRustStructsImpl(schemas)
                     ext = 'RS'
+                    break
+                case AppGeneratorMode.CSClasses:
+                    this.output = SchemasToCSClasses(schemas)
+                    ext = 'CS'
                     break
             }
 
