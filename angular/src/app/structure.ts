@@ -1368,10 +1368,12 @@ export const GenerateDefaultValue = (
         let answer = ''
         switch (attr.Type) {
             case AttrType.CHAR:
-                answer = `'${d.replaceAll("'", "'").replaceAll('\\', '\\\\')}'`
+                answer = `'${d.replaceAll('\\', '\\\\').replaceAll("'", "'")}'`
                 break
             case AttrType.VARCHAR:
-                answer = `String::from("${d.replaceAll('"', '\\"')}")`
+                answer = `String::from("${d
+                    .replaceAll('\\', '\\\\')
+                    .replaceAll('"', '\\"')}")`
                 break
             case AttrType.DATE:
                 {
@@ -1423,7 +1425,7 @@ export const GenerateDefaultValue = (
     if ([Lang.PGSQL, Lang.TSQL].includes(lang)) {
         switch (attr.Type) {
             case AttrType.CHAR:
-                return `'${d.replaceAll("'", "'").replaceAll('\\', '\\\\')}'`
+                return `'${d.replaceAll('\\', '\\\\').replaceAll("'", "'")}'`
             case AttrType.VARCHAR:
                 return `'${d.replaceAll("'", "''")}'`
             default:
@@ -1434,7 +1436,7 @@ export const GenerateDefaultValue = (
     if (lang === Lang.SQLite) {
         switch (attr.Type) {
             case AttrType.CHAR:
-                return `'${d.replaceAll("'", "'").replaceAll('\\', '\\\\')}'`
+                return `'${d.replaceAll('\\', '\\\\').replaceAll("'", "'")}'`
             case AttrType.VARCHAR:
                 return `'${d.replaceAll("'", "''")}'`
             case AttrType.DATE:
@@ -1716,7 +1718,9 @@ export const GenerateDefaultValue = (
                 break
             case AttrType.CHAR:
                 if (d.length === 1) {
-                    return `"${d}"`
+                    return `"${d
+                        .replaceAll('\\', '\\\\')
+                        .replaceAll('"', '\\"')}"`
                 }
                 break
             case AttrType.TIME:
@@ -1760,7 +1764,7 @@ export const GenerateDefaultValue = (
             case AttrType.BOOLEAN:
                 return `${d}`
             case AttrType.VARCHAR:
-                return `"${d.replaceAll("'", "''")}"`
+                return `"${d.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
             case AttrType.MONEY:
                 return `${d}`
         }
