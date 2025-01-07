@@ -1,6 +1,13 @@
 {
     "cSpell.words": [
+        "aeiou",
+        "AUTOINCREMENT",
+        "chrono",
         "devtoolbox",
+        "impls",
+        "NOCOUNT",
+        "pgsql",
+        "plpgsql",
         "psql"
     ]
 }

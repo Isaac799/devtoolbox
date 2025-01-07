@@ -31,7 +31,7 @@ import { Notification } from './structure';
 })
 export class AppComponent implements OnInit {
   readonly title = 'devtoolbox';
-  showSettingsModal: boolean = false;
+  showSettingsModal = false;
 
   modeOptions = [
     {

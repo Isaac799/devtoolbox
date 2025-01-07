@@ -14,9 +14,6 @@ import {
   AppComplexityMode,
   AttributeSuggestion,
   validationMap,
-  AppMode,
-  NotificationKind,
-  NotificationLife,
 } from '../structure';
 import {
   AbstractControl,
@@ -34,7 +31,6 @@ import { MinMaxLabelFromAttrTypePipe } from '../pipes/min-max-label-from-attr-ty
 import { DefaultValueHintPipe } from '../pipes/default-value-hint.pipe';
 import { array_move } from '../constants';
 import { NotificationService } from '../services/notification.service';
-import { Notification } from '../structure';
 
 @Component({
   selector: 'app-gui-editor',
@@ -52,14 +48,14 @@ import { Notification } from '../structure';
 })
 export class GuiEditorComponent implements OnInit {
   draggingTable: Table | null = null;
-  draggingTableIndex: number = -1;
+  draggingTableIndex = -1;
   draggingAttribute: Attribute | null = null;
-  draggingAttributeIndex: number = -1;
+  draggingAttributeIndex = -1;
 
   hoveredTable: Table | null = null;
   hoveredSchema: Schema | null = null;
 
-  showMoves: boolean = false;
+  showMoves = false;
   readonly showMovesTimeoutMS: number = 500;
 
   get isReference(): boolean {
@@ -89,7 +85,7 @@ export class GuiEditorComponent implements OnInit {
       return;
     }
 
-    let a = this.draggingAttribute;
+    const a = this.draggingAttribute;
 
     if (!a) {
       return;
@@ -101,9 +97,9 @@ export class GuiEditorComponent implements OnInit {
       return;
     }
 
-    let newAttr = this.cloneAttrToNewParent(a, this.hoveredTable);
+    const newAttr = this.cloneAttrToNewParent(a, this.hoveredTable);
 
-    let index = a.Parent.Attributes.findIndex((e) => e.ID === a.ID);
+    const index = a.Parent.Attributes.findIndex((e) => e.ID === a.ID);
     if (index === -1) {
       return;
     }
@@ -121,7 +117,7 @@ export class GuiEditorComponent implements OnInit {
   }
 
   cloneAttrToNewParent(a: Attribute, t: Table) {
-    let newAttr = new Attribute(this.serial, a.Name, a.Type, t);
+    const newAttr = new Attribute(this.serial, a.Name, a.Type, t);
 
     if (a.Option) {
       newAttr.Option = { ...a.Option };
@@ -151,9 +147,12 @@ export class GuiEditorComponent implements OnInit {
       return;
     }
 
-    let t = this.draggingTable;
+    const t = this.draggingTable;
 
     if (!t) {
+      if (this.selectedSchema) {
+        this.doShowModalSchema();
+      }
       return;
     }
 
@@ -163,18 +162,18 @@ export class GuiEditorComponent implements OnInit {
       return;
     }
 
-    let newTbl = new Table(this.serial, t.Name, this.hoveredSchema);
+    const newTbl = new Table(this.serial, t.Name, this.hoveredSchema);
 
     if (t.RefBy) {
       newTbl.RefBy = [...t.RefBy];
     }
 
     for (const a of t.Attributes) {
-      let newAttr = this.cloneAttrToNewParent(a, newTbl);
+      const newAttr = this.cloneAttrToNewParent(a, newTbl);
       newTbl.Attributes.push(newAttr);
     }
 
-    let index = t.Parent.Tables.findIndex((e) => e.ID === t.ID);
+    const index = t.Parent.Tables.findIndex((e) => e.ID === t.ID);
     if (index === -1) {
       return;
     }
@@ -245,13 +244,13 @@ export class GuiEditorComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  showModalSchema: boolean = false;
-  showModalTable: boolean = false;
-  showModalAttribute: boolean = false;
+  showModalSchema = false;
+  showModalTable = false;
+  showModalAttribute = false;
 
-  showAttrOptions: boolean = false;
-  showAttrValidation: boolean = false;
-  showSmartAttributes: boolean = false;
+  showAttrOptions = false;
+  showAttrValidation = false;
+  showSmartAttributes = false;
 
   private _serial = 0;
   private get serial() {
@@ -298,13 +297,13 @@ export class GuiEditorComponent implements OnInit {
 
   private validDefault = () => {
     return (control: AbstractControl): ValidationErrors | null => {
-      let c = this.attributeForm.controls;
+      const c = this.attributeForm.controls;
 
       if (!control.value) {
         return null;
       }
 
-      let t = c.Type.value;
+      const t = c.Type.value;
 
       if (t === null) {
         return {
@@ -322,8 +321,8 @@ export class GuiEditorComponent implements OnInit {
         };
       }
 
-      let a = validatorFn(control.value || '');
-      let answer = a
+      const a = validatorFn(control.value || '');
+      const answer = a
         ? null
         : {
             'invalid default value': 'please make another entry',
@@ -498,10 +497,10 @@ export class GuiEditorComponent implements OnInit {
 
     /**
      *
-     * Trigger detection again on default value if the type changedis ref by
+     * Trigger detection again on default value if the type changed is ref by
      *
      */
-    this.attributeForm.controls.Type.valueChanges.subscribe((_) => {
+    this.attributeForm.controls.Type.valueChanges.subscribe(() => {
       this.attributeForm.controls.Default.setValue(
         this.attributeForm.controls.Default.value
       );
@@ -602,7 +601,7 @@ export class GuiEditorComponent implements OnInit {
     this.showAttrOptions = a.Option !== undefined;
     this.showAttrValidation = a.Validation !== undefined;
 
-    let c = this.attributeForm.controls;
+    const c = this.attributeForm.controls;
     c.Name.setValue(a.Name);
     c.Type.setValue(a.Type!);
     if (a.RefTo !== undefined) {
@@ -636,15 +635,15 @@ export class GuiEditorComponent implements OnInit {
   }
 
   clickDelAttribute() {
-    let t = this.selectedTable;
+    const t = this.selectedTable;
     if (!t) {
       return;
     }
-    let a = this.selectedAttribute;
+    const a = this.selectedAttribute;
     if (!a) {
       return;
     }
-    let i = t.Attributes.findIndex((e) => e.ID === a.ID);
+    const i = t.Attributes.findIndex((e) => e.ID === a.ID);
     if (i === -1) {
       return;
     }
@@ -656,8 +655,8 @@ export class GuiEditorComponent implements OnInit {
   clickSaveAttribute() {
     if (!this.selectedTable) return;
     if (!this.attributeForm.valid) return;
-    let sa = this.selectedAttribute;
-    let c = this.attributeForm.controls;
+    const sa = this.selectedAttribute;
+    const c = this.attributeForm.controls;
     if (sa) {
       sa.Name = c.Name.value!.trim();
       sa.Type = c.Type.value!;
@@ -702,7 +701,7 @@ export class GuiEditorComponent implements OnInit {
           sa.Validation = {};
         }
 
-        let minMaxRelevant = new MinMaxRelevantPipe().transform(c.Type.value);
+        const minMaxRelevant = new MinMaxRelevantPipe().transform(c.Type.value);
         if (c.Min.value !== null && minMaxRelevant) {
           sa.Validation.Min = c.Min.value;
         } else {
@@ -723,7 +722,7 @@ export class GuiEditorComponent implements OnInit {
         sa.Validation = undefined;
       }
     } else {
-      let newAttr = new Attribute(
+      const newAttr = new Attribute(
         this.serial,
         c.Name.value!,
         c.Type.value!,
@@ -759,15 +758,15 @@ export class GuiEditorComponent implements OnInit {
   }
 
   clickDelTable() {
-    let s = this.selectedSchema;
+    const s = this.selectedSchema;
     if (!s) {
       return;
     }
-    let t = this.selectedTable;
+    const t = this.selectedTable;
     if (!t) {
       return;
     }
-    let i = s.Tables.findIndex((e) => e.ID === t.ID);
+    const i = s.Tables.findIndex((e) => e.ID === t.ID);
     if (i === -1) {
       return;
     }
@@ -777,12 +776,12 @@ export class GuiEditorComponent implements OnInit {
   clickSaveTable() {
     if (!this.selectedSchema) return;
     if (!this.tableForm.valid) return;
-    let st = this.selectedTable;
-    let c = this.tableForm.controls;
+    const st = this.selectedTable;
+    const c = this.tableForm.controls;
     if (st) {
       st.Name = c.Name.value!.trim();
     } else {
-      let newTbl = new Table(this.serial, c.Name.value!, this.selectedSchema);
+      const newTbl = new Table(this.serial, c.Name.value!, this.selectedSchema);
       this.selectedSchema.Tables.push(newTbl);
       this.serial += 1;
     }
@@ -791,11 +790,11 @@ export class GuiEditorComponent implements OnInit {
   }
 
   clickDelSchema() {
-    let s = this.selectedSchema;
+    const s = this.selectedSchema;
     if (!s) {
       return;
     }
-    let i = this.data.schemas.findIndex((e) => e.ID === s.ID);
+    const i = this.data.schemas.findIndex((e) => e.ID === s.ID);
     if (i === -1) {
       return;
     }
@@ -805,8 +804,8 @@ export class GuiEditorComponent implements OnInit {
 
   clickSaveSchema() {
     if (!this.schemaForm.valid) return;
-    let ss = this.selectedSchema;
-    let c = this.schemaForm.controls;
+    const ss = this.selectedSchema;
+    const c = this.schemaForm.controls;
     if (ss) {
       ss.Name = c.Name.value!.trim();
     } else {
@@ -825,7 +824,7 @@ export class GuiEditorComponent implements OnInit {
     const t = this.selectedTable;
     if (!t) return [];
     const attrNames = t.Attributes.map((e) => e.Name.toLowerCase());
-    let answer = [];
+    const answer = [];
     for (const e of this.presetAttributes) {
       if (attrNames.includes(e.Name.toLowerCase())) {
         continue;
@@ -847,7 +846,7 @@ export class GuiEditorComponent implements OnInit {
   }
 
   get referenceOptions(): Table[] {
-    let answer: Table[] = [];
+    const answer: Table[] = [];
     // if (!this.selectedTable) {
     //   return [];
     // }

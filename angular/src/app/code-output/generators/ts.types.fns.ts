@@ -3,10 +3,10 @@ import { cc, alignKeyword } from '../../formatting';
 import { Schema, AppGeneratorMode, Func } from '../../structure';
 
 export function SchemasToTsTypesAndFns(schemas: Schema[]): string {
-  let funcs: Func[] = [];
+  const funcs: Func[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let func = new Func(t, AppGeneratorMode.TSTypesAndFns);
+      const func = new Func(t, AppGeneratorMode.TSTypesAndFns);
       funcs.push(func);
     }
   }
@@ -17,14 +17,14 @@ export function SchemasToTsTypesAndFns(schemas: Schema[]): string {
     // Struct
 
     lines.push(`type ${f.title} = {`);
-    let attrs: string[] = generateStructAttributes(f);
+    const attrs: string[] = generateStructAttributes(f);
     lines = lines.concat(attrs);
     lines.push(`}\n`);
 
     // Func
 
     let funcAttrs: string[] = generateFuncReturnStruct(f);
-    let { title, params } = generateTitleAndParams(f);
+    const { title, params } = generateTitleAndParams(f);
 
     lines.push(`function ${title} (
 ${TAB}${params}
@@ -38,13 +38,13 @@ ${TAB}${params}
     lines.push(`}\n`);
   }
 
-  let str = lines.join('\n');
+  const str = lines.join('\n');
   return str;
 }
 
 function generateTitleAndParams(f: Func) {
-  let relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
-  let params = relevantInputs
+  const relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
+  const params = relevantInputs
     .map((e) => `${e.label}: ${e.type}`)
     .join(`,\n${TAB}`);
 
@@ -53,7 +53,7 @@ function generateTitleAndParams(f: Func) {
 }
 
 function generateFuncReturnStruct(f: Func) {
-  let funcAttrs: string[] = [];
+  const funcAttrs: string[] = [];
   for (const o of f.outputs) {
     if (o.relatedInput === null) {
       funcAttrs.push(`${TAB}${TAB}${o.label} : ${o.defaultValue},`);

@@ -1,12 +1,12 @@
 import { groupBy, TAB } from '../../constants';
 import { cc, alignKeyword } from '../../formatting';
-import { Schema, Func, AppGeneratorMode, AttrType } from '../../structure';
+import { Schema, Func, AppGeneratorMode } from '../../structure';
 
 export function SchemasToGoStructs(schemas: Schema[]): string {
-  let funcs: Func[] = [];
+  const funcs: Func[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let func = new Func(t, AppGeneratorMode.GoStructsAndFns);
+      const func = new Func(t, AppGeneratorMode.GoStructsAndFns);
       funcs.push(func);
     }
   }
@@ -17,14 +17,14 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
     // Struct
 
     lines.push(`type ${f.title} = struct {`);
-    let attrs: string[] = generateStructAttributes(f);
+    const attrs: string[] = generateStructAttributes(f);
     lines = lines.concat(attrs);
     lines.push(`}\n`);
 
     // Func
 
     let funcAttrs: string[] = generateFuncReturnStruct(f);
-    let { title, params } = generateTitleAndParams(f);
+    const { title, params } = generateTitleAndParams(f);
 
     lines.push(`func ${title} (${params}) *${f.title} {`);
     lines.push(`${TAB}return &${f.title} {`);
@@ -36,13 +36,13 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
     lines.push(`}\n`);
   }
 
-  let str = lines.join('\n');
+  const str = lines.join('\n');
   return str;
 }
 
 function generateTitleAndParams(f: Func) {
-  let relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
-  let params = Object.entries(groupBy(relevantInputs, 'type'))
+  const relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
+  const params = Object.entries(groupBy(relevantInputs, 'type'))
     // .sort((a, b) => a[0].localeCompare(b[0]))
     // .map((e) => {
     //   e[1] = e[1].sort((a, b) => a.label.localeCompare(b.label));
@@ -58,7 +58,7 @@ function generateTitleAndParams(f: Func) {
 }
 
 function generateFuncReturnStruct(f: Func) {
-  let funcAttrs: string[] = [];
+  const funcAttrs: string[] = [];
   for (const o of f.outputs) {
     if (o.relatedInput === null) {
       funcAttrs.push(`${TAB}${TAB}${o.label} : ${o.defaultValue},`);

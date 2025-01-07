@@ -1,20 +1,20 @@
 import { TAB } from '../../constants';
 import { cc, alignKeyword } from '../../formatting';
-import { Table, AttrType, Schema, SQL_TO_TSQL_TYPE } from '../../structure';
+import { Table, AttrType, Schema } from '../../structure';
 import { GenerateJoinLines, UseI } from './pgsql.functions';
 
 export function SchemasToSQLiteJoinQuery(schemas: Schema[]): string {
   let lines: string[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let fns = generateSqlFns(t);
+      const fns = generateSqlFns(t);
       if (!fns) continue;
       lines = lines.concat(fns);
       lines.push('');
     }
   }
 
-  let str = lines.join('\n');
+  const str = lines.join('\n');
   return str;
 }
 
@@ -25,9 +25,9 @@ function generateSqlFns(t: Table): string {
 
   let selectingLines: string[] = [];
 
-  let whereAND = [];
+  const whereAND = [];
 
-  let useI = new UseI();
+  const useI = new UseI();
   useI.increment(t);
 
   let i = 0;
@@ -42,17 +42,17 @@ function generateSqlFns(t: Table): string {
     return '';
   }
 
-  let whereStr: string = whereAND.join(' AND ');
+  const whereStr: string = whereAND.join(' AND ');
 
   for (const a of t.Attributes) {
     if (!a.RefTo) {
-      let n = cc(a.FN, 'sk');
+      const n = cc(a.FN, 'sk');
       selectingLines.push(`${useI.get(t)}.${cc(a.Name, 'sk')} AS ${n}`);
       continue;
     }
 
     for (const ra of a.RefTo.Attributes) {
-      let n = cc(a.FN, 'sk');
+      const n = cc(a.FN, 'sk');
       selectingLines.push(`${useI.get(t)}.${cc(ra.Name, 'sk')} AS ${n}`);
     }
   }
@@ -69,10 +69,10 @@ function generateSqlFns(t: Table): string {
   joinLines = alignKeyword(joinLines, '=');
   selectingLines = alignKeyword(selectingLines, 'AS');
 
-  let selecting = selectingLines.join(`,\n${TAB}`);
-  let joinStr = joinLines.join(`\n${TAB}`);
+  const selecting = selectingLines.join(`,\n${TAB}`);
+  const joinStr = joinLines.join(`\n${TAB}`);
 
-  let q = `SELECT 
+  const q = `SELECT 
     ${selecting}
 FROM
     ${joinStr}

@@ -7,14 +7,14 @@ export function SchemasToTSQLStoredProcedures(schemas: Schema[]): string {
   let lines: string[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let fns = generateSqlFns(t);
+      const fns = generateSqlFns(t);
       if (!fns) continue;
       lines = lines.concat(fns);
       lines.push('');
     }
   }
 
-  let str = lines.join('\n');
+  const str = lines.join('\n');
   return str;
 }
 
@@ -23,13 +23,13 @@ function generateSqlFns(t: Table): string {
     return '';
   }
 
-  let params: string[] = [];
-  let fnName = `${cc(t.Parent.Name, 'sk')}.${cc(`get_${t.Name}`, 'sk')}`;
+  const params: string[] = [];
+  const fnName = `${cc(t.Parent.Name, 'sk')}.${cc(`get_${t.Name}`, 'sk')}`;
   let selectingLines: string[] = [];
 
-  let whereAND = [];
+  const whereAND = [];
 
-  let useI = new UseI();
+  const useI = new UseI();
   useI.increment(t);
 
   for (const a of t.Attributes) {
@@ -45,7 +45,7 @@ function generateSqlFns(t: Table): string {
       `${useI.get(t)}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`
     );
   }
-  let whereStr: string = whereAND.join(' AND ');
+  const whereStr: string = whereAND.join(' AND ');
 
   if (params.length === 0) {
     return '';
@@ -53,13 +53,13 @@ function generateSqlFns(t: Table): string {
 
   for (const a of t.Attributes) {
     if (!a.RefTo) {
-      let n = cc(a.FN, 'sk');
+      const n = cc(a.FN, 'sk');
       selectingLines.push(`${useI.get(t)}.${cc(a.Name, 'sk')} AS ${n}`);
       continue;
     }
 
     for (const ra of a.RefTo.Attributes) {
-      let n = cc(a.FN, 'sk');
+      const n = cc(a.FN, 'sk');
       selectingLines.push(`${useI.get(t)}.${cc(ra.Name, 'sk')} AS ${n}`);
     }
   }
@@ -70,9 +70,9 @@ function generateSqlFns(t: Table): string {
   joinLines = alignKeyword(joinLines, '=');
   selectingLines = alignKeyword(selectingLines, 'AS');
 
-  let selecting = selectingLines.join(`,\n${TAB}${TAB}`);
-  let paramsStr = params.join(', ');
-  let joinStr = joinLines.join(`\n${TAB}${TAB}`);
+  const selecting = selectingLines.join(`,\n${TAB}${TAB}`);
+  const paramsStr = params.join(', ');
+  const joinStr = joinLines.join(`\n${TAB}${TAB}`);
 
   let q = `CREATE PROCEDURE ${fnName} ( ${paramsStr} ) 
     AS BEGIN

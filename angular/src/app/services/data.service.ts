@@ -14,7 +14,6 @@ import {
 } from '../structure';
 import { Subject } from 'rxjs';
 import { defaultConfig } from '../constants';
-import YAML from 'yaml';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +21,7 @@ import YAML from 'yaml';
 export class DataService {
   private readonly stateSessionKey = 'devtoolboxState';
   private readonly configSessionKey = 'devtoolboxAppConfig';
-  private initialized: boolean = false;
+  private initialized = false;
 
   editor = '';
   schemas: Schema[] = [];
@@ -35,8 +34,6 @@ export class DataService {
     generatorMode: AppGeneratorMode.Postgres,
     complexity: AppComplexityMode.Advanced,
   };
-
-  constructor() {}
 
   ReloadAndSave() {
     this.saveConfig();
@@ -63,12 +60,12 @@ export class DataService {
   }
 
   private loadConfig() {
-    let save = localStorage.getItem(this.configSessionKey);
+    const save = localStorage.getItem(this.configSessionKey);
     if (!save) {
       return;
     }
     try {
-      let parsed = JSON.parse(save);
+      const parsed = JSON.parse(save);
       if (!parsed) {
         throw new Error('failed parsing app config');
       }
@@ -80,7 +77,7 @@ export class DataService {
   }
 
   private loadLastSession() {
-    let stateStr = localStorage.getItem(this.stateSessionKey);
+    const stateStr = localStorage.getItem(this.stateSessionKey);
     let schemasConfig: Record<string, SchemaConfig> = {};
 
     try {
@@ -94,27 +91,27 @@ export class DataService {
       localStorage.setItem(this.stateSessionKey, JSON.stringify(defaultConfig));
     }
 
-    let schemas: Schema[] = ParseSchemaConfig(schemasConfig);
+    const schemas: Schema[] = ParseSchemaConfig(schemasConfig);
 
     this.schemasConfig = schemasConfig;
     this.schemas = schemas;
   }
 
   private saveState() {
-    let schemasConfig: Record<string, SchemaConfig> = {};
+    const schemasConfig: Record<string, SchemaConfig> = {};
     for (const s of this.schemas) {
-      let s2: SchemaConfig = {
+      const s2: SchemaConfig = {
         ID: s.ID,
         Tables: {},
       };
       for (const t of s.Tables) {
-        let t2: TableConfig = {
+        const t2: TableConfig = {
           ID: t.ID,
           ParentID: t.Parent.ID,
           Attributes: {},
         };
         for (const a of t.Attributes) {
-          let a2: AttributeConfig = {
+          const a2: AttributeConfig = {
             ID: a.ID,
             ParentID: a.Parent.ID,
             RefToID: a.RefTo?.ID,
@@ -129,14 +126,14 @@ export class DataService {
       schemasConfig[s.Name] = s2;
     }
     this.schemasConfig = schemasConfig;
-    let s = JSON.stringify(schemasConfig, null, 2);
+    const s = JSON.stringify(schemasConfig, null, 2);
     if (s) {
       localStorage.setItem(this.stateSessionKey, s);
     }
   }
 
   private saveConfig() {
-    let s = JSON.stringify(this.app, null, 2);
+    const s = JSON.stringify(this.app, null, 2);
     if (s) {
       localStorage.setItem(this.configSessionKey, s);
     }
@@ -160,35 +157,35 @@ export class DataService {
 }
 
 function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
-  let schemas: Schema[] = [];
+  const schemas: Schema[] = [];
   let allTables: Table[] = [];
 
-  let recheckAttrs: AttributeConfig[] = [];
+  const recheckAttrs: AttributeConfig[] = [];
 
   for (const sk in schemasConfig) {
     if (!Object.prototype.hasOwnProperty.call(schemasConfig, sk)) {
       continue;
     }
     const s = schemasConfig[sk];
-    let s2 = new Schema(s.ID, sk);
+    const s2 = new Schema(s.ID, sk);
     for (const tk in s.Tables) {
       if (!Object.prototype.hasOwnProperty.call(s.Tables, tk)) {
         continue;
       }
       const t = s.Tables[tk];
-      let t2p = [s2, ...schemas].find((e) => e.ID === t.ParentID);
+      const t2p = [s2, ...schemas].find((e) => e.ID === t.ParentID);
       if (!t2p) continue;
 
-      let t2 = new Table(t.ID, tk, t2p);
+      const t2 = new Table(t.ID, tk, t2p);
       for (const ak in t.Attributes) {
         if (!Object.prototype.hasOwnProperty.call(t.Attributes, ak)) {
           continue;
         }
         const a = t.Attributes[ak];
-        let a2p = [t2, ...s2.Tables, ...allTables].find(
+        const a2p = [t2, ...s2.Tables, ...allTables].find(
           (e) => e.ID === a.ParentID
         );
-        let r2 = [t2, ...s2.Tables, ...allTables].find(
+        const r2 = [t2, ...s2.Tables, ...allTables].find(
           (e) => e.ID === a.RefToID
         );
         if (r2) {
@@ -201,7 +198,7 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
         if (!a2p) {
           continue;
         }
-        let a2 = new Attribute(a.ID, ak, a.Type, a2p);
+        const a2 = new Attribute(a.ID, ak, a.Type, a2p);
 
         if (!r2 && a2.Type === AttrType.REFERENCE) {
           recheckAttrs.push(a);
@@ -236,7 +233,7 @@ function CheckForBadReferences(
   schemas: Schema[]
 ) {
   for (const a of recheckAttrs) {
-    let r = allTables.find((e) => e.ID === a.RefToID);
+    const r = allTables.find((e) => e.ID === a.RefToID);
 
     let realAttr: Attribute | null = null;
 

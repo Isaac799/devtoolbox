@@ -7,13 +7,11 @@ import { Notification } from '../structure';
 export class NotificationService {
   private notifications: Notification[] = [];
 
-  constructor() {}
-
   public Add(notification: Notification) {
     this.notifications.push(notification);
     setTimeout(() => {
-      let id = notification.id;
-      let index = this.notifications.findIndex((e) => e.id === id);
+      const id = notification.id;
+      const index = this.notifications.findIndex((e) => e.id === id);
       if (index === -1) {
         return;
       }

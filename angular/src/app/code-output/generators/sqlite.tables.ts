@@ -13,14 +13,14 @@ import { GenerateUniqueAttributes } from './pgsql.tables';
 
 export function SchemasToTablesForSQLite(schemas: Schema[]): string {
   let drops: string[] = [];
-  let createTableLines: string[] = [];
+  const createTableLines: string[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
       drops.push(`DROP TABLE IF EXISTS ${cc(t.FN, 'sk')};`);
       createTableLines.push(`\nCREATE TABLE IF NOT EXISTS ${cc(t.FN, 'sk')} (`);
-      let attrs: string[] = generateAttributesForTable(t);
+      const attrs: string[] = generateAttributesForTable(t);
 
-      let endThings: string[] = generateTableEndParts(t);
+      const endThings: string[] = generateTableEndParts(t);
       // let indexes: string[] = generateTableIndexes(t);
 
       if (attrs.length >= 1) {
@@ -34,7 +34,7 @@ export function SchemasToTablesForSQLite(schemas: Schema[]): string {
     }
   }
   drops = drops.reverse();
-  let all = [
+  const all = [
     'BEGIN TRANSACTION;',
     '',
     '-- Drop Everything',
@@ -46,14 +46,14 @@ export function SchemasToTablesForSQLite(schemas: Schema[]): string {
     '',
     'COMMIT;',
   ];
-  let str = all.join('\n');
+  const str = all.join('\n');
   return str;
 }
 
 function generateTableEndParts(t: Table) {
   let endThings: string[] = [];
 
-  let pks: string[] = [];
+  const pks: string[] = [];
 
   for (const a of t.Attributes) {
     if (!a.Option?.PrimaryKey) continue;
@@ -69,26 +69,26 @@ function generateTableEndParts(t: Table) {
   }
 
   if (pks.length > 0) {
-    let pksJoined = pks.join(', ');
-    let pksStr = `PRIMARY KEY ( ${pksJoined} )`;
+    const pksJoined = pks.join(', ');
+    const pksStr = `PRIMARY KEY ( ${pksJoined} )`;
     endThings.push(pksStr);
   }
 
-  let uniques = GenerateUniqueAttributes(t);
+  const uniques = GenerateUniqueAttributes(t);
   if (uniques.length > 0) {
     for (const e of uniques) {
-      let uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`;
+      const uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`;
       endThings.push(uniquesStr);
     }
   }
   
-  let refs = t.Attributes.filter((e) => e.RefTo);
+  const refs = t.Attributes.filter((e) => e.RefTo);
   if (refs.length > 0) {
     for (const e of refs) {
-      let r = e.RefTo!;
-      let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
+      const r = e.RefTo!;
+      const rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
       for (const rPk of rPks) {
-        let rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(
+        const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(
           rPk.Name,
           'sk'
         )} ) REFERENCES ${cc(r.FN, 'sk')} ( ${cc(
@@ -112,7 +112,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         continue;
       }
     }
-    let name = beingReferences
+    const name = beingReferences
       ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}`
       : cc(a.Name, 'sk');
     let type = '';
@@ -125,7 +125,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         console.warn(`invalid referenced id "${name}"`);
         continue;
       }
-      let referencedAttrs = generateAttributesForTable(a.RefTo, a);
+      const referencedAttrs = generateAttributesForTable(a.RefTo, a);
       attrs = attrs.concat(referencedAttrs);
       continue;
     } else {
@@ -136,10 +136,10 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
       type = 'INT';
     }
 
-    let attrLine = [`${cc(name, 'sk')} ${type}`];
+    const attrLine = [`${cc(name, 'sk')} ${type}`];
 
     if (a.Option?.Default) {
-      let def = GenerateDefaultValue(a, Lang.SQLite);
+      const def = GenerateDefaultValue(a, Lang.SQLite);
       if (def !== null) {
         attrLine.push(`DEFAULT ${def}`);
       }

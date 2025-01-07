@@ -1,12 +1,12 @@
-import { groupBy, TAB } from '../../constants';
+import { TAB } from '../../constants';
 import { cc } from '../../formatting';
 import { Schema, Func, AppGeneratorMode } from '../../structure';
 
 export function SchemasToRustStructsImpl(schemas: Schema[]): string {
-  let funcs: Func[] = [];
+  const funcs: Func[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let func = new Func(t, AppGeneratorMode.RustStructAndImpl);
+      const func = new Func(t, AppGeneratorMode.RustStructAndImpl);
       funcs.push(func);
     }
   }
@@ -18,20 +18,20 @@ export function SchemasToRustStructsImpl(schemas: Schema[]): string {
   lines.push('');
 
   for (const f of funcs) {
-    let pt = cc(f.title, 'pl');
+    const pt = cc(f.title, 'pl');
 
     // Struct
 
     lines.push(`struct ${pt} {`);
-    let attrs: string[] = generateStructAttributes(f);
+    const attrs: string[] = generateStructAttributes(f);
     lines = lines.concat(attrs);
 
     lines.push(`}\n`);
 
     // Func
 
-    let funcAttrs: string[] = generateFuncReturnStruct(f);
-    let { params } = generateParams(f);
+    const funcAttrs: string[] = generateFuncReturnStruct(f);
+    const { params } = generateParams(f);
 
     lines.push(`impl ${pt} {`);
     lines.push(`${TAB}pub fn new (
@@ -46,13 +46,13 @@ ${TAB}) -> Self {`);
     lines.push(`}\n`);
   }
 
-  let str = lines.join('\n');
+  const str = lines.join('\n');
   return str;
 }
 
 function generateParams(f: Func) {
-  let relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
-  let params = relevantInputs
+  const relevantInputs = f.outputs.map((e) => e.relatedInput).filter((e) => !!e);
+  const params = relevantInputs
     .map((e) => `${e.label}: ${e.type}`)
     .join(`,\n${TAB}${TAB}`);
 
@@ -60,7 +60,7 @@ function generateParams(f: Func) {
 }
 
 function generateFuncReturnStruct(f: Func) {
-  let funcAttrs: string[] = [];
+  const funcAttrs: string[] = [];
   for (const o of f.outputs) {
     if (o.relatedInput === null) {
       funcAttrs.push(`${TAB}${TAB}${TAB}${o.label}: ${o.defaultValue},`);
@@ -73,7 +73,7 @@ function generateFuncReturnStruct(f: Func) {
 }
 
 function generateStructAttributes(f: Func) {
-  let attrs: string[] = [];
+  const attrs: string[] = [];
   for (const e of f.outputs) {
     attrs.push(
       `${TAB}pub ${e.label}: ${e.relatedInput ? e.relatedInput.type : e.type},`

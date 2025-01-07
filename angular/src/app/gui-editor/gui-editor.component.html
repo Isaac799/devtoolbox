@@ -10,14 +10,14 @@
   <!-- Schema -->
   <div class="fc">
     <div
+      tabindex="1"
       class="fr align-center g-1 can-hover"
-      (click)="doShowModalSchema(s)"
+      (mouseup)="tblMouseUp(); "
       (mouseenter)="hoveredSchema = s"
       [ngClass]="{
         'pink': showMoves && draggingTable !== null&& draggingTable.Parent.ID !== s.ID,
         'accent-hover': showMoves && draggingTable && hoveredSchema?.ID === s.ID && draggingTable.Parent.ID !== s.ID,
       }"
-      (mouseup)="tblMouseUp()"
     >
       <span class="title-1 success-text">
         {{ s.Name }}
@@ -49,9 +49,10 @@
 
     <!-- Table -->
     <div
-      (mouseover)="hoveredTable = t"
+      tabindex="2"
+      (mouseenter)="hoveredTable = t"
       class="fr align-center g-1 can-hover"
-      (click)="doShowModalTable(s, t)"
+      (mouseup)="doShowModalTable(s, t)"
       [ngClass]="{
           'blink': showMoves && draggingAttribute !== null
         }"
@@ -83,8 +84,9 @@
 
     <!-- Attribute -->
     <div
+      tabindex="3"
       class="fr align-center g-2  can-hover"
-      (click)="doShowModalAttribute(s, t, a)"
+      (mouseup)="doShowModalAttribute(s, t, a)"
       (mousedown)="attrMouseDown(a, ai)"
     >
       <span>
@@ -131,7 +133,7 @@
 
     <button
       class="fr align-center g-1 hide-until-hover"
-      (click)="doShowModalAttribute(s, t)"
+      (mouseup)="doShowModalAttribute(s, t)"
     >
       <span>
         Attribute
@@ -156,7 +158,7 @@
   <div>
     <button
       class="fr align-center g-1 hide-until-hover"
-      (click)="doShowModalTable(s)"
+      (mouseup)="doShowModalTable(s)"
     >
       <span>
         Table
@@ -170,7 +172,7 @@
 <div>
   <button
     class="fr align-center g-1 hide-until-hover"
-    (click)="doShowModalSchema()"
+    (mouseup)="doShowModalSchema()"
   >
     <span>
       Schema
@@ -207,7 +209,7 @@
   <ng-content footer>
     @if (selectedSchema) {
     <button
-      (click)="clickDelSchema()"
+      (mouseup)="clickDelSchema()"
       class="error-hover"
     >Delete</button>
     }
@@ -242,7 +244,7 @@
   <ng-content footer>
     @if (selectedTable) {
     <button
-      (click)="clickDelTable()"
+      (mouseup)="clickDelTable()"
       class="error-hover"
     >Delete</button>
     }
@@ -395,7 +397,8 @@
       <div class="chips">
         @for (x of smartSuggestions; track $index) {
         <span
-          (click)="clickSmartSuggestion(x)"
+          tabindex="4"
+          (mouseup)="clickSmartSuggestion(x)"
           class="chip clickable"
         >
           {{ x.Name }}
@@ -408,14 +411,14 @@
         @if (!showSmartAttributes && smartSuggestions.length > 0) {
         <button
           class="small-font"
-          (click)="showSmartAttributes = true"
+          (mouseup)="showSmartAttributes = true"
         >
           Show Suggestions
         </button>
         } @else if (showSmartAttributes) {
         <button
           class="small-font"
-          (click)="showSmartAttributes = false"
+          (mouseup)="showSmartAttributes = false"
         >
           Hide Suggestions
         </button>
@@ -424,14 +427,14 @@
         @if (showAttrValidation) {
         <button
           class="small-font"
-          (click)="showAttrValidation = false"
+          (mouseup)="showAttrValidation = false"
         >
           Remove Validation
         </button>
         } @else {
         <button
           class="small-font"
-          (click)="showAttrValidation = true"
+          (mouseup)="showAttrValidation = true"
         >
           Add Validation
         </button>
@@ -440,14 +443,14 @@
         @if (showAttrOptions) {
         <button
           class="small-font"
-          (click)="showAttrOptions = false"
+          (mouseup)="showAttrOptions = false"
         >
           Remove Options
         </button>
         } @else {
         <button
           class="small-font"
-          (click)="showAttrOptions = true"
+          (mouseup)="showAttrOptions = true"
         >
           Add Options
         </button>
@@ -461,7 +464,7 @@
   <ng-content footer>
     @if (selectedAttribute) {
     <button
-      (click)="clickDelAttribute()"
+      (mouseup)="clickDelAttribute()"
       class="error-hover"
     >
       Delete

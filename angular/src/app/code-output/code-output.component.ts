@@ -102,7 +102,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
         console.error('Missing this.codeGeneratorViewHtml');
         return;
       }
-      let code = hljs.highlight(this.output, { language: ext }).value;
+      const code = hljs.highlight(this.output, { language: ext }).value;
       this.codeOutput.nativeElement.innerHTML = code;
     });
   }

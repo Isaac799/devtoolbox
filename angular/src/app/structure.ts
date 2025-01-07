@@ -79,7 +79,7 @@ export class Func {
   }
 
   genFnInputs(): FuncIn[] {
-    let inputs: FuncIn[] = [];
+    const inputs: FuncIn[] = [];
 
     for (const a of this.table.Attributes) {
       if (a.Option?.SystemField || a.Option?.Default) {
@@ -88,9 +88,9 @@ export class Func {
       if (a.RefTo) {
         for (const ra of a.RefTo.Attributes) {
           if (!ra.Option?.PrimaryKey) continue;
-          let sameSchema = ra.Parent.Parent.ID === this.table.Parent.ID;
-          let relation = sameSchema ? Rel.SameSchema : Rel.DiffSchema;
-          let { label, type } = genLabelType(
+          const sameSchema = ra.Parent.Parent.ID === this.table.Parent.ID;
+          const relation = sameSchema ? Rel.SameSchema : Rel.DiffSchema;
+          const { label, type } = genLabelType(
             'in',
             a,
             ra,
@@ -103,7 +103,7 @@ export class Func {
 
         continue;
       }
-      let { label, type } = genLabelType(
+      const { label, type } = genLabelType(
         'in',
         a,
         a,
@@ -153,9 +153,9 @@ export class Func {
           if (a.RefTo.ID === this.table.ID) continue;
           added = true;
 
-          let sameSchema = a.Parent.Parent.ID === this.table.Parent.ID;
-          let sameTable = a.Parent.ID === this.table.ID;
-          let relation = sameSchema
+          const sameSchema = a.Parent.Parent.ID === this.table.Parent.ID;
+          const sameTable = a.Parent.ID === this.table.ID;
+          const relation = sameSchema
             ? Rel.SameSchema
             : sameTable
             ? Rel.SameTable
@@ -165,14 +165,14 @@ export class Func {
           if (relation === Rel.SameSchema || relation === Rel.SameTable) {
             lPrefix = tbl.Name;
           }
-          let l = cc(lPrefix + '_' + a.RefTo.Name, 'sk');
+          const l = cc(lPrefix + '_' + a.RefTo.Name, 'sk');
 
-          let fakeA = new Attribute(-1, l, AttrType.REFERENCE, this.table);
+          const fakeA = new Attribute(-1, l, AttrType.REFERENCE, this.table);
           fakeA.Validation = {
             Required: true,
           };
 
-          let { label, type, defaultValue } = genLabelType(
+          const { label, type, defaultValue } = genLabelType(
             'out',
             fakeA,
             fakeA,
@@ -190,9 +190,9 @@ export class Func {
           // );
         }
         if (!added) {
-          let sameSchema = tbl.Parent.ID === this.table.Parent.ID;
-          let sameTable = tbl.ID === this.table.ID;
-          let relation = sameSchema
+          const sameSchema = tbl.Parent.ID === this.table.Parent.ID;
+          const sameTable = tbl.ID === this.table.ID;
+          const relation = sameSchema
             ? Rel.SameSchema
             : sameTable
             ? Rel.SameTable
@@ -203,12 +203,12 @@ export class Func {
             l = tbl.Name;
           }
 
-          let fakeA = new Attribute(-1, l, AttrType.REFERENCE, this.table);
+          const fakeA = new Attribute(-1, l, AttrType.REFERENCE, this.table);
           fakeA.Validation = {
             Required: true,
           };
 
-          let { label, type, defaultValue } = genLabelType(
+          const { label, type, defaultValue } = genLabelType(
             'out',
             fakeA,
             fakeA,
@@ -235,27 +235,26 @@ export class Func {
     let answer: FuncOut[] = [];
 
     if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
-      a.RefTo.Attributes;
       for (const ra of a.RefTo.Attributes) {
         if (!ra.Option?.PrimaryKey) {
           continue;
         }
-        let refAttrs = this.genFnOutput(ra, a, relatedInput);
+        const refAttrs = this.genFnOutput(ra, a, relatedInput);
         answer = answer.concat(refAttrs);
       }
       return answer;
     }
 
     if (recursive) {
-      let sameSchema = a.Parent.Parent.ID === this.table.Parent.ID;
-      let sameTable = a.Parent.ID === this.table.ID;
-      let relation = sameSchema
+      const sameSchema = a.Parent.Parent.ID === this.table.Parent.ID;
+      const sameTable = a.Parent.ID === this.table.ID;
+      const relation = sameSchema
         ? Rel.SameSchema
         : sameTable
         ? Rel.SameTable
         : Rel.DiffSchema;
 
-      let { label, type, defaultValue } = genLabelType(
+      const { label, type, defaultValue } = genLabelType(
         'out',
         a,
         recursive,
@@ -265,7 +264,7 @@ export class Func {
       );
       answer.push(new FuncOut(label, type, relatedInput, defaultValue));
     } else {
-      let { label, type, defaultValue } = genLabelType(
+      const { label, type, defaultValue } = genLabelType(
         'out',
         a,
         a,
@@ -279,7 +278,7 @@ export class Func {
   }
 
   private determineTitle(): string {
-    let map: Record<Lang, string> = {
+    const map: Record<Lang, string> = {
       [Lang.Rust]: cc(this.table.Name, 'sk'),
       [Lang.SQLite]: cc(this.table.Name, 'sk'),
       [Lang.PGSQL]: cc(this.table.Name, 'sk'),
@@ -290,11 +289,11 @@ export class Func {
     return map[this.lang];
   }
   private static determineLanguage(mode: AppGeneratorMode): Lang {
-    let isGo = [AppGeneratorMode.GoStructsAndFns].includes(mode);
+    const isGo = [AppGeneratorMode.GoStructsAndFns].includes(mode);
     if (isGo) {
       return Lang.GO;
     }
-    let isTs = [
+    const isTs = [
       AppGeneratorMode.AngularFormControl,
       AppGeneratorMode.TSClasses,
       AppGeneratorMode.TSTypesAndFns,
@@ -303,21 +302,21 @@ export class Func {
     if (isTs) {
       return Lang.TS;
     }
-    let isTSQL = [
+    const isTSQL = [
       AppGeneratorMode.TSQLTables,
       AppGeneratorMode.TSQLStoredProcedures,
     ].includes(mode);
     if (isTSQL) {
       return Lang.TSQL;
     }
-    let isPostgres = [
+    const isPostgres = [
       AppGeneratorMode.PostgresFunctions,
       AppGeneratorMode.Postgres,
     ].includes(mode);
     if (isPostgres) {
       return Lang.PGSQL;
     }
-    let isRust = [AppGeneratorMode.RustStructAndImpl].includes(mode);
+    const isRust = [AppGeneratorMode.RustStructAndImpl].includes(mode);
     if (isRust) {
       return Lang.Rust;
     }
@@ -330,29 +329,29 @@ export class Func {
 }
 
 // Validation holds validation rules for an attribute
-export type Validation = {
+export interface Validation {
   Required?: boolean;
   Min?: number;
   Max?: number;
-};
+}
 
 // Options holds additional options for attributes and tables
-export type AttributeOptions = {
+export interface AttributeOptions {
   PrimaryKey?: boolean;
   Unique?: boolean;
   Default?: string;
   SystemField?: boolean;
-};
+}
 
 // Attribute represents an individual attribute of a table
-export type AttributeConfig = {
+export interface AttributeConfig {
   ID: number;
   ParentID: number;
   RefToID?: number;
   Type: AttrType;
   Option?: AttributeOptions;
   Validation?: Validation;
-};
+}
 // Attribute represents an individual attribute of a table
 export class AttributeSuggestion {
   Name: string;
@@ -418,10 +417,10 @@ export class Attribute {
 }
 
 // Schema represents the entire schema containing multiple tables
-export type SchemaConfig = {
+export interface SchemaConfig {
   ID: number;
   Tables: Record<string, TableConfig>;
-};
+}
 // Schema represents the entire schema containing multiple tables
 export class Schema {
   ID: number;
@@ -443,12 +442,12 @@ export class Schema {
 // };
 
 // Table represents a database table with its attributes and options
-export type TableConfig = {
+export interface TableConfig {
   ID: number;
   ParentID: number;
   // Options: TableOptions;
   Attributes: Record<string, AttributeConfig>;
-};
+}
 
 // Table represents a database table with its attributes and options
 export class Table {
@@ -487,21 +486,21 @@ export class Table {
   }
 }
 
-function createAbbreviation(input: string): string {
-  // Remove vowels (a, e, i, o, u) and keep the first and last letter
-  const vowels = /[aeiouAEIOU]/g;
+// function createAbbreviation(input: string): string {
+//   // Remove vowels (a, e, i, o, u) and keep the first and last letter
+//   const vowels = /[aeiouAEIOU]/g;
 
-  // Remove vowels and leave the first and last character intact
-  const filtered = input
-    .split('')
-    .filter((char, index) => {
-      // Keep the first and last character, and keep the consonants
-      return index === 0 || index === input.length - 1 || !vowels.test(char);
-    })
-    .join('');
+//   // Remove vowels and leave the first and last character intact
+//   const filtered = input
+//     .split('')
+//     .filter((char, index) => {
+//       // Keep the first and last character, and keep the consonants
+//       return index === 0 || index === input.length - 1 || !vowels.test(char);
+//     })
+//     .join('');
 
-  return filtered.toLowerCase(); // Convert the result to lowercase
-}
+//   return filtered.toLowerCase(); // Convert the result to lowercase
+// }
 
 export enum AppMode {
   JSON,
@@ -545,11 +544,11 @@ export enum AttrType {
   REFERENCE = 'REF',
 }
 
-export type App = {
+export interface App {
   mode: AppMode;
   generatorMode: AppGeneratorMode;
   complexity: AppComplexityMode;
-};
+}
 
 export enum NotificationKind {
   Primary = 'primary',
@@ -730,9 +729,9 @@ function genLabelType(
   lang: Lang,
   relation: Rel,
   cardinality: Cardinality,
-  overrideType: string = ''
+  overrideType = ''
 ): { label: string; type: string; defaultValue: string } {
-  let map = new Map<
+  const map = new Map<
     number,
     { label: string; type: string; defaultValue: string }
   >();
@@ -877,7 +876,7 @@ function genLabelType(
   //#region TSQL
 
   const tsqlCase = io === 'in' ? 'sk' : 'sk';
-  let tsqlType: string = '';
+  let tsqlType = '';
 
   if (!tsqlType) {
     tsqlType = SQL_TO_TSQL_TYPE[aL.Type];
@@ -1167,7 +1166,7 @@ function genLabelType(
 
   //#endregion
 
-  let answer = map.get(lang | relation | cardinality);
+  const answer = map.get(lang | relation | cardinality);
 
   if (!answer) {
     console.error(
@@ -1182,7 +1181,7 @@ function genLabelType(
     };
   }
 
-  let def = GenerateDefaultValue(aL, lang);
+  const def = GenerateDefaultValue(aL, lang);
   if (def) {
     answer.defaultValue = def;
     return answer;
@@ -1203,12 +1202,12 @@ export const GenerateDefaultValue = (
     return null;
   }
 
-  let validFn = validationMap.get(attr.Type);
+  const validFn = validationMap.get(attr.Type);
   if (!validFn) {
     return null;
   }
 
-  let valid = validFn(d);
+  const valid = validFn(d);
   if (!valid) {
     return null;
   }
@@ -1240,7 +1239,7 @@ export const GenerateDefaultValue = (
         break;
       case AttrType.DATE:
         {
-          let s = d.split('-');
+          const s = d.split('-');
           if (d === 'NOW()' || d === 'CURRENT_DATE') {
             answer = `Utc::now()`;
           } else if (s.length === 3) {
@@ -1250,7 +1249,7 @@ export const GenerateDefaultValue = (
         break;
       case AttrType.TIME:
         {
-          let t = d.split(':');
+          const t = d.split(':');
           if (d === 'NOW()' || d === 'CURRENT_TIME') {
             answer = `Utc::now()`;
           } else if (t.length === 3) {
@@ -1260,12 +1259,12 @@ export const GenerateDefaultValue = (
         break;
       case AttrType.TIMESTAMP:
         {
-          let s = d.split(' ');
+          const s = d.split(' ');
           if (d === 'NOW()' || d === 'CURRENT_TIMESTAMP') {
             answer = `Utc::now()`;
           } else if (s.length === 2) {
-            let dt = s[0].split('-');
-            let t = s[1].split(':');
+            const dt = s[0].split('-');
+            const t = s[1].split(':');
             if (dt.length === 3 && t.length === 3) {
               answer = `Utc.from_utc_naive(&NaiveDateTime::new(NaiveDate::from_ymd(${dt[0]}, ${dt[1]}, ${dt[2]}), NaiveTime::from_hms(${t[0]}, ${t[1]}, ${t[2]})))`;
             }
@@ -1304,7 +1303,7 @@ export const GenerateDefaultValue = (
         return `'${d.replaceAll("'", "''")}'`;
       case AttrType.DATE:
         {
-          let s = d.split('-');
+          const s = d.split('-');
           if (d === 'NOW()') {
             return `CURRENT_DATE`;
           } else if (s.length === 3) {
@@ -1314,7 +1313,7 @@ export const GenerateDefaultValue = (
         break;
       case AttrType.TIME:
         {
-          let t = d.split(':');
+          const t = d.split(':');
           if (d === 'NOW()') {
             return `CURRENT_TIME`;
           } else if (t.length === 3) {
@@ -1324,12 +1323,12 @@ export const GenerateDefaultValue = (
         break;
       case AttrType.TIMESTAMP:
         {
-          let s = d.split(' ');
+          const s = d.split(' ');
           if (d === 'NOW()') {
             return `CURRENT_TIMESTAMP`;
           } else if (s.length === 2) {
-            let dt = s[0].split('-');
-            let t = s[1].split(':');
+            const dt = s[0].split('-');
+            const t = s[1].split(':');
             if (dt.length === 3 && t.length === 3) {
               return `'${d}'`;
             }
@@ -1343,7 +1342,7 @@ export const GenerateDefaultValue = (
 
   if (lang === Lang.GO) {
     function getMonthString(month: string): string {
-      const months: { [key: string]: string } = {
+      const months: Record<string, string> = {
         '1': 'January',
         '2': 'February',
         '3': 'March',
@@ -1381,7 +1380,7 @@ export const GenerateDefaultValue = (
         return `${d}`;
       case AttrType.DATE:
         {
-          let s = d.split('-');
+          const s = d.split('-');
           if (s.length === 3) {
             // Parameters: year, month, day, hour, minute, second, nanosecond
             return `time.Date(${s[0]}, ${getMonthString(s[1])}, ${
@@ -1401,7 +1400,7 @@ export const GenerateDefaultValue = (
         break;
       case AttrType.TIME:
         {
-          let s = d.split(':');
+          const s = d.split(':');
           if (s.length === 3) {
             // Parameters: year, month, day, hour, minute, second, nanosecond
             return `time.Date(1, 1, 1, ${s[0]}, ${s[1]}, ${s[2]}, 0, time.UTC)`;
@@ -1414,10 +1413,10 @@ export const GenerateDefaultValue = (
         return `${d}`;
       case AttrType.TIMESTAMP:
         {
-          let s = d.split(' ');
+          const s = d.split(' ');
           if (s.length === 2) {
-            let date = s[0].split('-');
-            let time = s[1].split(':');
+            const date = s[0].split('-');
+            const time = s[1].split(':');
             if (date.length === 3 && time.length === 3) {
               // Parameters: year, month, day, hour, minute, second, nanosecond
               return `time.Date(${date[0]}, ${getMonthString(date[1])}, ${
@@ -1452,7 +1451,7 @@ export const GenerateDefaultValue = (
 
   if (lang === Lang.TS) {
     function getMonthString(month: string): string {
-      const months: { [key: string]: string } = {
+      const months: Record<string, string> = {
         '1': '0',
         '2': '1',
         '3': '2',
@@ -1490,7 +1489,7 @@ export const GenerateDefaultValue = (
         return `${d}`;
       case AttrType.DATE:
         {
-          let s = d.split('-');
+          const s = d.split('-');
           if (s.length === 3) {
             // const specificDate = new Date(Date.UTC(2021, 0, 1, 10, 45, 22, 0)); // January 1, 2021, 10:45:22 UTC
             return `new Date(Date.UTC(${s[0]}, ${getMonthString(s[1])}, ${
@@ -1510,7 +1509,7 @@ export const GenerateDefaultValue = (
         break;
       case AttrType.TIME:
         {
-          let s = d.split(':');
+          const s = d.split(':');
           if (s.length === 3) {
             // const specificDate = new Date(Date.UTC(2021, 0, 1, 10, 45, 22, 0)); // January 1, 2021, 10:45:22 UTC
             return `new Date(Date.UTC(1970, 0, 1, ${s[0]}, ${s[1]}, ${s[2]}, 0))`;
@@ -1523,10 +1522,10 @@ export const GenerateDefaultValue = (
         return `${d}`;
       case AttrType.TIMESTAMP:
         {
-          let s = d.split(' ');
+          const s = d.split(' ');
           if (s.length === 2) {
-            let date = s[0].split('-');
-            let time = s[1].split(':');
+            const date = s[0].split('-');
+            const time = s[1].split(':');
             if (date.length === 3 && time.length === 3) {
               // Parameters: year, month, day, hour, minute, second, nanosecond
               return `new Date(Date.UTC(${date[0]}, ${getMonthString(

@@ -2,10 +2,10 @@ import { TAB } from '../../constants';
 import { Schema, Func, AppGeneratorMode, FuncIn } from '../../structure';
 
 export function SchemasToAngularFormControls(schemas: Schema[]): string {
-  let funcs: Func[] = [];
+  const funcs: Func[] = [];
   for (const s of schemas) {
     for (const t of s.Tables) {
-      let func = new Func(t, AppGeneratorMode.TSTypesAndFns);
+      const func = new Func(t, AppGeneratorMode.TSTypesAndFns);
       funcs.push(func);
     }
   }
@@ -14,19 +14,19 @@ export function SchemasToAngularFormControls(schemas: Schema[]): string {
 
   for (const f of funcs) {
     lines.push(`${f.title} = new FormGroup({`);
-    let controls: string[] = [];
+    const controls: string[] = [];
     for (const e of f.outputs) {
       const t = e.relatedInput ? e.relatedInput.type : e.type;
       const v = e.defaultValue || null;
       const validators = `[${GenerateValidatorsForAttribute(e.relatedInput)}]`;
-      let formControl = `${TAB}${e.label}: new FormControl<${t}>(${v} , ${validators})`;
+      const formControl = `${TAB}${e.label}: new FormControl<${t}>(${v} , ${validators})`;
       controls.push(formControl);
     }
     lines = lines.concat(controls.join(`,\n`));
     lines.push(`})\n`);
   }
 
-  let str = lines.join('\n');
+  const str = lines.join('\n');
   return str;
 }
 
@@ -35,13 +35,13 @@ function GenerateValidatorsForAttribute(input: FuncIn | null) {
     return '';
   }
 
-  let v = input.validation;
+  const v = input.validation;
 
   if (!v) {
     return '';
   }
 
-  let validators: string[] = [];
+  const validators: string[] = [];
 
   if (v.Required) {
     validators.push('Validators.required');
@@ -61,6 +61,6 @@ function GenerateValidatorsForAttribute(input: FuncIn | null) {
     }
   }
 
-  let validatorsStr = validators.join(', ');
+  const validatorsStr = validators.join(', ');
   return validatorsStr;
 }
