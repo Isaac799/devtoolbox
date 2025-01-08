@@ -41,6 +41,11 @@ body {
     background-color: var(--primary-transparent);
 }
 
+pre,
+button {
+    font-size: 16px;
+}
+
 @font-face {
     font-family: 'Material Symbols Outlined';
     font-style: normal;
@@ -571,7 +576,5 @@ select.ng-invalid {
 
         overflow: auto;
 
-
-        padding: var(--space-sm);
     }
 }

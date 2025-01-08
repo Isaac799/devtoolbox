@@ -57,3 +57,14 @@
 .dragging * {
     cursor: move;
 }
+
+.sticky {
+    top: -1px;
+    position: sticky;
+    background-color: var(--white);
+    padding-top: var(--space-sm);
+}
+
+button {
+    padding: 0;
+}
