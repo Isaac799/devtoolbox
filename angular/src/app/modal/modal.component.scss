@@ -23,8 +23,8 @@
     grid-template-columns: 100%;
     grid-template-rows: auto 1fr auto;
 
-    background-color: white;
-    border-radius: var(--space);
+    background-color: var(--white);
+    border-radius: var(--border-radius);
     min-width: 50vw;
     max-width: 80vw;
     max-height: 80vh;

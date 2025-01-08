@@ -8,6 +8,7 @@ body {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
+
 :root {
     --white: rgb(255, 255, 255);
     --black: rgb(0, 0, 0);
@@ -20,9 +21,10 @@ body {
     --highlight: #f0e442;
 
     --transparency: 0.2;
-    --space: 0.5rem;
-    --space-sm: 0.35rem;
-    --border-radius: 0.5rem;
+    --space: 1rem;
+    --space-sm: 0.5rem;
+    --border-radius: 1.5rem;
+    --shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 
     --white-transparent: rgba(255, 255, 255, var(--transparency));
     --black-transparent: rgba(0, 0, 0, var(--transparency));
@@ -33,6 +35,10 @@ body {
     --error-transparent: rgba(213, 94, 0, var(--transparency));
     --info-transparent: rgba(86, 180, 233, var(--transparency));
     --highlight-transparent: rgba(240, 228, 66, var(--transparency));
+}
+
+body {
+    background-color: var(--primary-transparent);
 }
 
 @font-face {
@@ -65,7 +71,7 @@ body {
 
 .mono-space {
     font-family: 'Courier New', Courier, monospace;
-    font-size: 0.8rem;
+    font-size: 1rem;
     overflow: auto;
 }
 
@@ -73,10 +79,6 @@ body {
     box-sizing: border-box;
 }
 
-.split {
-    display: grid;
-    grid-template-columns: min-content auto;
-}
 
 .fc {
     display: flex;
@@ -131,7 +133,7 @@ input:focus {
 }
 
 .hide-until-hover {
-    color: var(--black-transparent);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .hide-until-hover:hover {
@@ -375,7 +377,8 @@ code {
 button {
     border: 0;
     font-size: 1rem;
-    background-color: white;
+    background-color: var(--white);
+    ;
     max-width: 13.5rem;
     // padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
@@ -390,7 +393,7 @@ button:hover:not(:disabled) {
     padding-left: 0.35rem;
     padding-right: 0.35rem;
     color: var(--black);
-    box-shadow: rgba(100, 100, 111, 0.2) 0 0.5rem 2rem 0px;
+    box-shadow: var(--shadow);
 
     * {
         color: var(--black);
@@ -407,7 +410,7 @@ button:hover:not(:disabled) {
     flex-wrap: wrap;
     gap: var(--space);
     // margin-top: var(--space);
-    padding: var(--space) var(--space) var(--space) var(--space);
+    padding: var(--space-sm);
 
     // @media (max-width: 880px) {
     //   .control:last-child {
@@ -424,17 +427,24 @@ button:hover:not(:disabled) {
 
     .control {
         position: relative;
-        display: block;
         min-height: 2rem;
         min-width: 13.5rem;
-        border-bottom: 0.1rem solid black;
+        border: 0.1rem solid var(--black-transparent);
+        border-radius: var(--space-sm);
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
 
         input,
         select {
+            border-radius: var(--space-sm);
             margin: 0;
-            padding: 0.6rem 0.5rem 0.1rem 0.5rem;
+            padding: 0.6rem 0.5rem 0.3rem 0.5rem;
             border: 0;
-            background-color: white;
+            background-color: var(--white);
+            ;
             width: 100%;
             font-size: 1rem;
             min-height: 1.35rem;
@@ -446,15 +456,16 @@ button:hover:not(:disabled) {
         // }
 
         label {
+            border-radius: var(--space-sm);
             color: var(--primary);
-            padding: 0 var(--space-sm) 0 var(--space-sm);
+            padding: 0 0.35rem 0 0.35rem;
             position: absolute;
             font-size: 0.8rem;
             left: 0.35rem;
-            top: -0.5rem;
+            top: -0.65rem;
             z-index: 2;
-            background-color: white;
-            border-radius: var(--space-sm);
+            background-color: var(--white);
+            border-radius: var(--border-radius);
         }
 
         // div.hint {
@@ -498,7 +509,7 @@ select.ng-invalid {
     cursor: pointer;
     background-color: var(--warn-transparent);
     color: var(--black);
-    box-shadow: rgba(100, 100, 111, 0.2) 0 0.5rem 2rem 0px;
+    box-shadow: var(--shadow);
 }
 
 .small-font {
@@ -510,7 +521,7 @@ select.ng-invalid {
     overflow: auto;
     max-width: 45rem;
     border: 0.1rem solid var(--primary);
-    box-shadow: rgba(0, 0, 0, 0.25) 0 0 0.5rem 0.05rem inset;
+    box-shadow: var(--shadow) inset;
 }
 
 .relative-box {
@@ -525,12 +536,6 @@ select.ng-invalid {
     right: 0;
 }
 
-@media (max-width: 680px) {
-    .split {
-        display: grid;
-        grid-template-columns: auto;
-    }
-}
 
 @media (max-width: 880px) {
     .controls {
@@ -541,5 +546,32 @@ select.ng-invalid {
 
     .scroll-box {
         max-width: calc(100vw - (var(--space) * 2));
+    }
+}
+
+.section-parent {
+    position: relative;
+    display: block;
+
+    background-color: var(--white);
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    padding: var(--space-sm);
+
+    height: calc(100vh - 2rem);
+    max-height: calc(100vh - 2rem);
+
+    overflow: hidden;
+
+    .section-scroll {
+        display: block;
+
+        height: calc(100vh - 2rem);
+        max-height: calc(100vh - 2rem);
+
+        overflow: auto;
+
+
+        padding: var(--space-sm);
     }
 }

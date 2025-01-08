@@ -35,6 +35,61 @@ export class DataService {
         complexity: AppComplexityMode.Advanced
     }
 
+    generatorModeOptions = [
+        {
+            name: 'Postgres: Tables',
+            value: AppGeneratorMode.Postgres
+        },
+        {
+            name: 'Postgres: ƒ',
+            value: AppGeneratorMode.PostgresFunctions
+        },
+        {
+            name: 'T-SQL: tables',
+            value: AppGeneratorMode.TSQLTables
+        },
+        {
+            name: ' T-SQL: procedures',
+            value: AppGeneratorMode.TSQLStoredProcedures
+        },
+        {
+            name: 'SQLite: tables',
+            value: AppGeneratorMode.SQLiteTables
+        },
+        {
+            name: 'SQLite: queries',
+            value: AppGeneratorMode.SQLiteJoinQuery
+        },
+        {
+            name: 'JavaScript: classes',
+            value: AppGeneratorMode.JSClasses
+        },
+        {
+            name: 'TypeScript: classes',
+            value: AppGeneratorMode.TSClasses
+        },
+        {
+            name: 'TypeScript: types & ƒ',
+            value: AppGeneratorMode.TSTypesAndFns
+        },
+        {
+            name: 'C#: classes',
+            value: AppGeneratorMode.CSClasses
+        },
+        {
+            name: 'Go: structs & ƒ',
+            value: AppGeneratorMode.GoStructsAndFns
+        },
+        {
+            name: 'Rust: structs & impl ƒ',
+            value: AppGeneratorMode.RustStructAndImpl
+        },
+        {
+            name: 'Angular: reactive form',
+            value: AppGeneratorMode.AngularFormControl
+        }
+    ]
+
     ReloadAndSave() {
         this.saveConfig()
         this.saveState()

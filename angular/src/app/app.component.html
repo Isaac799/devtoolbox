@@ -1,104 +1,26 @@
 <div class="split p-2">
-    <div class="fr g-2 f-wrap">
-        <app-code-output></app-code-output>
+    <div>
+        <app-pool></app-pool>
     </div>
-    <div class="fc g-2 p-2">
-        <button class="info" (click)="showSettingsModal = true">
-            <span>Settings & Help</span>
-        </button>
-        <button class="info" (click)="copyConfig()">
-            <span>
-                Copy
-                @if (data.app.mode === 0) {
-                    JSON
-                } @else if (data.app.mode === 1) {
-                    YAML
-                }
-            </span>
-        </button>
-
-        <div class="controls">
-            <div class="control">
-                <label for="appComplexity">Output</label>
-                <select
-                    [(ngModel)]="data.app.generatorMode"
-                    (ngModelChange)="data.ReloadAndSave()"
-                    id="appComplexity"
-                >
-                    @for (x of generatorModeOptions; track $index) {
-                        <option [ngValue]="x.value">{{ x.name }}</option>
-                    }
-                </select>
-            </div>
-        </div>
+    <div>
         <app-gui-editor></app-gui-editor>
     </div>
+    <div>
+        <app-code-output></app-code-output>
+    </div>
 </div>
-
-@if (showSettingsModal) {
-    <app-modal [title]="'Settings'" [(visible)]="showSettingsModal">
-        <ng-content body>
-            <div class="info m-2 p-2 fc g-2 align-center justify-center">
-                <span>
-                    Click and hold an attribute or table to move it around
-                </span>
-                <span> The order of items is significant </span>
-            </div>
-
-            <!-- Text Editor -->
-            <div class="controls">
-                <div class="control">
-                    <label for="appComplexity">Output</label>
-                    <select
-                        [(ngModel)]="data.app.generatorMode"
-                        (ngModelChange)="data.ReloadAndSave()"
-                        id="appComplexity"
-                    >
-                        @for (x of generatorModeOptions; track $index) {
-                            <option [ngValue]="x.value">{{ x.name }}</option>
-                        }
-                    </select>
-                </div>
-                <div class="control">
-                    <label for="appMode">Output: Config</label>
-                    <select
-                        [(ngModel)]="data.app.mode"
-                        (ngModelChange)="data.ReloadAndSave()"
-                        id="appMode"
-                    >
-                        @for (x of modeOptions; track $index) {
-                            <option [ngValue]="x.value">{{ x.name }}</option>
-                        }
-                    </select>
-                </div>
-                <!-- <div class="control">
-        <label for="appComplexity">Input: Complexity</label>
-        <select
-          [(ngModel)]="data.app.complexity"
-          (ngModelChange)="data.ReloadAndSave()"
-          id="appComplexity"
-        >
-          @for (x of complexityOptions; track $index) {
-          <option [ngValue]="x.value">{{ x.name }}</option>
-          }
-        </select>
-      </div> -->
-            </div>
-        </ng-content>
-    </app-modal>
-}
 
 <div class="fixed-top-right">
     <div class="notifications m-2">
         @for (x of notification.Notifications; track $index) {
-            <div [class]="'fc gap-1 p-1 ' + x.kind">
-                <span class="title-2">
-                    {{ x.title }}
-                </span>
-                <span>
-                    {{ x.message }}
-                </span>
-            </div>
+        <div [class]="'fc gap-1 p-1 ' + x.kind">
+            <span class="title-2">
+                {{ x.title }}
+            </span>
+            <span>
+                {{ x.message }}
+            </span>
+        </div>
         }
     </div>
 </div>

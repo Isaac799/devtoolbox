@@ -13,7 +13,7 @@ import {
     Attribute,
     AppComplexityMode,
     AttributeSuggestion,
-    validationMap
+    validationMap,
 } from '../structure'
 import {
     AbstractControl,
