@@ -22,7 +22,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
         const pks = funcGo.outputs.filter(e => e.primary)
 
-        const w = table.Attributes.filter(e => e.Option?.PrimaryKey).map((e, i) => `${e.Name} = $${i + 1}`)
+        const w = table.Attributes.filter(e => e.Option?.PrimaryKey).map((e, i) => `${cc(e.Name, 'sk')} = $${i + 1}`)
         const selectWhereLen = w.length
         const selectWhere = w.join(' AND ')
 
@@ -66,7 +66,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             const l: string[] = []
             lines.push(`func Index${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
 
-            const selecting = table.Attributes.map(e => e.Name).join(', ')
+            const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(', ')
             const query = `SELECT ${selecting} FROM ${table.FN}`
 
             l.push(`rows, err := db.Query("${query}")`)
@@ -117,7 +117,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             l.push('')
 
-            const selecting = table.Attributes.map(e => e.Name).join(', ')
+            const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(', ')
             const query = `SELECT ${selecting} FROM ${table.FN} WHERE ${selectWhere}`
 
             l.push(`${item} := ${funcGo.title}{}`)
@@ -168,7 +168,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             const cols = table.Attributes.filter(e => e.toInsert())
 
-            const aEqB: string[] = cols.map((e, i) => `${e.Name} = $${selectWhereLen + i + 1}`)
+            const aEqB: string[] = cols.map((e, i) => `${cc(e.Name, 'sk')} = $${selectWhereLen + i + 1}`)
             const colsSnake = cols.map(e => cc(e.Name, 'sk'))
 
             const fieldsB = funcGo.outputs.filter(e => colsSnake.includes(cc(e.label, 'sk'))).map(e => `${item}.${e.label}`)
@@ -181,7 +181,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             const query = `UPDATE public.user SET ${aEqBStr} WHERE ${selectWhere}`
             l.push(`_, err = db.Exec("${query}", ${fieldsStr})`)
             l.push(`if err != nil {`)
-            l.push(`${TAB}http.Error(w, "Failed to update ${table.Name}", http.StatusInternalServerError)`)
+            l.push(`${TAB}http.Error(w, "Failed to update ${cc(table.Name, 'sk')}", http.StatusInternalServerError)`)
             l.push(`${TAB}return`)
             l.push(`}`)
 
@@ -214,7 +214,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`}`)
             l.push(``)
 
-            const cols = table.Attributes.filter(e => e.toInsert()).map(e => e.Name)
+            const cols = table.Attributes.filter(e => e.toInsert()).map(e => cc(e.Name, 'sk'))
 
             const values: string[] = []
             const valuesAttrs: string[] = []
@@ -236,7 +236,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             const colsStr = cols.join(', ')
 
             const returning: string = table.Attributes.filter(e => e.Option?.PrimaryKey)
-                .map(e => e.Name)
+                .map(e => cc(e.Name, 'sk'))
                 .join(', ')
 
             const query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuesStr}) RETURNING ${returning}`
