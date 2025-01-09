@@ -447,7 +447,7 @@ export class Attribute {
 
     constructor(ID: number, Name: string, Type: AttrType, Parent: Table) {
         this.ID = ID
-        this.Name = cc(Name, 'sk')
+        this.Name = Name
         this.Type = Type
         this.Parent = Parent
     }
@@ -481,7 +481,10 @@ export class Attribute {
         const isPk = this.Option?.PrimaryKey === true
         const isReqOrPk = isRequired || isPk
         const isRef = this.Type === AttrType.REFERENCE
-        const isNullable = !isReqOrPk || (isPk && isRef)
+
+        // An attribute is nullable if it is neither required nor a primary key, and not a reference if it's a primary key
+        const isNullable = !isReqOrPk && !(isRef && isPk)
+
         return isNullable
     }
 
@@ -932,6 +935,7 @@ function genLabelType(
         psqlType = 'INT'
     }
 
+
     map.set(Lang.PGSQL | Rel.SameTable | Cardinality.Self, {
         label: cc(aL.Name, psqlCase),
         type: psqlType,
@@ -1055,7 +1059,7 @@ function genLabelType(
 
     //#region Typescript
 
-    const tsNullable = isNullable ? '' : ' | null'
+    const tsNullable = isNullable ? ' | null' : ''
     let tsType = overrideType ? cc(overrideType, 'pl') : SQL_TO_TS_TYPE[aT.Type]
     const tsCase = io === 'in' ? 'cm' : 'cm'
     const tsOverrideTypeRelatedLabel = fixPluralGrammar(
@@ -1128,7 +1132,7 @@ function genLabelType(
 
     //#region C#
 
-    const csNullable = isNullable ? '' : '?'
+    const csNullable = isNullable ? '?' : ''
     let csType = overrideType ? cc(overrideType, 'pl') : SQL_TO_CS_TYPE[aT.Type]
     const csCase = io === 'in' ? 'cm' : 'pl'
     const csOverrideTypeRelatedLabel = fixPluralGrammar(
@@ -1201,7 +1205,7 @@ function genLabelType(
 
     //#region Go Lang
 
-    const goNullable = isNullable ? '' : '*'
+    const goNullable = isNullable ? '*' : ''
 
     let goType = overrideType
         ? cc(overrideType, 'pl')
