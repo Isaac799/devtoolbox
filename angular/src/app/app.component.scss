@@ -17,11 +17,20 @@
     grid-template-columns: 20rem calc(100vw - 23rem);
     // grid-template-columns: 18.5rem 18.5rem calc(100vw - 41rem);
     gap: var(--space);
+    padding: var(--space);
+
+
 }
 
 @media (max-width: 680px) {
     .split {
-        display: grid;
-        grid-template-columns: 50vw 50vw auto;
+        grid-template-columns: 100vw;
+        margin-bottom: 4rem;
+        gap: 4rem;
+        padding: 0;
+    }
+
+    .section-parent {
+        height: 75vh;
     }
 }

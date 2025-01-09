@@ -562,18 +562,6 @@ select.ng-invalid {
 }
 
 
-@media (max-width: 880px) {
-    .controls {
-        .control {
-            margin-top: var(--space-sm);
-        }
-    }
-
-    .scroll-box {
-        max-width: calc(100vw - (var(--space) * 2));
-    }
-}
-
 .section-parent {
     position: relative;
     display: block;
@@ -588,13 +576,39 @@ select.ng-invalid {
 
     overflow: hidden;
 
-    .section-scroll {
+    >.section-scroll {
         display: block;
 
         height: calc(100vh - 2rem);
         max-height: calc(100vh - 2rem);
 
         overflow: auto;
+
+    }
+}
+
+@media (max-width: 680px) {
+    .controls {
+        .control {
+            margin-top: var(--space-sm);
+        }
+    }
+
+
+    .section-parent {
+        height: 75vh;
+        border-radius: 0;
+        padding: 0;
+
+        >.section-scroll {
+            max-height: calc(75vh);
+
+        }
+
+
+        >.section-scroll {
+            max-width: calc(100vw);
+        }
 
     }
 }
