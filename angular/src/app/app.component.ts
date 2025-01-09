@@ -6,7 +6,6 @@ import {GuiEditorComponent} from './gui-editor/gui-editor.component'
 import {DataService} from './services/data.service'
 import {CodeOutputComponent} from './code-output/code-output.component'
 import {NotificationService} from './services/notification.service'
-import {PoolComponent} from './pool/pool.component'
 
 @Component({
     selector: 'app-root',
@@ -16,7 +15,6 @@ import {PoolComponent} from './pool/pool.component'
         ReactiveFormsModule,
         GuiEditorComponent,
         CodeOutputComponent,
-        PoolComponent
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'

@@ -33,7 +33,7 @@
         rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
         rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 
-    .header {
+    >.header {
         position: relative;
         display: flex;
         flex-direction: row;
@@ -43,24 +43,25 @@
         font-size: 1.35rem;
         padding: var(--space-sm) var(--space) 0 var(--space);
 
-        button:last-child {
+        >button:last-child {
             padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
             height: 2rem;
-            width: 2rem;
+            width: 2.55rem;
             position: absolute;
             top: 0;
             right: 0;
-            border-top-right-radius: var(--space);
+            border-top-right-radius: var(--border-radius);
         }
     }
 
-    .content {
+    >.content {
         border-bottom: 0.1rem solid var(--black);
         padding: var(--space);
         overflow: auto;
     }
 
-    .footer {
+    >.footer,
+    >.footer>div {
         padding: 0 var(--space) 0 var(--space);
         display: flex;
         flex-direction: row;
@@ -68,19 +69,19 @@
         justify-content: space-between;
         gap: var(--space);
         padding: 0;
-        border-bottom-right-radius: var(--space);
-        border-bottom-left-radius: var(--space);
+        border-bottom-right-radius: var(--border-radius);
+        border-bottom-left-radius: var(--border-radius);
 
-        button {
+        >button {
             padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
         }
 
-        button:first-child {
-            border-bottom-left-radius: var(--space);
+        >button:first-child {
+            border-bottom-left-radius: var(--border-radius);
         }
 
-        button:last-child {
-            border-bottom-right-radius: var(--space);
+        >button:last-child {
+            border-bottom-right-radius: var(--border-radius);
         }
     }
 }

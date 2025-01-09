@@ -46,6 +46,10 @@ button {
     font-size: 16px;
 }
 
+small {
+    font-size: 12px;
+}
+
 @font-face {
     font-family: 'Material Symbols Outlined';
     font-style: normal;
@@ -430,29 +434,44 @@ button:hover:not(:disabled) {
     //   border-bottom: 0;
     // }
 
+    .control:hover {
+        border: 0.1rem solid var(--primary);
+    }
+
+    .control:has(input:focus) {
+        border: 0.1rem solid var(--primary);
+    }
+
     .control {
         position: relative;
         min-height: 2rem;
         min-width: 13.5rem;
         border: 0.1rem solid var(--black-transparent);
         border-radius: var(--space-sm);
+        overflow: hidden;
 
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: flex-start;
 
+        z-index: 10;
+
         input,
         select {
             border-radius: var(--space-sm);
             margin: 0;
-            padding: 0.6rem 0.5rem 0.3rem 0.5rem;
+            padding: 1.3rem 0.6rem 0.5rem 0.6rem;
             border: 0;
             background-color: var(--white);
-            ;
+
             width: 100%;
             font-size: 1rem;
             min-height: 1.35rem;
+
+            border-radius: 0;
+
+            z-index: 9
         }
 
         // input:focus,
@@ -466,11 +485,12 @@ button:hover:not(:disabled) {
             padding: 0 0.35rem 0 0.35rem;
             position: absolute;
             font-size: 0.8rem;
-            left: 0.35rem;
-            top: -0.65rem;
+            left: 0.25rem;
+            top: 0.1rem;
             z-index: 2;
-            background-color: var(--white);
             border-radius: var(--border-radius);
+
+            z-index: 11
         }
 
         // div.hint {
