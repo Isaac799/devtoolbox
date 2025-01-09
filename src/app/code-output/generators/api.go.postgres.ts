@@ -247,6 +247,10 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`${TAB}return`)
             l.push(`}`)
 
+            l.push(``)
+            l.push(`w.Header().Set("Content-Type", "application/json")`)
+            l.push(`json.NewEncoder(w).Encode(${item})`)
+
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
         }
