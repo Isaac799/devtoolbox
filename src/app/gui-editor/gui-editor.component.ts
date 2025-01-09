@@ -1,29 +1,7 @@
-import {
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    OnInit,
-    ViewChild
-} from '@angular/core'
+import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core'
 import {DataService} from '../services/data.service'
-import {
-    Schema,
-    AttrType,
-    Table,
-    Attribute,
-    AppComplexityMode,
-    AttributeSuggestion,
-    validationMap,
-} from '../structure'
-import {
-    AbstractControl,
-    ValidationErrors,
-    Validators,
-    FormGroup,
-    FormControl,
-    FormsModule,
-    ReactiveFormsModule
-} from '@angular/forms'
+import {Schema, AttrType, Table, Attribute, AppComplexityMode, AttributeSuggestion, validationMap} from '../structure'
+import {AbstractControl, ValidationErrors, Validators, FormGroup, FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms'
 import {MinMaxRelevantPipe} from '../pipes/min-max-relevant.pipe'
 import {ModalComponent} from '../modal/modal.component'
 import {CommonModule} from '@angular/common'
@@ -81,6 +59,14 @@ export class GuiEditorComponent implements OnInit {
     }
 
     attrMouseUp() {
+        if (this.showModalSchema) {
+            return
+        }
+
+        if (this.showModalTable) {
+            return
+        }
+
         if (!this.hoveredTable) {
             return
         }
@@ -143,6 +129,10 @@ export class GuiEditorComponent implements OnInit {
     }
 
     tblMouseUp() {
+        if (this.showModalSchema) {
+            return
+        }
+
         if (!this.hoveredSchema) {
             return
         }
@@ -217,11 +207,7 @@ export class GuiEditorComponent implements OnInit {
         if (this.draggingTableIndex < 0) {
             return
         }
-        array_move(
-            draggingTable.Parent.Tables,
-            this.draggingTableIndex,
-            newIndex
-        )
+        array_move(draggingTable.Parent.Tables, this.draggingTableIndex, newIndex)
 
         this.draggingTable = null
         this.draggingTableIndex = -1
@@ -235,11 +221,7 @@ export class GuiEditorComponent implements OnInit {
             return
         }
 
-        array_move(
-            draggingAttribute.Parent.Attributes,
-            this.draggingAttributeIndex,
-            newIndex
-        )
+        array_move(draggingAttribute.Parent.Attributes, this.draggingAttributeIndex, newIndex)
 
         this.draggingAttribute = null
         this.draggingAttributeIndex = -1
@@ -320,8 +302,7 @@ export class GuiEditorComponent implements OnInit {
             if (!validatorFn) {
                 console.error(`missing valid default fn for type ${t}`)
                 return {
-                    'internal error':
-                        'not able to handle default value validation for attribute type'
+                    'internal error': 'not able to handle default value validation for attribute type'
                 }
             }
 
@@ -374,9 +355,7 @@ export class GuiEditorComponent implements OnInit {
 
     attributeForm = new FormGroup({
         Name: new FormControl('', this.nameValidation),
-        Type: new FormControl<AttrType | null>(AttrType.VARCHAR, [
-            Validators.required
-        ]),
+        Type: new FormControl<AttrType | null>(AttrType.VARCHAR, [Validators.required]),
         PrimaryKey: new FormControl(false, []),
         Readonly: new FormControl(false, []),
         // Unique: new FormControl<string[]>([], [Validators.required]),
@@ -418,6 +397,9 @@ export class GuiEditorComponent implements OnInit {
                 PrimaryKey: false,
                 Default: 'CURRENT_TIMESTAMP',
                 SystemField: true
+            },
+            Validation: {
+                Required: true
             }
         },
         {
@@ -427,6 +409,9 @@ export class GuiEditorComponent implements OnInit {
                 PrimaryKey: false,
                 Default: 'CURRENT_TIMESTAMP',
                 SystemField: true
+            },
+            Validation: {
+                Required: true
             }
         },
         {
@@ -480,16 +465,10 @@ export class GuiEditorComponent implements OnInit {
     ]
 
     public get attrTypeOptions() {
-        return this.data.app.complexity === AppComplexityMode.Simple
-            ? this.attrTypeOptionsSimple
-            : this.attrTypeOptionsAdvanced
+        return this.data.app.complexity === AppComplexityMode.Simple ? this.attrTypeOptionsSimple : this.attrTypeOptionsAdvanced
     }
 
-    constructor(
-        private cdr: ChangeDetectorRef,
-        public data: DataService,
-        private notification: NotificationService
-    ) {}
+    constructor(private cdr: ChangeDetectorRef, public data: DataService, private notification: NotificationService) {}
 
     ngOnInit(): void {
         this.serial = GuiEditorComponent.discoverSerial(this.data.schemas)
@@ -505,15 +484,11 @@ export class GuiEditorComponent implements OnInit {
          *
          */
         this.attributeForm.controls.Type.valueChanges.subscribe(() => {
-            this.attributeForm.controls.Default.setValue(
-                this.attributeForm.controls.Default.value
-            )
+            this.attributeForm.controls.Default.setValue(this.attributeForm.controls.Default.value)
             this.cdr.detectChanges()
         })
 
-        this.attributeForm.controls.ReferenceTo.addValidators(
-            this.validReference()
-        )
+        this.attributeForm.controls.ReferenceTo.addValidators(this.validReference())
         this.attributeForm.controls.Default.addValidators(this.validDefault())
     }
 
@@ -544,7 +519,6 @@ export class GuiEditorComponent implements OnInit {
             this.schemaNameRef.nativeElement.focus()
         }
         this.selectedSchema = s || null
-        this.selectedSchema = s || null
         if (!s) {
             this.schemaForm.reset()
             return
@@ -554,6 +528,7 @@ export class GuiEditorComponent implements OnInit {
     private setSchemaForm(s: Schema) {
         this.schemaForm.reset()
         this.schemaForm.controls.Name.setValue(s.Name)
+        this.cdr.detectChanges()
     }
 
     doShowModalTable(s: Schema, t?: Table) {
@@ -565,8 +540,6 @@ export class GuiEditorComponent implements OnInit {
             console.log('nothing to focus on')
         }
         this.selectedSchema = s
-        this.selectedSchema = s
-        this.selectedTable = t || null
         this.selectedTable = t || null
         if (!t) {
             this.tableForm.reset()
@@ -577,6 +550,7 @@ export class GuiEditorComponent implements OnInit {
     private setTableForm(t: Table) {
         this.tableForm.reset()
         this.tableForm.controls.Name.setValue(t.Name)
+        this.cdr.detectChanges()
     }
 
     doShowModalAttribute(s: Schema, t: Table, a?: Attribute) {
@@ -586,10 +560,7 @@ export class GuiEditorComponent implements OnInit {
             this.attrNameRef.nativeElement.focus()
         }
         this.selectedSchema = s
-        this.selectedSchema = s
         this.selectedTable = t
-        this.selectedTable = t
-        this.selectedAttribute = a || null
         this.selectedAttribute = a || null
         if (!a) {
             this.attributeForm.reset()
@@ -636,6 +607,7 @@ export class GuiEditorComponent implements OnInit {
                 c.Max.setValue(a.Validation.Max)
             }
         }
+        this.cdr.detectChanges()
     }
 
     clickDelAttribute() {
@@ -705,9 +677,7 @@ export class GuiEditorComponent implements OnInit {
                     sa.Validation = {}
                 }
 
-                const minMaxRelevant = new MinMaxRelevantPipe().transform(
-                    c.Type.value
-                )
+                const minMaxRelevant = new MinMaxRelevantPipe().transform(c.Type.value)
                 if (c.Min.value !== null && minMaxRelevant) {
                     sa.Validation.Min = c.Min.value
                 } else {
@@ -728,12 +698,7 @@ export class GuiEditorComponent implements OnInit {
                 sa.Validation = undefined
             }
         } else {
-            const newAttr = new Attribute(
-                this.serial,
-                c.Name.value!,
-                c.Type.value!,
-                this.selectedTable
-            )
+            const newAttr = new Attribute(this.serial, c.Name.value!, c.Type.value!, this.selectedTable)
 
             setRef: if (this.isReference) {
                 if (!c.ReferenceTo.value) {
@@ -777,6 +742,7 @@ export class GuiEditorComponent implements OnInit {
             return
         }
         s.Tables.splice(i, 1)
+        this.showModalTable = false
         this.data.ReloadAndSave()
     }
     clickSaveTable() {
@@ -787,11 +753,7 @@ export class GuiEditorComponent implements OnInit {
         if (st) {
             st.Name = c.Name.value!.trim()
         } else {
-            const newTbl = new Table(
-                this.serial,
-                c.Name.value!,
-                this.selectedSchema
-            )
+            const newTbl = new Table(this.serial, c.Name.value!, this.selectedSchema)
             this.selectedSchema.Tables.push(newTbl)
             this.serial += 1
         }
@@ -808,6 +770,7 @@ export class GuiEditorComponent implements OnInit {
         if (i === -1) {
             return
         }
+        this.showModalSchema = false
         this.data.schemas.splice(i, 1)
         this.data.ReloadAndSave()
     }

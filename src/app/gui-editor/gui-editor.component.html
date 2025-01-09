@@ -1,21 +1,21 @@
 <div class="section-parent">
     <div class="section-scroll">
-       <div class="sticky">
-        <div class="controls">
-            <div class="control">
-                <label for="appComplexity">Output</label>
-                <select
-                    [(ngModel)]="data.app.generatorMode"
-                    (ngModelChange)="data.ReloadAndSave()"
-                    id="appComplexity"
-                >
-                    @for (x of data.generatorModeOptions; track $index) {
-                    <option [ngValue]="x.value">{{ x.name }}</option>
-                    }
-                </select>
+        <div class="sticky">
+            <div class="controls">
+                <div class="control">
+                    <label for="appComplexity">Output</label>
+                    <select
+                        [(ngModel)]="data.app.generatorMode"
+                        (ngModelChange)="data.ReloadAndSave()"
+                        id="appComplexity"
+                    >
+                        @for (x of data.generatorModeOptions; track $index) {
+                        <option [ngValue]="x.value">{{ x.name }}</option>
+                        }
+                    </select>
+                </div>
             </div>
         </div>
-       </div>
 
         <div
             class="fc p-2"
@@ -46,7 +46,10 @@
                         draggingTable.Parent.ID !== s.ID
                 }"
                 >
-                    <span class="title-1 success-text">
+                    <span
+                        class="title-1 success-text"
+                        (mouseup)="doShowModalSchema(s)"
+                    >
                         {{ s.Name }}
                     </span>
                     @if (
@@ -538,4 +541,3 @@
     </ng-content>
 </app-modal>
 }
-

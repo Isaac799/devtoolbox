@@ -147,10 +147,7 @@ export class DataService {
         } catch (err) {
             console.error(err)
             schemasConfig = defaultConfig
-            localStorage.setItem(
-                this.stateSessionKey,
-                JSON.stringify(defaultConfig)
-            )
+            localStorage.setItem(this.stateSessionKey, JSON.stringify(defaultConfig))
         }
 
         const schemas: Schema[] = ParseSchemaConfig(schemasConfig)
@@ -244,12 +241,8 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
                     continue
                 }
                 const a = t.Attributes[ak]
-                const a2p = [t2, ...s2.Tables, ...allTables].find(
-                    e => e.ID === a.ParentID
-                )
-                const r2 = [t2, ...s2.Tables, ...allTables].find(
-                    e => e.ID === a.RefToID
-                )
+                const a2p = [t2, ...s2.Tables, ...allTables].find(e => e.ID === a.ParentID)
+                const r2 = [t2, ...s2.Tables, ...allTables].find(e => e.ID === a.RefToID)
                 if (r2) {
                     if (!r2.RefBy) {
                         r2.RefBy = []
@@ -289,11 +282,7 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
     return schemas
 }
 
-function CheckForBadReferences(
-    recheckAttrs: AttributeConfig[],
-    allTables: Table[],
-    schemas: Schema[]
-) {
+function CheckForBadReferences(recheckAttrs: AttributeConfig[], allTables: Table[], schemas: Schema[]) {
     for (const a of recheckAttrs) {
         const r = allTables.find(e => e.ID === a.RefToID)
 
