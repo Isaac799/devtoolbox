@@ -87,6 +87,10 @@ export class DataService {
         {
             name: 'Angular: reactive form',
             value: AppGeneratorMode.AngularFormControl
+        },
+        {
+            name: 'API: Go & PostgreSQL',
+            value: AppGeneratorMode.APIGoPostgres
         }
     ]
 

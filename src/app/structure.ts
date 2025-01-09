@@ -46,17 +46,23 @@ export class FuncOut {
     defaultValue: string
     label: string
     type: string
+    self: boolean
+    primary: boolean
 
     constructor(
         l: string,
         t: string,
         relatedInput: FuncIn | null,
-        newValueFallback: string
+        newValueFallback: string,
+        self: boolean,
+        primary: boolean
     ) {
         this.label = l
         this.type = t
         this.relatedInput = relatedInput
         this.defaultValue = newValueFallback
+        this.self = self
+        this.primary = primary
     }
 }
 
@@ -196,7 +202,16 @@ export class Func {
                         Cardinality.Many,
                         a.RefTo.Name
                     )
-                    outputs.push(new FuncOut(label, type, null, defaultValue))
+                    outputs.push(
+                        new FuncOut(
+                            label,
+                            type,
+                            null,
+                            defaultValue,
+                            false,
+                            false
+                        )
+                    )
                     // inputs.push(
                     //   new FuncIn(
                     //     fixPluralGrammar(cc(`${a.RefTo.FN}s`, 'pl')),
@@ -240,7 +255,16 @@ export class Func {
                         Cardinality.One,
                         tbl.Name
                     )
-                    outputs.push(new FuncOut(label, type, null, defaultValue))
+                    outputs.push(
+                        new FuncOut(
+                            label,
+                            type,
+                            null,
+                            defaultValue,
+                            false,
+                            false
+                        )
+                    )
 
                     // inputs.push(new FuncIn(cc(tbl.FN, 'pl'), `nil`));
                 }
@@ -285,7 +309,16 @@ export class Func {
                 relation,
                 Cardinality.Self
             )
-            answer.push(new FuncOut(label, type, relatedInput, defaultValue))
+            answer.push(
+                new FuncOut(
+                    label,
+                    type,
+                    relatedInput,
+                    defaultValue,
+                    false,
+                    a.Option?.PrimaryKey === true
+                )
+            )
         } else {
             const {label, type, defaultValue} = genLabelType(
                 'out',
@@ -295,7 +328,16 @@ export class Func {
                 Rel.SameTable,
                 Cardinality.Self
             )
-            answer.push(new FuncOut(label, type, relatedInput, defaultValue))
+            answer.push(
+                new FuncOut(
+                    label,
+                    type,
+                    relatedInput,
+                    defaultValue,
+                    true,
+                    a.Option?.PrimaryKey === true
+                )
+            )
         }
         return answer
     }
@@ -405,7 +447,7 @@ export class Attribute {
 
     constructor(ID: number, Name: string, Type: AttrType, Parent: Table) {
         this.ID = ID
-        this.Name = Name
+        this.Name = cc(Name, 'sk')
         this.Type = Type
         this.Parent = Parent
     }
@@ -441,6 +483,13 @@ export class Attribute {
         const isRef = this.Type === AttrType.REFERENCE
         const isNullable = !isReqOrPk || (isPk && isRef)
         return isNullable
+    }
+
+    toInsert() {
+        return !(
+            (!this.Option?.SystemField && this.Option?.Default) ||
+            (this.Option?.PrimaryKey && this.Type === AttrType.SERIAL)
+        )
     }
 }
 
@@ -548,7 +597,8 @@ export enum AppGeneratorMode {
     TSQLStoredProcedures,
     SQLiteTables,
     SQLiteJoinQuery,
-    RustStructAndImpl
+    RustStructAndImpl,
+    APIGoPostgres
 }
 
 export enum AppComplexityMode {

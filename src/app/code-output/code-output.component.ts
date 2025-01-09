@@ -29,6 +29,7 @@ import {SchemasToTablesForSQLite} from './generators/sqlite.tables'
 import {SchemasToSQLiteJoinQuery} from './generators/sqlite.join.query'
 import {SchemasToRustStructsImpl} from './generators/rust.structs.impls'
 import { SchemasToCSClasses } from './generators/cs.class'
+import { SchemasToApiGoPostgres } from './generators/api.go.postgres'
 
 @Component({
     selector: 'app-code-output',
@@ -99,6 +100,10 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
                     break
                 case AppGeneratorMode.CSClasses:
                     this.output = SchemasToCSClasses(schemas)
+                    ext = 'CS'
+                    break
+                case AppGeneratorMode.APIGoPostgres:
+                    this.output = SchemasToApiGoPostgres(schemas)
                     ext = 'CS'
                     break
             }
