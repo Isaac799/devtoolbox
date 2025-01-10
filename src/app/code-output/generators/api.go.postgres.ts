@@ -87,12 +87,12 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`${TAB}${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`${TAB}${TAB}return`)
             l.push(`${TAB}}`)
-            l.push(`${TAB}users = append(users, user)`)
+            l.push(`${TAB}${items} = append(${items}, ${item})`)
             l.push(`}`)
 
             l.push('')
             l.push(`w.Header().Set("Content-Type", "application/json")`)
-            l.push(`json.NewEncoder(w).Encode(users)`)
+            l.push(`json.NewEncoder(w).Encode(${items})`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
@@ -136,7 +136,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             l.push('')
             l.push(`w.Header().Set("Content-Type", "application/json")`)
-            l.push(`json.NewEncoder(w).Encode(user)            `)
+            l.push(`json.NewEncoder(w).Encode(${item})`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
@@ -178,7 +178,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             const aEqBStr: string = aEqB.join(', ')
             const fieldsStr: string = fields.join(', ')
 
-            const query = `UPDATE public.user SET ${aEqBStr} WHERE ${selectWhere}`
+            const query = `UPDATE ${table.FN} SET ${aEqBStr} WHERE ${selectWhere}`
             l.push(`_, err = db.Exec("${query}", ${fieldsStr})`)
             l.push(`if err != nil {`)
             l.push(`${TAB}http.Error(w, "Failed to update ${cc(table.Name, 'sk')}", http.StatusInternalServerError)`)
@@ -186,7 +186,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`}`)
 
             l.push(`w.Header().Set("Content-Type", "application/json")`)
-            l.push(`json.NewEncoder(w).Encode(user)`)
+            l.push(`json.NewEncoder(w).Encode(${item})`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
