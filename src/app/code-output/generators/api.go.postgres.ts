@@ -209,6 +209,45 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`${TAB}return`)
             l.push(`}`)
+            // l.push('')
+
+            // for (const t2 of table.RefBy || []) {
+            //     const t2f = new Func(t2, AppGeneratorMode.GoStructsAndFns)
+
+            //     const queryIn: string[] = funcGo.outputs.filter(e => e.primary).map(e => `${item}.${cc(`${e.label}`, 'cm')}`)
+            //     const queryInStr = queryIn.join(', ')
+
+            //     const item2 = cc(t2f.title, 'sk')
+
+            //     l.push(`${item2}, err := get${t2f.title}(${queryInStr})`)
+            //     l.push(`if err != nil {`)
+            //     l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
+            //     l.push(`${TAB}return`)
+            //     l.push(`}`)
+            //     // l.push(`${item}.${cc(item2, 'pl')} = ${item2}`)
+            //     l.push('')
+
+            //     for (const a of t2.Attributes) {
+            //         if (!a.RefTo) continue
+            //         if (a.RefTo.ID === table.ID) continue
+
+            //         const t3 = a.RefTo
+
+            //         const t3f = new Func(t3, AppGeneratorMode.GoStructsAndFns)
+
+            //         const queryIn: string[] = funcGo.outputs.filter(e => e.primary).map(e => `${item2}.${cc(`${e.label}`, 'cm')}`)
+            //         const queryInStr = queryIn.join(', ')
+
+            //         const item3 = cc(t3f.title, 'sk')
+            //         l.push(`${item3}, err := get${t3f.title}(${queryInStr})`)
+            //         l.push(`if err != nil {`)
+            //         l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
+            //         l.push(`${TAB}return`)
+            //         l.push(`}`)
+            //         l.push(`${item}.${cc(item3, 'pl')} = ${item3}`)
+            //         l.push('')
+            //     }
+            // }
 
             l.push('')
             l.push(`w.Header().Set("Content-Type", "application/json")`)
