@@ -44,10 +44,12 @@ export class FuncIn {
 export class FuncOut {
     relatedInput: FuncIn | null
     defaultValue: string
+    parseFn: (x: string) => string
     label: string
     type: string
     self: boolean
     primary: boolean
+    needsParsed: boolean
 
     constructor(
         l: string,
@@ -55,7 +57,8 @@ export class FuncOut {
         relatedInput: FuncIn | null,
         newValueFallback: string,
         self: boolean,
-        primary: boolean
+        primary: boolean,
+        parseFn: (x: string) => string
     ) {
         this.label = l
         this.type = t
@@ -63,6 +66,8 @@ export class FuncOut {
         this.defaultValue = newValueFallback
         this.self = self
         this.primary = primary
+        this.parseFn = parseFn
+        this.needsParsed = parseFn('TEST') !== 'TEST'
     }
 }
 
@@ -152,124 +157,80 @@ export class Func {
 
         /**
          *
-         * For the TS, and GO we do look at what refed by
-         * otherwise we only take it at face value
+         * TODO want to re-add
+         *
+         * GO not support cyclical references
          *
          */
-        // if (this.table.RefBy && ![Lang.TSQL, Lang.PGSQL].includes(this.lang)) {
-        if (this.table.RefBy) {
-            for (const tbl of this.table.RefBy) {
-                let added = false
-                for (const a of tbl.Attributes) {
-                    if (!a.RefTo) continue
-                    if (a.RefTo.ID === this.table.ID) continue
-                    added = true
+        // /**
+        //  *
+        //  * For the TS, and GO we do look at what refed by
+        //  * otherwise we only take it at face value
+        //  *
+        //  */
+        // // if (this.table.RefBy && ![Lang.TSQL, Lang.PGSQL].includes(this.lang)) {
+        // if (this.table.RefBy) {
+        //     for (const tbl of this.table.RefBy) {
+        //         let added = false
+        //         for (const a of tbl.Attributes) {
+        //             if (!a.RefTo) continue
+        //             if (a.RefTo.ID === this.table.ID) continue
+        //             added = true
 
-                    const sameSchema =
-                        a.Parent.Parent.ID === this.table.Parent.ID
-                    const sameTable = a.Parent.ID === this.table.ID
-                    const relation = sameSchema
-                        ? Rel.SameSchema
-                        : sameTable
-                        ? Rel.SameTable
-                        : Rel.DiffSchema
+        //             const sameSchema = a.Parent.Parent.ID === this.table.Parent.ID
+        //             const sameTable = a.Parent.ID === this.table.ID
+        //             const relation = sameSchema ? Rel.SameSchema : sameTable ? Rel.SameTable : Rel.DiffSchema
 
-                    let lPrefix = tbl.FN
-                    if (
-                        relation === Rel.SameSchema ||
-                        relation === Rel.SameTable
-                    ) {
-                        lPrefix = tbl.Name
-                    }
-                    const l = cc(lPrefix + '_' + a.RefTo.Name, 'sk')
+        //             let lPrefix = tbl.FN
+        //             if (relation === Rel.SameSchema || relation === Rel.SameTable) {
+        //                 lPrefix = tbl.Name
+        //             }
+        //             const l = cc(lPrefix + '_' + a.RefTo.Name, 'sk')
 
-                    const fakeA = new Attribute(
-                        -1,
-                        l,
-                        AttrType.REFERENCE,
-                        this.table
-                    )
-                    fakeA.Validation = {
-                        Required: true
-                    }
+        //             const fakeA = new Attribute(-1, l, AttrType.REFERENCE, this.table)
+        //             fakeA.Validation = {
+        //                 Required: true
+        //             }
 
-                    const {label, type, defaultValue} = genLabelType(
-                        'out',
-                        fakeA,
-                        fakeA,
-                        this.lang,
-                        relation,
-                        Cardinality.Many,
-                        a.RefTo.Name
-                    )
-                    outputs.push(
-                        new FuncOut(
-                            label,
-                            type,
-                            null,
-                            defaultValue,
-                            false,
-                            false
-                        )
-                    )
-                    // inputs.push(
-                    //   new FuncIn(
-                    //     fixPluralGrammar(cc(`${a.RefTo.FN}s`, 'pl')),
-                    //     `[]${cc(a.RefTo.FN, 'pl')}{}`
-                    //   )
-                    // );
-                }
-                if (!added) {
-                    const sameSchema = tbl.Parent.ID === this.table.Parent.ID
-                    const sameTable = tbl.ID === this.table.ID
-                    const relation = sameSchema
-                        ? Rel.SameSchema
-                        : sameTable
-                        ? Rel.SameTable
-                        : Rel.DiffSchema
+        //             const {label, type, defaultValue, parseStr} = genLabelType(
+        //                 'out',
+        //                 fakeA,
+        //                 fakeA,
+        //                 this.lang,
+        //                 relation,
+        //                 Cardinality.Many,
+        //                 a.RefTo.Name
+        //             )
+        //             outputs.push(new FuncOut(label, type, null, defaultValue, false, false, parseStr))
+        //         }
+        //         if (!added) {
+        //             const sameSchema = tbl.Parent.ID === this.table.Parent.ID
+        //             const sameTable = tbl.ID === this.table.ID
+        //             const relation = sameSchema ? Rel.SameSchema : sameTable ? Rel.SameTable : Rel.DiffSchema
 
-                    let l = tbl.FN
-                    if (
-                        relation === Rel.SameSchema ||
-                        relation === Rel.SameTable
-                    ) {
-                        l = tbl.Name
-                    }
+        //             let l = tbl.FN
+        //             if (relation === Rel.SameSchema || relation === Rel.SameTable) {
+        //                 l = tbl.Name
+        //             }
 
-                    const fakeA = new Attribute(
-                        -1,
-                        l,
-                        AttrType.REFERENCE,
-                        this.table
-                    )
-                    fakeA.Validation = {
-                        Required: true
-                    }
+        //             const fakeA = new Attribute(-1, l, AttrType.REFERENCE, this.table)
+        //             fakeA.Validation = {
+        //                 Required: true
+        //             }
 
-                    const {label, type, defaultValue} = genLabelType(
-                        'out',
-                        fakeA,
-                        fakeA,
-                        this.lang,
-                        relation,
-                        Cardinality.One,
-                        tbl.Name
-                    )
-                    outputs.push(
-                        new FuncOut(
-                            label,
-                            type,
-                            null,
-                            defaultValue,
-                            false,
-                            false
-                        )
-                    )
-
-                    // inputs.push(new FuncIn(cc(tbl.FN, 'pl'), `nil`));
-                }
-            }
-        }
+        //             const {label, type, defaultValue, parseStr} = genLabelType(
+        //                 'out',
+        //                 fakeA,
+        //                 fakeA,
+        //                 this.lang,
+        //                 relation,
+        //                 Cardinality.One,
+        //                 tbl.Name
+        //             )
+        //             outputs.push(new FuncOut(label, type, null, defaultValue, false, false, parseStr))
+        //         }
+        //     }
+        // }
 
         return outputs
     }
@@ -286,7 +247,30 @@ export class Func {
                 if (!ra.Option?.PrimaryKey) {
                     continue
                 }
-                const refAttrs = this.genFnOutput(ra, a, relatedInput)
+                const sameSchema = ra.Parent.Parent.ID === this.table.Parent.ID
+                const sameTable = ra.Parent.ID === this.table.ID
+                const relation = sameSchema
+                    ? Rel.SameSchema
+                    : sameTable
+                    ? Rel.SameTable
+                    : Rel.DiffSchema
+
+                const {label, type} = genLabelType(
+                    'in',
+                    ra,
+                    ra,
+                    this.lang,
+                    relation,
+                    Cardinality.Self
+                )
+                const matchingInput = new FuncIn(
+                    label,
+                    type,
+                    ra.Validation,
+                    ra.isNumerical()
+                )
+
+                const refAttrs = this.genFnOutput(ra, a, matchingInput)
                 answer = answer.concat(refAttrs)
             }
             return answer
@@ -301,7 +285,7 @@ export class Func {
                 ? Rel.SameTable
                 : Rel.DiffSchema
 
-            const {label, type, defaultValue} = genLabelType(
+            const {label, type, defaultValue, parseStr} = genLabelType(
                 'out',
                 a,
                 recursive,
@@ -316,11 +300,12 @@ export class Func {
                     relatedInput,
                     defaultValue,
                     false,
-                    a.Option?.PrimaryKey === true
+                    a.Option?.PrimaryKey === true,
+                    parseStr
                 )
             )
         } else {
-            const {label, type, defaultValue} = genLabelType(
+            const {label, type, defaultValue, parseStr} = genLabelType(
                 'out',
                 a,
                 a,
@@ -335,7 +320,8 @@ export class Func {
                     relatedInput,
                     defaultValue,
                     true,
-                    a.Option?.PrimaryKey === true
+                    a.Option?.PrimaryKey === true,
+                    parseStr
                 )
             )
         }
@@ -719,6 +705,23 @@ export const SQL_TO_RUST_TYPE: Record<AttrType, string> = {
     [AttrType.REFERENCE]: 'i32'
 }
 
+export const GO_TO_STR_PARSE: Record<AttrType, (x: string) => string> = {
+    [AttrType.BIT]: x => `strconv.ParseBool(${x})`,
+    [AttrType.DATE]: x => `time.Parse("2006-01-02", ${x})`,
+    [AttrType.CHAR]: x => `${x}`,
+    [AttrType.TIME]: x => `time.Parse("15:04:05", ${x})`,
+    [AttrType.TIMESTAMP]: x => `time.Parse("2006-01-02 15:04:05", ${x})`,
+    [AttrType.SERIAL]: x => `strconv.Atoi(${x})`,
+    [AttrType.DECIMAL]: x => `strconv.ParseFloat(${x})`,
+    [AttrType.FLOAT]: x => `strconv.ParseFloat(${x})`,
+    [AttrType.REAL]: x => `strconv.ParseFloat(${x})`,
+    [AttrType.INT]: x => `strconv.Atoi(${x})`,
+    [AttrType.BOOLEAN]: x => `strconv.ParseBool(${x})`,
+    [AttrType.VARCHAR]: x => `${x}`,
+    [AttrType.MONEY]: x => `strconv.ParseFloat(${x})`,
+    [AttrType.REFERENCE]: x => `???${x}`
+}
+
 export const SQL_TO_GO_TYPE: Record<AttrType, string> = {
     [AttrType.BIT]: 'bool',
     [AttrType.DATE]: 'time.Time',
@@ -846,10 +849,20 @@ function genLabelType(
     relation: Rel,
     cardinality: Cardinality,
     overrideType = ''
-): {label: string; type: string; defaultValue: string} {
+): {
+    label: string
+    type: string
+    defaultValue: string
+    parseStr: (x: string) => string
+} {
     const map = new Map<
         number,
-        {label: string; type: string; defaultValue: string}
+        {
+            label: string
+            type: string
+            defaultValue: string
+            parseStr: (x: string) => string
+        }
     >()
 
     const isNullable = aL.isNullable()
@@ -871,17 +884,20 @@ function genLabelType(
     map.set(Lang.SQLite | Rel.SameTable | Cardinality.Self, {
         label: cc(aL.Name, sqliteCase),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.SQLite | Rel.SameSchema | Cardinality.Self, {
         label: cc(aL.PFN, sqliteCase),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.SQLite | Rel.DiffSchema | Cardinality.Self, {
         label: cc(aL.FN, sqliteCase),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -889,17 +905,20 @@ function genLabelType(
     map.set(Lang.SQLite | Rel.SameTable | Cardinality.One, {
         label: cc(aL.Name, sqliteCase),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.SQLite | Rel.SameSchema | Cardinality.One, {
         label: cc(aL.PFN, sqliteCase),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.SQLite | Rel.DiffSchema | Cardinality.One, {
         label: cc(aL.FN, sqliteCase),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -907,17 +926,20 @@ function genLabelType(
     map.set(Lang.SQLite | Rel.SameTable | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.Name, sqliteCase) + 's'),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.SQLite | Rel.SameSchema | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.PFN, sqliteCase) + 's'),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.SQLite | Rel.DiffSchema | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.FN, sqliteCase) + 's'),
         type: sqliteType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //#endregion
@@ -935,21 +957,23 @@ function genLabelType(
         psqlType = 'INT'
     }
 
-
     map.set(Lang.PGSQL | Rel.SameTable | Cardinality.Self, {
         label: cc(aL.Name, psqlCase),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.PGSQL | Rel.SameSchema | Cardinality.Self, {
         label: cc(aL.PFN, psqlCase),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.PGSQL | Rel.DiffSchema | Cardinality.Self, {
         label: cc(aL.FN, psqlCase),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -957,17 +981,20 @@ function genLabelType(
     map.set(Lang.PGSQL | Rel.SameTable | Cardinality.One, {
         label: cc(aL.Name, psqlCase),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.PGSQL | Rel.SameSchema | Cardinality.One, {
         label: cc(aL.PFN, psqlCase),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.PGSQL | Rel.DiffSchema | Cardinality.One, {
         label: cc(aL.FN, psqlCase),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -975,17 +1002,20 @@ function genLabelType(
     map.set(Lang.PGSQL | Rel.SameTable | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.Name, psqlCase) + 's'),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.PGSQL | Rel.SameSchema | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.PFN, psqlCase) + 's'),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.PGSQL | Rel.DiffSchema | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.FN, psqlCase) + 's'),
         type: psqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //#endregion
@@ -1006,17 +1036,20 @@ function genLabelType(
     map.set(Lang.TSQL | Rel.SameTable | Cardinality.Self, {
         label: cc(aL.Name, tsqlCase),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.TSQL | Rel.SameSchema | Cardinality.Self, {
         label: cc(aL.PFN, tsqlCase),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.TSQL | Rel.DiffSchema | Cardinality.Self, {
         label: cc(aL.FN, tsqlCase),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -1024,17 +1057,20 @@ function genLabelType(
     map.set(Lang.TSQL | Rel.SameTable | Cardinality.One, {
         label: cc(aL.Name, tsqlCase),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.TSQL | Rel.SameSchema | Cardinality.One, {
         label: cc(aL.PFN, tsqlCase),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.TSQL | Rel.DiffSchema | Cardinality.One, {
         label: cc(aL.FN, tsqlCase),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -1042,17 +1078,20 @@ function genLabelType(
     map.set(Lang.TSQL | Rel.SameTable | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.Name, tsqlCase) + 's'),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.TSQL | Rel.SameSchema | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.PFN, tsqlCase) + 's'),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
     map.set(Lang.TSQL | Rel.DiffSchema | Cardinality.Many, {
         label: fixPluralGrammar(cc(aL.FN, tsqlCase) + 's'),
         type: tsqlType,
-        defaultValue: ''
+        defaultValue: '',
+        parseStr: () => ''
     })
 
     //#endregion
@@ -1073,17 +1112,20 @@ function genLabelType(
     map.set(Lang.TS | Rel.SameTable | Cardinality.Self, {
         label: cc(aL.Name, tsCase),
         type: tsType + tsNullable,
-        defaultValue: SQL_TO_TS_DEFAULT_VALUE[aT.Type]
+        defaultValue: SQL_TO_TS_DEFAULT_VALUE[aT.Type],
+        parseStr: () => ''
     })
     map.set(Lang.TS | Rel.SameSchema | Cardinality.Self, {
         label: cc(aL.PFN, tsCase),
         type: tsType + tsNullable,
-        defaultValue: SQL_TO_TS_DEFAULT_VALUE[aT.Type]
+        defaultValue: SQL_TO_TS_DEFAULT_VALUE[aT.Type],
+        parseStr: () => ''
     })
     map.set(Lang.TS | Rel.DiffSchema | Cardinality.Self, {
         label: cc(aL.FN, tsCase),
         type: tsType + tsNullable,
-        defaultValue: SQL_TO_TS_DEFAULT_VALUE[aT.Type]
+        defaultValue: SQL_TO_TS_DEFAULT_VALUE[aT.Type],
+        parseStr: () => ''
     })
 
     //    -    -
@@ -1091,17 +1133,20 @@ function genLabelType(
     map.set(Lang.TS | Rel.SameTable | Cardinality.One, {
         label: cc(aL.Name, tsCase),
         type: tsType + ' | null',
-        defaultValue: 'null'
+        defaultValue: 'null',
+        parseStr: () => ''
     })
     map.set(Lang.TS | Rel.SameSchema | Cardinality.One, {
         label: cc(aL.PFN, tsCase),
         type: tsType + ' | null',
-        defaultValue: 'null'
+        defaultValue: 'null',
+        parseStr: () => ''
     })
     map.set(Lang.TS | Rel.DiffSchema | Cardinality.One, {
         label: cc(aL.FN, tsCase),
         type: tsType + ' | null',
-        defaultValue: 'null'
+        defaultValue: 'null',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -1111,21 +1156,24 @@ function genLabelType(
             ? tsOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.Name, tsCase) + 's'),
         type: `${tsType}[]` + tsNullable,
-        defaultValue: '[]'
+        defaultValue: '[]',
+        parseStr: () => ''
     })
     map.set(Lang.TS | Rel.SameSchema | Cardinality.Many, {
         label: overrideType
             ? tsOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.PFN, tsCase) + 's'),
         type: `${tsType}[]` + tsNullable,
-        defaultValue: '[]'
+        defaultValue: '[]',
+        parseStr: () => ''
     })
     map.set(Lang.TS | Rel.DiffSchema | Cardinality.Many, {
         label: overrideType
             ? tsOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.FN, tsCase) + 's'),
         type: `${tsType}[]` + tsNullable,
-        defaultValue: '[]'
+        defaultValue: '[]',
+        parseStr: () => ''
     })
 
     //#endregion
@@ -1146,17 +1194,20 @@ function genLabelType(
     map.set(Lang.CS | Rel.SameTable | Cardinality.Self, {
         label: cc(aL.Name, csCase),
         type: csType + csNullable,
-        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type]
+        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type],
+        parseStr: () => ''
     })
     map.set(Lang.CS | Rel.SameSchema | Cardinality.Self, {
         label: cc(aL.PFN, csCase),
         type: csType + csNullable,
-        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type]
+        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type],
+        parseStr: () => ''
     })
     map.set(Lang.CS | Rel.DiffSchema | Cardinality.Self, {
         label: cc(aL.FN, csCase),
         type: csType + csNullable,
-        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type]
+        defaultValue: SQL_TO_CS_DEFAULT_VALUE[aT.Type],
+        parseStr: () => ''
     })
 
     //    -    -
@@ -1164,17 +1215,20 @@ function genLabelType(
     map.set(Lang.CS | Rel.SameTable | Cardinality.One, {
         label: cc(aL.Name, csCase),
         type: csType + '?',
-        defaultValue: 'null'
+        defaultValue: 'null',
+        parseStr: () => ''
     })
     map.set(Lang.CS | Rel.SameSchema | Cardinality.One, {
         label: cc(aL.PFN, csCase),
         type: csType + '?',
-        defaultValue: 'null'
+        defaultValue: 'null',
+        parseStr: () => ''
     })
     map.set(Lang.CS | Rel.DiffSchema | Cardinality.One, {
         label: cc(aL.FN, csCase),
         type: csType + '?',
-        defaultValue: 'null'
+        defaultValue: 'null',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -1184,21 +1238,24 @@ function genLabelType(
             ? csOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.Name, csCase) + 's'),
         type: `List<${csType}>` + csNullable,
-        defaultValue: `new List<${csType}>()`
+        defaultValue: `new List<${csType}>()`,
+        parseStr: () => ''
     })
     map.set(Lang.CS | Rel.SameSchema | Cardinality.Many, {
         label: overrideType
             ? csOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.PFN, csCase) + 's'),
         type: `List<${csType}>` + csNullable,
-        defaultValue: `new List<${csType}>()`
+        defaultValue: `new List<${csType}>()`,
+        parseStr: () => ''
     })
     map.set(Lang.CS | Rel.DiffSchema | Cardinality.Many, {
         label: overrideType
             ? csOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.FN, csCase) + 's'),
         type: `List<${csType}>` + csNullable,
-        defaultValue: `new List<${csType}>()`
+        defaultValue: `new List<${csType}>()`,
+        parseStr: () => ''
     })
 
     //#endregion
@@ -1222,35 +1279,41 @@ function genLabelType(
     map.set(Lang.GO | Rel.SameTable | Cardinality.Self, {
         label: cc(aL.Name, goCase),
         type: goNullable + goType,
-        defaultValue: SQL_TO_GO_DEFAULT_VALUE[aL.Type]
+        defaultValue: SQL_TO_GO_DEFAULT_VALUE[aL.Type],
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
     map.set(Lang.GO | Rel.SameSchema | Cardinality.Self, {
         label: cc(aL.PFN, goCase),
         type: goNullable + goType,
-        defaultValue: SQL_TO_GO_DEFAULT_VALUE[aL.Type]
+        defaultValue: SQL_TO_GO_DEFAULT_VALUE[aL.Type],
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
     map.set(Lang.GO | Rel.DiffSchema | Cardinality.Self, {
         label: cc(aL.FN, goCase),
         type: goNullable + goType,
-        defaultValue: SQL_TO_GO_DEFAULT_VALUE[aL.Type]
+        defaultValue: SQL_TO_GO_DEFAULT_VALUE[aL.Type],
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
 
     //    -    -
 
     map.set(Lang.GO | Rel.SameTable | Cardinality.One, {
-        label: cc(aL.Name, goCase),
+        label: cc(`${aL.PFN}_${aT.Name}`, goCase),
         type: io === 'in' ? '*' + goType : '*' + goType,
-        defaultValue: 'nil'
+        defaultValue: 'nil',
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
     map.set(Lang.GO | Rel.SameSchema | Cardinality.One, {
-        label: cc(aL.PFN, goCase),
+        label: cc(`${aL.PFN}_${aT.Name}`, goCase),
         type: io === 'in' ? '*' + goType : '*' + goType,
-        defaultValue: 'nil'
+        defaultValue: 'nil',
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
     map.set(Lang.GO | Rel.DiffSchema | Cardinality.One, {
-        label: cc(aL.FN, goCase),
+        label: cc(`${aL.PFN}_${aT.Name}`, goCase),
         type: io === 'in' ? '*' + goType : '*' + goType,
-        defaultValue: 'nil'
+        defaultValue: 'nil',
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
 
     //    -    -
@@ -1260,21 +1323,24 @@ function genLabelType(
             ? goOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.Name, goCase) + 's'),
         type: '[]' + goType,
-        defaultValue: '[]' + goType + '{}'
+        defaultValue: '[]' + goType + '{}',
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
     map.set(Lang.GO | Rel.SameSchema | Cardinality.Many, {
         label: overrideType
             ? goOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.PFN, goCase) + 's'),
         type: '[]' + goType,
-        defaultValue: '[]' + goType + '{}'
+        defaultValue: '[]' + goType + '{}',
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
     map.set(Lang.GO | Rel.DiffSchema | Cardinality.Many, {
         label: overrideType
             ? goOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.FN, goCase) + 's'),
         type: '[]' + goType,
-        defaultValue: '[]' + goType + '{}'
+        defaultValue: '[]' + goType + '{}',
+        parseStr: GO_TO_STR_PARSE[aL.Type]
     })
 
     //#endregion
@@ -1296,17 +1362,20 @@ function genLabelType(
     map.set(Lang.Rust | Rel.SameTable | Cardinality.Self, {
         label: cc(aL.Name, rustCase),
         type: isNullable ? `Option<${rustType}>` : rustType,
-        defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type]
+        defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type],
+        parseStr: () => ''
     })
     map.set(Lang.Rust | Rel.SameSchema | Cardinality.Self, {
         label: cc(aL.PFN, rustCase),
         type: isNullable ? `Option<${rustType}>` : rustType,
-        defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type]
+        defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type],
+        parseStr: () => ''
     })
     map.set(Lang.Rust | Rel.DiffSchema | Cardinality.Self, {
         label: cc(aL.FN, rustCase),
         type: isNullable ? `Option<${rustType}>` : rustType,
-        defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type]
+        defaultValue: SQL_TO_RUST_DEFAULT_VALUE[aL.Type],
+        parseStr: () => ''
     })
 
     //    -    -
@@ -1315,19 +1384,22 @@ function genLabelType(
         label: cc(aL.Name, rustCase),
         // type: isNullable ? `Option<${rustType}>` : rustType,
         type: `Option<${rustType}>`,
-        defaultValue: 'None'
+        defaultValue: 'None',
+        parseStr: () => ''
     })
     map.set(Lang.Rust | Rel.SameSchema | Cardinality.One, {
         label: cc(aL.PFN, rustCase),
         // type: isNullable ? `Option<${rustType}>` : rustType,
         type: `Option<${rustType}>`,
-        defaultValue: 'None'
+        defaultValue: 'None',
+        parseStr: () => ''
     })
     map.set(Lang.Rust | Rel.DiffSchema | Cardinality.One, {
         label: cc(aL.FN, rustCase),
         // type: isNullable ? `Option<${rustType}>` : rustType,
         type: `Option<${rustType}>`,
-        defaultValue: 'None'
+        defaultValue: 'None',
+        parseStr: () => ''
     })
 
     //    -    -
@@ -1337,21 +1409,24 @@ function genLabelType(
             ? rustOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.Name, rustCase) + 's'),
         type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
-        defaultValue: 'Vec::new()'
+        defaultValue: 'Vec::new()',
+        parseStr: () => ''
     })
     map.set(Lang.Rust | Rel.SameSchema | Cardinality.Many, {
         label: overrideType
             ? rustOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.PFN, rustCase) + 's'),
         type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
-        defaultValue: 'Vec::new()'
+        defaultValue: 'Vec::new()',
+        parseStr: () => ''
     })
     map.set(Lang.Rust | Rel.DiffSchema | Cardinality.Many, {
         label: overrideType
             ? rustOverrideTypeRelatedLabel
             : fixPluralGrammar(cc(aL.FN, rustCase) + 's'),
         type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
-        defaultValue: 'Vec::new()'
+        defaultValue: 'Vec::new()',
+        parseStr: () => ''
     })
 
     //#endregion
@@ -1367,7 +1442,8 @@ function genLabelType(
         return {
             label: cc(aL.FN, 'sk'),
             type: psqlType,
-            defaultValue: ''
+            defaultValue: '',
+            parseStr: () => ''
         }
     }
 
