@@ -3395,8 +3395,6 @@ const generateAttributeMap = (): AttributeMap => {
         }
     }
 
-    console.log([...attributeMap.keys()])
-
     return attributeMap
 }
 
