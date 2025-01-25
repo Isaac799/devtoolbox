@@ -751,7 +751,7 @@ export const SQL_TO_GO_DEFAULT_VALUE: Record<AttrType, string> = {
     [AttrType.REAL]: '0',
     [AttrType.INT]: '0',
     [AttrType.BOOLEAN]: 'false',
-    [AttrType.VARCHAR]: "''",
+    [AttrType.VARCHAR]: '""',
     [AttrType.MONEY]: '0',
     [AttrType.REFERENCE]: ''
 }
