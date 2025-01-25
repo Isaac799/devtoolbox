@@ -23,7 +23,7 @@ export function SchemasToPostgresSeed(schemas: Schema[]): string {
             v2 = []
 
             let u = false
-            for (let index = 0; index < 50; index++) {
+            for (let index = 0; index < 4; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
                     u = a.Option?.Unique || false
