@@ -3030,8 +3030,16 @@ const generateAttributeMap = (): AttributeMap => {
     return attributeMap
 }
 
+const fuzzyCache = new Map<string, number>()
+
 // Fuzzy string matching based on Levenshtein distance (custom scoring)
 function fuzzyMatch(input: string, candidate: string): number {
+    const key = `${input}~~~${candidate}`
+    const c = fuzzyCache.get(key)
+    if (c) {
+        return c
+    }
+
     const levenshteinDistance = (a: string, b: string): number => {
         const tmp: number[][] = []
         for (let i = 0; i <= a.length; i++) {
@@ -3051,6 +3059,9 @@ function fuzzyMatch(input: string, candidate: string): number {
     const distance = levenshteinDistance(input, candidate)
     const maxLength = Math.max(input.length, candidate.length)
     const score = Math.max(0, 100 - (distance / maxLength) * 100)
+
+    fuzzyCache.set(key, score)
+
     return score
 }
 
