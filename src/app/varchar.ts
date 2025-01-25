@@ -391,6 +391,38 @@ const generatePhoneNumbers = (): string[] => {
     return phoneNumbers
 }
 
+const generateMacAddresses = (count: number): string[] => {
+    const macAddresses: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        const mac = Array(6)
+            .fill(0)
+            .map(() =>
+                Math.floor(Math.random() * 256)
+                    .toString(16)
+                    .padStart(2, '0')
+            )
+            .join(':')
+        macAddresses.push(mac)
+    }
+
+    return macAddresses
+}
+
+const generateIpAddresses = (count: number): string[] => {
+    const ipAddresses: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        const ip = Array(4)
+            .fill(0)
+            .map(() => Math.floor(Math.random() * 256))
+            .join('.')
+        ipAddresses.push(ip)
+    }
+
+    return ipAddresses
+}
+
 const generateEmailAddresses = (firstNames: string[], lastNames: string[], companies: string[]): string[] => {
     const emailAddresses: string[] = []
 
@@ -429,21 +461,6 @@ const generateEmailAddresses = (firstNames: string[], lastNames: string[], compa
     }
 
     return emailAddresses
-}
-
-// Generate realistic date ranges for dates like join date, termination date, and birth date
-const generateDates = (start: string, end: string): string[] => {
-    const startDate = new Date(start)
-    const endDate = new Date(end)
-    const dateList: string[] = []
-
-    for (let i = 0; i < 30; i++) {
-        const randomTime = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())
-        const date = new Date(randomTime).toISOString().split('T')[0]
-        dateList.push(date)
-    }
-
-    return dateList
 }
 
 const generateAddresses = (count: number): string[] => {
@@ -1527,6 +1544,86 @@ const generateSkillsCertifications = (): string[] => {
     ]
 }
 
+const generateUserStatus = (): string[] => {
+    return [
+        'spouse',
+        'partner',
+        'child',
+        'parent',
+        'sibling',
+        'friend',
+        'relative',
+        'client',
+        'contact',
+        'person',
+        'co-worker',
+        'colleague',
+        'team member',
+        'manager',
+        'assistant',
+        'supervisor',
+        'mentor',
+        'user',
+        'advisor',
+        'employee',
+        'student',
+        'teacher',
+        'doctor',
+        'nurse',
+        'director',
+        'executive',
+        'founder',
+        'CEO',
+        'COO',
+        'CFO',
+        'engineer',
+        'designer',
+        'developer',
+        'marketer',
+        'salesperson',
+        'administrator',
+        'recruiter',
+        'HR specialist',
+        'intern',
+        'volunteer',
+        'customer',
+        'patient',
+        'investor',
+        'donor',
+        'sponsor',
+        'community member',
+        'peer',
+        'team leader',
+        'coach',
+        'participant',
+        'teammate',
+        'judge',
+        'spiritual leader',
+        'business partner',
+        'consultant',
+        'freelancer',
+        'contractor',
+        'author',
+        'artist',
+        'public speaker',
+        'scientist',
+        'therapist',
+        'social worker',
+        'lawyer',
+        'paralegal',
+        'architect',
+        'chef',
+        'bartender',
+        'waiter',
+        'nanny',
+        'caregiver',
+        'researcher',
+        'athlete',
+        'trainer',
+        'motivational speaker'
+    ]
+}
+
 const generateFavoriteQuotes = (): string[] => {
     return [
         '“The only way to do great work is to love what you do.” - Steve Jobs',
@@ -2393,19 +2490,260 @@ const generateSpiritualPractices = (): string[] => {
     ]
 }
 
+const generateNameTypes = (): string[] => {
+    return [
+        'Myers',
+        'Johnson',
+        'Smith',
+        'Davis',
+        'Wilson',
+        'Taylor',
+        'Brown',
+        'Miller',
+        'Anderson',
+        'Thomas',
+        'Jackson',
+        'White',
+        'Harris',
+        'Martin',
+        'Thompson',
+        'Garcia',
+        'Martinez',
+        'Rodriguez',
+        'Lee',
+        'Gonzalez',
+        'Perez',
+        'Clark',
+        'Lewis',
+        'Young',
+        'Scott',
+        'Adams',
+        'Baker',
+        'Nelson',
+        'Hill',
+        'Carter',
+        'Mitchell',
+        'Roberts',
+        'Walker',
+        'Allen',
+        'King',
+        'Wright',
+        'Scott',
+        'Green',
+        'Evans',
+        'Turner',
+        'Collins',
+        'Reed',
+        'Cameron',
+        'Morgan',
+        'Parker',
+        'Cooper',
+        'Murphy',
+        'Bailey',
+        'Rivera',
+        'Grant',
+        'Kingston',
+        'Richards',
+        'Simmons'
+    ]
+}
+
+const generateNameShortened = (): string[] => {
+    return [
+        'JD',
+        'Cass',
+        'Rae',
+        'MaxX',
+        'Alex123',
+        'Mikey99',
+        'LolaBee',
+        'ChrisTheGreat',
+        'MisterX',
+        'QueenB',
+        'ShayShay',
+        'LilBoi',
+        'Rockstar22',
+        'TheGameMaster',
+        'AceOfSpades',
+        'JessieC',
+        'LuckyLuke',
+        'StormRider',
+        'MrFancyPants',
+        'CocoaMango',
+        'XxTheKingxX',
+        'Sk8rGrl',
+        'TechGuru',
+        'LilDragon',
+        'SpeedyB',
+        'CaptainPanda',
+        'CryptoGuy',
+        'NinjaMaster',
+        'RacerX',
+        'RedDragon',
+        'DarkKnight',
+        'GlitchLord',
+        'KingSlayer',
+        'FunkyMonkey',
+        'CyberWarrior',
+        'StarQueen',
+        'SilentShadow',
+        'SpaceCadet',
+        'PixelBuster',
+        'VortexMaster',
+        'ShadowHunter',
+        'ThunderBolt',
+        'SuperSonic',
+        'EpicGamer',
+        'NeonWolf',
+        'HyperDrive',
+        'PikachuFan'
+    ]
+}
+
+const generateNicknames = (): string[] => {
+    return [
+        'Cassie',
+        'JDizzle',
+        'Roxy',
+        'BigMike',
+        'LilJ',
+        'MisterCool',
+        'MaddieBear',
+        'SunnyD',
+        'LilPump',
+        'NikkiSparks',
+        'QueenK',
+        'Bubbles',
+        'TinyTim',
+        'G-Man',
+        'Ace',
+        'FireFly',
+        'DaisyMay',
+        'LilRae',
+        'NinjaBabe',
+        'SlimShady',
+        'BossLady',
+        'Smiley',
+        'Gigi',
+        'Spice',
+        'Peanut',
+        'Skipper',
+        'Chico',
+        'Rocky',
+        'Princess',
+        'HoneyB',
+        'TurboTom',
+        'SugarPlum',
+        'Coco',
+        'JazzMan',
+        'BlueJay',
+        'SpeedyGonzales',
+        'Maxie',
+        'LolaLicious',
+        'MightyMia',
+        'LittleFoot',
+        'LilMissSunshine',
+        'Foxy',
+        'BigRed',
+        'Acey',
+        'JellyBean',
+        'LilG',
+        'Viper',
+        'Jewel',
+        'Gizmo',
+        'Ziggy',
+        'TazMan',
+        'TinkerBell'
+    ]
+}
+
 const generateAttributeMap = (): AttributeMap => {
     const attributeMap = new Map<string, string[]>()
 
+    const userStatus = generateUserStatus()
+
     const firstNames = generateFirstNames()
+    {
+        const items = ['first name', 'legal name', 'birth name', 'given name', 'preferred name']
+        for (const e of items) {
+            attributeMap.set(e, firstNames)
+        }
+        for (const s of userStatus) {
+            for (const e of items) {
+                attributeMap.set(`${s} ${e}`, firstNames)
+            }
+            attributeMap.set(`${s}`, firstNames)
+        }
+    }
+
     const lastNames = generateLastNames()
-    attributeMap.set('First Name', firstNames)
-    attributeMap.set('Last Name', lastNames)
+    {
+        const items = ['surname', 'last name']
+        for (const e of items) {
+            attributeMap.set(e, lastNames)
+        }
+    }
+
+    const nameTypes = generateNameTypes()
+    {
+        const items = ['middle name', 'family name', 'maiden name']
+        for (const e of items) {
+            attributeMap.set(e, nameTypes)
+        }
+    }
+    const nameShortened = generateNameShortened()
+    {
+        const items = [
+            'shortened name',
+            'display name',
+            'screen name',
+            'username',
+            'user handle',
+            'gamertag',
+            'game name',
+            'online username',
+            'profile name',
+            'account name',
+            'login name',
+            'ID name',
+            'digital name'
+        ]
+        for (const e of items) {
+            attributeMap.set(e, nameShortened)
+        }
+    }
+    const nicknames = generateNicknames()
+    {
+        const items = [
+            'nickname',
+            'informal name',
+            'social media handle',
+            'alias',
+            'stage name',
+            'pen name',
+            'user alias',
+            'handle',
+            'call sign',
+            'online alias',
+            'chat name',
+            'persona name',
+            'code name'
+        ]
+        for (const e of items) {
+            attributeMap.set(e, nicknames)
+        }
+    }
+    const biography = generateBiography()
+    {
+        const items = ['bio', 'biography', 'profile description']
+        for (const e of items) {
+            attributeMap.set(e, biography)
+        }
+    }
 
     const emails = generateEmailAddresses(firstNames, lastNames, generateCompanyNames())
     attributeMap.set('Email', emails)
 
-    attributeMap.set('Phone Number', generatePhoneNumbers())
-    attributeMap.set('Date of Birth', generateDates('1980-01-01', '2000-12-31'))
     attributeMap.set(
         'Emergency Contact',
         generateFirstNames().map(fn => `${fn} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`)
@@ -2414,21 +2752,58 @@ const generateAttributeMap = (): AttributeMap => {
     attributeMap.set('Social Security', generateSocialSecurity())
     attributeMap.set('Medical History', generateMedicalHistory())
 
-    attributeMap.set('Address', generateAddresses(30))
+    attributeMap.set('Address', generateAddresses(50))
 
-    const companies = generateCompanyNames()
-    const positions = generatePositions()
-    attributeMap.set('Company', companies)
-    attributeMap.set('Position', positions)
     attributeMap.set('Department', generateDepartments())
     attributeMap.set(
         'Manager',
         firstNames.map(fn => `${fn} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`)
     )
 
+    const macAddresses = generateMacAddresses(50)
+    {
+        const items = [
+            'ethernet mac',
+            'wifi mac',
+            'bluetooth mac',
+            'device mac',
+            'gateway mac',
+            'router mac',
+            'server mac',
+            'client mac',
+            'local mac',
+            'public mac',
+            'access point mac',
+            'primary mac',
+            'secondary mac'
+        ]
+        for (const e of items) {
+            attributeMap.set(e, macAddresses)
+        }
+    }
+    const ipAddresses = generateIpAddresses(50)
+    {
+        const items = [
+            'primary ip',
+            'secondary ip',
+            'local ip',
+            'public ip',
+            'static ip',
+            'dynamic ip',
+            'gateway ip',
+            'subnet ip',
+            'server ip',
+            'vpn ip',
+            'host ip',
+            'network ip',
+            'client ip'
+        ]
+        for (const e of items) {
+            attributeMap.set(e, ipAddresses)
+        }
+    }
+
     attributeMap.set('Company Location', generateAddresses(5))
-    attributeMap.set('Biography', generateBiography())
-    attributeMap.set('Bio', generateBiography())
     attributeMap.set('Book Description', generateBookDescription())
     attributeMap.set('Article Content', generateArticleContent())
     attributeMap.set('Product Description', generateProductDescriptions())
@@ -2472,6 +2847,185 @@ const generateAttributeMap = (): AttributeMap => {
     attributeMap.set('Language', generateLanguage())
     attributeMap.set('Religion', generateReligion())
     attributeMap.set('Spiritual Practices', generateSpiritualPractices())
+
+    const companies = generateCompanyNames()
+    const phoneNumbers = generatePhoneNumbers()
+    const emailAddresses = generateEmailAddresses(firstNames, lastNames, companies)
+    const addresses = generateAddresses(100)
+    const socialMediaProfiles = generateSocialMediaProfiles()
+    const websiteURLs = generateWebsiteURLs()
+    const favoriteBooks = generateFavoriteBooks()
+    const favoriteMovies = generateFavoriteMovies()
+    const musicPreferences = generateMusicPreferences()
+    const travelDestinations = generateTravelDestinations()
+    const skillsCertifications = generateSkillsCertifications()
+    const favoriteQuotes = generateFavoriteQuotes()
+    const pets = generatePets()
+    const vehicles = generateVehicles()
+    const favoriteFoods = generateFavoriteFoods()
+    const bucketList = generateBucketList()
+    const clothingStyle = generateClothingStyle()
+    const volunteerWork = generateVolunteerWork()
+    const financialGoals = generateFinancialGoals()
+    const charityContributions = generateCharityContributions()
+    const personalityTraits = generatePersonalityTraits()
+    const favoriteTechnologies = generateFavoriteTechnologies()
+
+    {
+        const items = ['phone number', 'contact number', 'cell phone', 'mobile number', 'work phone', 'home phone', 'office phone']
+        for (const e of items) {
+            attributeMap.set(e, phoneNumbers)
+        }
+    }
+
+    {
+        const items = ['email', 'email address', 'work email', 'personal email', 'contact email', 'company email']
+        for (const e of items) {
+            attributeMap.set(e, emailAddresses)
+        }
+    }
+
+    {
+        const items = ['address', 'residential address', 'mailing address', 'business address', 'home address', 'company address']
+        for (const e of items) {
+            attributeMap.set(e, addresses)
+        }
+    }
+
+    {
+        const items = ['social media profile', 'social media account', 'twitter handle', 'linkedin profile', 'instagram profile', 'facebook profile']
+        for (const e of items) {
+            attributeMap.set(e, socialMediaProfiles)
+        }
+    }
+
+    {
+        const items = ['website', 'portfolio website', 'personal website', 'blog', 'company website']
+        for (const e of items) {
+            attributeMap.set(e, websiteURLs)
+        }
+    }
+
+    {
+        const items = ['favorite books', 'books I like', 'most read books', 'top books']
+        for (const e of items) {
+            attributeMap.set(e, favoriteBooks)
+        }
+    }
+
+    {
+        const items = ['favorite movies', 'movies I like', 'most watched movies', 'top movies']
+        for (const e of items) {
+            attributeMap.set(e, favoriteMovies)
+        }
+    }
+
+    {
+        const items = ['music preferences', 'favorite genres', 'musical tastes', 'top music genres', 'favorite artists']
+        for (const e of items) {
+            attributeMap.set(e, musicPreferences)
+        }
+    }
+
+    {
+        const items = ['travel destinations', 'places to visit', 'top travel spots', 'dream destinations', 'favorite travel locations']
+        for (const e of items) {
+            attributeMap.set(e, travelDestinations)
+        }
+    }
+
+    {
+        const items = ['skills certifications', 'professional certifications', 'certified in', 'training certifications', 'qualification certifications']
+        for (const e of items) {
+            attributeMap.set(e, skillsCertifications)
+        }
+    }
+
+    {
+        const items = ['favorite quotes', 'inspirational quotes', 'motivational quotes', 'top quotes', 'life quotes']
+        for (const e of items) {
+            attributeMap.set(e, favoriteQuotes)
+        }
+    }
+
+    {
+        const items = ['pets', 'animals I own', 'favorite pets', 'pet types']
+        for (const e of items) {
+            attributeMap.set(e, pets)
+        }
+    }
+
+    {
+        const items = ['vehicles', 'cars I own', 'favorite vehicles', 'car models']
+        for (const e of items) {
+            attributeMap.set(e, vehicles)
+        }
+    }
+
+    {
+        const items = ['favorite foods', 'favorite meals', 'best foods', 'top dishes']
+        for (const e of items) {
+            attributeMap.set(e, favoriteFoods)
+        }
+    }
+
+    {
+        const items = ['bucket list', 'things to do', 'life goals', 'things I want to achieve']
+        for (const e of items) {
+            attributeMap.set(e, bucketList)
+        }
+    }
+
+    {
+        const items = ['clothing style', 'fashion style', 'favorite fashion', 'preferred clothing']
+        for (const e of items) {
+            attributeMap.set(e, clothingStyle)
+        }
+    }
+
+    {
+        const items = ['volunteer work', 'charity work', 'social work', 'causes I support']
+        for (const e of items) {
+            attributeMap.set(e, volunteerWork)
+        }
+    }
+
+    {
+        const items = ['financial goals', 'money goals', 'investment goals', 'financial aspirations']
+        for (const e of items) {
+            attributeMap.set(e, financialGoals)
+        }
+    }
+
+    {
+        const items = ['charity contributions', 'donations', 'support for causes', 'charity involvement']
+        for (const e of items) {
+            attributeMap.set(e, charityContributions)
+        }
+    }
+
+    {
+        const items = ['personality traits', 'personality', 'character traits', 'personal attributes']
+        for (const e of items) {
+            attributeMap.set(e, personalityTraits)
+        }
+    }
+
+    {
+        const items = ['favorite technologies', 'preferred technologies', 'tech interests', 'most used technologies']
+        for (const e of items) {
+            attributeMap.set(e, favoriteTechnologies)
+        }
+    }
+
+    {
+        const items = ['user status', 'relationship status', 'social role', 'professional role']
+        for (const e of items) {
+            attributeMap.set(e, userStatus)
+        }
+    }
+
+    console.log([...attributeMap.keys()])
 
     return attributeMap
 }
