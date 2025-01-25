@@ -8,7 +8,6 @@ body {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
-
 :root {
     --white: rgb(255, 255, 255);
     --black: rgb(0, 0, 0);
@@ -87,7 +86,6 @@ small {
 * {
     box-sizing: border-box;
 }
-
 
 .fc {
     display: flex;
@@ -387,7 +385,6 @@ button {
     border: 0;
     font-size: 1rem;
     background-color: var(--white);
-    ;
     max-width: 13.5rem;
     // padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
 }
@@ -471,7 +468,7 @@ button:hover:not(:disabled) {
 
             border-radius: 0;
 
-            z-index: 9
+            z-index: 9;
         }
 
         // input:focus,
@@ -490,7 +487,7 @@ button:hover:not(:disabled) {
             z-index: 2;
             border-radius: var(--border-radius);
 
-            z-index: 11
+            z-index: 11;
         }
 
         // div.hint {
@@ -561,7 +558,6 @@ select.ng-invalid {
     right: 0;
 }
 
-
 .section-parent {
     position: relative;
     display: block;
@@ -576,14 +572,13 @@ select.ng-invalid {
 
     overflow: hidden;
 
-    >.section-scroll {
+    > .section-scroll {
         display: block;
 
         height: calc(100vh - 2rem);
         max-height: calc(100vh - 2rem);
 
         overflow: auto;
-
     }
 }
 
@@ -594,21 +589,17 @@ select.ng-invalid {
         }
     }
 
-
     .section-parent {
         height: 75vh;
         border-radius: 0;
         padding: 0;
 
-        >.section-scroll {
+        > .section-scroll {
             max-height: calc(75vh);
-
         }
 
-
-        >.section-scroll {
+        > .section-scroll {
             max-width: calc(100vw);
         }
-
     }
 }

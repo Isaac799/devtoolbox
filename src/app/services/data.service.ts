@@ -1,17 +1,5 @@
 import {Injectable} from '@angular/core'
-import {
-    Schema,
-    App,
-    AppComplexityMode,
-    AppGeneratorMode,
-    AppMode,
-    Table,
-    Attribute,
-    SchemaConfig,
-    TableConfig,
-    AttributeConfig,
-    AttrType
-} from '../structure'
+import {Schema, App, AppComplexityMode, AppGeneratorMode, AppMode, Table, Attribute, SchemaConfig, TableConfig, AttributeConfig, AttrType} from '../structure'
 import {Subject} from 'rxjs'
 import {defaultConfig} from '../constants'
 

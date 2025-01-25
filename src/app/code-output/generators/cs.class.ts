@@ -12,7 +12,7 @@ export function SchemasToCSClasses(schemas: Schema[]): string {
     }
 
     let lines: string[] = []
-    
+
     lines.push('using System;')
     lines.push('using System.Collections.Generic;')
     lines.push('')
@@ -43,9 +43,7 @@ ${TAB}${TAB}${params}
 
 function generateTitleAndParams(f: Func) {
     const relevantInputs = f.outputs.map(e => e.relatedInput).filter(e => !!e)
-    const params = relevantInputs
-        .map(e => `${e.type} ${e.label}`)
-        .join(`,\n${TAB}${TAB}`)
+    const params = relevantInputs.map(e => `${e.type} ${e.label}`).join(`,\n${TAB}${TAB}`)
 
     const title = cc(`${f.title}`, 'pl')
     return {title, params}
@@ -67,11 +65,7 @@ function generateConstructorSets(f: Func) {
 function generateStructAttributes(f: Func) {
     const attrs: string[] = []
     for (const e of f.outputs) {
-        attrs.push(
-            `${TAB}public ${
-                e.relatedInput ? e.relatedInput.type : e.type
-            } ${e.label} { get; set; }`
-        )
+        attrs.push(`${TAB}public ${e.relatedInput ? e.relatedInput.type : e.type} ${e.label} { get; set; }`)
     }
     return attrs
 }

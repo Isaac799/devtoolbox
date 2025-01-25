@@ -1,18 +1,6 @@
-import {
-    AfterViewInit,
-    Component,
-    ElementRef,
-    OnDestroy,
-    OnInit,
-    ViewChild
-} from '@angular/core'
+import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core'
 import {DataService} from '../services/data.service'
-import {
-    AppGeneratorMode,
-    Notification,
-    NotificationKind,
-    NotificationLife
-} from '../structure'
+import {AppGeneratorMode, Notification, NotificationKind, NotificationLife} from '../structure'
 import {Subscription} from 'rxjs'
 import {SchemasToPostgreSQL} from './generators/pgsql.tables'
 import {SchemasToGoStructs} from './generators/go.structs.fns'
@@ -28,8 +16,8 @@ import {SchemasToJsClasses} from './generators/js.class'
 import {SchemasToTablesForSQLite} from './generators/sqlite.tables'
 import {SchemasToSQLiteJoinQuery} from './generators/sqlite.join.query'
 import {SchemasToRustStructsImpl} from './generators/rust.structs.impls'
-import { SchemasToCSClasses } from './generators/cs.class'
-import { SchemasToApiGoPostgres } from './generators/api.go.postgres'
+import {SchemasToCSClasses} from './generators/cs.class'
+import {SchemasToApiGoPostgres} from './generators/api.go.postgres'
 
 @Component({
     selector: 'app-code-output',
@@ -129,13 +117,6 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
 
     copy() {
         navigator.clipboard.writeText(this.output)
-        this.notification.Add(
-            new Notification(
-                'Copied',
-                'The code was copied to your clipboard.',
-                NotificationKind.Info,
-                NotificationLife.Short
-            )
-        )
+        this.notification.Add(new Notification('Copied', 'The code was copied to your clipboard.', NotificationKind.Info, NotificationLife.Short))
     }
 }

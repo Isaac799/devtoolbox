@@ -33,7 +33,7 @@
         rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
         rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 
-    >.header {
+    > .header {
         position: relative;
         display: flex;
         flex-direction: row;
@@ -43,7 +43,7 @@
         font-size: 1.35rem;
         padding: var(--space-sm) var(--space) 0 var(--space);
 
-        >button:last-child {
+        > button:last-child {
             padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
             height: 2rem;
             width: 2.55rem;
@@ -54,14 +54,14 @@
         }
     }
 
-    >.content {
+    > .content {
         border-bottom: 0.1rem solid var(--black);
         padding: var(--space);
         overflow: auto;
     }
 
-    >.footer,
-    >.footer>div {
+    > .footer,
+    > .footer > div {
         padding: 0 var(--space) 0 var(--space);
         display: flex;
         flex-direction: row;
@@ -72,15 +72,15 @@
         border-bottom-right-radius: var(--border-radius);
         border-bottom-left-radius: var(--border-radius);
 
-        >button {
+        > button {
             padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
         }
 
-        >button:first-child {
+        > button:first-child {
             border-bottom-left-radius: var(--border-radius);
         }
 
-        >button:last-child {
+        > button:last-child {
             border-bottom-right-radius: var(--border-radius);
         }
     }

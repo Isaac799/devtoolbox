@@ -52,9 +52,7 @@ ${TAB}) -> Self {`)
 
 function generateParams(f: Func) {
     const relevantInputs = f.outputs.map(e => e.relatedInput).filter(e => !!e)
-    const params = relevantInputs
-        .map(e => `${e.label}: ${e.type}`)
-        .join(`,\n${TAB}${TAB}`)
+    const params = relevantInputs.map(e => `${e.label}: ${e.type}`).join(`,\n${TAB}${TAB}`)
 
     return {params}
 }
@@ -75,9 +73,7 @@ function generateFuncReturnStruct(f: Func) {
 function generateStructAttributes(f: Func) {
     const attrs: string[] = []
     for (const e of f.outputs) {
-        attrs.push(
-            `${TAB}pub ${e.label}: ${e.relatedInput ? e.relatedInput.type : e.type},`
-        )
+        attrs.push(`${TAB}pub ${e.label}: ${e.relatedInput ? e.relatedInput.type : e.type},`)
     }
     return attrs
 }

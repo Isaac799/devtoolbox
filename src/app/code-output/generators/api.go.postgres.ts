@@ -79,14 +79,9 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             })
             .join(' and ')
 
-        const notFoundStr = `cannot find ${cc(
-            table.Name,
-            'sk'
-        )} matching that ${getParamsStrWithoutTypeWithAnd}`
+        const notFoundStr = `cannot find ${cc(table.Name, 'sk')} matching that ${getParamsStrWithoutTypeWithAnd}`
         const getParamsStrOnlyType = getParams.map(e => e.type).join(', ')
-        const getParamsStrDefaultValues = getParams
-            .map(e => e.defaultValue)
-            .join(', ')
+        const getParamsStrDefaultValues = getParams.map(e => e.defaultValue).join(', ')
 
         const queryInStr = queryIn.join(', ')
 
@@ -100,20 +95,14 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
         {
             const l: string[] = []
 
-            lines.push(
-                `func GetMany${funcGo.title}(w http.ResponseWriter, r *http.Request) {`
-            )
+            lines.push(`func GetMany${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
 
-            const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(
-                ', '
-            )
+            const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(', ')
             const query = `SELECT ${selecting} FROM ${table.FN}`
 
             l.push(`rows, err := db.Query("${query}")`)
             l.push(`if err != nil {`)
-            l.push(
-                `${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`${TAB}return`)
             l.push(`}`)
             l.push(`defer rows.Close()\n`)
@@ -126,9 +115,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
                 .map(e => `&${item}.${e.label}`)
                 .join(', ')
             l.push(`${TAB}if err := rows.Scan(${scan}); err != nil {`)
-            l.push(
-                `${TAB}${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`${TAB}${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`${TAB}${TAB}return`)
             l.push(`${TAB}}`)
             l.push(`${TAB}${items} = append(${items}, ${item})`)
@@ -137,12 +124,8 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push('')
             l.push(`w.WriteHeader(http.StatusOK)`)
             l.push(`w.Header().Set("Content-Type", "application/json")`)
-            l.push(
-                `if err := json.NewEncoder(w).Encode(${items}); err != nil {`
-            )
-            l.push(
-                `    http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`if err := json.NewEncoder(w).Encode(${items}); err != nil {`)
+            l.push(`    http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`}`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
@@ -156,9 +139,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
          */
         gatherContext: {
             if (pks.length === 0) {
-                lines.push(
-                    `-- NOTICE: skipping "gatherContext" methods for ${funcGo.title} due to lacking a primary key`
-                )
+                lines.push(`-- NOTICE: skipping "gatherContext" methods for ${funcGo.title} due to lacking a primary key`)
                 break gatherContext
             }
 
@@ -175,16 +156,12 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
                     const parseStr = pk.parseFn(`${vn}Str`)
                     l.push(`${vn}, err := ${parseStr}; `)
                     l.push(`if err != nil {`)
-                    l.push(
-                        `${TAB}return ${getParamsStrDefaultValues}, errors.New("invalid ${vn}")`
-                    )
+                    l.push(`${TAB}return ${getParamsStrDefaultValues}, errors.New("invalid ${vn}")`)
                     l.push(`}`)
                 } else {
                     l.push(`${vn} := r.URL.Query().Get("${s}")`)
                     l.push(`if ${vn} == "" {`)
-                    l.push(
-                        `${TAB}return ${getParamsStrDefaultValues}, errors.New("invalid ${vn}")`
-                    )
+                    l.push(`${TAB}return ${getParamsStrDefaultValues}, errors.New("invalid ${vn}")`)
                     l.push(`}`)
                 }
                 l.push('')
@@ -194,9 +171,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
                 pkStrs.push(pkStr)
             }
 
-            lines.push(
-                `func gather${funcGo.title}Context(r *http.Request) (${getParamsStrOnlyType}, error) {`
-            )
+            lines.push(`func gather${funcGo.title}Context(r *http.Request) (${getParamsStrOnlyType}, error) {`)
 
             const l: string[] = []
 
@@ -214,21 +189,15 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
          */
         select: {
             if (pks.length === 0) {
-                lines.push(
-                    `-- NOTICE: skipping "select" methods for ${funcGo.title} due to lacking a primary key`
-                )
+                lines.push(`-- NOTICE: skipping "select" methods for ${funcGo.title} due to lacking a primary key`)
                 break select
             }
 
-            lines.push(
-                `func select${funcGo.title}(${getParamsStr}) (*${funcGo.title}, error) {`
-            )
+            lines.push(`func select${funcGo.title}(${getParamsStr}) (*${funcGo.title}, error) {`)
 
             const l: string[] = []
 
-            const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(
-                ', '
-            )
+            const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(', ')
             const query = `SELECT ${selecting} FROM ${table.FN} WHERE ${selectWhere}`
 
             l.push(`${item} := ${funcGo.title}{}`)
@@ -257,15 +226,11 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
          */
         get: {
             if (pks.length === 0) {
-                lines.push(
-                    `-- NOTICE: skipping "get" methods for ${funcGo.title} due to lacking a primary key`
-                )
+                lines.push(`-- NOTICE: skipping "get" methods for ${funcGo.title} due to lacking a primary key`)
                 break get
             }
 
-            lines.push(
-                `func Get${funcGo.title}(w http.ResponseWriter, r *http.Request) {`
-            )
+            lines.push(`func Get${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
 
             const l: string[] = []
 
@@ -283,9 +248,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`${TAB}${TAB}http.Error(w, "${notFoundStr}", http.StatusInternalServerError)`)
             l.push(`${TAB}${TAB}return`)
             l.push(`${TAB}}`)
-            l.push(
-                `${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`${TAB}return`)
             l.push(`}`)
             // l.push('')
@@ -331,9 +294,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push('')
             l.push(`w.Header().Set("Content-Type", "application/json")`)
             l.push(`if err := json.NewEncoder(w).Encode(${item}); err != nil {`)
-            l.push(
-                `    http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`    http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`}`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
@@ -347,15 +308,11 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
          */
         put: {
             if (pks.length === 0) {
-                lines.push(
-                    `-- NOTICE: skipping "put" methods for ${funcGo.title} due to lacking a primary key`
-                )
+                lines.push(`-- NOTICE: skipping "put" methods for ${funcGo.title} due to lacking a primary key`)
                 break put
             }
 
-            lines.push(
-                `func Put${funcGo.title}(w http.ResponseWriter, r *http.Request) {`
-            )
+            lines.push(`func Put${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
             const l: string[] = []
 
             l.push(`${queryInStr}, err := gather${funcGo.title}Context(r)`)
@@ -365,9 +322,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`}`)
 
             l.push(`${item} := ${funcGo.title}{}`)
-            l.push(
-                `if err := json.NewDecoder(r.Body).Decode(&${item}); err != nil {`
-            )
+            l.push(`if err := json.NewDecoder(r.Body).Decode(&${item}); err != nil {`)
             l.push(`${TAB}http.Error(w, err.Error(), http.StatusBadRequest)`)
             l.push(`${TAB}return`)
             l.push(`}`)
@@ -375,14 +330,10 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             const cols = table.Attributes.filter(e => e.toInsert())
 
-            const aEqB: string[] = cols.map(
-                (e, i) => `${cc(e.Name, 'sk')} = $${selectWhereLen + i + 1}`
-            )
+            const aEqB: string[] = cols.map((e, i) => `${cc(e.Name, 'sk')} = $${selectWhereLen + i + 1}`)
             const colsSnake = cols.map(e => cc(e.Name, 'sk'))
 
-            const fieldsB = funcGo.outputs
-                .filter(e => colsSnake.includes(cc(e.label, 'sk')))
-                .map(e => `${item}.${e.label}`)
+            const fieldsB = funcGo.outputs.filter(e => colsSnake.includes(cc(e.label, 'sk'))).map(e => `${item}.${e.label}`)
 
             const fields = [...queryIn, ...fieldsB]
 
@@ -397,16 +348,14 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`${TAB}${TAB}http.Error(w, "${notFoundStr}", http.StatusNotFound)`)
             l.push(`${TAB}${TAB}return`)
             l.push(`${TAB}} `)
-            l.push(`${TAB}http.Error(w, "Failed to update ${cc(table.Name,'sk')}", http.StatusInternalServerError)`)
+            l.push(`${TAB}http.Error(w, "Failed to update ${cc(table.Name, 'sk')}", http.StatusInternalServerError)`)
             l.push(`${TAB}return`)
             l.push(`}`)
 
             l.push(`w.WriteHeader(http.StatusOK)`)
             l.push(`w.Header().Set("Content-Type", "application/json")`)
             l.push(`if err := json.NewEncoder(w).Encode(${item}); err != nil {`)
-            l.push(
-                `    http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`    http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`}`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
@@ -420,42 +369,30 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
          */
         post: {
             if (pks.length === 0) {
-                lines.push(
-                    `-- NOTICE: skipping "post" methods for ${funcGo.title} due to lacking a primary key`
-                )
+                lines.push(`-- NOTICE: skipping "post" methods for ${funcGo.title} due to lacking a primary key`)
                 break post
             }
 
-            lines.push(
-                `func Post${funcGo.title}(w http.ResponseWriter, r *http.Request) {`
-            )
+            lines.push(`func Post${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
             const l: string[] = []
 
             l.push(`${item} := ${funcGo.title}{}`)
 
-            l.push(
-                `if err := json.NewDecoder(r.Body).Decode(&${item}); err != nil {`
-            )
+            l.push(`if err := json.NewDecoder(r.Body).Decode(&${item}); err != nil {`)
             l.push(`${TAB}http.Error(w, err.Error(), http.StatusBadRequest)`)
             l.push(`${TAB}return`)
             l.push(`}`)
             l.push(``)
 
-            const cols = table.Attributes.filter(e => e.toInsert()).map(e =>
-                cc(e.Name, 'sk')
-            )
+            const cols = table.Attributes.filter(e => e.toInsert()).map(e => cc(e.Name, 'sk'))
 
             const values: string[] = []
             const valuesAttrs: string[] = []
-            const scans: string[] = funcGo.outputs
-                .filter(e => e.primary)
-                .map(e => `&${item}.${e.label}`)
+            const scans: string[] = funcGo.outputs.filter(e => e.primary).map(e => `&${item}.${e.label}`)
 
             const colsSnake = cols.map(e => cc(e, 'sk'))
 
-            const fields = funcGo.outputs.filter(e =>
-                colsSnake.includes(cc(e.label, 'sk'))
-            )
+            const fields = funcGo.outputs.filter(e => colsSnake.includes(cc(e.label, 'sk')))
 
             for (let i = 0; i < fields.length; i++) {
                 const field = fields[i]
@@ -468,21 +405,15 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             const scansStr = scans.join(', ')
             const colsStr = cols.join(', ')
 
-            const returning: string = table.Attributes.filter(
-                e => e.Option?.PrimaryKey
-            )
+            const returning: string = table.Attributes.filter(e => e.Option?.PrimaryKey)
                 .map(e => cc(e.Name, 'sk'))
                 .join(', ')
 
             const query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuesStr}) RETURNING ${returning}`
 
-            l.push(
-                `err := db.QueryRow("${query}", ${valuesAttrsStr}).Scan(${scansStr})`
-            )
+            l.push(`err := db.QueryRow("${query}", ${valuesAttrsStr}).Scan(${scansStr})`)
             l.push(`if err != nil {`)
-            l.push(
-                `${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`${TAB}return`)
             l.push(`}`)
 
@@ -490,9 +421,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`w.WriteHeader(http.StatusCreated)`)
             l.push(`w.Header().Set("Content-Type", "application/json")`)
             l.push(`if err := json.NewEncoder(w).Encode(${item}); err != nil {`)
-            l.push(
-                `    http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`    http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`}`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
@@ -506,15 +435,11 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
          */
         delete_: {
             if (pks.length === 0) {
-                lines.push(
-                    `-- NOTICE: skipping "delete" methods for ${funcGo.title} due to lacking a primary key`
-                )
+                lines.push(`-- NOTICE: skipping "delete" methods for ${funcGo.title} due to lacking a primary key`)
                 break delete_
             }
 
-            lines.push(
-                `func Delete${funcGo.title}(w http.ResponseWriter, r *http.Request) {`
-            )
+            lines.push(`func Delete${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
             const l: string[] = []
 
             l.push(`${queryInStr}, err := gather${funcGo.title}Context(r)`)
@@ -527,9 +452,7 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             l.push(`_, err = db.Exec("${query}", ${queryInStr})`)
             l.push(`if err != nil {`)
-            l.push(
-                `${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`
-            )
+            l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
             l.push(`${TAB}return`)
             l.push(`}`)
 

@@ -8,12 +8,7 @@ export class UseI {
     increment = (t: Table, t2?: [Table, Table]): void => {
         const sameSchema = t2 ? t.Parent.ID === t2[0].Parent.ID : true
 
-        const key =
-            sameSchema && !t2
-                ? t.SimpleInitials
-                : t2
-                  ? `${t.SimpleInitials}${t2[0].SimpleInitials}Via${t2[1].SimpleInitials}`
-                  : t.FNInitials
+        const key = sameSchema && !t2 ? t.SimpleInitials : t2 ? `${t.SimpleInitials}${t2[0].SimpleInitials}Via${t2[1].SimpleInitials}` : t.FNInitials
 
         if (!this.iUsages[key]) {
             this.iUsages[key] = -1
@@ -24,12 +19,7 @@ export class UseI {
     get = (t: Table, t2?: [Table, Table]): string => {
         const sameSchema = t2 ? t.Parent.ID === t2[0].Parent.ID : true
 
-        const key =
-            sameSchema && !t2
-                ? t.SimpleInitials
-                : t2
-                  ? `${t2[0].SimpleInitials}${t2[1].SimpleInitials}${t.SimpleInitials}`
-                  : t.FNInitials
+        const key = sameSchema && !t2 ? t.SimpleInitials : t2 ? `${t2[0].SimpleInitials}${t2[1].SimpleInitials}${t.SimpleInitials}` : t.FNInitials
 
         return key + (this.iUsages[key] || '')
     }
@@ -72,9 +62,7 @@ function generateSqlFns(t: Table) {
     for (const a of t.Attributes) {
         if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue
         params.push(`${cc(a.Name, 'sk')} ${a.Type}`)
-        whereAND.push(
-            `${useI.get(t)}.${cc(a.Name, 'sk')} = ${cc(a.Name, 'sk')}`
-        )
+        whereAND.push(`${useI.get(t)}.${cc(a.Name, 'sk')} = ${cc(a.Name, 'sk')}`)
     }
     const whereStr: string = whereAND.join(' AND ')
 
@@ -99,12 +87,7 @@ function generateSqlFns(t: Table) {
         }
     }
 
-    let joinLines: string[] = GenerateJoinLines(
-        t,
-        returnTableLines,
-        selectingLines,
-        useI
-    )
+    let joinLines: string[] = GenerateJoinLines(t, returnTableLines, selectingLines, useI)
 
     joinLines = alignKeyword(joinLines, 'ON')
     joinLines = alignKeyword(joinLines, '=')
@@ -133,13 +116,7 @@ $$ LANGUAGE plpgsql;`
     return q
 }
 
-export function GenerateJoinLines(
-    t: Table,
-    returnTableLines: string[],
-    selectingLines: string[],
-    useI: UseI,
-    noSchemaMode = false
-) {
+export function GenerateJoinLines(t: Table, returnTableLines: string[], selectingLines: string[], useI: UseI, noSchemaMode = false) {
     const joinLines: string[] = []
 
     let s = `${t.FN} ${useI.get(t)}`
@@ -161,19 +138,10 @@ export function GenerateJoinLines(
 
             for (const a2 of tbl.Attributes) {
                 if (a2.Type === AttrType.REFERENCE && a2.RefTo) {
-                    const pksForJoin = a2.RefTo.Attributes.filter(
-                        e =>
-                            e.Option?.PrimaryKey &&
-                            e.Type !== AttrType.REFERENCE
-                    )
+                    const pksForJoin = a2.RefTo.Attributes.filter(e => e.Option?.PrimaryKey && e.Type !== AttrType.REFERENCE)
                     for (const ra2 of pksForJoin) {
                         if (t.ID !== ra2.Parent.ID) continue
-                        j1ON.push(
-                            `${useI.get(tbl)}.${cc(
-                                `${a2.Name}_${ra2.Name}`,
-                                'sk'
-                            )} = ${useI.get(t)}.${cc(ra2.Name, 'sk')}`
-                        )
+                        j1ON.push(`${useI.get(tbl)}.${cc(`${a2.Name}_${ra2.Name}`, 'sk')} = ${useI.get(t)}.${cc(ra2.Name, 'sk')}`)
                     }
                     continue
                 }
@@ -184,9 +152,7 @@ export function GenerateJoinLines(
                 //     : cc(a2.FN, 's');
                 const n = cc(`${useI.get(tbl)}_${cc(a2.Name, 'sk')}`, 'sk')
                 returnTableLines.push(`${n} ${a2.Type}`)
-                selectingLines.push(
-                    `${useI.get(tbl)}.${cc(a2.Name, 'sk')} AS ${n}`
-                )
+                selectingLines.push(`${useI.get(tbl)}.${cc(a2.Name, 'sk')} AS ${n}`)
             }
 
             if (j1ON.length > 0) {
@@ -215,25 +181,16 @@ export function GenerateJoinLines(
                 for (const a2 of t2.Attributes) {
                     if (a2.Type === AttrType.REFERENCE) continue
 
-                    const n = cc(
-                        `${useI.get(t2, [t, tbl])}_${cc(a2.Name, 'sk')}`,
-                        'sk'
-                    )
+                    const n = cc(`${useI.get(t2, [t, tbl])}_${cc(a2.Name, 'sk')}`, 'sk')
                     returnTableLines.push(`${n} ${a2.Type}`)
-                    selectingLines.push(
-                        `${useI.get(t2, [t, tbl])}.${cc(a2.Name, 'sk')} AS ${n}`
-                    )
+                    selectingLines.push(`${useI.get(t2, [t, tbl])}.${cc(a2.Name, 'sk')} AS ${n}`)
                 }
 
                 for (const a2 of t2.Attributes) {
                     if (a2.Type === AttrType.REFERENCE) continue
                     if (!a2.Option?.PrimaryKey) continue
 
-                    j2ON.push(
-                        `${useI.get(t2, [t, tbl])}.${cc(a2.Name, 'sk')} = ${useI.get(
-                            tbl
-                        )}.${cc(`${a.Name}_${a2.Name}`, 'sk')}`
-                    )
+                    j2ON.push(`${useI.get(t2, [t, tbl])}.${cc(a2.Name, 'sk')} = ${useI.get(tbl)}.${cc(`${a.Name}_${a2.Name}`, 'sk')}`)
                 }
 
                 if (j2ON.length > 0) {

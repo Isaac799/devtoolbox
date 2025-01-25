@@ -12,15 +12,7 @@ import {NotificationService} from '../services/notification.service'
 
 @Component({
     selector: 'app-gui-editor',
-    imports: [
-        ModalComponent,
-        FormsModule,
-        CommonModule,
-        ReactiveFormsModule,
-        MinMaxRelevantPipe,
-        MinMaxLabelFromAttrTypePipe,
-        DefaultValueHintPipe
-    ],
+    imports: [ModalComponent, FormsModule, CommonModule, ReactiveFormsModule, MinMaxRelevantPipe, MinMaxLabelFromAttrTypePipe, DefaultValueHintPipe],
     templateUrl: './gui-editor.component.html',
     styleUrl: './gui-editor.component.scss'
 })
@@ -468,7 +460,11 @@ export class GuiEditorComponent implements OnInit {
         return this.data.app.complexity === AppComplexityMode.Simple ? this.attrTypeOptionsSimple : this.attrTypeOptionsAdvanced
     }
 
-    constructor(private cdr: ChangeDetectorRef, public data: DataService, private notification: NotificationService) {}
+    constructor(
+        private cdr: ChangeDetectorRef,
+        public data: DataService,
+        private notification: NotificationService
+    ) {}
 
     ngOnInit(): void {
         this.serial = GuiEditorComponent.discoverSerial(this.data.schemas)

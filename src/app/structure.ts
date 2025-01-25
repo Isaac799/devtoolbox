@@ -28,12 +28,7 @@ export class FuncIn {
     validation?: Validation
     isNumerical: boolean
 
-    constructor(
-        l: string,
-        t: string,
-        validation: Validation | undefined,
-        isNumerical: boolean
-    ) {
+    constructor(l: string, t: string, validation: Validation | undefined, isNumerical: boolean) {
         this.label = l
         this.type = t
         this.validation = validation
@@ -51,15 +46,7 @@ export class FuncOut {
     primary: boolean
     needsParsed: boolean
 
-    constructor(
-        l: string,
-        t: string,
-        relatedInput: FuncIn | null,
-        newValueFallback: string,
-        self: boolean,
-        primary: boolean,
-        parseFn: (x: string) => string
-    ) {
+    constructor(l: string, t: string, relatedInput: FuncIn | null, newValueFallback: string, self: boolean, primary: boolean, parseFn: (x: string) => string) {
         this.label = l
         this.type = t
         this.relatedInput = relatedInput
@@ -100,34 +87,15 @@ export class Func {
             if (a.RefTo) {
                 for (const ra of a.RefTo.Attributes) {
                     if (!ra.Option?.PrimaryKey) continue
-                    const sameSchema =
-                        ra.Parent.Parent.ID === this.table.Parent.ID
-                    const relation = sameSchema
-                        ? Rel.SameSchema
-                        : Rel.DiffSchema
-                    const {label, type} = genLabelType(
-                        'in',
-                        a,
-                        ra,
-                        this.lang,
-                        relation,
-                        Cardinality.One
-                    )
-                    inputs.push(
-                        new FuncIn(label, type, a.Validation, a.isNumerical())
-                    )
+                    const sameSchema = ra.Parent.Parent.ID === this.table.Parent.ID
+                    const relation = sameSchema ? Rel.SameSchema : Rel.DiffSchema
+                    const {label, type} = genLabelType('in', a, ra, this.lang, relation, Cardinality.One)
+                    inputs.push(new FuncIn(label, type, a.Validation, a.isNumerical()))
                 }
 
                 continue
             }
-            const {label, type} = genLabelType(
-                'in',
-                a,
-                a,
-                this.lang,
-                Rel.SameTable,
-                Cardinality.Self
-            )
+            const {label, type} = genLabelType('in', a, a, this.lang, Rel.SameTable, Cardinality.Self)
             inputs.push(new FuncIn(label, type, a.Validation, a.isNumerical()))
         }
 
@@ -144,11 +112,7 @@ export class Func {
             if (a.Option?.SystemField || a.Option?.Default) {
                 goFnStructAttributes = this.genFnOutput(a, null, null)
             } else {
-                goFnStructAttributes = this.genFnOutput(
-                    a,
-                    null,
-                    inputs[inputIndex] || null
-                )
+                goFnStructAttributes = this.genFnOutput(a, null, inputs[inputIndex] || null)
                 inputIndex += 1
             }
 
@@ -235,11 +199,7 @@ export class Func {
         return outputs
     }
 
-    genFnOutput(
-        a: Attribute,
-        recursive: Attribute | null,
-        relatedInput: FuncIn | null
-    ): FuncOut[] {
+    genFnOutput(a: Attribute, recursive: Attribute | null, relatedInput: FuncIn | null): FuncOut[] {
         let answer: FuncOut[] = []
 
         if (a.Type === AttrType.REFERENCE && a.RefTo && !recursive) {
@@ -249,26 +209,10 @@ export class Func {
                 }
                 const sameSchema = ra.Parent.Parent.ID === this.table.Parent.ID
                 const sameTable = ra.Parent.ID === this.table.ID
-                const relation = sameSchema
-                    ? Rel.SameSchema
-                    : sameTable
-                    ? Rel.SameTable
-                    : Rel.DiffSchema
+                const relation = sameSchema ? Rel.SameSchema : sameTable ? Rel.SameTable : Rel.DiffSchema
 
-                const {label, type} = genLabelType(
-                    'in',
-                    ra,
-                    ra,
-                    this.lang,
-                    relation,
-                    Cardinality.Self
-                )
-                const matchingInput = new FuncIn(
-                    label,
-                    type,
-                    ra.Validation,
-                    ra.isNumerical()
-                )
+                const {label, type} = genLabelType('in', ra, ra, this.lang, relation, Cardinality.Self)
+                const matchingInput = new FuncIn(label, type, ra.Validation, ra.isNumerical())
 
                 const refAttrs = this.genFnOutput(ra, a, matchingInput)
                 answer = answer.concat(refAttrs)
@@ -279,51 +223,13 @@ export class Func {
         if (recursive) {
             const sameSchema = a.Parent.Parent.ID === this.table.Parent.ID
             const sameTable = a.Parent.ID === this.table.ID
-            const relation = sameSchema
-                ? Rel.SameSchema
-                : sameTable
-                ? Rel.SameTable
-                : Rel.DiffSchema
+            const relation = sameSchema ? Rel.SameSchema : sameTable ? Rel.SameTable : Rel.DiffSchema
 
-            const {label, type, defaultValue, parseStr} = genLabelType(
-                'out',
-                a,
-                recursive,
-                this.lang,
-                relation,
-                Cardinality.Self
-            )
-            answer.push(
-                new FuncOut(
-                    label,
-                    type,
-                    relatedInput,
-                    defaultValue,
-                    false,
-                    a.Option?.PrimaryKey === true,
-                    parseStr
-                )
-            )
+            const {label, type, defaultValue, parseStr} = genLabelType('out', a, recursive, this.lang, relation, Cardinality.Self)
+            answer.push(new FuncOut(label, type, relatedInput, defaultValue, false, a.Option?.PrimaryKey === true, parseStr))
         } else {
-            const {label, type, defaultValue, parseStr} = genLabelType(
-                'out',
-                a,
-                a,
-                this.lang,
-                Rel.SameTable,
-                Cardinality.Self
-            )
-            answer.push(
-                new FuncOut(
-                    label,
-                    type,
-                    relatedInput,
-                    defaultValue,
-                    true,
-                    a.Option?.PrimaryKey === true,
-                    parseStr
-                )
-            )
+            const {label, type, defaultValue, parseStr} = genLabelType('out', a, a, this.lang, Rel.SameTable, Cardinality.Self)
+            answer.push(new FuncOut(label, type, relatedInput, defaultValue, true, a.Option?.PrimaryKey === true, parseStr))
         }
         return answer
     }
@@ -345,12 +251,9 @@ export class Func {
         if (isGo) {
             return Lang.GO
         }
-        const isTs = [
-            AppGeneratorMode.AngularFormControl,
-            AppGeneratorMode.TSClasses,
-            AppGeneratorMode.TSTypesAndFns,
-            AppGeneratorMode.JSClasses
-        ].includes(mode)
+        const isTs = [AppGeneratorMode.AngularFormControl, AppGeneratorMode.TSClasses, AppGeneratorMode.TSTypesAndFns, AppGeneratorMode.JSClasses].includes(
+            mode
+        )
         if (isTs) {
             return Lang.TS
         }
@@ -358,17 +261,11 @@ export class Func {
         if (isCs) {
             return Lang.CS
         }
-        const isTSQL = [
-            AppGeneratorMode.TSQLTables,
-            AppGeneratorMode.TSQLStoredProcedures
-        ].includes(mode)
+        const isTSQL = [AppGeneratorMode.TSQLTables, AppGeneratorMode.TSQLStoredProcedures].includes(mode)
         if (isTSQL) {
             return Lang.TSQL
         }
-        const isPostgres = [
-            AppGeneratorMode.PostgresFunctions,
-            AppGeneratorMode.Postgres
-        ].includes(mode)
+        const isPostgres = [AppGeneratorMode.PostgresFunctions, AppGeneratorMode.Postgres].includes(mode)
         if (isPostgres) {
             return Lang.PGSQL
         }
@@ -377,9 +274,7 @@ export class Func {
             return Lang.Rust
         }
 
-        console.error(
-            'unaccounted mode! defaulted to postgres when determining language'
-        )
+        console.error('unaccounted mode! defaulted to postgres when determining language')
         return Lang.PGSQL
     }
 }
@@ -443,11 +338,7 @@ export class Attribute {
     }
 
     get FN(): string {
-        return [
-            cc(this.Parent.Parent.Name, 'sk'),
-            cc(this.Parent.Name, 'sk'),
-            cc(this.Name, 'sk')
-        ].join('.')
+        return [cc(this.Parent.Parent.Name, 'sk'), cc(this.Parent.Name, 'sk'), cc(this.Name, 'sk')].join('.')
     }
 
     isNumerical(): boolean {
@@ -475,10 +366,7 @@ export class Attribute {
     }
 
     toInsert() {
-        return !(
-            (!this.Option?.SystemField && this.Option?.Default) ||
-            (this.Option?.PrimaryKey && this.Type === AttrType.SERIAL)
-        )
+        return !((!this.Option?.SystemField && this.Option?.Default) || (this.Option?.PrimaryKey && this.Type === AttrType.SERIAL))
     }
 }
 
@@ -547,25 +435,25 @@ export class Table {
         )
     }
     get SimpleInitials(): string {
-        return cc([cc(createAbbreviation(this.Name), 'sk')].join('_'), 'pl');
+        return cc([cc(createAbbreviation(this.Name), 'sk')].join('_'), 'pl')
         // return cc([cc(this.Name, 'sk')].join('_'), 'pl')
     }
 }
 
 function createAbbreviation(input: string): string {
-  // Remove vowels (a, e, i, o, u) and keep the first and last letter
-  const vowels = /[aeiouAEIOU]/g;
+    // Remove vowels (a, e, i, o, u) and keep the first and last letter
+    const vowels = /[aeiouAEIOU]/g
 
-  // Remove vowels and leave the first and last character intact
-  const filtered = input
-    .split('')
-    .filter((char, index) => {
-      // Keep the first and last character, and keep the consonants
-      return index === 0 || index === input.length - 1 || !vowels.test(char);
-    })
-    .join('');
+    // Remove vowels and leave the first and last character intact
+    const filtered = input
+        .split('')
+        .filter((char, index) => {
+            // Keep the first and last character, and keep the consonants
+            return index === 0 || index === input.length - 1 || !vowels.test(char)
+        })
+        .join('')
 
-  return filtered.toLowerCase(); // Convert the result to lowercase
+    return filtered.toLowerCase() // Convert the result to lowercase
 }
 
 export enum AppMode {
@@ -640,12 +528,7 @@ export class Notification {
     message: string
     life: NotificationLife
 
-    constructor(
-        title: string,
-        message: string,
-        kind: NotificationKind = NotificationKind.Primary,
-        life: NotificationLife = NotificationLife.Standard
-    ) {
+    constructor(title: string, message: string, kind: NotificationKind = NotificationKind.Primary, life: NotificationLife = NotificationLife.Standard) {
         this.id = Date.now()
         this.kind = kind
         this.title = title
@@ -1101,9 +984,7 @@ function genLabelType(
     const tsNullable = isNullable ? ' | null' : ''
     let tsType = overrideType ? cc(overrideType, 'pl') : SQL_TO_TS_TYPE[aT.Type]
     const tsCase = io === 'in' ? 'cm' : 'cm'
-    const tsOverrideTypeRelatedLabel = fixPluralGrammar(
-        cc(aT.Name, tsCase) + 's'
-    )
+    const tsOverrideTypeRelatedLabel = fixPluralGrammar(cc(aT.Name, tsCase) + 's')
 
     if (!tsType) {
         tsType = SQL_TO_TS_TYPE[aL.Type]
@@ -1152,25 +1033,19 @@ function genLabelType(
     //    -    -
 
     map.set(Lang.TS | Rel.SameTable | Cardinality.Many, {
-        label: overrideType
-            ? tsOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.Name, tsCase) + 's'),
+        label: overrideType ? tsOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.Name, tsCase) + 's'),
         type: `${tsType}[]` + tsNullable,
         defaultValue: '[]',
         parseStr: () => ''
     })
     map.set(Lang.TS | Rel.SameSchema | Cardinality.Many, {
-        label: overrideType
-            ? tsOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.PFN, tsCase) + 's'),
+        label: overrideType ? tsOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.PFN, tsCase) + 's'),
         type: `${tsType}[]` + tsNullable,
         defaultValue: '[]',
         parseStr: () => ''
     })
     map.set(Lang.TS | Rel.DiffSchema | Cardinality.Many, {
-        label: overrideType
-            ? tsOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.FN, tsCase) + 's'),
+        label: overrideType ? tsOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.FN, tsCase) + 's'),
         type: `${tsType}[]` + tsNullable,
         defaultValue: '[]',
         parseStr: () => ''
@@ -1183,9 +1058,7 @@ function genLabelType(
     const csNullable = isNullable ? '?' : ''
     let csType = overrideType ? cc(overrideType, 'pl') : SQL_TO_CS_TYPE[aT.Type]
     const csCase = io === 'in' ? 'cm' : 'pl'
-    const csOverrideTypeRelatedLabel = fixPluralGrammar(
-        cc(aT.Name, csCase) + 's'
-    )
+    const csOverrideTypeRelatedLabel = fixPluralGrammar(cc(aT.Name, csCase) + 's')
 
     if (!csType) {
         csType = SQL_TO_CS_TYPE[aL.Type]
@@ -1234,25 +1107,19 @@ function genLabelType(
     //    -    -
 
     map.set(Lang.CS | Rel.SameTable | Cardinality.Many, {
-        label: overrideType
-            ? csOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.Name, csCase) + 's'),
+        label: overrideType ? csOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.Name, csCase) + 's'),
         type: `List<${csType}>` + csNullable,
         defaultValue: `new List<${csType}>()`,
         parseStr: () => ''
     })
     map.set(Lang.CS | Rel.SameSchema | Cardinality.Many, {
-        label: overrideType
-            ? csOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.PFN, csCase) + 's'),
+        label: overrideType ? csOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.PFN, csCase) + 's'),
         type: `List<${csType}>` + csNullable,
         defaultValue: `new List<${csType}>()`,
         parseStr: () => ''
     })
     map.set(Lang.CS | Rel.DiffSchema | Cardinality.Many, {
-        label: overrideType
-            ? csOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.FN, csCase) + 's'),
+        label: overrideType ? csOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.FN, csCase) + 's'),
         type: `List<${csType}>` + csNullable,
         defaultValue: `new List<${csType}>()`,
         parseStr: () => ''
@@ -1264,13 +1131,9 @@ function genLabelType(
 
     const goNullable = isNullable ? '*' : ''
 
-    let goType = overrideType
-        ? cc(overrideType, 'pl')
-        : SQL_TO_GO_TYPE[aT.Type] || SQL_TO_GO_TYPE[aL.Type]
+    let goType = overrideType ? cc(overrideType, 'pl') : SQL_TO_GO_TYPE[aT.Type] || SQL_TO_GO_TYPE[aL.Type]
     const goCase = io === 'in' ? 'cm' : 'pl'
-    const goOverrideTypeRelatedLabel = fixPluralGrammar(
-        cc(aT.Name, goCase) + 's'
-    )
+    const goOverrideTypeRelatedLabel = fixPluralGrammar(cc(aT.Name, goCase) + 's')
 
     if (!goType) {
         goType = SQL_TO_GO_TYPE[aL.Type]
@@ -1319,25 +1182,19 @@ function genLabelType(
     //    -    -
 
     map.set(Lang.GO | Rel.SameTable | Cardinality.Many, {
-        label: overrideType
-            ? goOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.Name, goCase) + 's'),
+        label: overrideType ? goOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.Name, goCase) + 's'),
         type: '[]' + goType,
         defaultValue: '[]' + goType + '{}',
         parseStr: GO_TO_STR_PARSE[aL.Type]
     })
     map.set(Lang.GO | Rel.SameSchema | Cardinality.Many, {
-        label: overrideType
-            ? goOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.PFN, goCase) + 's'),
+        label: overrideType ? goOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.PFN, goCase) + 's'),
         type: '[]' + goType,
         defaultValue: '[]' + goType + '{}',
         parseStr: GO_TO_STR_PARSE[aL.Type]
     })
     map.set(Lang.GO | Rel.DiffSchema | Cardinality.Many, {
-        label: overrideType
-            ? goOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.FN, goCase) + 's'),
+        label: overrideType ? goOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.FN, goCase) + 's'),
         type: '[]' + goType,
         defaultValue: '[]' + goType + '{}',
         parseStr: GO_TO_STR_PARSE[aL.Type]
@@ -1347,13 +1204,9 @@ function genLabelType(
 
     //#region Rust
 
-    let rustType = overrideType
-        ? cc(overrideType, 'pl')
-        : SQL_TO_RUST_TYPE[aT.Type] || SQL_TO_RUST_TYPE[aL.Type]
+    let rustType = overrideType ? cc(overrideType, 'pl') : SQL_TO_RUST_TYPE[aT.Type] || SQL_TO_RUST_TYPE[aL.Type]
     const rustCase = io === 'in' ? 'sk' : 'sk'
-    const rustOverrideTypeRelatedLabel = fixPluralGrammar(
-        cc(aT.Name, rustCase) + 's'
-    )
+    const rustOverrideTypeRelatedLabel = fixPluralGrammar(cc(aT.Name, rustCase) + 's')
 
     if (!rustType) {
         rustType = SQL_TO_RUST_TYPE[aL.Type]
@@ -1405,25 +1258,19 @@ function genLabelType(
     //    -    -
 
     map.set(Lang.Rust | Rel.SameTable | Cardinality.Many, {
-        label: overrideType
-            ? rustOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.Name, rustCase) + 's'),
+        label: overrideType ? rustOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.Name, rustCase) + 's'),
         type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
         defaultValue: 'Vec::new()',
         parseStr: () => ''
     })
     map.set(Lang.Rust | Rel.SameSchema | Cardinality.Many, {
-        label: overrideType
-            ? rustOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.PFN, rustCase) + 's'),
+        label: overrideType ? rustOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.PFN, rustCase) + 's'),
         type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
         defaultValue: 'Vec::new()',
         parseStr: () => ''
     })
     map.set(Lang.Rust | Rel.DiffSchema | Cardinality.Many, {
-        label: overrideType
-            ? rustOverrideTypeRelatedLabel
-            : fixPluralGrammar(cc(aL.FN, rustCase) + 's'),
+        label: overrideType ? rustOverrideTypeRelatedLabel : fixPluralGrammar(cc(aL.FN, rustCase) + 's'),
         type: isNullable ? `Option<${`Vec<${rustType}>`}>` : `Vec<${rustType}>`,
         defaultValue: 'Vec::new()',
         parseStr: () => ''
@@ -1456,10 +1303,7 @@ function genLabelType(
     return answer
 }
 
-export const GenerateDefaultValue = (
-    attr: Attribute,
-    lang: Lang
-): string | null => {
+export const GenerateDefaultValue = (attr: Attribute, lang: Lang): string | null => {
     const isNullable = attr.isNullable()
 
     let d = attr.Option?.Default
@@ -1501,9 +1345,7 @@ export const GenerateDefaultValue = (
                 answer = `'${d.replaceAll('\\', '\\\\').replaceAll("'", "'")}'`
                 break
             case AttrType.VARCHAR:
-                answer = `String::from("${d
-                    .replaceAll('\\', '\\\\')
-                    .replaceAll('"', '\\"')}")`
+                answer = `String::from("${d.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}")`
                 break
             case AttrType.DATE:
                 {
@@ -1651,9 +1493,7 @@ export const GenerateDefaultValue = (
                     const s = d.split('-')
                     if (s.length === 3) {
                         // Parameters: year, month, day, hour, minute, second, nanosecond
-                        return `time.Date(${s[0]}, ${getMonthString(s[1])}, ${
-                            s[2]
-                        }, 0, 0, 0, 0, time.UTC)`
+                        return `time.Date(${s[0]}, ${getMonthString(s[1])}, ${s[2]}, 0, 0, 0, 0, time.UTC)`
                     } else if (d === 'CURRENT_DATE') {
                         return `time.Now()`
                     } else if (d === 'NOW()') {
@@ -1687,11 +1527,7 @@ export const GenerateDefaultValue = (
                         const time = s[1].split(':')
                         if (date.length === 3 && time.length === 3) {
                             // Parameters: year, month, day, hour, minute, second, nanosecond
-                            return `time.Date(${date[0]}, ${getMonthString(
-                                date[1]
-                            )}, ${date[2]}, ${time[0]}, ${time[1]}, ${
-                                time[2]
-                            }, 0, time.UTC)`
+                            return `time.Date(${date[0]}, ${getMonthString(date[1])}, ${date[2]}, ${time[0]}, ${time[1]}, ${time[2]}, 0, time.UTC)`
                         }
                     } else if (d === 'CURRENT_TIMESTAMP') {
                         return `time.Now()`
@@ -1762,9 +1598,7 @@ export const GenerateDefaultValue = (
                     const s = d.split('-')
                     if (s.length === 3) {
                         // const specificDate = new Date(Date.UTC(2021, 0, 1, 10, 45, 22, 0)); // January 1, 2021, 10:45:22 UTC
-                        return `new Date(Date.UTC(${s[0]}, ${getMonthString(
-                            s[1]
-                        )}, ${s[2]}, 0, 0, 0, 0))`
+                        return `new Date(Date.UTC(${s[0]}, ${getMonthString(s[1])}, ${s[2]}, 0, 0, 0, 0))`
                     } else if (d === 'CURRENT_DATE') {
                         return `new Date()`
                     } else if (d === 'NOW()') {
@@ -1798,11 +1632,7 @@ export const GenerateDefaultValue = (
                         const time = s[1].split(':')
                         if (date.length === 3 && time.length === 3) {
                             // Parameters: year, month, day, hour, minute, second, nanosecond
-                            return `new Date(Date.UTC(${
-                                date[0]
-                            }, ${getMonthString(date[1])}, ${date[2]}, ${
-                                time[0]
-                            }, ${time[1]}, ${time[2]}, 0))`
+                            return `new Date(Date.UTC(${date[0]}, ${getMonthString(date[1])}, ${date[2]}, ${time[0]}, ${time[1]}, ${time[2]}, 0))`
                         }
                     } else if (d === 'CURRENT_TIMESTAMP') {
                         return `new Date()`
@@ -1848,9 +1678,7 @@ export const GenerateDefaultValue = (
                 break
             case AttrType.CHAR:
                 if (d.length === 1) {
-                    return `"${d
-                        .replaceAll('\\', '\\\\')
-                        .replaceAll('"', '\\"')}"`
+                    return `"${d.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
                 }
                 break
             case AttrType.TIME:
@@ -1959,67 +1787,26 @@ validationMap.set(AttrType.TIMESTAMP, (x: string) => {
     return matchesRegex(x, validationMapPatterns.timestamp)
 })
 
-validationMap.set(AttrType.DECIMAL, (x: string) =>
-    matchesRegex(x, validationMapPatterns.decimal)
-)
-validationMap.set(AttrType.REAL, (x: string) =>
-    matchesRegex(x, validationMapPatterns.real)
-)
-validationMap.set(AttrType.FLOAT, (x: string) =>
-    matchesRegex(x, validationMapPatterns.float)
-)
-validationMap.set(AttrType.SERIAL, (x: string) =>
-    matchesRegex(x, validationMapPatterns.serial)
-)
-validationMap.set(AttrType.INT, (x: string) =>
-    matchesRegex(x, validationMapPatterns.integer)
-)
-validationMap.set(AttrType.BOOLEAN, (x: string) =>
-    matchesRegex(x, validationMapPatterns.boolean)
-)
+validationMap.set(AttrType.DECIMAL, (x: string) => matchesRegex(x, validationMapPatterns.decimal))
+validationMap.set(AttrType.REAL, (x: string) => matchesRegex(x, validationMapPatterns.real))
+validationMap.set(AttrType.FLOAT, (x: string) => matchesRegex(x, validationMapPatterns.float))
+validationMap.set(AttrType.SERIAL, (x: string) => matchesRegex(x, validationMapPatterns.serial))
+validationMap.set(AttrType.INT, (x: string) => matchesRegex(x, validationMapPatterns.integer))
+validationMap.set(AttrType.BOOLEAN, (x: string) => matchesRegex(x, validationMapPatterns.boolean))
 validationMap.set(AttrType.VARCHAR, (x: string) => typeof x === 'string')
-validationMap.set(AttrType.MONEY, (x: string) =>
-    matchesRegex(x, validationMapPatterns.money)
-)
+validationMap.set(AttrType.MONEY, (x: string) => matchesRegex(x, validationMapPatterns.money))
 
 export const defaultValueValidatorHintMap = new Map<AttrType, string>()
 defaultValueValidatorHintMap.set(AttrType.BIT, "'0' or '1'")
-defaultValueValidatorHintMap.set(
-    AttrType.DATE,
-    "YYYY-MM-DD, 'CURRENT_DATE', or 'NOW()'"
-)
-defaultValueValidatorHintMap.set(
-    AttrType.CHAR,
-    'A fixed length string (e.g., 1 character)'
-)
-defaultValueValidatorHintMap.set(
-    AttrType.TIME,
-    "HH:MM:SS, 'CURRENT_TIME', or 'NOW()'"
-)
-defaultValueValidatorHintMap.set(
-    AttrType.TIMESTAMP,
-    "YYYY-MM-DD HH:MM:SS, 'CURRENT_TIMESTAMP', or 'NOW()'"
-)
-defaultValueValidatorHintMap.set(
-    AttrType.DECIMAL,
-    'A decimal point (e.g., 123.45, -12.3)'
-)
-defaultValueValidatorHintMap.set(
-    AttrType.REAL,
-    'A real number (e.g., 123.45, -12.3)'
-)
-defaultValueValidatorHintMap.set(
-    AttrType.FLOAT,
-    'A floating-point number (e.g., 123.45, -12.3)'
-)
+defaultValueValidatorHintMap.set(AttrType.DATE, "YYYY-MM-DD, 'CURRENT_DATE', or 'NOW()'")
+defaultValueValidatorHintMap.set(AttrType.CHAR, 'A fixed length string (e.g., 1 character)')
+defaultValueValidatorHintMap.set(AttrType.TIME, "HH:MM:SS, 'CURRENT_TIME', or 'NOW()'")
+defaultValueValidatorHintMap.set(AttrType.TIMESTAMP, "YYYY-MM-DD HH:MM:SS, 'CURRENT_TIMESTAMP', or 'NOW()'")
+defaultValueValidatorHintMap.set(AttrType.DECIMAL, 'A decimal point (e.g., 123.45, -12.3)')
+defaultValueValidatorHintMap.set(AttrType.REAL, 'A real number (e.g., 123.45, -12.3)')
+defaultValueValidatorHintMap.set(AttrType.FLOAT, 'A floating-point number (e.g., 123.45, -12.3)')
 defaultValueValidatorHintMap.set(AttrType.SERIAL, 'A positive integer')
-defaultValueValidatorHintMap.set(
-    AttrType.INT,
-    'Integer value (e.g., -123, 456)'
-)
+defaultValueValidatorHintMap.set(AttrType.INT, 'Integer value (e.g., -123, 456)')
 defaultValueValidatorHintMap.set(AttrType.BOOLEAN, "'true' or 'false'")
 defaultValueValidatorHintMap.set(AttrType.VARCHAR, 'Any string is acceptable')
-defaultValueValidatorHintMap.set(
-    AttrType.MONEY,
-    "Money: e.g., '12.34', or '-12.34'"
-)
+defaultValueValidatorHintMap.set(AttrType.MONEY, "Money: e.g., '12.34', or '-12.34'")

@@ -1,13 +1,6 @@
 import {TAB} from '../../constants'
 import {cc, alignKeyword, alignKeywords} from '../../formatting'
-import {
-    Table,
-    AttrType,
-    Schema,
-    Attribute,
-    GenerateDefaultValue,
-    Lang
-} from '../../structure'
+import {Table, AttrType, Schema, Attribute, GenerateDefaultValue, Lang} from '../../structure'
 
 export function SchemasToPostgreSQL(schemas: Schema[]): string {
     let drops: string[] = []
@@ -16,9 +9,7 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
     for (const s of schemas) {
         drops.push(`DROP SCHEMA IF EXISTS ${cc(s.Name, 'sk')};`)
         createTableLines.push('')
-        createTableLines.push(
-            `CREATE SCHEMA IF NOT EXISTS ${cc(s.Name, 'sk')};`
-        )
+        createTableLines.push(`CREATE SCHEMA IF NOT EXISTS ${cc(s.Name, 'sk')};`)
         createTableLines.push('')
         for (const t of s.Tables) {
             drops.push(`DROP TABLE IF EXISTS ${t.FN};`)
@@ -39,18 +30,7 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
         }
     }
     drops = drops.reverse()
-    const all = [
-        'BEGIN;',
-        '',
-        '-- Drop Everything',
-        '',
-        ...drops,
-        '',
-        '-- Create Everything',
-        ...createTableLines,
-        '',
-        'COMMIT;'
-    ]
+    const all = ['BEGIN;', '', '-- Drop Everything', '', ...drops, '', '-- Create Everything', ...createTableLines, '', 'COMMIT;']
     const str = all.join('\n')
     return str
 }
@@ -93,10 +73,7 @@ function generateTableEndParts(t: Table) {
             const r = e.RefTo!
             const rPks = r.Attributes.filter(e => e.Option?.PrimaryKey)
             for (const rPk of rPks) {
-                const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(
-                    rPk.Name,
-                    'sk'
-                )} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 'sk')} ) ON DELETE CASCADE`
+                const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(rPk.Name, 'sk')} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 'sk')} ) ON DELETE CASCADE`
                 endThings.push(rStr)
             }
         }
@@ -137,9 +114,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
                 continue
             }
         }
-        const name = beingReferences
-            ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}`
-            : cc(a.Name, 'sk')
+        const name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk')
         let type = ''
         if ([AttrType.VARCHAR].includes(a.Type)) {
             let max = 15
@@ -193,9 +168,7 @@ export function GenerateUniqueAttributes(t: Table): string[] {
         if (a.Option?.PrimaryKey) continue
 
         if (a.Type === AttrType.REFERENCE && a.RefTo) {
-            for (const ra of a.RefTo.Attributes.filter(
-                e => e.Option?.PrimaryKey
-            )) {
+            for (const ra of a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)) {
                 uniques.push(`${a.Name}_${ra.Name}`)
             }
             continue

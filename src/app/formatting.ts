@@ -11,16 +11,12 @@ export const alignKeyword = (strings: string[], keyword: string): string[] => {
         if (index === -1) return str // Return original if keyword not found
 
         // Create the aligned prefix
-        const alignedPrefix =
-            str.slice(0, index) + ' '.repeat(maxLength - index)
+        const alignedPrefix = str.slice(0, index) + ' '.repeat(maxLength - index)
         return alignedPrefix + keyword + str.slice(index + keyword.length)
     })
 }
 
-export const alignKeywords = (
-    phrases: string[],
-    keywords: string[]
-): string[] => {
+export const alignKeywords = (phrases: string[], keywords: string[]): string[] => {
     // Initialize the alignment reference point and mappings
     let alignTo = 0
     const phraseMapping = new Map<string, number>()
@@ -37,8 +33,7 @@ export const alignKeywords = (
 
     // Construct the aligned output phrases
     phrases.forEach(phrase => {
-        const position =
-            phraseMapping.get(phrase) ?? findBackupPosition(phrase, keywords)
+        const position = phraseMapping.get(phrase) ?? findBackupPosition(phrase, keywords)
 
         if (position === undefined) {
             answer.push(phrase)
@@ -51,11 +46,7 @@ export const alignKeywords = (
 }
 
 // Helper function to find the position of the first keyword in a phrase
-const findKeywordPosition = (
-    phrase: string,
-    keywords: string[],
-    alignTo: number
-): number => {
+const findKeywordPosition = (phrase: string, keywords: string[], alignTo: number): number => {
     for (const word of keywords) {
         const pos = phrase.indexOf(word)
         if (pos >= alignTo) {
@@ -66,10 +57,7 @@ const findKeywordPosition = (
 }
 
 // Helper function to find a backup keyword position
-const findBackupPosition = (
-    phrase: string,
-    keywords: string[]
-): number | undefined => {
+const findBackupPosition = (phrase: string, keywords: string[]): number | undefined => {
     for (const word of keywords) {
         const pos = phrase.indexOf(word)
         if (pos !== -1) {
@@ -80,11 +68,7 @@ const findBackupPosition = (
 }
 
 // Helper function to construct an aligned phrase
-const constructAlignedPhrase = (
-    phrase: string,
-    position: number,
-    alignTo: number
-): string => {
+const constructAlignedPhrase = (phrase: string, position: number, alignTo: number): string => {
     const spacesToAdd = alignTo - position
     let newPhraseParts: string[] = []
     let addedSpacing = false
@@ -100,9 +84,7 @@ const constructAlignedPhrase = (
     return newPhraseParts.join('')
 }
 
-export const trimAndRemoveBlankStrings = (obj: {
-    [key: string]: string
-}): {[key: string]: string} => {
+export const trimAndRemoveBlankStrings = (obj: {[key: string]: string}): {[key: string]: string} => {
     const trimmedObj: {[key: string]: string} = {}
 
     for (const key in obj) {
@@ -116,18 +98,7 @@ export const trimAndRemoveBlankStrings = (obj: {
 }
 
 // List of acronyms to preserve uppercase
-const ACRONYMS = [
-    'id',
-    'html',
-    'css',
-    'js',
-    'api',
-    'http',
-    'ftp',
-    'url',
-    'sql',
-    'xml'
-]
+const ACRONYMS = ['id', 'html', 'css', 'js', 'api', 'http', 'ftp', 'url', 'sql', 'xml']
 
 // Helper function to check if a word is an acronym
 const isAcronym = (word: string): boolean => {
@@ -146,10 +117,7 @@ export const fixPluralGrammar = (word: string): string => {
 }
 
 // Helper function to handle shared case conversion logic
-const convertString = (
-    str: string,
-    toCase: 'sk' | 'pl' | 'cm' | 'up'
-): string => {
+const convertString = (str: string, toCase: 'sk' | 'pl' | 'cm' | 'up'): string => {
     let result = str
         // Replace dots and multiple spaces with a single space
         .replace(/[\s\.]+/g, ' ')
@@ -178,11 +146,8 @@ const convertString = (
             return result
                 .split(' ')
                 .map((word, index) => {
-                    const capitalized =
-                        word.charAt(0).toUpperCase() + word.slice(1)
-                    return isAcronym(word)
-                        ? capitalized.toUpperCase()
-                        : capitalized
+                    const capitalized = word.charAt(0).toUpperCase() + word.slice(1)
+                    return isAcronym(word) ? capitalized.toUpperCase() : capitalized
                 })
                 .join('')
         case 'cm':
@@ -193,11 +158,8 @@ const convertString = (
                 words
                     .slice(1)
                     .map(word => {
-                        const capitalized =
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                        return isAcronym(word)
-                            ? capitalized.toUpperCase()
-                            : capitalized
+                        const capitalized = word.charAt(0).toUpperCase() + word.slice(1)
+                        return isAcronym(word) ? capitalized.toUpperCase() : capitalized
                     })
                     .join('')
             return camelCased.charAt(0).toLowerCase() + camelCased.slice(1)
@@ -205,9 +167,7 @@ const convertString = (
             // Convert to UPPER_CASE with underscores between words
             return result
                 .split(' ')
-                .map(word =>
-                    isAcronym(word) ? word.toUpperCase() : word.toUpperCase()
-                )
+                .map(word => (isAcronym(word) ? word.toUpperCase() : word.toUpperCase()))
                 .join('_')
         default:
             throw new Error('Invalid case type')

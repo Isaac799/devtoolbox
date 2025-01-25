@@ -4,13 +4,9 @@
             <div class="controls">
                 <div class="control">
                     <label for="appComplexity">Output</label>
-                    <select
-                        [(ngModel)]="data.app.generatorMode"
-                        (ngModelChange)="data.ReloadAndSave()"
-                        id="appComplexity"
-                    >
+                    <select [(ngModel)]="data.app.generatorMode" (ngModelChange)="data.ReloadAndSave()" id="appComplexity">
                         @for (x of data.generatorModeOptions; track $index) {
-                        <option [ngValue]="x.value">{{ x.name }}</option>
+                            <option [ngValue]="x.value">{{ x.name }}</option>
                         }
                     </select>
                 </div>
@@ -22,522 +18,310 @@
             (mouseup)="clearIfNeeded()"
             (mouseleave)="clearIfNeeded()"
             [ngClass]="{
-        dragging:
-            showMoves && (draggingTable !== null || draggingAttribute !== null)
-    }"
+                dragging: showMoves && (draggingTable !== null || draggingAttribute !== null)
+            }"
         >
             @for (s of data.schemas; track $index) {
-            <!-- Schema -->
-            <div class="fc">
-                <div
-                    tabindex="1"
-                    class="fr align-center g-1 can-hover"
-                    (mouseup)="tblMouseUp()"
-                    (mouseenter)="hoveredSchema = s"
-                    [ngClass]="{
-                    pink:
-                        showMoves &&
-                        draggingTable !== null &&
-                        draggingTable.Parent.ID !== s.ID,
-                    'accent-hover':
-                        showMoves &&
-                        draggingTable &&
-                        hoveredSchema?.ID === s.ID &&
-                        draggingTable.Parent.ID !== s.ID
-                }"
-                >
-                    <span
-                        class="title-1 success-text"
-                        (mouseup)="doShowModalSchema(s)"
-                    >
-                        {{ s.Name }}
-                    </span>
-                    @if (
-                    showMoves &&
-                    draggingTable &&
-                    hoveredSchema?.ID === s.ID &&
-                    draggingTable.Parent.ID !== s.ID
-                    ) {
-                    <span>
-                        Move "{{ draggingTable.Name }}" to this schema
-                    </span>
-                    }
-                </div>
-
-                <div class="fc group">
-                    @for (t of s.Tables; track $index; let ti = $index) {
-                    @if (
-                    showMoves &&
-                    draggingTableIndex >= 0 &&
-                    ti <
-                        draggingTableIndex
-                        &&
-                        draggingTable
-                        &&
-                        draggingTable.Parent.ID===s.ID
-                        )
-                        {
-                        <div
-                        (mouseup)="tblMouseUpReorder(draggingTable, ti)"
-                        class="slot fc align-center justify-center accent-hover"
-                    >
-                        Move "{{ draggingTable.Name }}" up here
-                </div>
-                }
-
-                <!-- Table -->
-                <div
-                    tabindex="2"
-                    (mouseenter)="hoveredTable = t"
-                    class="fr align-center g-1 can-hover"
-                    (mouseup)="doShowModalTable(s, t)"
-                    [ngClass]="{
-                            blink: showMoves && draggingAttribute !== null
+                <!-- Schema -->
+                <div class="fc">
+                    <div
+                        tabindex="1"
+                        class="fr align-center g-1 can-hover"
+                        (mouseup)="tblMouseUp()"
+                        (mouseenter)="hoveredSchema = s"
+                        [ngClass]="{
+                            pink: showMoves && draggingTable !== null && draggingTable.Parent.ID !== s.ID,
+                            'accent-hover': showMoves && draggingTable && hoveredSchema?.ID === s.ID && draggingTable.Parent.ID !== s.ID
                         }"
-                    (mouseup)="attrMouseUp()"
-                    (mousedown)="tblMouseDown(t, ti)"
-                >
-                    <span class="title-2 primary-text">
-                        {{ t.Name }}
-                    </span>
-                </div>
-
-                <div class="fc group">
-                    @for (
-                    a of t.Attributes;
-                    track $index;
-                    let ai = $index
-                    ) {
-                    @if (
-                    showMoves &&
-                    draggingAttributeIndex >= 0 &&
-                    ai <
-                        draggingAttributeIndex
-                        &&
-                        draggingAttribute
-                        &&
-                        draggingAttribute.Parent.ID===t.ID
-                        )
-                        {
-                        <div
-                        (mouseup)="
-                                        attrMouseUpReorder(
-                                            draggingAttribute,
-                                            ai
-                                        )
-                                    "
-                        class="slot fc align-center justify-center accent-hover"
                     >
-                        Move "{{ draggingAttribute.Name }}" up here
-                </div>
-                }
-
-                <!-- Attribute -->
-                <div
-                    tabindex="3"
-                    class="fr align-center g-2 can-hover"
-                    (mouseup)="doShowModalAttribute(s, t, a)"
-                    (mousedown)="attrMouseDown(a, ai)"
-                >
-                    <span>
-                        {{ a.Name }}
-                    </span>
-                    @if (a.Type === 'REF') {
-                    <!-- <i class="icon">keyboard_arrow_up</i> -->
-                    <i class="icon small accent-text">switch_access_shortcut</i>
-                    }
-                    @if (a.Option?.PrimaryKey) {
-                    <i class="icon small accent-text">key</i>
-                    }
-                    @if (a.Option?.Unique) {
-                    <i class="icon small accent-text">verified</i>
-                    <!-- <i class="icon">counter_1</i> -->
-                    }
-                    @if (a.Validation?.Required) {
-                    <i class="icon small accent-text">asterisk</i>
-                    }
-
-                    @if (a.warnings.length > 0) {
-                    <div class="fc align-center justify-center">
-                        @for (w of a.warnings; track $index) {
-                        <span class="error">
-                            {{ w }}
+                        <span class="title-1 success-text" (mouseup)="doShowModalSchema(s)">
+                            {{ s.Name }}
                         </span>
+                        @if (showMoves && draggingTable && hoveredSchema?.ID === s.ID && draggingTable.Parent.ID !== s.ID) {
+                            <span> Move "{{ draggingTable.Name }}" to this schema </span>
                         }
                     </div>
-                    }
+
+                    <div class="fc group">
+                        @for (t of s.Tables; track $index; let ti = $index) {
+                            @if (showMoves && draggingTableIndex >= 0 && ti < draggingTableIndex && draggingTable && draggingTable.Parent.ID === s.ID) {
+                                <div (mouseup)="tblMouseUpReorder(draggingTable, ti)" class="slot fc align-center justify-center accent-hover">
+                                    Move "{{ draggingTable.Name }}" up here
+                                </div>
+                            }
+
+                            <!-- Table -->
+                            <div
+                                tabindex="2"
+                                (mouseenter)="hoveredTable = t"
+                                class="fr align-center g-1 can-hover"
+                                (mouseup)="doShowModalTable(s, t)"
+                                [ngClass]="{
+                                    blink: showMoves && draggingAttribute !== null
+                                }"
+                                (mouseup)="attrMouseUp()"
+                                (mousedown)="tblMouseDown(t, ti)"
+                            >
+                                <span class="title-2 primary-text">
+                                    {{ t.Name }}
+                                </span>
+                            </div>
+
+                            <div class="fc group">
+                                @for (a of t.Attributes; track $index; let ai = $index) {
+                                    @if (
+                                        showMoves &&
+                                        draggingAttributeIndex >= 0 &&
+                                        ai < draggingAttributeIndex &&
+                                        draggingAttribute &&
+                                        draggingAttribute.Parent.ID === t.ID
+                                    ) {
+                                        <div (mouseup)="attrMouseUpReorder(draggingAttribute, ai)" class="slot fc align-center justify-center accent-hover">
+                                            Move "{{ draggingAttribute.Name }}" up here
+                                        </div>
+                                    }
+
+                                    <!-- Attribute -->
+                                    <div
+                                        tabindex="3"
+                                        class="fr align-center g-2 can-hover"
+                                        (mouseup)="doShowModalAttribute(s, t, a)"
+                                        (mousedown)="attrMouseDown(a, ai)"
+                                    >
+                                        <span>
+                                            {{ a.Name }}
+                                        </span>
+                                        @if (a.Type === 'REF') {
+                                            <!-- <i class="icon">keyboard_arrow_up</i> -->
+                                            <i class="icon small accent-text">switch_access_shortcut</i>
+                                        }
+                                        @if (a.Option?.PrimaryKey) {
+                                            <i class="icon small accent-text">key</i>
+                                        }
+                                        @if (a.Option?.Unique) {
+                                            <i class="icon small accent-text">verified</i>
+                                            <!-- <i class="icon">counter_1</i> -->
+                                        }
+                                        @if (a.Validation?.Required) {
+                                            <i class="icon small accent-text">asterisk</i>
+                                        }
+
+                                        @if (a.warnings.length > 0) {
+                                            <div class="fc align-center justify-center">
+                                                @for (w of a.warnings; track $index) {
+                                                    <span class="error">
+                                                        {{ w }}
+                                                    </span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @if (
+                                        showMoves &&
+                                        draggingAttributeIndex >= 0 &&
+                                        ai > draggingAttributeIndex &&
+                                        draggingAttribute &&
+                                        draggingAttribute.Parent.ID === t.ID
+                                    ) {
+                                        <div (mouseup)="attrMouseUpReorder(draggingAttribute, ai)" class="slot fc align-center justify-center accent-hover">
+                                            Move "{{ draggingAttribute.Name }}" down here
+                                        </div>
+                                    }
+                                }
+
+                                <button class="fr align-center g-1 hide-until-hover" (mouseup)="doShowModalAttribute(s, t)">
+                                    <span> Attribute </span>
+                                    <i class="icon small">add</i>
+                                </button>
+                            </div>
+
+                            @if (showMoves && draggingTableIndex >= 0 && ti > draggingTableIndex && draggingTable && draggingTable.Parent.ID === s.ID) {
+                                <div (mouseup)="tblMouseUpReorder(draggingTable, ti)" class="slot fc align-center justify-center accent-hover">
+                                    Move "{{ draggingTable.Name }}" down here
+                                </div>
+                            }
+                        }
+                        <div>
+                            <button class="fr align-center g-1 hide-until-hover" (mouseup)="doShowModalTable(s)">
+                                <span> Table </span>
+                                <i class="icon small">add</i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-
-                @if (
-                showMoves &&
-                draggingAttributeIndex >= 0 &&
-                ai > draggingAttributeIndex &&
-                draggingAttribute &&
-                draggingAttribute.Parent.ID === t.ID
-                ) {
-                <div
-                    (mouseup)="
-                                        attrMouseUpReorder(
-                                            draggingAttribute,
-                                            ai
-                                        )
-                                    "
-                    class="slot fc align-center justify-center accent-hover"
-                >
-                    Move "{{ draggingAttribute.Name }}" down
-                    here
-                </div>
-                }
-                }
-
-                <button
-                    class="fr align-center g-1 hide-until-hover"
-                    (mouseup)="doShowModalAttribute(s, t)"
-                >
-                    <span> Attribute </span>
-                    <i class="icon small">add</i>
-                </button>
-            </div>
-
-            @if (
-            showMoves &&
-            draggingTableIndex >= 0 &&
-            ti > draggingTableIndex &&
-            draggingTable &&
-            draggingTable.Parent.ID === s.ID
-            ) {
-            <div
-                (mouseup)="tblMouseUpReorder(draggingTable, ti)"
-                class="slot fc align-center justify-center accent-hover"
-            >
-                Move "{{ draggingTable.Name }}" down here
-            </div>
-            }
             }
             <div>
-                <button
-                    class="fr align-center g-1 hide-until-hover"
-                    (mouseup)="doShowModalTable(s)"
-                >
-                    <span> Table </span>
+                <button class="fr align-center g-1 hide-until-hover" (mouseup)="doShowModalSchema()">
+                    <span> Schema </span>
                     <i class="icon small">add</i>
                 </button>
             </div>
         </div>
     </div>
-    }
-    <div>
-        <button
-            class="fr align-center g-1 hide-until-hover"
-            (mouseup)="doShowModalSchema()"
-        >
-            <span> Schema </span>
-            <i class="icon small">add</i>
-        </button>
-    </div>
-</div>
-
-
-</div>
 </div>
 
 @if (showModalSchema) {
-<app-modal
-    [title]="'Schema'"
-    [(visible)]="showModalSchema"
-    (accepted)="clickSaveSchema()"
-    [disableAccept]="!schemaForm.valid"
->
-    <ng-content body>
-        <div
-            class="controls"
-            [formGroup]="schemaForm"
-        >
-            <div class="control">
-                <label for="schemaName">Name</label>
-                <input
-                    type="text"
-                    formControlName="Name"
-                    autocomplete="none"
-                    id="schemaName"
-                    #schemaName
-                />
+    <app-modal [title]="'Schema'" [(visible)]="showModalSchema" (accepted)="clickSaveSchema()" [disableAccept]="!schemaForm.valid">
+        <ng-content body>
+            <div class="controls" [formGroup]="schemaForm">
+                <div class="control">
+                    <label for="schemaName">Name</label>
+                    <input type="text" formControlName="Name" autocomplete="none" id="schemaName" #schemaName />
+                </div>
             </div>
-        </div>
-    </ng-content>
-    <ng-content footer>
-        @if (selectedSchema) {
-        <button
-            (mouseup)="clickDelSchema()"
-            class="error-hover"
-        >
-            Delete
-        </button>
-        }
-    </ng-content>
-</app-modal>
+        </ng-content>
+        <ng-content footer>
+            @if (selectedSchema) {
+                <button (mouseup)="clickDelSchema()" class="error-hover">Delete</button>
+            }
+        </ng-content>
+    </app-modal>
 }
 
 @if (showModalTable) {
-<app-modal
-    [title]="'Table'"
-    [(visible)]="showModalTable"
-    (accepted)="clickSaveTable()"
-    [disableAccept]="!tableForm.valid"
->
-    <ng-content body>
-        <div
-            class="controls"
-            [formGroup]="tableForm"
-        >
-            <div class="control">
-                <label for="tableName">Name</label>
-                <input
-                    type="text"
-                    formControlName="Name"
-                    autocomplete="none"
-                    id="tableName"
-                    #tableName
-                />
+    <app-modal [title]="'Table'" [(visible)]="showModalTable" (accepted)="clickSaveTable()" [disableAccept]="!tableForm.valid">
+        <ng-content body>
+            <div class="controls" [formGroup]="tableForm">
+                <div class="control">
+                    <label for="tableName">Name</label>
+                    <input type="text" formControlName="Name" autocomplete="none" id="tableName" #tableName />
+                </div>
             </div>
-        </div>
-    </ng-content>
-    <ng-content footer>
-        @if (selectedTable) {
-        <button
-            (mouseup)="clickDelTable()"
-            class="error-hover"
-        >
-            Delete
-        </button>
-        }
-    </ng-content>
-</app-modal>
+        </ng-content>
+        <ng-content footer>
+            @if (selectedTable) {
+                <button (mouseup)="clickDelTable()" class="error-hover">Delete</button>
+            }
+        </ng-content>
+    </app-modal>
 }
 
 @if (showModalAttribute) {
-<app-modal
-    [title]="'Attribute'"
-    [(visible)]="showModalAttribute"
-    (accepted)="clickSaveAttribute()"
-    [disableAccept]="!attributeForm.valid"
->
-    <ng-content body>
-        <div
-            class="fc g-2"
-            [formGroup]="attributeForm"
-        >
-            <div class="controls">
-                <div class="control">
-                    <label for="attrName">Name</label>
-                    <input
-                        type="text"
-                        formControlName="Name"
-                        autocomplete="none"
-                        id="attrName"
-                        #attrName
-                    />
+    <app-modal [title]="'Attribute'" [(visible)]="showModalAttribute" (accepted)="clickSaveAttribute()" [disableAccept]="!attributeForm.valid">
+        <ng-content body>
+            <div class="fc g-2" [formGroup]="attributeForm">
+                <div class="controls">
+                    <div class="control">
+                        <label for="attrName">Name</label>
+                        <input type="text" formControlName="Name" autocomplete="none" id="attrName" #attrName />
+                    </div>
+                    <div class="control">
+                        <label for="attrType">Type</label>
+                        <select id="attrType" formControlName="Type">
+                            @for (x of attrTypeOptions; track $index) {
+                                <option [ngValue]="x.value">
+                                    {{ x.name }}
+                                </option>
+                            }
+                        </select>
+                    </div>
                 </div>
-                <div class="control">
-                    <label for="attrType">Type</label>
-                    <select
-                        id="attrType"
-                        formControlName="Type"
-                    >
-                        @for (x of attrTypeOptions; track $index) {
-                        <option [ngValue]="x.value">
-                            {{ x.name }}
-                        </option>
+
+                @if (showAttrOptions) {
+                    <div class="controls">
+                        <div class="control">
+                            <label for="attrPrimaryKey">Primary Key</label>
+                            <input type="checkbox" id="attrPrimaryKey" formControlName="PrimaryKey" />
+                        </div>
+                        <div class="control">
+                            <label for="attrUnique">Unique</label>
+                            <input type="checkbox" id="attrUnique" formControlName="Unique" />
+                        </div>
+                        <div class="control">
+                            <label for="attrSystemField">SystemField</label>
+                            <input type="checkbox" id="attrSystemField" formControlName="SystemField" />
+                        </div>
+                        @if (!isReference) {
+                            <div class="control with-hint">
+                                <label for="attrDefault">Default Value</label>
+                                <input type="text" id="attrDefault" formControlName="Default" />
+                            </div>
                         }
-                    </select>
-                </div>
-            </div>
-
-            @if (showAttrOptions) {
-            <div class="controls">
-                <div class="control">
-                    <label for="attrPrimaryKey">Primary Key</label>
-                    <input
-                        type="checkbox"
-                        id="attrPrimaryKey"
-                        formControlName="PrimaryKey"
-                    />
-                </div>
-                <div class="control">
-                    <label for="attrUnique">Unique</label>
-                    <input
-                        type="checkbox"
-                        id="attrUnique"
-                        formControlName="Unique"
-                    />
-                </div>
-                <div class="control">
-                    <label for="attrSystemField">SystemField</label>
-                    <input
-                        type="checkbox"
-                        id="attrSystemField"
-                        formControlName="SystemField"
-                    />
-                </div>
-                @if (!isReference) {
-                <div class="control with-hint">
-                    <label for="attrDefault">Default Value</label>
-                    <input
-                        type="text"
-                        id="attrDefault"
-                        formControlName="Default"
-                    />
-                </div>
+                    </div>
                 }
-            </div>
-            }
 
-            @if (isReference) {
-            <div class="controls">
-                <div class="control">
-                    <label for="attrReference">Reference To</label>
-                    <select
-                        id="attrReference"
-                        formControlName="ReferenceTo"
-                    >
-                        @for (x of referenceOptions; track $index) {
-                        <option [ngValue]="x">{{ x.Name }}</option>
-                        }
-                    </select>
-                </div>
-            </div>
-            }
-
-            @if (showAttrOptions && !attributeForm.controls.Default.valid) {
-            <div class="info">
-                <small>
-                    <strong>Default Value:</strong>
-                    {{
-                    attributeForm.controls.Type.value
-                    | defaultValueHint
-                    }}
-                </small>
-            </div>
-            }
-
-            @if (showAttrValidation) {
-            <div class="controls">
-                <div class="control">
-                    <label for="attrRequired">Required</label>
-                    <input
-                        type="checkbox"
-                        id="attrRequired"
-                        formControlName="Required"
-                    />
-                </div>
-                @if (
-                attributeForm.controls.Type.value | minMaxRelevant
-                ) {
-                <div class="control">
-                    <label for="attrMin">
-                        {{
-                        attributeForm.controls.Type.value
-                        | minMaxLabelFromAttrType: 'min'
-                        }}
-                    </label>
-                    <input
-                        type="number"
-                        id="attrMin"
-                        formControlName="Min"
-                    />
-                </div>
-                <div class="control">
-                    <label for="attrMax">
-                        {{
-                        attributeForm.controls.Type.value
-                        | minMaxLabelFromAttrType: 'max'
-                        }}
-                    </label>
-                    <input
-                        type="number"
-                        id="attrMax"
-                        formControlName="Max"
-                    />
-                </div>
+                @if (isReference) {
+                    <div class="controls">
+                        <div class="control">
+                            <label for="attrReference">Reference To</label>
+                            <select id="attrReference" formControlName="ReferenceTo">
+                                @for (x of referenceOptions; track $index) {
+                                    <option [ngValue]="x">{{ x.Name }}</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
                 }
-            </div>
-            }
 
-            @if (showSmartAttributes) {
-            <div class="chips">
-                @for (x of smartSuggestions; track $index) {
-                <span
-                    tabindex="4"
-                    (mouseup)="clickSmartSuggestion(x)"
-                    class="chip clickable"
-                >
-                    {{ x.Name }}
-                </span>
-                }
-            </div>
-            }
-
-            <div class="fr g-2">
-                @if (!showSmartAttributes && smartSuggestions.length > 0) {
-                <button
-                    class="small-font"
-                    (mouseup)="showSmartAttributes = true"
-                >
-                    Show Suggestions
-                </button>
-                } @else if (showSmartAttributes) {
-                <button
-                    class="small-font"
-                    (mouseup)="showSmartAttributes = false"
-                >
-                    Hide Suggestions
-                </button>
+                @if (showAttrOptions && !attributeForm.controls.Default.valid) {
+                    <div class="info">
+                        <small>
+                            <strong>Default Value:</strong>
+                            {{ attributeForm.controls.Type.value | defaultValueHint }}
+                        </small>
+                    </div>
                 }
 
                 @if (showAttrValidation) {
-                <button
-                    class="small-font"
-                    (mouseup)="showAttrValidation = false"
-                >
-                    Remove Validation
-                </button>
-                } @else {
-                <button
-                    class="small-font"
-                    (mouseup)="showAttrValidation = true"
-                >
-                    Add Validation
-                </button>
+                    <div class="controls">
+                        <div class="control">
+                            <label for="attrRequired">Required</label>
+                            <input type="checkbox" id="attrRequired" formControlName="Required" />
+                        </div>
+                        @if (attributeForm.controls.Type.value | minMaxRelevant) {
+                            <div class="control">
+                                <label for="attrMin">
+                                    {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType: 'min' }}
+                                </label>
+                                <input type="number" id="attrMin" formControlName="Min" />
+                            </div>
+                            <div class="control">
+                                <label for="attrMax">
+                                    {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType: 'max' }}
+                                </label>
+                                <input type="number" id="attrMax" formControlName="Max" />
+                            </div>
+                        }
+                    </div>
                 }
 
-                @if (showAttrOptions) {
-                <button
-                    class="small-font"
-                    (mouseup)="showAttrOptions = false"
-                >
-                    Remove Options
-                </button>
-                } @else {
-                <button
-                    class="small-font"
-                    (mouseup)="showAttrOptions = true"
-                >
-                    Add Options
-                </button>
+                @if (showSmartAttributes) {
+                    <div class="chips">
+                        @for (x of smartSuggestions; track $index) {
+                            <span tabindex="4" (mouseup)="clickSmartSuggestion(x)" class="chip clickable">
+                                {{ x.Name }}
+                            </span>
+                        }
+                    </div>
                 }
+
+                <div class="fr g-2">
+                    @if (!showSmartAttributes && smartSuggestions.length > 0) {
+                        <button class="small-font" (mouseup)="showSmartAttributes = true">Show Suggestions</button>
+                    } @else if (showSmartAttributes) {
+                        <button class="small-font" (mouseup)="showSmartAttributes = false">Hide Suggestions</button>
+                    }
+
+                    @if (showAttrValidation) {
+                        <button class="small-font" (mouseup)="showAttrValidation = false">Remove Validation</button>
+                    } @else {
+                        <button class="small-font" (mouseup)="showAttrValidation = true">Add Validation</button>
+                    }
+
+                    @if (showAttrOptions) {
+                        <button class="small-font" (mouseup)="showAttrOptions = false">Remove Options</button>
+                    } @else {
+                        <button class="small-font" (mouseup)="showAttrOptions = true">Add Options</button>
+                    }
+                </div>
             </div>
-        </div>
-    </ng-content>
+        </ng-content>
 
-    <ng-content footer>
-        @if (selectedAttribute) {
-        <button
-            (mouseup)="clickDelAttribute()"
-            class="error-hover"
-        >
-            Delete
-        </button>
-        }
-    </ng-content>
-</app-modal>
+        <ng-content footer>
+            @if (selectedAttribute) {
+                <button (mouseup)="clickDelAttribute()" class="error-hover">Delete</button>
+            }
+        </ng-content>
+    </app-modal>
 }

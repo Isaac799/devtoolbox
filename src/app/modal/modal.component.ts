@@ -1,11 +1,4 @@
-import {
-    Component,
-    EventEmitter,
-    Input,
-    OnDestroy,
-    OnInit,
-    Output
-} from '@angular/core'
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core'
 
 @Component({
     selector: 'app-modal',

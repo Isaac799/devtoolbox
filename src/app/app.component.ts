@@ -9,13 +9,7 @@ import {NotificationService} from './services/notification.service'
 
 @Component({
     selector: 'app-root',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        GuiEditorComponent,
-        CodeOutputComponent,
-    ],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, GuiEditorComponent, CodeOutputComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })

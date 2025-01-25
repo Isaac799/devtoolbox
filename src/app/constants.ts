@@ -193,10 +193,7 @@ export type Grouped<T> = {
 }
 
 // Function to group items by a property
-export const groupBy = <T, K extends keyof T>(
-    arr: T[],
-    prop: K
-): Grouped<T> => {
+export const groupBy = <T, K extends keyof T>(arr: T[], prop: K): Grouped<T> => {
     return arr.reduce((acc, item) => {
         const key = item[prop] as unknown as string // Get the value of the property to group by
 
@@ -212,11 +209,7 @@ export const groupBy = <T, K extends keyof T>(
     }, {} as Grouped<T>)
 }
 
-export const array_move = (
-    arr: any[],
-    old_index: number,
-    new_index: number
-) => {
+export const array_move = (arr: any[], old_index: number, new_index: number) => {
     if (new_index >= arr.length) {
         let k = new_index - arr.length + 1
         while (k--) {

@@ -1,14 +1,6 @@
 import {TAB} from '../../constants'
 import {cc, alignKeyword, alignKeywords} from '../../formatting'
-import {
-    Table,
-    AttrType,
-    Schema,
-    Attribute,
-    SQL_TO_SQL_LITE_TYPE,
-    GenerateDefaultValue,
-    Lang
-} from '../../structure'
+import {Table, AttrType, Schema, Attribute, SQL_TO_SQL_LITE_TYPE, GenerateDefaultValue, Lang} from '../../structure'
 import {GenerateUniqueAttributes} from './pgsql.tables'
 
 export function SchemasToTablesForSQLite(schemas: Schema[]): string {
@@ -17,9 +9,7 @@ export function SchemasToTablesForSQLite(schemas: Schema[]): string {
     for (const s of schemas) {
         for (const t of s.Tables) {
             drops.push(`DROP TABLE IF EXISTS ${cc(t.FN, 'sk')};`)
-            createTableLines.push(
-                `\nCREATE TABLE IF NOT EXISTS ${cc(t.FN, 'sk')} (`
-            )
+            createTableLines.push(`\nCREATE TABLE IF NOT EXISTS ${cc(t.FN, 'sk')} (`)
             const attrs: string[] = generateAttributesForTable(t)
 
             const endThings: string[] = generateTableEndParts(t)
@@ -36,18 +26,7 @@ export function SchemasToTablesForSQLite(schemas: Schema[]): string {
         }
     }
     drops = drops.reverse()
-    const all = [
-        'BEGIN TRANSACTION;',
-        '',
-        '-- Drop Everything',
-        '',
-        ...drops,
-        '',
-        '-- Create Everything',
-        ...createTableLines,
-        '',
-        'COMMIT;'
-    ]
+    const all = ['BEGIN TRANSACTION;', '', '-- Drop Everything', '', ...drops, '', '-- Create Everything', ...createTableLines, '', 'COMMIT;']
     const str = all.join('\n')
     return str
 }
@@ -90,10 +69,7 @@ function generateTableEndParts(t: Table) {
             const r = e.RefTo!
             const rPks = r.Attributes.filter(e => e.Option?.PrimaryKey)
             for (const rPk of rPks) {
-                const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(
-                    rPk.Name,
-                    'sk'
-                )} ) REFERENCES ${cc(r.FN, 'sk')} ( ${cc(
+                const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(rPk.Name, 'sk')} ) REFERENCES ${cc(r.FN, 'sk')} ( ${cc(
                     rPk.Name,
                     'sk'
                 )} ) ON DELETE CASCADE`
@@ -114,9 +90,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
                 continue
             }
         }
-        const name = beingReferences
-            ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}`
-            : cc(a.Name, 'sk')
+        const name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk')
         let type = ''
         if (a.Type === AttrType.REFERENCE) {
             if (beingReferences) {

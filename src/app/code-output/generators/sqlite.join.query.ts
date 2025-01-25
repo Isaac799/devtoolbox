@@ -57,13 +57,7 @@ function generateSqlFns(t: Table): string {
         }
     }
 
-    let joinLines: string[] = GenerateJoinLines(
-        t,
-        [],
-        selectingLines,
-        useI,
-        true
-    )
+    let joinLines: string[] = GenerateJoinLines(t, [], selectingLines, useI, true)
 
     joinLines = alignKeyword(joinLines, 'ON')
     joinLines = alignKeyword(joinLines, '=')

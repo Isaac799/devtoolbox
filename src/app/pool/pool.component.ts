@@ -43,13 +43,6 @@ export class PoolComponent {
             str = YAML.stringify(this.data.schemasConfig)
         }
         navigator.clipboard.writeText(str)
-        this.notification.Add(
-            new Notification(
-                'Copied',
-                'The config was copied to your clipboard.',
-                NotificationKind.Info,
-                NotificationLife.Short
-            )
-        )
+        this.notification.Add(new Notification('Copied', 'The config was copied to your clipboard.', NotificationKind.Info, NotificationLife.Short))
     }
 }

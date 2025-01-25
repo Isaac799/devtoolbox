@@ -43,9 +43,7 @@ function generateTitleAndParams(f: Func) {
     const relevantInputs = f.outputs.map(e => e.relatedInput).filter(e => !!e)
     const params = relevantInputs.map(e => `${e.label}`).join(`,\n${TAB}${TAB}`)
     const title = cc(`${f.title}`, 'pl')
-    const jsDocParams = relevantInputs
-        .map(e => `* @param {${e.type}} ${e.label} `)
-        .join(`\n${TAB}`)
+    const jsDocParams = relevantInputs.map(e => `* @param {${e.type}} ${e.label} `).join(`\n${TAB}`)
     const paramsJsDoc = `${TAB}/**
 ${TAB}* Create a ${title}.
 ${TAB}${jsDocParams}
