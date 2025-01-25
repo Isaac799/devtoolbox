@@ -9,17 +9,21 @@ export function SchemasToPostgresSeed(schemas: Schema[]): string {
     for (const s of schemas) {
         lines.push('')
         for (const t of s.Tables) {
-            const cols: string[] = []
-            const values: string[] = []
+            let values: string[] = []
+            const alignmentKeyword = `~|~|~`
 
+            let v2: string[] = []
             for (let i = 0; i < t.Attributes.length; i++) {
                 const a = t.Attributes[i]
-                cols.push(cc(a.Name, 'sk'))
+                v2.push(cc(a.Name, 'sk'))
             }
 
+            const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
+            values.push(c)
+            v2 = []
+
             let u = false
-            let v2: string[] = []
-            for (let index = 0; index < 30; index++) {
+            for (let index = 0; index < 50; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
                     u = a.Option?.Unique || false
@@ -27,7 +31,7 @@ export function SchemasToPostgresSeed(schemas: Schema[]): string {
                     v2.push(`${generateSeedData(a)}`)
                     // }
                 }
-                const c = `\n${TAB}( ${v2.join(`, `)} )`
+                const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
 
                 if (u && values.map(e => e.includes(c)).filter(e => e).length !== 0) {
                     v2 = []
@@ -37,8 +41,11 @@ export function SchemasToPostgresSeed(schemas: Schema[]): string {
                 values.push(c)
                 v2 = []
             }
-
-            const stmt: string[] = ['INSERT INTO', t.FN, `\n${TAB}(`, cols.join(', '), ')', 'VALUES']
+            for (let index = 0; index < t.Attributes.length; index++) {
+                values = alignKeyword(values, alignmentKeyword)
+                values = values.map(e => e.replace(alignmentKeyword, ''))
+            }
+            const stmt: string[] = ['INSERT INTO', t.FN, 'VALUES']
 
             const lineParts = [stmt.join(' '), values, ';']
 
