@@ -341,14 +341,21 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             const fieldsStr: string = fields.join(', ')
 
             const query = `UPDATE ${table.FN} SET ${aEqBStr} WHERE ${selectWhere}`
-            l.push(`_, err = db.Exec("${query}", ${fieldsStr})`)
+            l.push(`res, err = db.Exec("${query}", ${fieldsStr})`)
 
             l.push(`if err != nil {`)
-            l.push(`${TAB}if err == sql.ErrNoRows {`)
-            l.push(`${TAB}${TAB}http.Error(w, "${notFoundStr}", http.StatusNotFound)`)
-            l.push(`${TAB}${TAB}return`)
-            l.push(`${TAB}} `)
             l.push(`${TAB}http.Error(w, "Failed to update ${cc(table.Name, 'sk')}", http.StatusInternalServerError)`)
+            l.push(`${TAB}return`)
+            l.push(`}`)
+
+            l.push(`rowsAffected, err := res.RowsAffected()`)
+            l.push(`if err != nil {`)
+            l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
+            l.push(`${TAB}return`)
+            l.push(`}`)
+
+            l.push(`if rowsAffected == 0 {`)
+            l.push(`${TAB}http.Error(w, "${notFoundStr}", http.StatusNotFound)`)
             l.push(`${TAB}return`)
             l.push(`}`)
 
