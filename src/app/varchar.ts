@@ -2777,16 +2777,160 @@ const generateRgbColors = (count: number): string[] => {
     return rgbColors
 }
 
+const generateBackgroundJobNames = (count: number): string[] => {
+    const jobNames: string[] = []
+
+    const jobs = [
+        'icmp',
+        'http-request',
+        'disk-check',
+        'db-backup',
+        'file-cleanup',
+        'email-notification',
+        'cpu-monitor',
+        'memory-check',
+        'data-sync',
+        'service-health',
+        'log-rotation',
+        'cache-clear',
+        'backup-restore',
+        'data-import',
+        'data-export',
+        'job-scheduler',
+        'user-sync',
+        'security-scan',
+        'system-update',
+        'audit-log',
+        'session-expiry',
+        'error-notification',
+        'network-traffic',
+        'file-transfer',
+        'database-cleanup',
+        'email-validation',
+        'cron-jobs',
+        'data-archive',
+        'service-restart',
+        'password-reset',
+        'multi-factor-auth',
+        'user-provisioning',
+        'ssl-renewal',
+        'api-rate-limiting',
+        'payment-processing',
+        'order-processing',
+        'invoice-generation',
+        'site-backup',
+        'resource-scaling',
+        'dependency-check',
+        'container-deploy',
+        'log-monitoring',
+        'user-notification',
+        'notification-cleanup',
+        'api-health-check',
+        'cloud-sync',
+        'memory-dump',
+        'task-queue',
+        'content-indexing',
+        'site-health-check',
+        'backup-verification',
+        'disk-space-monitor',
+        'data-encryption',
+        'user-deactivation',
+        'data-compression',
+        'data-decompression',
+        'service-availability',
+        'network-diagnostics',
+        'service-migration',
+        'vpn-connection',
+        'log-analysis'
+    ]
+
+    // Randomly select job names from the list until the requested count is met
+    for (let i = 0; i < count; i++) {
+        const randomJob = jobs[Math.floor(Math.random() * jobs.length)]
+        jobNames.push(randomJob)
+    }
+
+    return jobNames
+}
+
+type StatusCategory = Record<string, string[]>
+
+const statusCategories: StatusCategory = {
+    sale: ['pending', 'approved', 'rejected', 'shipped', 'delivered', 'returned', 'paid', 'unpaid', 'waiting', 'canceled', 'expired'],
+    task: ['complete', 'incomplete', 'pending', 'processing', 'queued', 'failed', 'success', 'on_hold', 'in_progress', 'retrying', 'blocked'],
+    review: ['under_review', 'pending_review', 'in_review', 'approved', 'rejected', 'completed', 'resolved', 'resolved_with_issues'],
+    shipment: ['shipped', 'delivered', 'returned', 'delayed', 'lost', 'in_transit', 'pending_shipment'],
+    system: ['error', 'critical', 'warning', 'info', 'not_found', 'processing_error']
+}
+
+const generateStatus = (category: string): string[] => {
+    if (!statusCategories[category]) {
+        throw new Error(`Category '${category}' not found in status categories.`)
+    }
+
+    return statusCategories[category]
+}
+
 const generateAttributeMap = (): AttributeMap => {
     const attributeMap = new Map<string, string[]>()
 
+    const saleStatus = generateStatus('sale')
+    {
+        const items = ['sale status', 'listing status']
+        for (const e of items) {
+            attributeMap.set(e, saleStatus)
+        }
+    }
+    const taskStatus = generateStatus('task')
+    {
+        const items = ['status', 'task status', 'project status', 'goal status']
+        for (const e of items) {
+            attributeMap.set(e, taskStatus)
+        }
+    }
+    const reviewStatus = generateStatus('review')
+    {
+        const items = ['review status']
+        for (const e of items) {
+            attributeMap.set(e, reviewStatus)
+        }
+    }
+    const shipmentStatus = generateStatus('shipment')
+    {
+        const items = ['shipment status', 'item status', 'product status']
+        for (const e of items) {
+            attributeMap.set(e, shipmentStatus)
+        }
+    }
+    const systemStatus = generateStatus('system')
+    {
+        const items = ['system status']
+        for (const e of items) {
+            attributeMap.set(e, systemStatus)
+        }
+    }
+
+    const positions = generatePositions()
+    {
+        const items = ['work job', 'work title', 'job title', 'job role', 'position']
+
+        for (const e of items) {
+            attributeMap.set(e, positions)
+        }
+    }
+
+    const backgroundJobs = generateBackgroundJobNames(5)
+    {
+        const items = ['job', 'task', 'backgorund job', 'computer task', 'background task']
+
+        for (const e of items) {
+            attributeMap.set(e, backgroundJobs)
+        }
+    }
+
     const domains = generateDomains(50)
     {
-        const items = [
-            'domain',
-            'website',
-            'site',
-        ]
+        const items = ['domain', 'website', 'site']
 
         for (const e of items) {
             attributeMap.set(e, domains)
@@ -3257,6 +3401,7 @@ const generateAttributeMap = (): AttributeMap => {
 }
 
 const fuzzyCache = new Map<string, number>()
+const levenshteinDistanceCache = new Map<string, number>()
 
 // Fuzzy string matching based on Levenshtein distance (custom scoring)
 function fuzzyMatch(input: string, candidate: string): number {
@@ -3267,6 +3412,12 @@ function fuzzyMatch(input: string, candidate: string): number {
     }
 
     const levenshteinDistance = (a: string, b: string): number => {
+        const keyL = `${a}~~${b}`
+        const c = levenshteinDistanceCache.get(keyL)
+        if (c) {
+            return c
+        }
+
         const tmp: number[][] = []
         for (let i = 0; i <= a.length; i++) {
             tmp[i] = [i]
@@ -3279,6 +3430,7 @@ function fuzzyMatch(input: string, candidate: string): number {
                 tmp[i][j] = Math.min(tmp[i - 1][j] + 1, tmp[i][j - 1] + 1, tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
             }
         }
+        levenshteinDistanceCache.set(keyL, tmp[a.length][b.length])
         return tmp[a.length][b.length]
     }
 
