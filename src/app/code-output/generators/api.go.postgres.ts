@@ -73,6 +73,16 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
                 return `${cc(e.label, 'cm')}`
             })
             .join(', ')
+        const getParamsStrWithoutTypeWithAnd = getParams
+            .map(e => {
+                return `${cc(e.label, 'cm')}`
+            })
+            .join(' and ')
+
+        const notFoundStr = `cannot find ${cc(
+            table.Name,
+            'sk'
+        )} matching that ${getParamsStrWithoutTypeWithAnd}`
         const getParamsStrOnlyType = getParams.map(e => e.type).join(', ')
         const getParamsStrDefaultValues = getParams
             .map(e => e.defaultValue)
@@ -125,8 +135,15 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`}`)
 
             l.push('')
+            l.push(`w.WriteHeader(http.StatusOK)`)
             l.push(`w.Header().Set("Content-Type", "application/json")`)
-            l.push(`json.NewEncoder(w).Encode(${items})`)
+            l.push(
+                `if err := json.NewEncoder(w).Encode(${items}); err != nil {`
+            )
+            l.push(
+                `    http.Error(w, err.Error(), http.StatusInternalServerError)`
+            )
+            l.push(`}`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
@@ -185,12 +202,6 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             l.push(pkStrs.join(`\n${TAB}`))
 
-            l.push(`${queryInStr}, err := gather${funcGo.title}Context(r)`)
-            l.push(`if err != nil {`)
-            l.push(`${TAB}http.Error(w, err.Error(), http.StatusBadRequest)`)
-            l.push(`${TAB}return`)
-            l.push(`}`)
-
             l.push(`return ${getParamsStrWithoutType}, nil`)
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
@@ -229,9 +240,11 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
                 .map(e => `&${item}.${e.label}`)
                 .join(', ')
 
-            l.push(`if err := row.Scan(${scan}); err != nil {`)
+            l.push(`err := row.Scan(${scan});`)
+            l.push(`if err != nil {`)
             l.push(`${TAB}return nil, err`)
             l.push(`}`)
+
             l.push(`return &${item}, nil`)
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
@@ -266,6 +279,10 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             l.push(`${item}, err := select${funcGo.title}(${queryInStr})`)
             l.push(`if err != nil {`)
+            l.push(`${TAB}if err == sql.ErrNoRows {`)
+            l.push(`${TAB}${TAB}http.Error(w, "${notFoundStr}", http.StatusInternalServerError)`)
+            l.push(`${TAB}${TAB}return`)
+            l.push(`${TAB}}`)
             l.push(
                 `${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`
             )
@@ -313,7 +330,11 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             l.push('')
             l.push(`w.Header().Set("Content-Type", "application/json")`)
-            l.push(`json.NewEncoder(w).Encode(${item})`)
+            l.push(`if err := json.NewEncoder(w).Encode(${item}); err != nil {`)
+            l.push(
+                `    http.Error(w, err.Error(), http.StatusInternalServerError)`
+            )
+            l.push(`}`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
@@ -343,7 +364,6 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`${TAB}return`)
             l.push(`}`)
 
-            
             l.push(`${item} := ${funcGo.title}{}`)
             l.push(
                 `if err := json.NewDecoder(r.Body).Decode(&${item}); err != nil {`
@@ -371,18 +391,23 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
 
             const query = `UPDATE ${table.FN} SET ${aEqBStr} WHERE ${selectWhere}`
             l.push(`_, err = db.Exec("${query}", ${fieldsStr})`)
+
             l.push(`if err != nil {`)
-            l.push(
-                `${TAB}http.Error(w, "Failed to update ${cc(
-                    table.Name,
-                    'sk'
-                )}", http.StatusInternalServerError)`
-            )
+            l.push(`${TAB}if err == sql.ErrNoRows {`)
+            l.push(`${TAB}${TAB}http.Error(w, "${notFoundStr}", http.StatusNotFound)`)
+            l.push(`${TAB}${TAB}return`)
+            l.push(`${TAB}} `)
+            l.push(`${TAB}http.Error(w, "Failed to update ${cc(table.Name,'sk')}", http.StatusInternalServerError)`)
             l.push(`${TAB}return`)
             l.push(`}`)
 
+            l.push(`w.WriteHeader(http.StatusOK)`)
             l.push(`w.Header().Set("Content-Type", "application/json")`)
-            l.push(`json.NewEncoder(w).Encode(${item})`)
+            l.push(`if err := json.NewEncoder(w).Encode(${item}); err != nil {`)
+            l.push(
+                `    http.Error(w, err.Error(), http.StatusInternalServerError)`
+            )
+            l.push(`}`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
@@ -462,8 +487,13 @@ export function SchemasToApiGoPostgres(schemas: Schema[]): string {
             l.push(`}`)
 
             l.push(``)
+            l.push(`w.WriteHeader(http.StatusCreated)`)
             l.push(`w.Header().Set("Content-Type", "application/json")`)
-            l.push(`json.NewEncoder(w).Encode(${item})`)
+            l.push(`if err := json.NewEncoder(w).Encode(${item}); err != nil {`)
+            l.push(
+                `    http.Error(w, err.Error(), http.StatusInternalServerError)`
+            )
+            l.push(`}`)
 
             lines.push(`${TAB}` + l.join(`\n${TAB}`))
             lines.push(`}\n`)
