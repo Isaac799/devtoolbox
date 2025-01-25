@@ -2890,7 +2890,7 @@ const generateAttributeMap = (): AttributeMap => {
     }
     const reviewStatus = generateStatus('review')
     {
-        const items = ['review status']
+        const items = ['review status', 'stage']
         for (const e of items) {
             attributeMap.set(e, reviewStatus)
         }

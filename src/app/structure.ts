@@ -545,6 +545,29 @@ export function generateSeedData(attr: Attribute): string {
     // const Min = attr.Validation?.Min
     const Max = attr.Validation?.Max
 
+    // Helper function to generate a valid date (Postgres format: YYYY-MM-DD)
+    const generateDate = () => {
+        const year = Math.floor(Math.random() * 20) + 2000 // Random year between 2000 and 2019
+        const month = Math.floor(Math.random() * 12) // Random month (0-11, which corresponds to Jan-Dec)
+        const day = Math.floor(Math.random() * new Date(year, month + 1, 0).getDate()) + 1 // Get the last date of the month
+        return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` // Format as 'YYYY-MM-DD'
+    }
+
+    // Helper function to generate a valid time (Postgres format: HH:MI:SS)
+    const generateTime = () => {
+        const hours = Math.floor(Math.random() * 24) // Random hour between 0-23
+        const minutes = Math.floor(Math.random() * 60) // Random minute between 0-59
+        const seconds = Math.floor(Math.random() * 60) // Random second between 0-59
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}` // Format as 'HH:MI:SS'
+    }
+
+    // Helper function to generate a valid timestamp (Postgres format: YYYY-MM-DD HH:MI:SS)
+    const generateTimestamp = () => {
+        const date = generateDate() // Generate random date
+        const time = generateTime() // Generate random time
+        return `'${date} ${time}'` // Combine both for 'YYYY-MM-DD HH:MI:SS' format
+    }
+
     // Helper function to handle nullability
     const getNullOrValue = (value: string) => (Required ? value : Math.random() > 0.5 ? value : 'NULL')
 
@@ -553,26 +576,22 @@ export function generateSeedData(attr: Attribute): string {
             return getNullOrValue(Math.random() > 0.5 ? '1' : '0')
 
         case AttrType.DATE: {
-            const year = Math.floor(Math.random() * 20) + 2000
-            const month = Math.floor(Math.random() * 12) + 1
-            const day = Math.floor(Math.random() * 28) + 1
-            const date = `'${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}'`
-            return getNullOrValue(date)
+            const date = generateDate()
+            return getNullOrValue(date) 
+        }
+
+        case AttrType.TIME: {
+            const time = generateTime()
+            return getNullOrValue(time) 
+        }
+
+        case AttrType.TIMESTAMP: {
+            const timestamp = generateTimestamp()
+            return getNullOrValue(timestamp) 
         }
 
         case AttrType.CHAR:
             return getNullOrValue(`'${String.fromCharCode(Math.floor(Math.random() * 26) + 65)}'`)
-
-        case AttrType.TIME: {
-            const hours = Math.floor(Math.random() * 24)
-            const minutes = Math.floor(Math.random() * 60)
-            const seconds = Math.floor(Math.random() * 60)
-            const time = `'${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}'`
-            return getNullOrValue(time)
-        }
-
-        case AttrType.TIMESTAMP:
-            return getNullOrValue(`'${new Date().toISOString()}'`)
 
         case AttrType.DECIMAL: {
             const decimal = (Math.random() * (Max || 1000)).toFixed(2)
