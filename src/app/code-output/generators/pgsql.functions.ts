@@ -28,7 +28,7 @@ export class UseI {
             sameSchema && !t2
                 ? t.SimpleInitials
                 : t2
-                  ? `${t.SimpleInitials}${t2[0].SimpleInitials}Via${t2[1].SimpleInitials}`
+                  ? `${t2[0].SimpleInitials}${t2[1].SimpleInitials}${t.SimpleInitials}`
                   : t.FNInitials
 
         return key + (this.iUsages[key] || '')
@@ -190,7 +190,7 @@ export function GenerateJoinLines(
             }
 
             if (j1ON.length > 0) {
-                joinLines.push(`${j1} ${j1ON.join('  !!AND ')}`)
+                joinLines.push(`${j1} ${j1ON.join(' AND ')}`)
             } else {
                 console.log('__')
                 console.log('missing something\nj1 :>> ', j1)

@@ -538,35 +538,35 @@ export class Table {
     get FNInitials(): string {
         return cc(
             [
-                // cc(createAbbreviation(this.Parent.Name), 'sk'),
-                // cc(createAbbreviation(this.Name), 'sk'),
-                cc(this.Parent.Name, 'sk'),
-                cc(this.Name, 'sk')
+                cc(createAbbreviation(this.Parent.Name), 'sk'),
+                cc(createAbbreviation(this.Name), 'sk')
+                // cc(this.Parent.Name, 'sk'),
+                // cc(this.Name, 'sk')
             ].join('_'),
             'pl'
         )
     }
     get SimpleInitials(): string {
-        // return cc([cc(createAbbreviation(this.Name), 'sk')].join('_'), 'pl');
-        return cc([cc(this.Name, 'sk')].join('_'), 'pl')
+        return cc([cc(createAbbreviation(this.Name), 'sk')].join('_'), 'pl');
+        // return cc([cc(this.Name, 'sk')].join('_'), 'pl')
     }
 }
 
-// function createAbbreviation(input: string): string {
-//   // Remove vowels (a, e, i, o, u) and keep the first and last letter
-//   const vowels = /[aeiouAEIOU]/g;
+function createAbbreviation(input: string): string {
+  // Remove vowels (a, e, i, o, u) and keep the first and last letter
+  const vowels = /[aeiouAEIOU]/g;
 
-//   // Remove vowels and leave the first and last character intact
-//   const filtered = input
-//     .split('')
-//     .filter((char, index) => {
-//       // Keep the first and last character, and keep the consonants
-//       return index === 0 || index === input.length - 1 || !vowels.test(char);
-//     })
-//     .join('');
+  // Remove vowels and leave the first and last character intact
+  const filtered = input
+    .split('')
+    .filter((char, index) => {
+      // Keep the first and last character, and keep the consonants
+      return index === 0 || index === input.length - 1 || !vowels.test(char);
+    })
+    .join('');
 
-//   return filtered.toLowerCase(); // Convert the result to lowercase
-// }
+  return filtered.toLowerCase(); // Convert the result to lowercase
+}
 
 export enum AppMode {
     JSON,
