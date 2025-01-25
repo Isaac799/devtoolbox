@@ -221,6 +221,25 @@ const generateCompanyNames = (): string[] => [
     'Vertex Enterprises'
 ]
 
+const domainExtensions = ['.com', '.net', '.org', '.io', '.tech', '.co', '.ai', '.biz']
+
+const generateDomains = (count: number): string[] => {
+    const companyNames = generateCompanyNames()
+    const domains: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        // Pick a random company name
+        const companyName = companyNames[Math.floor(Math.random() * companyNames.length)]
+        // Pick a random domain extension
+        const extension = domainExtensions[Math.floor(Math.random() * domainExtensions.length)]
+        // Generate the domain name
+        const domainName = companyName.replace(/\s+/g, '').toLowerCase() + extension
+        domains.push(domainName)
+    }
+
+    return domains
+}
+
 const generateDepartments = (): string[] => [
     'Engineering',
     'Marketing',
@@ -423,6 +442,34 @@ const generateIpAddresses = (count: number): string[] => {
     return ipAddresses
 }
 
+const generateModelNumbers = (count: number): string[] => {
+    const models: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        const model = `Model-${Math.floor(Math.random() * 10000)
+            .toString()
+            .padStart(4, '0')}`
+        models.push(model)
+    }
+
+    return models
+}
+
+const generateSerialNumbers = (count: number): string[] => {
+    const serials: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        const serial = `SN-${Math.floor(Math.random() * 10000)
+            .toString()
+            .padStart(4, '0')}-${Math.floor(Math.random() * 10000)
+            .toString()
+            .padStart(4, '0')}`
+        serials.push(serial)
+    }
+
+    return serials
+}
+
 const generateEmailAddresses = (firstNames: string[], lastNames: string[], companies: string[]): string[] => {
     const emailAddresses: string[] = []
 
@@ -447,12 +494,8 @@ const generateEmailAddresses = (firstNames: string[], lastNames: string[], compa
         const emailPrefix = formats[Math.floor(Math.random() * formats.length)] // Randomly select one format
 
         // Random chance to use a different domain format
-        const domainAlternatives = [
-            `${company.toLowerCase().replace(/\s+/g, '')}.com`,
-            `${company.toLowerCase().replace(/\s+/g, '')}.co`,
-            `${company.toLowerCase().replace(/\s+/g, '')}.net`,
-            `${company.toLowerCase().replace(/\s+/g, '')}.org`
-        ]
+        const domainAlternatives = domainExtensions.map(e => `${company.toLowerCase().replace(/\s+/g, '')}.${e}`)
+
         const randomDomain = domainAlternatives[Math.floor(Math.random() * domainAlternatives.length)]
 
         // Create email
@@ -1164,16 +1207,15 @@ const generateSocialMediaProfiles = (): string[] => {
 }
 
 const generateWebsiteURLs = (): string[] => {
-    const domains = ['.com', '.net', '.org', '.io', '.co', '.info', '.blog', '.tech']
-    const firstNames = ['john', 'jane', 'alex', 'emily', 'chris', 'sarah', 'david', 'katie', 'michael', 'lisa']
-    const lastNames = ['doe', 'smith', 'miller', 'johnson', 'brown', 'lee', 'taylor', 'white', 'wilson', 'davis']
+    const firstNames = generateFirstNames()
+    const lastNames = generateLastNames()
 
     const websiteURLs: string[] = []
 
     for (let i = 0; i < 50; i++) {
         const firstName = firstNames[i % firstNames.length]
         const lastName = lastNames[i % lastNames.length]
-        const domain = domains[i % domains.length]
+        const domain = domainExtensions[i % domainExtensions.length]
         const siteName = `${firstName}${lastName}${Math.floor(Math.random() * 100)}${domain}` // Randomized website name
 
         websiteURLs.push(`https://www.${siteName}`)
@@ -2657,8 +2699,141 @@ const generateNicknames = (): string[] => {
     ]
 }
 
+const generateCouponCodes = (count: number): string[] => {
+    const couponCodes: string[] = []
+
+    const words = [
+        'SAVE',
+        'DISCOUNT',
+        'FLASH',
+        'OFFER',
+        'DEAL',
+        'PROMO',
+        'WIN',
+        'GIFT',
+        'SUMMER',
+        'SPECIAL',
+        'BEST',
+        'BIG',
+        'LUCKY',
+        'SUPER',
+        'HOT',
+        'FESTIVE',
+        'EXTRA',
+        'HAPPY',
+        'VIP'
+    ]
+
+    const getRandomWord = (): string => {
+        return words[Math.floor(Math.random() * words.length)]
+    }
+
+    const getRandomNumber = (): string => {
+        return (Math.floor(Math.random() * 100) + 1).toString() // number between 1 and 100
+    }
+
+    const getRandomSuffix = (): string => {
+        // Generate a small suffix like '10', 'ALE', etc.
+        const suffixes = ['10', '15', '20', 'ALE', 'WIN', 'SALE', 'VIP']
+        return suffixes[Math.floor(Math.random() * suffixes.length)]
+    }
+
+    for (let i = 0; i < count; i++) {
+        const word = getRandomWord() // e.g., SAVE, FLASH
+        const number = getRandomNumber() // e.g., 10, 20
+        const suffix = getRandomSuffix() // e.g., SALE, VIP
+
+        const couponCode = `${word}${number}${suffix}`
+        couponCodes.push(couponCode)
+    }
+
+    return couponCodes
+}
+
+const generateHexCodes = (count: number): string[] => {
+    const hexCodes: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        const hexCode = `#${Math.floor(Math.random() * 16777215)
+            .toString(16)
+            .padStart(6, '0')}`
+        hexCodes.push(hexCode)
+    }
+
+    return hexCodes
+}
+
+const generateRgbColors = (count: number): string[] => {
+    const rgbColors: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        const r = Math.floor(Math.random() * 256)
+        const g = Math.floor(Math.random() * 256)
+        const b = Math.floor(Math.random() * 256)
+        const rgb = `rgb(${r}, ${g}, ${b})`
+        rgbColors.push(rgb)
+    }
+
+    return rgbColors
+}
+
 const generateAttributeMap = (): AttributeMap => {
     const attributeMap = new Map<string, string[]>()
+
+    const domains = generateDomains(50)
+    {
+        const items = [
+            'domain',
+            'website',
+            'site',
+        ]
+
+        for (const e of items) {
+            attributeMap.set(e, domains)
+        }
+    }
+
+    const rgbColors = generateRgbColors(50)
+    {
+        const items = ['rbg', 'rbg color', 'rbg code']
+
+        for (const e of items) {
+            attributeMap.set(e, rgbColors)
+        }
+    }
+
+    const hexCodes = generateHexCodes(50)
+    {
+        const items = ['color', 'hex', 'hex color', 'hex code']
+
+        for (const e of items) {
+            attributeMap.set(e, hexCodes)
+        }
+    }
+
+    const couponCodes = generateCouponCodes(50)
+
+    {
+        const items = [
+            'primary coupon',
+            'secondary coupon',
+            'local coupon',
+            'public coupon',
+            'static coupon',
+            'dynamic coupon',
+            'gateway coupon',
+            'subnet coupon',
+            'server coupon',
+            'vpn coupon',
+            'host coupon',
+            'network coupon',
+            'client coupon'
+        ]
+
+        for (const e of items) {
+            attributeMap.set(e, couponCodes)
+        }
+    }
 
     const userStatus = generateUserStatus()
 
@@ -2744,6 +2919,53 @@ const generateAttributeMap = (): AttributeMap => {
     const emails = generateEmailAddresses(firstNames, lastNames, generateCompanyNames())
     attributeMap.set('Email', emails)
 
+    const models = generateModelNumbers(50)
+    const serials = generateSerialNumbers(50)
+
+    {
+        const items = [
+            'primary model',
+            'secondary model',
+            'local model',
+            'public model',
+            'static model',
+            'dynamic model',
+            'gateway model',
+            'subnet model',
+            'server model',
+            'vpn model',
+            'host model',
+            'network model',
+            'client model'
+        ]
+
+        for (const e of items) {
+            attributeMap.set(e, models)
+        }
+    }
+
+    {
+        const items = [
+            'primary serial',
+            'secondary serial',
+            'local serial',
+            'public serial',
+            'static serial',
+            'dynamic serial',
+            'gateway serial',
+            'subnet serial',
+            'server serial',
+            'vpn serial',
+            'host serial',
+            'network serial',
+            'client serial'
+        ]
+
+        for (const e of items) {
+            attributeMap.set(e, serials)
+        }
+    }
+
     attributeMap.set(
         'Emergency Contact',
         generateFirstNames().map(fn => `${fn} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`)
@@ -2763,6 +2985,8 @@ const generateAttributeMap = (): AttributeMap => {
     const macAddresses = generateMacAddresses(50)
     {
         const items = [
+            'mac',
+            'mac adress',
             'ethernet mac',
             'wifi mac',
             'bluetooth mac',
@@ -2784,6 +3008,8 @@ const generateAttributeMap = (): AttributeMap => {
     const ipAddresses = generateIpAddresses(50)
     {
         const items = [
+            'ip',
+            'ip address',
             'primary ip',
             'secondary ip',
             'local ip',
