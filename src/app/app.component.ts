@@ -27,10 +27,7 @@ export class AppComponent implements OnInit {
         }
     ]
 
-    constructor(
-        public data: DataService,
-        public notification: NotificationService
-    ) {}
+    constructor(public data: DataService, public notification: NotificationService) {}
 
     ngOnInit(): void {
         this.data.Initialize()

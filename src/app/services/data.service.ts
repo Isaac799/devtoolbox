@@ -33,6 +33,10 @@ export class DataService {
             value: AppGeneratorMode.PostgresFunctions
         },
         {
+            name: 'Postgres Seed Data',
+            value: AppGeneratorMode.PostgresSeed
+        },
+        {
             name: 'T-SQL: tables',
             value: AppGeneratorMode.TSQLTables
         },

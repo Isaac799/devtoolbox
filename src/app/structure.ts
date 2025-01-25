@@ -1,4 +1,5 @@
 import {cc, fixPluralGrammar} from './formatting'
+import {randAttrVarchar} from './varchar'
 
 export enum Rel {
     SameTable = 1 << 1,
@@ -475,6 +476,7 @@ export enum AppGeneratorMode {
     SQLiteTables,
     SQLiteJoinQuery,
     RustStructAndImpl,
+    PostgresSeed,
     APIGoPostgres
 }
 
@@ -534,6 +536,100 @@ export class Notification {
         this.title = title
         this.message = message
         this.life = life
+    }
+}
+
+export function generateSeedData(attr: Attribute): string {
+    const Type = attr.Type
+    const Required = attr.Validation?.Required
+    // const Min = attr.Validation?.Min
+    const Max = attr.Validation?.Max
+
+    // Helper function to handle nullability
+    const getNullOrValue = (value: string) => (Required ? value : Math.random() > 0.5 ? value : 'NULL')
+
+    switch (Type) {
+        case AttrType.BIT:
+            return getNullOrValue(Math.random() > 0.5 ? '1' : '0')
+
+        case AttrType.DATE: {
+            const year = Math.floor(Math.random() * 20) + 2000
+            const month = Math.floor(Math.random() * 12) + 1
+            const day = Math.floor(Math.random() * 28) + 1
+            const date = `'${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}'`
+            return getNullOrValue(date)
+        }
+
+        case AttrType.CHAR:
+            return getNullOrValue(`'${String.fromCharCode(Math.floor(Math.random() * 26) + 65)}'`)
+
+        case AttrType.TIME: {
+            const hours = Math.floor(Math.random() * 24)
+            const minutes = Math.floor(Math.random() * 60)
+            const seconds = Math.floor(Math.random() * 60)
+            const time = `'${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}'`
+            return getNullOrValue(time)
+        }
+
+        case AttrType.TIMESTAMP:
+            return getNullOrValue(`'${new Date().toISOString()}'`)
+
+        case AttrType.DECIMAL: {
+            const decimal = (Math.random() * (Max || 1000)).toFixed(2)
+            return getNullOrValue(decimal)
+        }
+
+        case AttrType.REAL: {
+            const real = (Math.random() * (Max || 1000)).toFixed(3)
+            return getNullOrValue(real)
+        }
+
+        case AttrType.FLOAT: {
+            const float = (Math.random() * (Max || 1000)).toFixed(4)
+            return getNullOrValue(float)
+        }
+
+        case AttrType.SERIAL:
+            return 'DEFAULT' // Serial is usually auto-incremented
+
+        case AttrType.INT: {
+            const int = Math.floor(Math.random() * (Max || 1000))
+            return getNullOrValue(int.toString())
+        }
+
+        case AttrType.BOOLEAN:
+            return getNullOrValue(Math.random() > 0.5 ? 'TRUE' : 'FALSE')
+
+        case AttrType.VARCHAR: {
+            const randWord = randAttrVarchar(attr.PFN)
+
+            let result = ''
+
+            if (randWord) {
+                result = randWord
+            } else {
+                const length = Max ? Math.min(Max, 255) : 10 // Limit to 255 for realistic string length
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
+                for (let i = 0; i < length; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length))
+                }
+            }
+
+            if (Max && result.length > Max) {
+                result = result.slice(0, Max - 1)
+            }
+
+            return getNullOrValue(`'${result.replaceAll("'", "''")}'`)
+        }
+
+        case AttrType.MONEY: {
+            const money = (Math.random() * (Max || 1000)).toFixed(2)
+            return getNullOrValue(money)
+        }
+
+        default:
+            return 'NULL' // Fallback for unhandled type
     }
 }
 
