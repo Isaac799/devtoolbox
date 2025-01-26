@@ -2,12 +2,14 @@
 import {TAB} from '../../constants'
 import {alignKeyword, cc} from '../../formatting'
 import {generateSeedData, Schema} from '../../structure'
-import { AttributeMap } from '../../varchar'
+import {AttributeMap} from '../../varchar'
 
 export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): string {
     const lines: string[] = []
 
     const tGenCount: Record<string, number> = {}
+
+    const usedMap: Record<string, string[]> = {}
 
     for (const s of schemas) {
         lines.push('')
@@ -32,13 +34,35 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): str
 
             let u = false
 
-            for (let index = 0; index < 25; index++) {
+            adding: for (let index = 0; index < 25; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
                     u = a.Option?.Unique || false
                     // for (let j = 0; j < 4; j++) {
-                    v2.push(`${generateSeedData(a, map)}`)
-                    // }
+
+                    if (!u) {
+                        const v = `${generateSeedData(a, map)}`
+                        v2.push(v)
+                    }
+                    if (u) {
+                        let v = ''
+
+                        if (!usedMap[a.FN]) {
+                            usedMap[a.FN] = []
+                        }
+                        let escape = 0
+                        do {
+                            if (escape > 100) {
+                                console.warn('break unique: ', t.Name)
+                                break adding
+                            }
+                            escape += 1
+                            v = `${generateSeedData(a, map)}`
+                        } while (usedMap[a.FN].includes(v))
+
+                        v2.push(v)
+                        usedMap[a.FN].push(v)
+                    }
                 }
                 const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
 
