@@ -477,6 +477,8 @@ export const generateAttributeMap = (data: VarcharJSONData): AttributeMap => {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
             const e = data[key]
             for (const k of e.keys) {
+                if (!k) continue
+                if (e.pool.length === 0) continue
                 attributeMap.set(k, e.pool)
             }
         }
