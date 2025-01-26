@@ -39,12 +39,12 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): str
             v3 = []
 
             if (tblRows[t.FN] === undefined) {
-                tblRows[t.FN] = 1
+                tblRows[t.FN] = 0
             }
 
             let u = false
 
-            adding: for (let index = 0; index < 25; index++) {
+            adding: for (let index = 0; index < 20; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
                     u = a.Option?.Unique || a.Option?.PrimaryKey || false

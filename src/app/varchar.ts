@@ -894,7 +894,7 @@ function getBestMatch(input: string, map: AttributeMap): string | null {
         let attrModifier = 1
         const lessSignificantModifiers = ['name', 'title', 'label']
         if (lessSignificantModifiers.includes(attr)) {
-            attrModifier = 0.5
+            attrModifier = 0.4
         }
         const attrScore = fuzzyMatch(key, attr) * attrModifier
 

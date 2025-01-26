@@ -2419,6 +2419,52 @@
                 "Lebanese",
                 "Jordanian"
             ]
+        },
+        "titles": {
+            "keys": ["person title", "user title", "honorific", "prefix", "salutation"],
+            "pool": [
+                "Mr.",
+                "Mrs.",
+                "Miss",
+                "Ms.",
+                "Dr.",
+                "Prof.",
+                "Sir",
+                "Madam",
+                "Master",
+                "Dame",
+                "Lady",
+                "Lord",
+                "Count",
+                "Countess",
+                "Baron",
+                "Baroness",
+                "King",
+                "Queen",
+                "Prince",
+                "Princess",
+                "Duke",
+                "Duchess",
+                "Viscount",
+                "Viscountess",
+                "Emperor",
+                "Empress",
+                "Chancellor",
+                "Squire",
+                "Mademoiselle",
+                "Marquis",
+                "Marchioness",
+                "Monsieur",
+                "Madame",
+                "Reverend",
+                "Bishop",
+                "Cardinal",
+                "Archbishop",
+                "Sultan",
+                "Sheikh",
+                "Tsar",
+                "Czar"
+            ]
         }
     },
     "peopleMeta": {
@@ -5201,7 +5247,7 @@
             ]
         },
         "rewardTier": {
-            "keys": ["plan", "tier", "loyalty", "status", "reward level"],
+            "keys": ["plan", "tier", "loyalty", "reward level"],
             "pool": [
                 "Bronze",
                 "Silver",
