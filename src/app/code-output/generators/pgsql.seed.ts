@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import {TAB} from '../../constants'
 import {alignKeyword, cc} from '../../formatting'
-import {generateSeedData, Schema} from '../../structure'
+import {AttrType, generateSeedData, Schema} from '../../structure'
 import {AttributeMap} from '../../varchar'
+
+function genRandomRef(max: number): number {
+    return Math.floor(Math.random() * max) + 1
+}
 
 export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): string {
     const lines: string[] = []
@@ -10,6 +14,8 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): str
     const tGenCount: Record<string, number> = {}
 
     const usedMap: Record<string, string[]> = {}
+
+    const tblRows: Record<string, number> = {}
 
     for (const s of schemas) {
         lines.push('')
@@ -32,16 +38,30 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): str
             v2 = []
             v3 = []
 
+            if (tblRows[t.FN] === undefined) {
+                tblRows[t.FN] = 1
+            }
+
             let u = false
 
             adding: for (let index = 0; index < 25; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
-                    u = a.Option?.Unique || false
+                    u = a.Option?.Unique || a.Option?.PrimaryKey || false
+
+                    if (a.Type === AttrType.SERIAL) {
+                        u = false
+                    }
+
                     // for (let j = 0; j < 4; j++) {
 
                     if (!u) {
-                        const v = `${generateSeedData(a, map)}`
+                        let v = ''
+                        if (a.Type === AttrType.REFERENCE && a.RefTo) {
+                            v = genRandomRef(tblRows[a.RefTo.FN]) + ''
+                        } else {
+                            v = `${generateSeedData(a, map)}`
+                        }
                         v2.push(v)
                     }
                     if (u) {
@@ -53,11 +73,15 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): str
                         let escape = 0
                         do {
                             if (escape > 100) {
-                                console.warn('break unique: ', t.Name)
+                                // console.warn('break unique: ', t.Name)
                                 break adding
                             }
                             escape += 1
-                            v = `${generateSeedData(a, map)}`
+                            if (a.Type === AttrType.REFERENCE && a.RefTo) {
+                                v = genRandomRef(tblRows[a.RefTo.FN]) + ''
+                            } else {
+                                v = `${generateSeedData(a, map)}`
+                            }
                         } while (usedMap[a.FN].includes(v))
 
                         v2.push(v)
@@ -77,8 +101,13 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): str
                 tGenCount[t.FNInitials] += 1
 
                 values.push(c)
+                tblRows[t.FN] += 1
+
                 v2 = []
             }
+
+            // console.log('tblRows[t.FN] :>> ', t.FN, tblRows[t.FN])
+
             for (let index = 0; index < t.Attributes.length; index++) {
                 values = alignKeyword(values, alignmentKeyword)
                 values = values.map(e => e.replace(alignmentKeyword, ''))

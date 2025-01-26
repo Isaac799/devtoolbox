@@ -647,12 +647,6 @@ export function generateSeedData(attr: Attribute, map: AttributeMap): string {
             return getNullOrValue(money)
         }
 
-        case AttrType.REFERENCE: {
-            // const int = "##REF##" + Math.floor(Math.random() * 5)
-            const int = Math.floor(Math.random() * 10) + 1
-            return getNullOrValue(int.toString())
-        }
-
         default:
             return 'NULL' // Fallback for unhandled type
     }
