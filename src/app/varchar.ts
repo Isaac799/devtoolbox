@@ -809,7 +809,7 @@ export const generateAttributeMap = (data: VarcharJSONData): AttributeMap => {
         attributeMap.set(e, RgbColors)
     }
 
-    const ProductNamesKeys = ['product name', 'item title']
+    const ProductNamesKeys = ['product name', 'product title', 'item title', 'item name']
     const ProductNames = generateProductNames(n, productAdjective, productNoun)
     for (const e of ProductNamesKeys) {
         attributeMap.set(e, ProductNames)
@@ -885,13 +885,18 @@ function getBestMatch(input: string, map: AttributeMap): string | null {
     const [entity, attr] = input.split('.')
 
     for (const [key, _] of map) {
-        const categoryScore = fuzzyMatch(key, entity) * 0.5
-
-        let attrModifer = 1
-        if (attr === 'title') {
-            attrModifer = 0.1
+        if (`${entity} ${attr}` === key) {
+            return key
         }
-        const attrScore = fuzzyMatch(key, attr) * attrModifer
+
+        const categoryScore = fuzzyMatch(key, entity) * 0.8
+
+        let attrModifier = 1
+        const lessSignificantModifiers = ['name', 'title', 'label']
+        if (lessSignificantModifiers.includes(attr)) {
+            attrModifier = 0.5
+        }
+        const attrScore = fuzzyMatch(key, attr) * attrModifier
 
         const score = categoryScore + attrScore
 
