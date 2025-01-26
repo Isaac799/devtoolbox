@@ -221,7 +221,7 @@ const generateCompanyNames = (): string[] => [
     'Vertex Enterprises'
 ]
 
-const domainExtensions = ['.com', '.net', '.org', '.io', '.tech', '.co', '.ai', '.biz']
+const domainExtensions = ['com', 'net', 'org', 'io', 'tech', 'co', 'ai', 'biz']
 
 const generateDomains = (count: number): string[] => {
     const companyNames = generateCompanyNames()
