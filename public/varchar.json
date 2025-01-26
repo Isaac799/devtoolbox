@@ -2067,7 +2067,7 @@
             ]
         },
         "technology": {
-            "keys": ["technology", "tech", "technical field", "innovation"],
+            "keys": ["technical field", "innovation"],
             "pool": [
                 "Artificial Intelligence",
                 "Blockchain",
@@ -4110,7 +4110,46 @@
             "keys": ["flow rate", "rate of flow"],
             "pool": ["Cubic Meter per Second", "Liter per Second", "Gallon per Minute"]
         },
-        
+        "plantCategory": {
+            "keys": ["plant", "flora", "botanical", "greenery"],
+            "pool": ["Tree", "Flower", "Shrub", "Herb", "Cactus", "Fern", "Grass", "Bush", "Moss", "Vine", "Succulent", "Algae"]
+        },
+        "foodCategory": {
+            "keys": ["food", "cuisine", "meal", "dish"],
+            "pool": ["Fruit", "Vegetable", "Meat", "Poultry", "Seafood", "Dairy", "Grain", "Legume", "Nuts", "Sweets", "Beverage", "Spice", "Sauce", "Bread", "Rice"]
+        },
+        "vehicleCategory": {
+            "keys": ["vehicle", "transportation", "automobile", "machine"],
+            "pool": ["Car", "Truck", "Motorcycle", "Bicycle", "Bus", "Train", "Boat", "Ship", "Airplane", "Helicopter", "Scooter", "Tractor", "Submarine", "Hovercraft", "Van"]
+        },
+        "technologyCategory": {
+            "keys": ["technology", "tech", "electronics", "gadgets"],
+            "pool": ["Computer", "Smartphone", "Tablet", "Smartwatch", "Television", "Laptop", "Camera", "Headphones", "Drone", "Game Console", "Router", "Printer", "Speaker", "E-Reader", "Projector"]
+        },
+        "furnitureCategory": {
+            "keys": ["furniture", "interior", "home", "decor"],
+            "pool": ["Chair", "Table", "Sofa", "Couch", "Bed", "Dresser", "Wardrobe", "Bookshelf", "Desk", "Armchair", "Cabinet", "Nightstand", "Coffee Table", "Dining Table", "Recliner"]
+        },
+        "clothingCategory": {
+            "keys": ["clothing", "wear", "apparel", "garment"],
+            "pool": ["Shirt", "Pants", "Jacket", "Dress", "Skirt", "Sweater", "T-shirt", "Shorts", "Shoes", "Socks", "Hat", "Scarf", "Gloves", "Coat", "Suit", "Jeans"]
+        },
+        "musicalInstrumentCategory": {
+            "keys": ["music", "instrument", "musical"],
+            "pool": ["Piano", "Guitar", "Violin", "Drums", "Flute", "Trumpet", "Saxophone", "Cello", "Clarinet", "Trombone", "Banjo", "Mandolin", "Accordion", "Harp", "Xylophone"]
+        },
+        "sportCategory": {
+            "keys": ["sport", "game", "athletic", "competition"],
+            "pool": ["Football", "Basketball", "Baseball", "Soccer", "Tennis", "Golf", "Cricket", "Rugby", "Hockey", "Boxing", "Swimming", "Cycling", "Volleyball", "Table Tennis", "Track and Field"]
+        },
+        "movieGenreCategory": {
+            "keys": ["movie", "film", "cinema", "genre"],
+            "pool": ["Action", "Comedy", "Drama", "Horror", "Sci-Fi", "Fantasy", "Romance", "Thriller", "Adventure", "Documentary", "Crime", "Mystery", "Animation", "Musical", "Historical"]
+        },
+        "gameGenreCategory": {
+            "keys": ["game", "video game", "gaming"],
+            "pool": ["Action", "Adventure", "Role-playing", "Shooter", "Simulation", "Strategy", "Sports", "Racing", "Puzzle", "Fighting", "Horror", "Stealth", "Sandbox", "Platformer", "MMO"]
+        },
         "": {
             "keys": [""],
             "pool": []
