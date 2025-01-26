@@ -56,7 +56,7 @@
             ]
         },
         "lastName": {
-            "keys": ["last name", "surname", "family name"],
+            "keys": ["last", "last name", "surname", "family name"],
             "pool": [
                 "James",
                 "Mary",
@@ -112,7 +112,7 @@
             ]
         },
         "firstName": {
-            "keys": ["first name", "given name", "forename"],
+            "keys": ["first", "first name", "given name", "forename"],
             "pool": [
                 "Smith",
                 "Johnson",
@@ -2517,7 +2517,7 @@
             ]
         },
         "gamerTag": {
-            "keys": ["gamer tag", "online name", "display name", "game username", "online username", "gamer ID"],
+            "keys": ["person tag", "user tag", "gamer tag", "online name", "display name", "game username", "online username", "gamer ID"],
             "pool": [
                 "ShadowX",
                 "PixelPusher",
@@ -5701,7 +5701,7 @@
             ]
         },
         "geographicalFeature": {
-            "keys": ["geographical feature", "landform", "natural feature", "terrain"],
+            "keys": ["geographical feature", "landform", "natural feature", "terrain", "land"],
             "pool": [
                 "Mountain",
                 "River",

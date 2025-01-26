@@ -126,6 +126,103 @@ const generateSerialNumbers = (n: number): string[] => {
     return serials
 }
 
+const generateLoginAlias = (n: number, firstNames: string[], lastNames: string[]): string[] => {
+    const aliases: string[] = []
+    const getRandomName = (names: string[]): string => {
+        return names[Math.floor(Math.random() * names.length)]
+    }
+
+    // Generate alias in various formats
+    const generateRandomAlias = (firstName: string, lastName: string): string => {
+        const patterns = [
+            // Full name or initial + last name (or part of it)
+            `${firstName.toLowerCase()}${lastName.toLowerCase()}`,
+            `${firstName[0].toLowerCase()}${lastName.toLowerCase()}`, // Initial + full last name
+            `${firstName.toLowerCase()}${lastName[0].toLowerCase()}`, // Full first name + initial last name
+            `${firstName.toLowerCase()}-${lastName.toLowerCase()}`, // Full name with hyphen
+            `${firstName[0].toLowerCase()}${lastName.toLowerCase()}${Math.floor(Math.random() * 1000)}`, // Initial + last name + random number
+            `${firstName.toLowerCase()}${Math.floor(Math.random() * 1000)}`, // Full name + random number
+            `${firstName[0].toLowerCase()}${lastName.toLowerCase()}${Math.floor(Math.random() * 1000)}`, // Initial + last name + random number
+            `${firstName.toLowerCase()}_${lastName.toLowerCase()}`, // Full name with underscore
+            `${firstName[0].toLowerCase()}${lastName.toLowerCase()}${Math.floor(Math.random() * 100)}`, // Initial + last name + small number
+            `${firstName.toLowerCase()}${lastName.toLowerCase()}${Math.floor(Math.random() * 100)}`, // Full name + small number
+            `${firstName.toLowerCase()}${lastName[0].toLowerCase()}${Math.floor(Math.random() * 1000)}`, // Full first name + initial last name + random number
+            `${firstName.toLowerCase()}-${lastName[0].toLowerCase()}${Math.floor(Math.random() * 1000)}` // Full first name + initial last name + random number with hyphen
+        ]
+
+        // Randomly pick one pattern
+        return patterns[Math.floor(Math.random() * patterns.length)]
+    }
+
+    for (let i = 0; i < n; i++) {
+        const firstName = getRandomName(firstNames)
+        const lastName = getRandomName(lastNames)
+        const alias = generateRandomAlias(firstName, lastName)
+        aliases.push(alias)
+    }
+
+    return aliases
+}
+
+const generateRandomHashes = (n: number, length: number = 32): string[] => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const specialChars = '!@#$%^&*()-_=+[]{}|;:,.<>?'
+    const allChars = characters + specialChars
+
+    const hashes: string[] = []
+
+    for (let i = 0; i < n; i++) {
+        let hash = ''
+        for (let j = 0; j < length; j++) {
+            hash += allChars.charAt(Math.floor(Math.random() * allChars.length))
+        }
+        hashes.push(hash)
+    }
+
+    return hashes
+}
+
+const generatePassword = (n: number): string[] => {
+    const passwords: string[] = []
+
+    const generateRandomPassword = (): string => {
+        const lowerCaseLetters = 'abcdefghijklmnopqrstuvwxyz'
+        const upperCaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        const numbers = '0123456789'
+        const specialChars = '!@#$%^&*()_+-=[]{}|;:,.<>?'
+
+        const allChars = lowerCaseLetters + upperCaseLetters + numbers + specialChars
+        const passwordLength = Math.floor(Math.random() * (16 - 8 + 1)) + 8 // Password length between 8 and 16 characters
+
+        let password = ''
+
+        // Generate password with random characters
+        for (let i = 0; i < passwordLength; i++) {
+            password += allChars[Math.floor(Math.random() * allChars.length)]
+        }
+
+        // Add some variety, such as ensuring at least one uppercase, one lowercase, one number, and one special character
+        if (!/[a-z]/.test(password)) password += lowerCaseLetters[Math.floor(Math.random() * lowerCaseLetters.length)]
+        if (!/[A-Z]/.test(password)) password += upperCaseLetters[Math.floor(Math.random() * upperCaseLetters.length)]
+        if (!/[0-9]/.test(password)) password += numbers[Math.floor(Math.random() * numbers.length)]
+        if (!/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) password += specialChars[Math.floor(Math.random() * specialChars.length)]
+
+        // Shuffle the password to ensure random distribution of characters
+        password = password
+            .split('')
+            .sort(() => 0.5 - Math.random())
+            .join('')
+
+        return password
+    }
+
+    for (let i = 0; i < n; i++) {
+        passwords.push(generateRandomPassword())
+    }
+
+    return passwords
+}
+
 const generateEmailAddresses = (n: number, firstNames: string[], lastNames: string[], domainExtensions: string[], companies: string[]): string[] => {
     const emailAddresses: string[] = []
 
@@ -419,7 +516,7 @@ const generateInstructions = (n: number, instructionVerbs: string[], instruction
 }
 
 const generateDirections = (n: number): string[] => {
-    const cardinalDirections = ['N', 'E', 'S', 'W'] // North, East, South, West
+    const cardinalDirections = ['N', 'E', '', 'W'] // North, East, South, West
     const diagonalDirections = ['NE', 'NW', 'SE', 'SW'] // North-East, North-West, South-East, South-West
 
     const directions: string[] = []
@@ -574,151 +671,169 @@ export const generateAttributeMap = (data: VarcharJSONData): AttributeMap => {
     if (processSubject.length === 0) {
         console.warn('missing processSubject')
     }
-    const AreaCodesKeys = ['area codes', 'dialing codes', 'phone area codes']
+    const AreaCodesKeys = ['area code', 'dialing code', 'phone area code']
     const AreaCodes = generateAreaCodes(n)
     for (const e of AreaCodesKeys) {
         attributeMap.set(e, AreaCodes)
     }
 
-    const PhoneExtensionsKeys = ['phone extensions', 'telephone extensions', 'extension numbers']
+    const PhoneExtensionsKeys = ['extension', 'phone extension', 'telephone extension', 'extension number']
     const PhoneExtensions = generatePhoneExtensions(n)
     for (const e of PhoneExtensionsKeys) {
         attributeMap.set(e, PhoneExtensions)
     }
 
-    const YearsKeys = ['years', 'publication year', 'event year']
+    const YearsKeys = ['year', 'publication year', 'event year']
     const Years = generateYears(n)
     for (const e of YearsKeys) {
         attributeMap.set(e, Years)
     }
 
-    const DomainsKeys = ['domain names', 'website domains', 'urls']
+    const DomainsKeys = ['domain', 'domain name', 'website domain', 'url']
     const Domains = generateDomains(n, companyName, domainExtension)
     for (const e of DomainsKeys) {
         attributeMap.set(e, Domains)
     }
 
-    const PhoneNumbersKeys = ['phone numbers', 'contact numbers', 'mobile numbers']
+    const PhoneNumbersKeys = ['phone', 'phone number', 'contact number', 'mobile number']
     const PhoneNumbers = generatePhoneNumbers(n, AreaCodes, PhoneExtensions)
     for (const e of PhoneNumbersKeys) {
         attributeMap.set(e, PhoneNumbers)
     }
 
-    const MacAddressesKeys = ['mac', 'mac addresses', 'ethernet address']
+    const MacAddressesKeys = ['mac', 'mac addresse', 'ethernet addres']
     const MacAddresses = generateMacAddresses(n)
     for (const e of MacAddressesKeys) {
         attributeMap.set(e, MacAddresses)
     }
 
-    const IpAddressesKeys = ['ip', 'ip address', 'internet protocol address']
+    const IpAddressesKeys = ['ip', 'ip addres', 'internet protocol addres']
     const IpAddresses = generateIpAddresses(n)
     for (const e of IpAddressesKeys) {
         attributeMap.set(e, IpAddresses)
     }
 
-    const ModelNumbersKeys = ['model numbers', 'item model', 'product model']
+    const ModelNumbersKeys = ['model', 'model number', 'item model', 'product model']
     const ModelNumbers = generateModelNumbers(n)
     for (const e of ModelNumbersKeys) {
         attributeMap.set(e, ModelNumbers)
     }
 
-    const SerialNumbersKeys = ['serial numbers', 'product serial']
+    const SerialNumbersKeys = ['sn', 'serial number', 'product serial']
     const SerialNumbers = generateSerialNumbers(n)
     for (const e of SerialNumbersKeys) {
         attributeMap.set(e, SerialNumbers)
     }
 
-    const EmailAddressesKeys = ['email addresses', 'contact emails']
+    const EmailAddressesKeys = ['email', 'email address', 'contact email']
     const EmailAddresses = generateEmailAddresses(n, firstName, lastName, domainExtension, companyName)
     for (const e of EmailAddressesKeys) {
         attributeMap.set(e, EmailAddresses)
     }
 
-    const AddressesKeys = ['addresses', 'postal addresses', 'physical addresses']
+    const PasswordAliasKeys = ['password', 'pwd']
+    const PasswordAlias = generatePassword(n)
+    for (const e of PasswordAliasKeys) {
+        attributeMap.set(e, PasswordAlias)
+    }
+
+    const HashAliasKeys = ['hash', 'password hash', 'pwd hash']
+    const HashAlias = generateRandomHashes(50, 256)
+    for (const e of HashAliasKeys) {
+        attributeMap.set(e, HashAlias)
+    }
+
+    const LoginAliasKeys = ['username', 'login', 'login name', 'person login', 'user login']
+    const LoginAlias = generateLoginAlias(n, firstName, lastName)
+    for (const e of LoginAliasKeys) {
+        attributeMap.set(e, LoginAlias)
+    }
+
+    const AddressesKeys = ['addresse', 'postal addresse', 'physical addresse']
     const Addresses = generateAddresses(n, street, city, state, country)
     for (const e of AddressesKeys) {
         attributeMap.set(e, Addresses)
     }
 
-    const EducationKeys = ['education', 'degree', 'educational background']
+    const EducationKeys = ['edu', 'education', 'degree', 'educational background']
     const Education = generateEducation(n, studyDegree, university, state)
     for (const e of EducationKeys) {
         attributeMap.set(e, Education)
     }
 
-    const SocialMediaProfilesKeys = ['social media profiles', 'social accounts']
+    const SocialMediaProfilesKeys = ['media profile', 'social media profile', 'social account']
     const SocialMediaProfiles = generateSocialMediaProfiles(n, socialPlatform, firstName, lastName)
     for (const e of SocialMediaProfilesKeys) {
         attributeMap.set(e, SocialMediaProfiles)
     }
 
-    const WebsiteURLsKeys = ['website urls', 'site URLs']
+    const WebsiteURLsKeys = ['website', 'website url', 'site URL']
     const WebsiteURLs = generateWebsiteURLs(n, firstName, lastName, domainExtension)
     for (const e of WebsiteURLsKeys) {
         attributeMap.set(e, WebsiteURLs)
     }
 
-    const TravelDestinationsKeys = ['travel destinations', 'vacation spots', 'places to visit']
+    const TravelDestinationsKeys = ['travel destination', 'vacation spot', 'places to visit']
     const TravelDestinations = generateTravelDestinations(n, country, city)
     for (const e of TravelDestinationsKeys) {
         attributeMap.set(e, TravelDestinations)
     }
 
-    const VehiclesKeys = ['vehicles', 'cars', 'automobiles']
+    const VehiclesKeys = ['vehicle', 'car', 'automobile']
     const Vehicles = generateVehicles(n, carMake, carModel, Years)
     for (const e of VehiclesKeys) {
         attributeMap.set(e, Vehicles)
     }
 
-    const SSNsKeys = ['ssns', 'social security numbers']
+    const SSNsKeys = ['ssn', 'social security number']
     const SSNs = generateSSNs(n)
     for (const e of SSNsKeys) {
         attributeMap.set(e, SSNs)
     }
 
-    const CouponCodesKeys = ['coupon', 'coupon codes', 'promo codes', 'voucher codes']
+    const CouponCodesKeys = ['coupon', 'coupon code', 'promo code', 'voucher code']
     const CouponCodes = generateCouponCodes(n, couponCode)
     for (const e of CouponCodesKeys) {
         attributeMap.set(e, CouponCodes)
     }
 
-    const HexCodesKeys = ['hex codes', 'color hex codes']
+    const HexCodesKeys = ['hex code', 'color hex code']
     const HexCodes = generateHexCodes(n)
     for (const e of HexCodesKeys) {
         attributeMap.set(e, HexCodes)
     }
 
-    const RgbColorsKeys = ['rgb colors', 'rgb values']
+    const RgbColorsKeys = ['rgb color', 'rgb value']
     const RgbColors = generateRgbColors(n)
     for (const e of RgbColorsKeys) {
         attributeMap.set(e, RgbColors)
     }
 
-    const ProductNamesKeys = ['product names', 'item titles']
+    const ProductNamesKeys = ['product name', 'item title']
     const ProductNames = generateProductNames(n, productAdjective, productNoun)
     for (const e of ProductNamesKeys) {
         attributeMap.set(e, ProductNames)
     }
 
-    const InstructionsKeys = ['instructions', 'guidelines', 'how-to steps']
+    const InstructionsKeys = ['instruction', 'guideline', 'how-to step']
     const Instructions = generateInstructions(n, instructionVerb, instructionSubject)
     for (const e of InstructionsKeys) {
         attributeMap.set(e, Instructions)
     }
 
-    const DirectionsKeys = ['directions', 'navigation instructions', 'location directions']
+    const DirectionsKeys = ['direction', 'navigation instruction', 'location direction']
     const Directions = generateDirections(n)
     for (const e of DirectionsKeys) {
         attributeMap.set(e, Directions)
     }
 
-    const ProcessTitlesKeys = ['process titles', 'procedure titles', 'workflow names']
+    const ProcessTitlesKeys = ['process title', 'procedure title', 'workflow name']
     const ProcessTitles = generateProcessTitles(n, processVerb, processSubject)
     for (const e of ProcessTitlesKeys) {
         attributeMap.set(e, ProcessTitles)
     }
 
-    const MaterialsKeys = ['materials', 'raw materials', 'supplies']
+    const MaterialsKeys = ['material', 'raw material', 'supplies']
     const Materials = generateMaterials(n, materialType, materialSubject)
     for (const e of MaterialsKeys) {
         attributeMap.set(e, Materials)
