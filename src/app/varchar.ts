@@ -2857,10 +2857,10 @@ type StatusCategory = Record<string, string[]>
 
 const statusCategories: StatusCategory = {
     sale: ['pending', 'approved', 'rejected', 'shipped', 'delivered', 'returned', 'paid', 'unpaid', 'waiting', 'canceled', 'expired'],
-    task: ['complete', 'incomplete', 'pending', 'processing', 'queued', 'failed', 'success', 'on_hold', 'in_progress', 'retrying', 'blocked'],
-    review: ['under_review', 'pending_review', 'in_review', 'approved', 'rejected', 'completed', 'resolved', 'resolved_with_issues'],
-    shipment: ['shipped', 'delivered', 'returned', 'delayed', 'lost', 'in_transit', 'pending_shipment'],
-    system: ['error', 'critical', 'warning', 'info', 'not_found', 'processing_error']
+    task: ['complete', 'incomplete', 'pending', 'processing', 'queued', 'failed', 'success', 'on hold', 'in progress', 'retrying', 'blocked'],
+    review: ['under review', 'pending review', 'in review', 'approved', 'rejected', 'completed', 'resolved', 'resolved with issues'],
+    shipment: ['shipped', 'delivered', 'returned', 'delayed', 'lost', 'in transit', 'pending shipment'],
+    system: ['error', 'critical', 'warning', 'info', 'not found', 'processing error']
 }
 
 const generateStatus = (category: string): string[] => {
@@ -2871,8 +2871,163 @@ const generateStatus = (category: string): string[] => {
     return statusCategories[category]
 }
 
+const generateProductNames = (count: number): string[] => {
+    const adjectives = ['Wireless', 'Ergonomic', 'Premium', 'Compact', 'Sleek', 'Durable', 'Advanced', 'Smart', 'Portable', 'Eco-friendly']
+    const nouns = ['Mouse', 'Keyboard', 'Headphones', 'Monitor', 'Charger', 'Desk Lamp', 'Speaker', 'Adapter', 'Webcam', 'Smartwatch']
+
+    const productNames: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        // Randomly select an adjective and a noun
+        const adjective = adjectives[Math.floor(Math.random() * adjectives.length)]
+        const noun = nouns[Math.floor(Math.random() * nouns.length)]
+        const productName = `${adjective} ${noun}`
+        productNames.push(productName)
+    }
+
+    return productNames
+}
+
+const generateInstructions = (count: number): string[] => {
+    const verbs = ['Press', 'Place', 'Rotate', 'Turn', 'Insert', 'Lift', 'Slide', 'Connect', 'Pull', 'Push']
+    const objects = ['the button', 'the lever', 'the item', 'the device', 'the cable', 'the lid', 'the switch', 'the screen', 'the tray', 'the cord']
+    const actions = [
+        'to turn on the device',
+        'to adjust the settings',
+        'to open the compartment',
+        'to start the program',
+        'to connect to the network',
+        'to charge the battery',
+        'to lock the system',
+        'to activate the mode',
+        'to reset the device',
+        'to initiate the process'
+    ]
+
+    const instructions: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        // Randomly select a verb, object, and action
+        const verb = verbs[Math.floor(Math.random() * verbs.length)]
+        const object = objects[Math.floor(Math.random() * objects.length)]
+        const action = actions[Math.floor(Math.random() * actions.length)]
+        const instruction = `${verb} ${object} ${action}`
+        instructions.push(instruction)
+    }
+
+    return instructions
+}
+
+const generateDirections = (count: number): string[] => {
+    const cardinalDirections = ['N', 'E', 'S', 'W'] // North, East, South, West
+    const diagonalDirections = ['NE', 'NW', 'SE', 'SW'] // North-East, North-West, South-East, South-West
+
+    const directions: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        // Randomly decide if we want a cardinal or diagonal direction
+        const useCardinal = Math.random() < 0.5 // 50% chance of cardinal direction
+
+        if (useCardinal) {
+            // Random cardinal direction (N, E, S, W)
+            const direction = cardinalDirections[Math.floor(Math.random() * cardinalDirections.length)]
+            directions.push(direction)
+        } else {
+            // Random diagonal direction (NE, NW, SE, SW)
+            const direction = diagonalDirections[Math.floor(Math.random() * diagonalDirections.length)]
+            directions.push(direction)
+        }
+    }
+
+    return directions
+}
+
+const generateProcessTitles = (count: number): string[] => {
+    const processVerbs = ['Initializing', 'Processing', 'Verifying', 'Executing', 'Completing', 'Starting', 'Loading', 'Finalizing', 'Checking', 'Handling']
+    const processObjects = ['Data', 'Request', 'Transaction', 'File', 'Process', 'Update', 'Connection', 'Operation', 'Sync', 'Task']
+
+    const processTitles: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        // Randomly select a verb and an object
+        const verb = processVerbs[Math.floor(Math.random() * processVerbs.length)]
+        const object = processObjects[Math.floor(Math.random() * processObjects.length)]
+        const processTitle = `${verb} ${object}`
+        processTitles.push(processTitle)
+    }
+
+    return processTitles
+}
+
+const generateMaterials = (count: number): string[] => {
+    const materialTypes = ['Wood', 'Steel', 'Plastic', 'Fabric', 'Copper', 'Aluminum', 'Glass', 'Concrete', 'Rubber', 'Leather']
+    const materialDescriptors = ['Sheet', 'Plank', 'Wire', 'Block', 'Panel', 'Piece', 'Roll', 'Beam', 'Strip', 'Coil']
+
+    const materials: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        // Randomly select a material type and descriptor
+        const materialType = materialTypes[Math.floor(Math.random() * materialTypes.length)]
+        const descriptor = materialDescriptors[Math.floor(Math.random() * materialDescriptors.length)]
+        const material = `${materialType} ${descriptor}`
+        materials.push(material)
+    }
+
+    return materials
+}
+
 const generateAttributeMap = (): AttributeMap => {
     const attributeMap = new Map<string, string[]>()
+
+    const materials = generateMaterials(50)
+
+    {
+        const items = ['material name', 'material title']
+
+        for (const e of items) {
+            attributeMap.set(e, materials)
+        }
+    }
+
+    const instructions = generateInstructions(50)
+
+    {
+        const items = ['instruction', 'guide', 'step', 'step description', 'step direction', 'guide']
+
+        for (const e of items) {
+            attributeMap.set(e, instructions)
+        }
+    }
+
+    const processTitles = generateProcessTitles(50)
+
+    {
+        const items = ['process']
+
+        for (const e of items) {
+            attributeMap.set(e, processTitles)
+        }
+    }
+
+    const directions = generateDirections(50)
+
+    {
+        const items = ['direction', 'compass']
+
+        for (const e of items) {
+            attributeMap.set(e, directions)
+        }
+    }
+
+    const productNames = generateProductNames(50)
+
+    {
+        const items = ['product', 'product name', 'product title', 'finished good', 'item name', 'item title']
+
+        for (const e of items) {
+            attributeMap.set(e, productNames)
+        }
+    }
 
     const saleStatus = generateStatus('sale')
     {
@@ -2890,7 +3045,7 @@ const generateAttributeMap = (): AttributeMap => {
     }
     const reviewStatus = generateStatus('review')
     {
-        const items = ['review status', 'stage']
+        const items = ['review status', 'stage', "work stage"]
         for (const e of items) {
             attributeMap.set(e, reviewStatus)
         }
@@ -3067,21 +3222,7 @@ const generateAttributeMap = (): AttributeMap => {
     const serials = generateSerialNumbers(50)
 
     {
-        const items = [
-            'primary model',
-            'secondary model',
-            'local model',
-            'public model',
-            'static model',
-            'dynamic model',
-            'gateway model',
-            'subnet model',
-            'server model',
-            'vpn model',
-            'host model',
-            'network model',
-            'client model'
-        ]
+        const items = ['model', 'model num']
 
         for (const e of items) {
             attributeMap.set(e, models)
@@ -3089,21 +3230,7 @@ const generateAttributeMap = (): AttributeMap => {
     }
 
     {
-        const items = [
-            'primary serial',
-            'secondary serial',
-            'local serial',
-            'public serial',
-            'static serial',
-            'dynamic serial',
-            'gateway serial',
-            'subnet serial',
-            'server serial',
-            'vpn serial',
-            'host serial',
-            'network serial',
-            'client serial'
-        ]
+        const items = ['serial', 'serial num']
 
         for (const e of items) {
             attributeMap.set(e, serials)
@@ -3245,6 +3372,13 @@ const generateAttributeMap = (): AttributeMap => {
         const items = ['phone number', 'contact number', 'cell phone', 'mobile number', 'work phone', 'home phone', 'office phone']
         for (const e of items) {
             attributeMap.set(e, phoneNumbers)
+        }
+    }
+
+    {
+        const items = ['comapny', 'supplier', 'supplier']
+        for (const e of items) {
+            attributeMap.set(e, companies)
         }
     }
 

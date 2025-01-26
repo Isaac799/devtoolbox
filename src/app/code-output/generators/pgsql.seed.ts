@@ -6,6 +6,8 @@ import {generateSeedData, Schema} from '../../structure'
 export function SchemasToPostgresSeed(schemas: Schema[]): string {
     const lines: string[] = []
 
+    const tGenCount: Record<string, number> = {}
+
     for (const s of schemas) {
         lines.push('')
         for (const t of s.Tables) {
@@ -13,17 +15,23 @@ export function SchemasToPostgresSeed(schemas: Schema[]): string {
             const alignmentKeyword = `~|~|~`
 
             let v2: string[] = []
+            let v3: string[] = []
             for (let i = 0; i < t.Attributes.length; i++) {
                 const a = t.Attributes[i]
                 v2.push(cc(a.Name, 'sk'))
+                v3.push('-'.repeat(cc(a.Name, 'sk').length))
             }
 
             const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
+            const c2 = `\n${TAB}  ${v3.join(` ${alignmentKeyword} `)}`
             values.push(c)
+            values.push(c2)
             v2 = []
+            v3 = []
 
             let u = false
-            for (let index = 0; index < 4; index++) {
+            
+            for (let index = 0; index < 20; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
                     u = a.Option?.Unique || false
@@ -37,6 +45,11 @@ export function SchemasToPostgresSeed(schemas: Schema[]): string {
                     v2 = []
                     continue
                 }
+
+                if (tGenCount[t.FNInitials] === undefined) {
+                    tGenCount[t.FNInitials] = 0
+                }
+                tGenCount[t.FNInitials] += 1
 
                 values.push(c)
                 v2 = []

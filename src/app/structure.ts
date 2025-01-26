@@ -577,17 +577,17 @@ export function generateSeedData(attr: Attribute): string {
 
         case AttrType.DATE: {
             const date = generateDate()
-            return getNullOrValue(date) 
+            return getNullOrValue(date)
         }
 
         case AttrType.TIME: {
             const time = generateTime()
-            return getNullOrValue(time) 
+            return getNullOrValue(time)
         }
 
         case AttrType.TIMESTAMP: {
             const timestamp = generateTimestamp()
-            return getNullOrValue(timestamp) 
+            return getNullOrValue(timestamp)
         }
 
         case AttrType.CHAR:
@@ -645,6 +645,12 @@ export function generateSeedData(attr: Attribute): string {
         case AttrType.MONEY: {
             const money = (Math.random() * (Max || 1000)).toFixed(2)
             return getNullOrValue(money)
+        }
+
+        case AttrType.REFERENCE: {
+            // const int = "##REF##" + Math.floor(Math.random() * 5)
+            const int = Math.floor(Math.random() * 5)
+            return getNullOrValue(int.toString())
         }
 
         default:
