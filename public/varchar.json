@@ -4143,12 +4143,52 @@
             "pool": ["Football", "Basketball", "Baseball", "Soccer", "Tennis", "Golf", "Cricket", "Rugby", "Hockey", "Boxing", "Swimming", "Cycling", "Volleyball", "Table Tennis", "Track and Field"]
         },
         "movieGenreCategory": {
-            "keys": ["movie", "film", "cinema", "genre"],
+            "keys": ["movie genere", "film", "cinema", "genre"],
             "pool": ["Action", "Comedy", "Drama", "Horror", "Sci-Fi", "Fantasy", "Romance", "Thriller", "Adventure", "Documentary", "Crime", "Mystery", "Animation", "Musical", "Historical"]
         },
         "gameGenreCategory": {
-            "keys": ["game", "video game", "gaming"],
+            "keys": ["game genere", "video game", "gaming"],
             "pool": ["Action", "Adventure", "Role-playing", "Shooter", "Simulation", "Strategy", "Sports", "Racing", "Puzzle", "Fighting", "Horror", "Stealth", "Sandbox", "Platformer", "MMO"]
+        },
+        "bookGenreCategory": {
+            "keys": ["book genere", "literature", "reading"],
+            "pool": ["Fiction", "Non-Fiction", "Mystery", "Fantasy", "Science Fiction", "Romance", "Biography", "Thriller", "Historical", "Poetry", "Adventure", "Self-Help", "Horror", "Science", "Graphic Novel"]
+        },
+        "educationLevelCategory": {
+            "keys": ["education", "level", "learning", "academic"],
+            "pool": ["Preschool", "Elementary", "Middle School", "High School", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate", "Postdoctoral", "Vocational", "Certificate"]
+        },
+        "occupationCategory": {
+            "keys": ["occupation", "job", "career", "profession"],
+            "pool": ["Teacher", "Doctor", "Engineer", "Artist", "Lawyer", "Nurse", "Scientist", "Chef", "Programmer", "Driver", "Manager", "Writer", "Musician", "Accountant", "Architect"]
+        },
+        "emotionCategory": {
+            "keys": ["emotion", "feeling", "mood", "state of mind"],
+            "pool": ["Happiness", "Sadness", "Anger", "Fear", "Surprise", "Disgust", "Anticipation", "Trust", "Love", "Guilt", "Shame", "Excitement", "Gratitude", "Pride", "Confusion"]
+        },
+        "technologyPlatformCategory": {
+            "keys": ["technology", "platform", "system", "software"],
+            "pool": ["Windows", "macOS", "Linux", "iOS", "Android", "PlayStation", "Xbox", "Nintendo Switch", "Steam", "Web", "AWS", "Azure", "Google Cloud", "Facebook", "Twitter"]
+        },
+        "eventCategory": {
+            "keys": ["event", "occasion", "happening", "activity"],
+            "pool": ["Concert", "Wedding", "Conference", "Festival", "Birthday", "Holiday", "Meeting", "Sports Game", "Exhibition", "Protest", "Party", "Ceremony", "Workshop", "Webinar", "Charity Event"]
+        },
+        "drinkCategory": {
+            "keys": ["drink", "beverage", "liquid", "refreshment"],
+            "pool": ["Water", "Tea", "Coffee", "Juice", "Soda", "Milk", "Wine", "Beer", "Whiskey", "Rum", "Cocktail", "Smoothie", "Lemonade", "Iced Tea", "Hot Chocolate"]
+        },
+        "toolCategory": {
+            "keys": ["tool", "equipment", "instrument", "appliance"],
+            "pool": ["Hammer", "Screwdriver", "Wrench", "Drill", "Saw", "Pliers", "Chisel", "Tape Measure", "Level", "Clamps", "Vise", "Paintbrush", "Shovel", "Ladder", "Scissors"]
+        },
+        "softwareCategory": {
+            "keys": ["software", "application", "program"],
+            "pool": ["Word Processor", "Spreadsheet", "Database", "Graphics Editor", "Audio Editing", "Video Editing", "Web Browser", "Email Client", "Photo Management", "Code Editor", "Antivirus", "CRM", "ERP", "Cloud Storage", "Project Management"]
+        },
+        "fictionalCharacterCategory": {
+            "keys": ["fictional character", "character", "persona", "figure"],
+            "pool": ["Superman", "Harry Potter", "Sherlock Holmes", "Frodo Baggins", "Wonder Woman", "Batman", "Spiderman", "Luke Skywalker", "The Joker", "Daenerys Targaryen", "Gandalf", "Darth Vader", "Bilbo Baggins", "SpongeBob SquarePants", "Hannibal Lecter"]
         },
         "": {
             "keys": [""],
