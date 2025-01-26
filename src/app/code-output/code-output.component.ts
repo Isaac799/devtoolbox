@@ -96,7 +96,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
                     ext = 'CS'
                     break
                 case AppGeneratorMode.PostgresSeed:
-                    this.output = SchemasToPostgresSeed(schemas)
+                    this.output = SchemasToPostgresSeed(schemas, this.data.varcharMap)
                     ext = 'SQL'
                     break
             }

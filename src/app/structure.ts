@@ -1,5 +1,5 @@
 import {cc, fixPluralGrammar} from './formatting'
-import {randAttrVarchar} from './varchar'
+import {AttributeMap, randAttrVarchar} from './varchar'
 
 export enum Rel {
     SameTable = 1 << 1,
@@ -539,7 +539,7 @@ export class Notification {
     }
 }
 
-export function generateSeedData(attr: Attribute): string {
+export function generateSeedData(attr: Attribute, map: AttributeMap): string {
     const Type = attr.Type
     const Required = !attr.isNullable()
     // const Min = attr.Validation?.Min
@@ -620,7 +620,7 @@ export function generateSeedData(attr: Attribute): string {
             return getNullOrValue(Math.random() > 0.5 ? 'TRUE' : 'FALSE')
 
         case AttrType.VARCHAR: {
-            const randWord = randAttrVarchar(attr.PFN)
+            const randWord = randAttrVarchar(attr.PFN, map)
 
             let result = ''
 

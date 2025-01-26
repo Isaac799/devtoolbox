@@ -2,6 +2,8 @@ import {Injectable} from '@angular/core'
 import {Schema, App, AppComplexityMode, AppGeneratorMode, AppMode, Table, Attribute, SchemaConfig, TableConfig, AttributeConfig, AttrType} from '../structure'
 import {Subject} from 'rxjs'
 import {defaultConfig} from '../constants'
+import {AttributeMap, generateAttributeMap} from '../varchar'
+import varcharJSON from '../../../public/varchar.json'
 
 @Injectable({
     providedIn: 'root'
@@ -13,6 +15,7 @@ export class DataService {
 
     editor = ''
     schemas: Schema[] = []
+    varcharMap: AttributeMap = generateAttributeMap(varcharJSON.data)
     schemasConfig: Record<string, SchemaConfig> = {}
     schemasChange = new Subject<Schema[]>()
     schemasConfigChange = new Subject<Record<string, SchemaConfig>>()

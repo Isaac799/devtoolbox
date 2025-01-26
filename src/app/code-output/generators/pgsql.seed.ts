@@ -2,8 +2,9 @@
 import {TAB} from '../../constants'
 import {alignKeyword, cc} from '../../formatting'
 import {generateSeedData, Schema} from '../../structure'
+import { AttributeMap } from '../../varchar'
 
-export function SchemasToPostgresSeed(schemas: Schema[]): string {
+export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): string {
     const lines: string[] = []
 
     const tGenCount: Record<string, number> = {}
@@ -36,7 +37,7 @@ export function SchemasToPostgresSeed(schemas: Schema[]): string {
                     const a = t.Attributes[i]
                     u = a.Option?.Unique || false
                     // for (let j = 0; j < 4; j++) {
-                    v2.push(`${generateSeedData(a)}`)
+                    v2.push(`${generateSeedData(a, map)}`)
                     // }
                 }
                 const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
