@@ -2853,6 +2853,23 @@ const generateBackgroundJobNames = (count: number): string[] => {
     return jobNames
 }
 
+const generateShiftNames = (count: number): string[] => {
+    const shiftTypes = ['Morning', 'Afternoon', 'Night', 'Graveyard', 'Evening', 'Swing', 'Day', 'Midnight']
+    const shiftDurations = ['Shift', 'Work', 'Duty', 'Schedule', 'Rotation']
+
+    const shiftNames: string[] = []
+
+    for (let i = 0; i < count; i++) {
+        // Randomly select a shift type and a shift duration
+        const shiftType = shiftTypes[Math.floor(Math.random() * shiftTypes.length)]
+        const shiftDuration = shiftDurations[Math.floor(Math.random() * shiftDurations.length)]
+        const shiftName = `${shiftType} ${shiftDuration}`
+        shiftNames.push(shiftName)
+    }
+
+    return shiftNames
+}
+
 type StatusCategory = Record<string, string[]>
 
 const statusCategories: StatusCategory = {
@@ -2979,6 +2996,15 @@ const generateMaterials = (count: number): string[] => {
 const generateAttributeMap = (): AttributeMap => {
     const attributeMap = new Map<string, string[]>()
 
+    const shiftNames = generateShiftNames(50)
+    {
+        const items = ['shift', 'work schedule']
+
+        for (const e of items) {
+            attributeMap.set(e, shiftNames)
+        }
+    }
+
     const materials = generateMaterials(50)
 
     {
@@ -3045,7 +3071,7 @@ const generateAttributeMap = (): AttributeMap => {
     }
     const reviewStatus = generateStatus('review')
     {
-        const items = ['review status', 'stage', "work stage"]
+        const items = ['review status', 'stage', 'work stage']
         for (const e of items) {
             attributeMap.set(e, reviewStatus)
         }

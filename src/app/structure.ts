@@ -541,7 +541,7 @@ export class Notification {
 
 export function generateSeedData(attr: Attribute): string {
     const Type = attr.Type
-    const Required = attr.Validation?.Required
+    const Required = !attr.isNullable()
     // const Min = attr.Validation?.Min
     const Max = attr.Validation?.Max
 
@@ -649,7 +649,7 @@ export function generateSeedData(attr: Attribute): string {
 
         case AttrType.REFERENCE: {
             // const int = "##REF##" + Math.floor(Math.random() * 5)
-            const int = Math.floor(Math.random() * 5)
+            const int = Math.floor(Math.random() * 10) + 1
             return getNullOrValue(int.toString())
         }
 

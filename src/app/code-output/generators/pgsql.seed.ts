@@ -30,8 +30,8 @@ export function SchemasToPostgresSeed(schemas: Schema[]): string {
             v3 = []
 
             let u = false
-            
-            for (let index = 0; index < 20; index++) {
+
+            for (let index = 0; index < 25; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
                     u = a.Option?.Unique || false
