@@ -3832,6 +3832,285 @@
                 "VIP"
             ]
         },
+        "day": {
+            "keys": ["day", "date"],
+            "pool": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        },
+        "week": {
+            "keys": ["week", "weekend", "workweek", "business week", "seven days"],
+            "pool": ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7"]
+        },
+        "month": {
+            "keys": ["month", "calendar month"],
+            "pool": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        },
+        "season": {
+            "keys": ["season", "time of year"],
+            "pool": ["Winter", "Spring", "Summer", "Fall", "Autumn"]
+        },
+        "dow": {
+            "keys": ["dow", "day of week", "day abbreviation", "weekdays"],
+            "pool": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        },
+        "foodIngredient": {
+            "keys": ["ingredient", "food", "flavor", "component", "spice"],
+            "pool": [
+                "Tomato",
+                "Onion",
+                "Garlic",
+                "Carrot",
+                "Chicken",
+                "Beef",
+                "Fish",
+                "Rice",
+                "Potato",
+                "Spinach",
+                "Lettuce",
+                "Egg",
+                "Cheese",
+                "Olive Oil",
+                "Salt",
+                "Pepper",
+                "Paprika",
+                "Cumin",
+                "Basil",
+                "Thyme",
+                "Oregano",
+                "Chili",
+                "Lemon",
+                "Avocado",
+                "Butter",
+                "Sugar",
+                "Flour",
+                "Milk",
+                "Yogurt",
+                "Honey",
+                "Zucchini",
+                "Mushroom",
+                "Bell Pepper",
+                "Cucumber",
+                "Eggplant",
+                "Parmesan",
+                "Cilantro",
+                "Parsley",
+                "Mint",
+                "Almonds",
+                "Walnuts",
+                "Tomato Paste",
+                "Soy Sauce",
+                "Balsamic Vinegar",
+                "Tofu",
+                "Shrimp",
+                "Turkey",
+                "Salmon",
+                "Rice Vinegar",
+                "Coconut Milk",
+                "Pineapple",
+                "Apple",
+                "Banana"
+            ]
+        },
+        "fileExtensionCategory": {
+            "keys": ["file extension", "file format", "media format", "digital file type"],
+            "pool": [
+                "txt", 
+                "doc", "docx", 
+                "pdf", 
+                "jpg", "jpeg", 
+                "png", 
+                "gif", 
+                "bmp", 
+                "tiff", 
+                "svg", 
+                "mp3", 
+                "wav", 
+                "aac", 
+                "flac", 
+                "m4a", 
+                "mp4", 
+                "avi", 
+                "mov", 
+                "mkv", 
+                "webm", 
+                "zip", 
+                "rar", 
+                "7z", 
+                "tar", 
+                "gz", 
+                "csv", 
+                "xlsx", 
+                "xls", 
+                "json", 
+                "xml", 
+                "html", 
+                "css", 
+                "js", 
+                "php", 
+                "py", 
+                "java", 
+                "cpp", 
+                "cs", 
+                "sql", 
+                "exe", 
+                "bat", 
+                "iso", 
+                "dmg", 
+                "pkg", 
+                "apk", 
+                "psd", 
+                "ai", 
+                "eps", 
+                "indd", 
+                "swf", 
+                "ppt", "pptx", 
+                "odt", 
+                "rtf", 
+                "md"
+            ]
+        },
+        "volumeMeasurementUnit": {
+            "keys": ["volume", "liquid", "capacity"],
+            "pool": ["Teaspoon", "Tablespoon", "Cup", "Milliliter", "Liter", "Quart", "Gallon", "Deciliter", "Cubic Meter", "Cubic Centimeter"]
+        },
+        "lengthMeasurementUnit": {
+            "keys": ["length", "distance", "height", "width"],
+            "pool": ["Millimeter", "Centimeter", "Meter", "Kilometer", "Inch", "Foot", "Yard", "Mile", "Nanometer"]
+        },
+        "weightMeasurementUnit": {
+            "keys": ["weight", "mass", "heaviness"],
+            "pool": ["Milligram", "Gram", "Kilogram", "Ton", "Pound", "Ounce", "Stone", "Carat"]
+        },
+        "temperatureMeasurementUnit": {
+            "keys": ["temperature"],
+            "pool": ["Celsius", "Fahrenheit", "Kelvin", "Rankine"]
+        },
+        "speedMeasurementUnit": {
+            "keys": ["speed", "velocity", "rate"],
+            "pool": ["Meter per Second", "Kilometer per Hour", "Miles per Hour", "Feet per Second", "Knots"]
+        },
+        "timeMeasurementUnit": {
+            "keys": ["time", "duration", "period"],
+            "pool": ["Second", "Minute", "Hour", "Day", "Week", "Month", "Year", "Decade"]
+        },
+        "areaMeasurementUnit": {
+            "keys": ["area", "size", "surface"],
+            "pool": [
+                "Square Millimeter",
+                "Square Centimeter",
+                "Square Meter",
+                "Square Kilometer",
+                "Square Inch",
+                "Square Foot",
+                "Square Yard",
+                "Acre",
+                "Hectare"
+            ]
+        },
+        "energyMeasurementUnit": {
+            "keys": ["energy", "power", "work"],
+            "pool": ["Joule", "Kilojoule", "Calorie", "Kilocalorie", "Watt-hour", "Electronvolt"]
+        },
+        "currencyUnit": {
+            "keys": ["currency", "money", "financial"],
+            "pool": ["USD", "EUR", "GBP", "JPY", "INR", "AUD", "CAD", "CHF", "CNY"]
+        },
+        "powerMeasurementUnit": {
+            "keys": ["power", "energy rate", "capacity"],
+            "pool": ["Watt", "Kilowatt", "Megawatt", "Horsepower", "Milliwatt"]
+        },
+        "pressureMeasurementUnit": {
+            "keys": ["pressure", "force per area", "stress"],
+            "pool": ["Pascal", "Bar", "Pound per Square Inch", "Atmosphere", "Torr", "Millimeter of Mercury"]
+        },
+        "frequencyMeasurementUnit": {
+            "keys": ["frequency", "rate of occurrence", "oscillation"],
+            "pool": ["Hertz", "Kilohertz", "Megahertz", "Gigahertz"]
+        },
+        "electricCurrentMeasurementUnit": {
+            "keys": ["electric current", "flow of charge"],
+            "pool": ["Ampere", "Milliampere", "Kiloampere", "Coulomb per Second"]
+        },
+        "voltageMeasurementUnit": {
+            "keys": ["voltage", "electric potential"],
+            "pool": ["Volt", "Millivolt", "Kilovolt"]
+        },
+        "energyConsumptionUnit": {
+            "keys": ["energy consumption", "electricity usage"],
+            "pool": ["Kilowatt-hour", "Megawatt-hour", "Joule"]
+        },
+        "dataStorageUnit": {
+            "keys": ["data storage", "information size"],
+            "pool": ["Byte", "Kilobyte", "Megabyte", "Gigabyte", "Terabyte", "Petabyte", "Exabyte"]
+        },
+        "illuminationMeasurementUnit": {
+            "keys": ["illumination", "brightness", "light intensity"],
+            "pool": ["Lux", "Lumen", "Foot-candle"]
+        },
+        "volumeFlowRateMeasurementUnit": {
+            "keys": ["flow rate", "volume per time", "liquid flow"],
+            "pool": ["Liter per Second", "Cubic Meter per Second", "Gallon per Minute", "Cubic Foot per Minute"]
+        },
+        "luminosityMeasurementUnit": {
+            "keys": ["luminosity", "brightness", "light output"],
+            "pool": ["Lumen", "Candela", "Lux"]
+        },
+        "soundMeasurementUnit": {
+            "keys": ["sound", "intensity", "loudness"],
+            "pool": ["Decibel", "Bel"]
+        },
+        "acidityMeasurementUnit": {
+            "keys": ["acidity", "pH", "alkalinity"],
+            "pool": ["pH", "pH Unit"]
+        },
+        "conductivityMeasurementUnit": {
+            "keys": ["conductivity", "electrical conductivity", "ionic conductivity"],
+            "pool": ["Siemens", "Millisiemens", "Microsiemens"]
+        },
+        "resistanceMeasurementUnit": {
+            "keys": ["resistance", "electrical resistance"],
+            "pool": ["Ohm", "Kilohm", "Megohm"]
+        },
+        "capacitanceMeasurementUnit": {
+            "keys": ["capacitance", "electric charge storage"],
+            "pool": ["Farad", "Microfarad", "Picofarad"]
+        },
+        "inductanceMeasurementUnit": {
+            "keys": ["inductance", "magnetic flux"],
+            "pool": ["Henry", "Millihenry", "Microhenry"]
+        },
+        "chemicalConcentrationMeasurementUnit": {
+            "keys": ["chemical concentration", "molality", "molarity"],
+            "pool": ["Mole per Liter", "Mol per Cubic Meter", "Molar"]
+        },
+        "humidityMeasurementUnit": {
+            "keys": ["humidity", "moisture", "water vapor"],
+            "pool": ["Percentage", "Relative Humidity"]
+        },
+        "vibrationMeasurementUnit": {
+            "keys": ["vibration", "oscillation", "motion"],
+            "pool": ["Hertz", "Cycles per Second"]
+        },
+        "torqueMeasurementUnit": {
+            "keys": ["torque", "moment", "rotational force"],
+            "pool": ["Newton Meter", "Foot-pound", "Kilogram-meter"]
+        },
+        "angularVelocityMeasurementUnit": {
+            "keys": ["angular velocity", "rotation speed", "angular speed"],
+            "pool": ["Radians per Second", "Degrees per Second"]
+        },
+        "angleMeasurementUnit": {
+            "keys": ["angle", "rotation", "degree"],
+            "pool": ["Degree", "Radian", "Gradian"]
+        },
+        "batteryCapacityMeasurementUnit": {
+            "keys": ["battery capacity", "electric charge capacity"],
+            "pool": ["Ampere-hour", "Milliampere-hour", "Coulomb"]
+        },
+        "flowRateMeasurementUnit": {
+            "keys": ["flow rate", "rate of flow"],
+            "pool": ["Cubic Meter per Second", "Liter per Second", "Gallon per Minute"]
+        },
+        
         "": {
             "keys": [""],
             "pool": []
