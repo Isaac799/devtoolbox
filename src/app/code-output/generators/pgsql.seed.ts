@@ -20,6 +20,9 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): str
     for (const s of schemas) {
         lines.push('')
         for (const t of s.Tables) {
+            if (!t.Attributes.length) {
+                continue
+            }
             let values: string[] = []
             const alignmentKeyword = `~|~|~`
 
