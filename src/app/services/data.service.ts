@@ -72,6 +72,20 @@ export class DataService {
             if (!parsed) {
                 throw new Error('failed parsing app config')
             }
+            if (!parsed['seedLimit']) {
+                parsed['seedLimit'] = 4
+            }
+            if (!parsed['mode']) {
+                parsed['mode'] = AppMode.YAML
+            }
+            if (!parsed['generatorMode']) {
+                parsed['generatorMode'] = AppGeneratorMode.Postgres
+            }
+            if (!parsed['complexity']) {
+                parsed['complexity'] = AppComplexityMode.Advanced
+            }
+            
+
             this.app = parsed
         } catch (err) {
             console.error(err)
