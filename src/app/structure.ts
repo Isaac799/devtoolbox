@@ -503,6 +503,7 @@ export enum AttrType {
 }
 
 export interface App {
+    seedLimit: number
     mode: AppMode
     generatorMode: AppGeneratorMode
     complexity: AppComplexityMode

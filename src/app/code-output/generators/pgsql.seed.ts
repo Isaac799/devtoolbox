@@ -8,7 +8,7 @@ function genRandomRef(max: number): number {
     return Math.floor(Math.random() * max) + 1
 }
 
-export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): string {
+export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap, limit: number): string {
     const lines: string[] = []
 
     const tGenCount: Record<string, number> = {}
@@ -47,7 +47,7 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap): str
 
             let u = false
 
-            adding: for (let index = 0; index < 20; index++) {
+            adding: for (let index = 0; index < limit; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
                     u = a.Option?.Unique || a.Option?.PrimaryKey || false

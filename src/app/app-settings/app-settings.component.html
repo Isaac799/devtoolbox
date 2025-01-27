@@ -1,38 +1,82 @@
 <div class="section-parent">
     <div class="section-scroll">
-
-        <div class="sticky">
-            <div class="accordion-groups">
-                @for (x of generatorModeOptions; track $index; let i = $index) {
-                <div
-                    class="accordion-group"
-                    [ngClass]="{
+        <div class="settings-column">
+            <div class="sticky">
+                <div class="accordion-groups">
+                    @for (x of generatorModeOptions; track $index; let i = $index) {
+                    <div
+                        class="accordion-group"
+                        [ngClass]="{
             'accordion-group-active': generatorModeSelectedIndex[0] === i,
             'can-hover': generatorModeSelectedIndex[0] !== i,
         }"
-                >
-                    <span
-                        (mouseup)="generatorModeSelectedIndex[0] = i; generatorModeSelectedIndex[1] = 0;  setGenMode()"
                     >
-                        {{ x.title }}
-                    </span>
-                    @if (generatorModeSelectedIndex[0] === i) {
-                    @for (x of x.items; track $index; let k = $index) {
-                    <div
-                        class="accordion-item"
-                        [ngClass]="{
+                        <span
+                            (mouseup)="generatorModeSelectedIndex[0] = i; generatorModeSelectedIndex[1] = 0;  setGenMode()"
+                        >
+                            {{ x.title }}
+                        </span>
+                        @if (generatorModeSelectedIndex[0] === i) {
+                        @for (x of x.items; track $index; let k = $index) {
+                        <div
+                            class="accordion-item"
+                            [ngClass]="{
                         'accordion-item-active': generatorModeSelectedIndex[1] === k,
                         'can-hover': generatorModeSelectedIndex[1] !== k,
                     }"
-                    >
-                        <span (mouseup)="generatorModeSelectedIndex[1] = k; setGenMode()">
-                            {{x.name}}
-                        </span>
+                        >
+                            <span (mouseup)="generatorModeSelectedIndex[1] = k; setGenMode()">
+                                {{x.name}}
+                            </span>
+                        </div>
+                        }
+                        }
                     </div>
                     }
-                    }
                 </div>
-                }
+            </div>
+
+            <div class="mt-auto">
+                <!-- Text Editor -->
+                <div class="controls">
+                    <div class="control">
+                        <label for="appMode">Config File</label>
+                        <select
+                            [(ngModel)]="data.app.mode"
+                            (ngModelChange)="data.ReloadAndSave()"
+                            id="appMode"
+                        >
+                            @for (x of modeOptions; track $index) {
+                            <option [ngValue]="x.value">{{ x.name }}</option>
+                            }
+                        </select>
+                        <div class="p-2">
+                            <button
+                                class="info"
+                                (click)="copyConfig()"
+                            >
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                    @if(data.app.generatorMode | isSeedMode){
+                        <div class="control">
+                            <label for="seedLimit">Seed Size ({{data.app.seedLimit}})</label>
+                            <div class="slider">
+                                <input
+                                    [(ngModel)]="data.app.seedLimit"
+                                    (ngModelChange)="debounceReload()"
+                                    type="range"
+                                    min="1"
+                                    max="50"
+                                    value="10"
+                                    class="slider"
+                                    id="seedLimit"
+                                >
+                            </div>
+                        </div>
+                        }
+                </div>
             </div>
         </div>
     </div>

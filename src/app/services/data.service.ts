@@ -32,6 +32,7 @@ export class DataService {
     }
 
     app: App = {
+        seedLimit: 4,
         mode: AppMode.YAML,
         generatorMode: AppGeneratorMode.Postgres,
         complexity: AppComplexityMode.Advanced

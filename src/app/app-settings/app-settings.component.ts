@@ -1,142 +1,189 @@
-import {Component} from '@angular/core'
-import {DataService} from '../services/data.service'
+import {Component, OnInit} from '@angular/core'
 import {CommonModule} from '@angular/common'
-import { AppGeneratorMode } from '../structure'
+import {AppGeneratorMode, AppMode, Notification, NotificationKind, NotificationLife} from '../structure'
+import {FormsModule} from '@angular/forms'
+import YAML from 'yaml'
+import {NotificationService} from '../services/notification.service'
+import {DataService} from '../services/data.service'
+import {IsSeedModePipe} from '../pipes/is-seed-mode.pipe'
 
 @Component({
     standalone: true,
     selector: 'app-app-settings',
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule, IsSeedModePipe],
     templateUrl: './app-settings.component.html',
     styleUrl: './app-settings.component.scss'
 })
-export class AppSettingsComponent {
-    constructor(public data: DataService) {}
-
-
-    
-        setGenMode() {
-            const c = this.generatorModeOptions[this.generatorModeSelectedIndex[0]].items[this.generatorModeSelectedIndex[1]]
-            if (!c) {
-                this.generatorModeSelectedIndex = [0, 0]
-                this.setGenMode()
-                return
-            }
-            this.data.app.generatorMode = c.value
-            this.data.ReloadAndSave()
+export class AppSettingsComponent implements OnInit {
+    debounce: ReturnType<typeof setTimeout> | undefined = undefined
+    modeOptions = [
+        {
+            name: 'JSON',
+            value: AppMode.JSON
+        },
+        {
+            name: 'YAML',
+            value: AppMode.YAML
         }
-        generatorModeSelectedIndex = [0, 0]
-        generatorModeOptions = [
-            {
-                title: 'PostgreSQL',
-                items: [
-                    {
-                        name: 'Tables',
-                        value: AppGeneratorMode.Postgres
-                    },
-                    {
-                        name: 'Functions',
-                        value: AppGeneratorMode.PostgresFunctions
-                    },
-                    {
-                        name: ' Seed Data',
-                        value: AppGeneratorMode.PostgresSeed
-                    }
-                ]
-            },
-            {
-                title: 'T-SQL',
-                items: [
-                    {
-                        name: 'Tables',
-                        value: AppGeneratorMode.TSQLTables
-                    },
-                    {
-                        name: ' Stored Procedures',
-                        value: AppGeneratorMode.TSQLStoredProcedures
-                    }
-                ]
-            },
-            {
-                title: 'SQLite',
-                items: [
-                    {
-                        name: 'Tables',
-                        value: AppGeneratorMode.SQLiteTables
-                    },
-                    {
-                        name: 'Queries',
-                        value: AppGeneratorMode.SQLiteJoinQuery
-                    }
-                ]
-            },
-            {
-                title: 'JavaScript',
-                items: [
-                    {
-                        name: 'Classes (with JSDoc)',
-                        value: AppGeneratorMode.JSClasses
-                    }
-                ]
-            },
-            {
-                title: 'TypeScript',
-                items: [
-                    {
-                        name: 'Classes',
-                        value: AppGeneratorMode.TSClasses
-                    },
-                    {
-                        name: 'Types & new ƒ',
-                        value: AppGeneratorMode.TSTypesAndFns
-                    }
-                ]
-            },
-            {
-                title: 'C#',
-                items: [
-                    {
-                        name: 'Classes',
-                        value: AppGeneratorMode.CSClasses
-                    }
-                ]
-            },
-            {
-                title: 'Go',
-                items: [
-                    {
-                        name: 'Structs & new ƒ',
-                        value: AppGeneratorMode.GoStructsAndFns
-                    }
-                ]
-            },
-            {
-                title: 'Rust',
-                items: [
-                    {
-                        name: 'Rust: structs & impl ƒ',
-                        value: AppGeneratorMode.RustStructAndImpl
-                    }
-                ]
-            },
-            {
-                title: 'Angular',
-                items: [
-                    {
-                        name: 'Reactive form',
-                        value: AppGeneratorMode.AngularFormControl
-                    }
-                ]
-            },
-    
-            {
-                name: 'HTTP Servers',
-                items: [
-                    {
-                        name: 'Go & PostgreSQL',
-                        value: AppGeneratorMode.APIGoPostgres
-                    }
-                ]
+    ]
+
+    constructor(public data: DataService, private notification: NotificationService) {}
+
+    ngOnInit(): void {
+        for (let i = 0; i < this.generatorModeOptions.length; i++) {
+            const e = this.generatorModeOptions[i]
+            for (let k = 0; k < e.items.length; k++) {
+                const r = e.items[k]
+                if (r.value !== this.data.app.generatorMode) {
+                    continue
+                }
+                this.generatorModeSelectedIndex = [i, k]
+                break
             }
-        ]
+        }
+    }
+
+    setGenMode() {
+        const c = this.generatorModeOptions[this.generatorModeSelectedIndex[0]].items[this.generatorModeSelectedIndex[1]]
+        if (!c) {
+            this.generatorModeSelectedIndex = [0, 0]
+            this.setGenMode()
+            return
+        }
+        this.data.app.generatorMode = c.value
+        this.data.ReloadAndSave()
+    }
+
+    debounceReload() {
+        clearTimeout(this.debounce)
+        this.debounce = setTimeout(() => {
+            this.data.ReloadAndSave()
+        }, 500)
+    }
+
+    copyConfig() {
+        let str = ''
+        if (this.data.app.mode === AppMode.JSON) {
+            str = JSON.stringify(this.data.schemasConfig, null, 4)
+        } else if (this.data.app.mode === AppMode.YAML) {
+            str = YAML.stringify(this.data.schemasConfig)
+        }
+        navigator.clipboard.writeText(str)
+        this.notification.Add(new Notification('Copied', 'The config was copied to your clipboard.', NotificationKind.Info, NotificationLife.Short))
+    }
+
+    generatorModeSelectedIndex = [0, 0]
+    generatorModeOptions = [
+        {
+            title: 'PostgreSQL',
+            items: [
+                {
+                    name: 'Tables',
+                    value: AppGeneratorMode.Postgres
+                },
+                {
+                    name: 'Functions',
+                    value: AppGeneratorMode.PostgresFunctions
+                },
+                {
+                    name: ' Seed Data',
+                    value: AppGeneratorMode.PostgresSeed
+                }
+            ]
+        },
+        {
+            title: 'T-SQL',
+            items: [
+                {
+                    name: 'Tables',
+                    value: AppGeneratorMode.TSQLTables
+                },
+                {
+                    name: ' Stored Procedures',
+                    value: AppGeneratorMode.TSQLStoredProcedures
+                }
+            ]
+        },
+        {
+            title: 'SQLite',
+            items: [
+                {
+                    name: 'Tables',
+                    value: AppGeneratorMode.SQLiteTables
+                },
+                {
+                    name: 'Queries',
+                    value: AppGeneratorMode.SQLiteJoinQuery
+                }
+            ]
+        },
+        {
+            title: 'JavaScript',
+            items: [
+                {
+                    name: 'Classes (with JSDoc)',
+                    value: AppGeneratorMode.JSClasses
+                }
+            ]
+        },
+        {
+            title: 'TypeScript',
+            items: [
+                {
+                    name: 'Classes',
+                    value: AppGeneratorMode.TSClasses
+                },
+                {
+                    name: 'Types & new ƒ',
+                    value: AppGeneratorMode.TSTypesAndFns
+                }
+            ]
+        },
+        {
+            title: 'C#',
+            items: [
+                {
+                    name: 'Classes',
+                    value: AppGeneratorMode.CSClasses
+                }
+            ]
+        },
+        {
+            title: 'Go',
+            items: [
+                {
+                    name: 'Structs & new ƒ',
+                    value: AppGeneratorMode.GoStructsAndFns
+                }
+            ]
+        },
+        {
+            title: 'Rust',
+            items: [
+                {
+                    name: 'Rust: structs & impl ƒ',
+                    value: AppGeneratorMode.RustStructAndImpl
+                }
+            ]
+        },
+        {
+            title: 'Angular',
+            items: [
+                {
+                    name: 'Reactive form',
+                    value: AppGeneratorMode.AngularFormControl
+                }
+            ]
+        },
+
+        {
+            name: 'HTTP Servers',
+            items: [
+                {
+                    name: 'Go & PostgreSQL',
+                    value: AppGeneratorMode.APIGoPostgres
+                }
+            ]
+        }
+    ]
 }

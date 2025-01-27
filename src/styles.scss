@@ -336,6 +336,10 @@ input:focus {
     margin-left: auto;
 }
 
+.mt-auto {
+    margin-top: auto;
+}
+
 .mr-auto {
     margin-right: auto;
 }
@@ -441,6 +445,11 @@ button:hover:not(:disabled) {
 
     .control:has(input:focus) {
         border: 0.1rem solid var(--primary);
+    }
+
+    .slider {
+        width: 13.5rem;
+        padding:  1rem 1rem 0 1rem;
     }
 
     .control {

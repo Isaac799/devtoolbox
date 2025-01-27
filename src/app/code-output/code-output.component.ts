@@ -18,7 +18,7 @@ import {SchemasToSQLiteJoinQuery} from './generators/sqlite.join.query'
 import {SchemasToRustStructsImpl} from './generators/rust.structs.impls'
 import {SchemasToCSClasses} from './generators/cs.class'
 import {SchemasToApiGoPostgres} from './generators/api.go.postgres'
-import { SchemasToPostgresSeed } from './generators/pgsql.seed'
+import {SchemasToPostgresSeed} from './generators/pgsql.seed'
 
 @Component({
     selector: 'app-code-output',
@@ -31,10 +31,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
     subscription: Subscription | null = null
     @ViewChild('codeOutput') codeOutput?: ElementRef<HTMLPreElement>
 
-    constructor(
-        public data: DataService,
-        private notification: NotificationService
-    ) {}
+    constructor(public data: DataService, private notification: NotificationService) {}
     ngAfterViewInit(): void {
         this.subscription = this.data.schemasChange.subscribe(schemas => {
             let ext = ''
@@ -96,7 +93,7 @@ export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
                     ext = 'CS'
                     break
                 case AppGeneratorMode.PostgresSeed:
-                    this.output = SchemasToPostgresSeed(schemas, this.data.varcharMap)
+                    this.output = SchemasToPostgresSeed(schemas, this.data.varcharMap, this.data.app.seedLimit)
                     ext = 'SQL'
                     break
             }
