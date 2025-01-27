@@ -114,16 +114,16 @@ small {
 }
 
 .title-1 {
-    font-size: 1.3rem;
-    // border-bottom: 0.1rem solid black;
+    color: var(--primary);
+    font-weight: 700;
 }
 
 .title-2 {
-    font-size: 1.2rem;
+    color: var(--primary);
 }
 
 .title-3 {
-    font-size: 1.1rem;
+    color: var(--primary);
 }
 
 input {
@@ -137,6 +137,10 @@ input {
 input:focus {
     outline: none;
     border-bottom-color: blue;
+}
+
+.pl-4 {
+    padding-left: calc(var(--space) * 2)
 }
 
 .hide-until-hover {
@@ -605,5 +609,59 @@ select.ng-invalid {
         >.section-scroll {
             max-width: calc(100vw);
         }
+    }
+}
+
+
+.accordion-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space);
+
+    // border: 0.1rem solid var(--black-transparent);
+    // border-radius: var(--space-sm);
+    padding: var(--space) var(--space-sm) var(--space) var(--space-sm);
+}
+
+.accordion-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space);
+
+    >span {
+        color: var(--black);
+        font-weight: 500;
+    }
+}
+
+.accordion-item {
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space);
+
+    >span {
+        color: var(--black);
+    }
+}
+
+
+.accordion-group-active {
+    border-left: 0.1rem solid var(--primary);
+    border: 0.1rem solid var(--black-transparent);
+    border-radius: var(--space-sm);
+    padding: var(--space) var(--space-sm) var(--space) var(--space-sm);
+
+    >span {
+        color: var(--primary);
+        font-weight: 700;
+    }
+}
+
+
+.accordion-item-active {
+    >span {
+        color: var(--primary);
     }
 }

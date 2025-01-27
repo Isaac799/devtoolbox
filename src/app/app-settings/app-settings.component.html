@@ -2,12 +2,12 @@
     <div class="section-scroll">
 
         <div class="sticky">
-            <div class="output-groups">
+            <div class="accordion-groups">
                 @for (x of generatorModeOptions; track $index; let i = $index) {
                 <div
-                    class="output-group"
+                    class="accordion-group"
                     [ngClass]="{
-            'output-group-active': generatorModeSelectedIndex[0] === i,
+            'accordion-group-active': generatorModeSelectedIndex[0] === i,
             'can-hover': generatorModeSelectedIndex[0] !== i,
         }"
                 >
@@ -19,9 +19,9 @@
                     @if (generatorModeSelectedIndex[0] === i) {
                     @for (x of x.items; track $index; let k = $index) {
                     <div
-                        class="output-item"
+                        class="accordion-item"
                         [ngClass]="{
-                        'output-item-active': generatorModeSelectedIndex[1] === k,
+                        'accordion-item-active': generatorModeSelectedIndex[1] === k,
                         'can-hover': generatorModeSelectedIndex[1] !== k,
                     }"
                     >
