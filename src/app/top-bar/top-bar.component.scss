@@ -1,0 +1,20 @@
+.top-row-container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    gap: var(--space);
+}
+
+.title-1 {
+    font-size: 2rem;
+}
+
+// @media (max-width: 680px) {
+//     .top-row-container{ 
+//         margin-bottom: 1rem;
+//         flex-wrap: wrap;
+//     }
+// }

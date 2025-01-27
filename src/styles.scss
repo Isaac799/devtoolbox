@@ -568,7 +568,7 @@ select.ng-invalid {
     padding: var(--space-sm);
 
     height: calc(100vh - 2rem);
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100vh - (var(--space) * 11));
 
     overflow: hidden;
 

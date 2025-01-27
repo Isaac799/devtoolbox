@@ -11,6 +11,20 @@
     right: 0;
 }
 
+.top-bar {
+    height: 4rem;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    margin: var(--space);
+}
+
+.app-container {
+    display: grid;
+    grid-template-columns: 100vw;
+    gap: var(--space);
+    grid-template-rows: 4rem auto;
+}
+
 .split {
     display: grid;
     // grid-template-columns: 20rem calc(100vw - 23rem);
@@ -22,6 +36,7 @@
 @media (max-width: 680px) {
     .split {
         grid-template-columns: 100vw;
+        margin-top: var(--space);
         margin-bottom: 4rem;
         gap: 4rem;
         padding: 0;

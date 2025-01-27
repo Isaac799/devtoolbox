@@ -7,10 +7,11 @@ import {DataService} from './services/data.service'
 import {CodeOutputComponent} from './code-output/code-output.component'
 import {NotificationService} from './services/notification.service'
 import {AppSettingsComponent} from './app-settings/app-settings.component'
+import { TopBarComponent } from "./top-bar/top-bar.component";
 
 @Component({
     selector: 'app-root',
-    imports: [CommonModule, AppSettingsComponent, FormsModule, ReactiveFormsModule, GuiEditorComponent, CodeOutputComponent],
+    imports: [CommonModule, AppSettingsComponent, FormsModule, ReactiveFormsModule, GuiEditorComponent, CodeOutputComponent, TopBarComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
