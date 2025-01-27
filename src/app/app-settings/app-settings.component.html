@@ -36,55 +36,69 @@
                 </div>
             </div>
 
-            <div class="mt-auto">
-                <!-- Text Editor -->
-                <div class="controls">
-                    <div class="control">
-                        <label for="appMode">Config File</label>
-                        <select
-                            [(ngModel)]="data.app.mode"
-                            (ngModelChange)="data.ReloadAndSave()"
-                            id="appMode"
+            <div class="fc g-2">
+                <div>
+                    <span class="title-1 p-1">
+                        App Settings
+                    </span>
+                    <!-- Text Editor -->
+                    <div class="controls">
+                        <div class="control">
+                            <label for="appMode">Config File</label>
+                            <select
+                                [(ngModel)]="data.app.mode"
+                                (ngModelChange)="data.ReloadAndSave()"
+                                id="appMode"
+                            >
+                                @for (x of modeOptions; track $index) {
+                                <option [ngValue]="x.value">{{ x.name }}</option>
+                                }
+                            </select>
+                        </div>
+                        <div
+                            class=" control p-2 can-hover"
+                            (mouseup)="copyConfig()"
                         >
-                            @for (x of modeOptions; track $index) {
-                            <option [ngValue]="x.value">{{ x.name }}</option>
-                            }
-                        </select>
-                        <div class="p-2">
-                            <button
-                                class="info"
-                                (click)="copyConfig()"
-                            >
-                                Copy
-                            </button>
+                            <span>
+                                Copy Configuration
+                            </span>
                         </div>
+
                     </div>
-                    @if(data.app.generatorMode | isSeedMode){
-                    <div class="control">
-                        <label for="seedLimit">Seed Size ({{data.app.seedLimit}})</label>
-                        <div class="slider">
-                            <input
-                                [(ngModel)]="data.app.seedLimit"
-                                (ngModelChange)="debounceReload()"
-                                type="range"
-                                min="1"
-                                max="50"
-                                value="10"
-                                class="slider"
-                                id="seedLimit"
-                            >
-                        </div>
-                    </div>
-                    <div
-                        class=" control p-2 can-hover"
-                        (mouseup)="data.EmitChangesForApp()"
-                    >
-                        <span>
-                            Regenerate Data
-                        </span>
-                    </div>
-                    }
                 </div>
+
+                @if(data.app.generatorMode | isSeedMode){
+                <div>
+                    <span class="title-1 p-1">
+                        Manage Seed Data
+                    </span>
+                    <div class="controls">
+                        <div class="control">
+                            <label for="seedLimit">Seed Size ({{data.app.seedLimit}})</label>
+                            <div class="slider">
+                                <input
+                                    [(ngModel)]="data.app.seedLimit"
+                                    (ngModelChange)="debounceReload()"
+                                    type="range"
+                                    min="1"
+                                    max="50"
+                                    value="10"
+                                    class="slider"
+                                    id="seedLimit"
+                                >
+                            </div>
+                        </div>
+                        <div
+                            class=" control p-2 can-hover"
+                            (mouseup)="data.EmitChangesForApp()"
+                        >
+                            <span>
+                                Regenerate Data
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>
