@@ -1,0 +1,39 @@
+<div class="section-parent">
+    <div class="section-scroll">
+
+        <div class="sticky">
+            <div class="output-groups">
+                @for (x of data.generatorModeOptions; track $index; let i = $index) {
+                <div
+                    class="output-group"
+                    [ngClass]="{
+            'output-group-active': data.generatorModeSelectedIndex[0] === i,
+            'can-hover': data.generatorModeSelectedIndex[0] !== i,
+        }"
+                >
+                    <span
+                        (mouseup)="data.generatorModeSelectedIndex[0] = i; data.generatorModeSelectedIndex[1] = 0;  data.setGenMode()"
+                    >
+                        {{ x.title }}
+                    </span>
+                    @if (data.generatorModeSelectedIndex[0] === i) {
+                    @for (x of x.items; track $index; let k = $index) {
+                    <div
+                        class="output-item"
+                        [ngClass]="{
+                        'output-item-active': data.generatorModeSelectedIndex[1] === k,
+                        'can-hover': data.generatorModeSelectedIndex[1] !== k,
+                    }"
+                    >
+                        <span (mouseup)="data.generatorModeSelectedIndex[1] = k; data.setGenMode()">
+                            {{x.name}}
+                        </span>
+                    </div>
+                    }
+                    }
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

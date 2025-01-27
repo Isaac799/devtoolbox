@@ -6,10 +6,11 @@ import {GuiEditorComponent} from './gui-editor/gui-editor.component'
 import {DataService} from './services/data.service'
 import {CodeOutputComponent} from './code-output/code-output.component'
 import {NotificationService} from './services/notification.service'
+import {AppSettingsComponent} from './app-settings/app-settings.component'
 
 @Component({
     selector: 'app-root',
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, GuiEditorComponent, CodeOutputComponent],
+    imports: [CommonModule, AppSettingsComponent, FormsModule, ReactiveFormsModule, GuiEditorComponent, CodeOutputComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })

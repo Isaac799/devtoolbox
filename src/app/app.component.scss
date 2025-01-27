@@ -13,8 +13,8 @@
 
 .split {
     display: grid;
-    grid-template-columns: 20rem calc(100vw - 23rem);
-    // grid-template-columns: 18.5rem 18.5rem calc(100vw - 41rem);
+    // grid-template-columns: 20rem calc(100vw - 23rem);
+    grid-template-columns: 15rem 18rem calc(100vw - 35rem);
     gap: var(--space);
     padding: var(--space);
 }

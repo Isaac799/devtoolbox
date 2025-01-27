@@ -1,0 +1,48 @@
+.output-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    // border: 0.1rem solid var(--black-transparent);
+    // border-radius: var(--space-sm);
+    padding: 0.5rem 0.35rem 0.5rem 0.35rem;
+}
+
+.output-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    >span {
+        color: var(--black);
+        font-weight: 500;
+    }
+}
+
+.output-item {
+    padding-left: 1rem;
+
+    >span {
+        color: var(--black);
+    }
+}
+
+
+.output-group-active {
+    border-left: 0.1rem solid var(--primary);
+    border: 0.1rem solid var(--black-transparent);
+    border-radius: var(--space-sm);
+    padding: 0.5rem 0.35rem 0.5rem 0.35rem;
+
+    >span {
+        color: var(--primary);
+        font-weight: 700;
+    }
+}
+
+
+.output-item-active {
+    >span {
+        color: var(--primary);
+    }
+}

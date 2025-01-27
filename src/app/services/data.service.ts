@@ -37,66 +37,128 @@ export class DataService {
         complexity: AppComplexityMode.Advanced
     }
 
+    setGenMode() {
+        const c = this.generatorModeOptions[this.generatorModeSelectedIndex[0]].items[this.generatorModeSelectedIndex[1]]
+        if (!c) {
+            this.generatorModeSelectedIndex = [0, 0]
+            this.setGenMode()
+            return
+        }
+        this.app.generatorMode = c.value
+        this.ReloadAndSave()
+    }
+    generatorModeSelectedIndex = [0, 0]
     generatorModeOptions = [
         {
-            name: 'Postgres: Tables',
-            value: AppGeneratorMode.Postgres
+            title: 'PostgreSQL',
+            items: [
+                {
+                    name: 'Tables',
+                    value: AppGeneratorMode.Postgres
+                },
+                {
+                    name: 'Functions',
+                    value: AppGeneratorMode.PostgresFunctions
+                },
+                {
+                    name: ' Seed Data',
+                    value: AppGeneratorMode.PostgresSeed
+                }
+            ]
         },
         {
-            name: 'Postgres: ƒ',
-            value: AppGeneratorMode.PostgresFunctions
+            title: 'T-SQL',
+            items: [
+                {
+                    name: 'Tables',
+                    value: AppGeneratorMode.TSQLTables
+                },
+                {
+                    name: ' Stored Procedures',
+                    value: AppGeneratorMode.TSQLStoredProcedures
+                }
+            ]
         },
         {
-            name: 'Postgres Seed Data',
-            value: AppGeneratorMode.PostgresSeed
+            title: 'SQLite',
+            items: [
+                {
+                    name: 'Tables',
+                    value: AppGeneratorMode.SQLiteTables
+                },
+                {
+                    name: 'Queries',
+                    value: AppGeneratorMode.SQLiteJoinQuery
+                }
+            ]
         },
         {
-            name: 'T-SQL: tables',
-            value: AppGeneratorMode.TSQLTables
+            title: 'JavaScript',
+            items: [
+                {
+                    name: 'Classes (with JSDoc)',
+                    value: AppGeneratorMode.JSClasses
+                }
+            ]
         },
         {
-            name: ' T-SQL: procedures',
-            value: AppGeneratorMode.TSQLStoredProcedures
+            title: 'TypeScript',
+            items: [
+                {
+                    name: 'Classes',
+                    value: AppGeneratorMode.TSClasses
+                },
+                {
+                    name: 'Types & new ƒ',
+                    value: AppGeneratorMode.TSTypesAndFns
+                }
+            ]
         },
         {
-            name: 'SQLite: tables',
-            value: AppGeneratorMode.SQLiteTables
+            title: 'C#',
+            items: [
+                {
+                    name: 'Classes',
+                    value: AppGeneratorMode.CSClasses
+                }
+            ]
         },
         {
-            name: 'SQLite: queries',
-            value: AppGeneratorMode.SQLiteJoinQuery
+            title: 'Go',
+            items: [
+                {
+                    name: 'Structs & new ƒ',
+                    value: AppGeneratorMode.GoStructsAndFns
+                }
+            ]
         },
         {
-            name: 'JavaScript: classes',
-            value: AppGeneratorMode.JSClasses
+            title: 'Rust',
+            items: [
+                {
+                    name: 'Rust: structs & impl ƒ',
+                    value: AppGeneratorMode.RustStructAndImpl
+                }
+            ]
         },
         {
-            name: 'TypeScript: classes',
-            value: AppGeneratorMode.TSClasses
+            title: 'Angular',
+            items: [
+                {
+                    name: 'Reactive form',
+                    value: AppGeneratorMode.AngularFormControl
+                }
+            ]
         },
+
         {
-            name: 'TypeScript: types & ƒ',
-            value: AppGeneratorMode.TSTypesAndFns
-        },
-        {
-            name: 'C#: classes',
-            value: AppGeneratorMode.CSClasses
-        },
-        {
-            name: 'Go: structs & ƒ',
-            value: AppGeneratorMode.GoStructsAndFns
-        },
-        {
-            name: 'Rust: structs & impl ƒ',
-            value: AppGeneratorMode.RustStructAndImpl
-        },
-        {
-            name: 'Angular: reactive form',
-            value: AppGeneratorMode.AngularFormControl
-        },
-        {
-            name: 'API: Go & PostgreSQL',
-            value: AppGeneratorMode.APIGoPostgres
+            name: 'HTTP Servers',
+            items: [
+                {
+                    name: 'Go & PostgreSQL',
+                    value: AppGeneratorMode.APIGoPostgres
+                }
+            ]
         }
     ]
 

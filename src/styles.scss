@@ -20,9 +20,9 @@ body {
     --highlight: #f0e442;
 
     --transparency: 0.2;
-    --space: 1rem;
-    --space-sm: 0.5rem;
-    --border-radius: 1.5rem;
+    --space: 0.5rem;
+    --space-sm: 0.35rem;
+    --border-radius: 0.5rem;
     --shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 
     --white-transparent: rgba(255, 255, 255, var(--transparency));
@@ -572,7 +572,7 @@ select.ng-invalid {
 
     overflow: hidden;
 
-    > .section-scroll {
+    >.section-scroll {
         display: block;
 
         height: calc(100vh - 2rem);
@@ -580,6 +580,10 @@ select.ng-invalid {
 
         overflow: auto;
     }
+}
+
+.can-hover {
+    cursor: pointer;
 }
 
 @media (max-width: 680px) {
@@ -594,11 +598,11 @@ select.ng-invalid {
         border-radius: 0;
         padding: 0;
 
-        > .section-scroll {
+        >.section-scroll {
             max-height: calc(75vh);
         }
 
-        > .section-scroll {
+        >.section-scroll {
             max-width: calc(100vw);
         }
     }
