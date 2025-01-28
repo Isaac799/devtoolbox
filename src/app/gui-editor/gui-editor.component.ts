@@ -7,21 +7,26 @@ import {ModalComponent} from '../modal/modal.component'
 import {CommonModule} from '@angular/common'
 import {MinMaxLabelFromAttrTypePipe} from '../pipes/min-max-label-from-attr-type.pipe'
 import {DefaultValueHintPipe} from '../pipes/default-value-hint.pipe'
-import {array_move} from '../constants'
 import {NotificationService} from '../services/notification.service'
+import {CdkDrag, CdkDragDrop, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
 
 @Component({
     selector: 'app-gui-editor',
-    imports: [ModalComponent, FormsModule, CommonModule, ReactiveFormsModule, MinMaxRelevantPipe, MinMaxLabelFromAttrTypePipe, DefaultValueHintPipe],
+    imports: [
+        ModalComponent,
+        FormsModule,
+        CommonModule,
+        ReactiveFormsModule,
+        MinMaxRelevantPipe,
+        MinMaxLabelFromAttrTypePipe,
+        DefaultValueHintPipe,
+        DragDropModule,
+        CdkDrag
+    ],
     templateUrl: './gui-editor.component.html',
     styleUrl: './gui-editor.component.scss'
 })
 export class GuiEditorComponent implements OnInit {
-    draggingTable: Table | null = null
-    draggingTableIndex = -1
-    draggingAttribute: Attribute | null = null
-    draggingAttributeIndex = -1
-
     hoveredTable: Table | null = null
     hoveredSchema: Schema | null = null
 
@@ -30,196 +35,6 @@ export class GuiEditorComponent implements OnInit {
 
     get isReference(): boolean {
         return this.attributeForm.controls.Type.value === AttrType.REFERENCE
-    }
-
-    clearIfNeeded() {
-        this.draggingAttribute = null
-        this.draggingTable = null
-        this.draggingTableIndex = -1
-        this.draggingAttributeIndex = -1
-        this.showMoves = false
-    }
-
-    attrMouseDown(x: Attribute, i: number) {
-        this.draggingAttribute = x
-        this.draggingAttributeIndex = i
-        setTimeout(() => {
-            if (this.draggingAttribute?.ID === x.ID) {
-                this.showMoves = true
-            }
-        }, this.showMovesTimeoutMS)
-    }
-
-    attrMouseUp() {
-        if (this.showModalSchema) {
-            return
-        }
-
-        if (this.showModalTable) {
-            return
-        }
-
-        if (!this.hoveredTable) {
-            return
-        }
-
-        const a = this.draggingAttribute
-
-        if (!a) {
-            return
-        }
-
-        if (this.hoveredTable.ID === a.Parent.ID) {
-            this.draggingAttribute = null
-            this.draggingAttributeIndex = -1
-            return
-        }
-
-        const newAttr = this.cloneAttrToNewParent(a, this.hoveredTable)
-
-        const index = a.Parent.Attributes.findIndex(e => e.ID === a.ID)
-        if (index === -1) {
-            return
-        }
-        a.Parent.Attributes.splice(index, 1)
-
-        this.hoveredTable.Attributes.push(newAttr)
-
-        this.draggingAttribute = null
-        this.draggingAttributeIndex = -1
-
-        this.serial += 1
-
-        this.data.ReloadAndSave()
-        this.cdr.detectChanges()
-    }
-
-    cloneAttrToNewParent(a: Attribute, t: Table) {
-        const newAttr = new Attribute(this.serial, a.Name, a.Type, t)
-
-        if (a.Option) {
-            newAttr.Option = {...a.Option}
-        }
-        if (a.RefTo) {
-            newAttr.RefTo = a.RefTo
-        }
-        if (a.Validation) {
-            newAttr.Validation = a.Validation
-        }
-
-        return newAttr
-    }
-
-    tblMouseDown(x: Table, i: number) {
-        this.draggingTable = x
-        this.draggingTableIndex = i
-        setTimeout(() => {
-            if (this.draggingTable?.ID === x.ID) {
-                this.showMoves = true
-            }
-        }, this.showMovesTimeoutMS)
-    }
-
-    tblMouseUp() {
-        if (this.showModalSchema) {
-            return
-        }
-
-        if (!this.hoveredSchema) {
-            return
-        }
-
-        const t = this.draggingTable
-
-        if (!t) {
-            if (this.selectedSchema) {
-                this.doShowModalSchema()
-            }
-            return
-        }
-
-        if (this.hoveredSchema.ID === t.Parent.ID) {
-            this.draggingTable = null
-            this.draggingTableIndex = -1
-            return
-        }
-
-        const newTbl = new Table(this.serial, t.Name, this.hoveredSchema)
-
-        if (t.RefBy) {
-            newTbl.RefBy = [...t.RefBy]
-        }
-
-        for (const a of t.Attributes) {
-            const newAttr = this.cloneAttrToNewParent(a, newTbl)
-            newTbl.Attributes.push(newAttr)
-        }
-
-        const index = t.Parent.Tables.findIndex(e => e.ID === t.ID)
-        if (index === -1) {
-            return
-        }
-
-        t.Parent.Tables.splice(index, 1)
-
-        this.hoveredSchema.Tables.push(newTbl)
-
-        for (const sch of this.data.schemas) {
-            for (const tbl of sch.Tables) {
-                for (const attr of tbl.Attributes) {
-                    if (!attr.RefTo) {
-                        continue
-                    }
-                    if (attr.RefTo.ID === t.ID) {
-                        attr.RefTo = newTbl
-                    }
-                }
-
-                if (!tbl.RefBy) continue
-
-                for (let i = 0; i < tbl.RefBy.length; i++) {
-                    const refTbl = tbl.RefBy[i]
-                    if (refTbl.ID === t.ID) {
-                        tbl.RefBy[i] = newTbl
-                    }
-                }
-            }
-        }
-
-        this.draggingTable = null
-        this.draggingTableIndex = -1
-
-        this.serial += 1
-
-        this.data.ReloadAndSave()
-        this.cdr.detectChanges()
-    }
-
-    tblMouseUpReorder(draggingTable: Table, newIndex: number) {
-        if (this.draggingTableIndex < 0) {
-            return
-        }
-        array_move(draggingTable.Parent.Tables, this.draggingTableIndex, newIndex)
-
-        this.draggingTable = null
-        this.draggingTableIndex = -1
-
-        this.data.ReloadAndSave()
-        this.cdr.detectChanges()
-    }
-
-    attrMouseUpReorder(draggingAttribute: Attribute, newIndex: number) {
-        if (this.draggingAttributeIndex < 0) {
-            return
-        }
-
-        array_move(draggingAttribute.Parent.Attributes, this.draggingAttributeIndex, newIndex)
-
-        this.draggingAttribute = null
-        this.draggingAttributeIndex = -1
-
-        this.data.ReloadAndSave()
-        this.cdr.detectChanges()
     }
 
     showModalSchema = false
@@ -460,11 +275,22 @@ export class GuiEditorComponent implements OnInit {
         return this.data.app.complexity === AppComplexityMode.Simple ? this.attrTypeOptionsSimple : this.attrTypeOptionsAdvanced
     }
 
-    constructor(
-        private cdr: ChangeDetectorRef,
-        public data: DataService,
-        private notification: NotificationService
-    ) {}
+    constructor(private cdr: ChangeDetectorRef, public data: DataService, private notification: NotificationService) {}
+
+    doneDrag(table: Table, event: CdkDragEnd) {
+        table.dragPosition.x += event.distance.x
+        table.dragPosition.y += event.distance.y
+
+        if (table.dragPosition.x < 0) {
+            table.dragPosition.x = 0
+        }
+
+        if (table.dragPosition.y < 0) {
+            table.dragPosition.y = 0
+        }
+
+        this.data.saveState()
+    }
 
     ngOnInit(): void {
         this.serial = GuiEditorComponent.discoverSerial(this.data.schemas)

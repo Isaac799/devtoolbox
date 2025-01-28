@@ -175,9 +175,8 @@ export class AppSettingsComponent implements OnInit {
                 }
             ]
         },
-
         {
-            name: 'HTTP Servers',
+            title: 'HTTP Servers',
             items: [
                 {
                     name: 'Go & PostgreSQL',

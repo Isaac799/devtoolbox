@@ -402,6 +402,10 @@ export interface TableConfig {
     ParentID: number
     // Options: TableOptions;
     Attributes: Record<string, AttributeConfig>
+    dragPosition: {
+        x: number
+        y: number
+    }
 }
 
 // Table represents a database table with its attributes and options
@@ -412,11 +416,13 @@ export class Table {
     Name: string
     // Options: TableOptions;
     Attributes: Attribute[]
+    dragPosition
 
-    constructor(ID: number, Name: string, Parent: Schema) {
+    constructor(ID: number, Name: string, Parent: Schema, dragPosition = {x: 0, y: 0}) {
         this.ID = ID
         this.Name = Name
         this.Parent = Parent
+        this.dragPosition = dragPosition
 
         this.Attributes = []
     }

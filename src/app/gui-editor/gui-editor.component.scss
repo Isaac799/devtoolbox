@@ -1,14 +1,3 @@
-.group {
-    padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
-    // border-left: 0.1rem solid black;
-    margin-left: var(--space);
-}
-
-.group:hover {
-    // border-left: 0.1rem solid black;
-    margin-left: var(--space);
-}
-
 * {
     -webkit-touch-callout: none;
     /* iOS Safari */
@@ -63,4 +52,20 @@
 
 button {
     padding: 0;
+}
+
+
+.table {
+    position: absolute;
+    width: min-content;
+    background-color: white;
+
+    border: 0.1rem solid var(--black-transparent);
+    border-radius: var(--space-sm);
+    padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
+
+    >span {
+        color: var(--primary);
+        font-weight: 700;
+    }
 }

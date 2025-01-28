@@ -1,184 +1,82 @@
-<div class="section-parent">
-    <div class="section-scroll">
-
+<div class="section-parent table-boundary">
+    @for (s of data.schemas; track $index) {
+    @for (t of s.Tables; track $index; let ti = $index) {
+    <div
+        class="table"
+        cdkDrag
+        cdkDragBoundary=".table-boundary"
+        [cdkDragFreeDragPosition]="t.dragPosition"
+        (cdkDragEnded)="doneDrag(t, $event)"
+    >
+        <!-- Table -->
         <div
-            class="fc p-2"
-            (mouseup)="clearIfNeeded()"
-            (mouseleave)="clearIfNeeded()"
-            [ngClass]="{
-                dragging: showMoves && (draggingTable !== null || draggingAttribute !== null)
-            }"
+            (mouseenter)="hoveredTable = t"
+            class="fr align-center g-1 can-hover"
         >
-            @for (s of data.schemas; track $index) {
-            <!-- Schema -->
-            <div class="fc">
-                <div
-                    tabindex="1"
-                    class="fr align-center g-1 can-hover"
-                    (mouseup)="tblMouseUp()"
-                    (mouseenter)="hoveredSchema = s"
-                    [ngClass]="{
-                            pink: showMoves && draggingTable !== null && draggingTable.Parent.ID !== s.ID,
-                            'accent-hover': showMoves && draggingTable && hoveredSchema?.ID === s.ID && draggingTable.Parent.ID !== s.ID
-                        }"
-                >
-                    <span
-                        class="title-1 primary-text"
-                        (mouseup)="doShowModalSchema(s)"
-                    >
-                        {{ s.Name }}
-                    </span>
-                    @if (showMoves && draggingTable && hoveredSchema?.ID === s.ID && draggingTable.Parent.ID !== s.ID) {
-                    <span> Move "{{ draggingTable.Name }}" to this schema </span>
-                    }
-                </div>
+            <!-- (mouseup)="doShowModalTable(s, t)" -->
+            <span class="title-2 primary-text">
+                {{ t.Name }}
+            </span>
+        </div>
 
-                <div class="accordion-groups">
-                    @for (t of s.Tables; track $index; let ti = $index) {
-                    @if (showMoves && draggingTableIndex >= 0 && ti <
-                        draggingTableIndex
-                        &&
-                        draggingTable
-                        &&
-                        draggingTable.Parent.ID===s.ID)
-                        {
-                        <div
-                        (mouseup)="tblMouseUpReorder(draggingTable, ti)"
-                        class="slot fc align-center justify-center accent-hover"
-                    >
-                        Move "{{ draggingTable.Name }}" up here
-                </div>
+        <div class="fc">
+            @for (a of t.Attributes; track $index; let ai = $index) {
+            <!-- Attribute -->
+            <div
+                class="accordion-item can-hover"
+                (mouseup)="doShowModalAttribute(s, t, a)"
+            >
+                <span>
+                    {{ a.Name }}
+                </span>
+                @if (a.Type === 'REF') {
+                <!-- <i class="icon">keyboard_arrow_up</i> -->
+                <i class="icon small accent-text">switch_access_shortcut</i>
+                }
+                @if (a.Option?.PrimaryKey) {
+                <i class="icon small accent-text">key</i>
+                }
+                @if (a.Option?.Unique) {
+                <i class="icon small accent-text">verified</i>
+                <!-- <i class="icon">counter_1</i> -->
+                }
+                @if (a.Validation?.Required) {
+                <i class="icon small accent-text">asterisk</i>
                 }
 
-                <div class="accordion-group-active">
-
-
-                    <!-- Table -->
-                    <div
-                        tabindex="2"
-                        (mouseenter)="hoveredTable = t"
-                        class="fr align-center g-1 can-hover"
-                        (mouseup)="doShowModalTable(s, t)"
-                        [ngClass]="{
-                                blink: showMoves && draggingAttribute !== null
-                            }"
-                        (mouseup)="attrMouseUp()"
-                        (mousedown)="tblMouseDown(t, ti)"
-                    >
-                        <span class="title-2 primary-text">
-                            {{ t.Name }}
-                        </span>
-                    </div>
-
-                    <div class="fc">
-                        @for (a of t.Attributes; track $index; let ai = $index) {
-                        @if (
-                        showMoves &&
-                        draggingAttributeIndex >= 0 &&
-                        ai <
-                            draggingAttributeIndex
-                            &&
-                            draggingAttribute
-                            &&
-                            draggingAttribute.Parent.ID===t.ID
-                            )
-                            {
-                            <div
-                            (mouseup)="attrMouseUpReorder(draggingAttribute, ai)"
-                            class="slot fc align-center justify-center accent-hover"
-                        >
-                            Move "{{ draggingAttribute.Name }}" up here
-                    </div>
+                @if (a.warnings.length > 0) {
+                <div class="fc align-center justify-center">
+                    @for (w of a.warnings; track $index) {
+                    <span class="error">
+                        {{ w }}
+                    </span>
                     }
-
-
-                    <!-- Attribute -->
-                    <div
-                        tabindex="3"
-                        class="accordion-item can-hover"
-                        (mouseup)="doShowModalAttribute(s, t, a)"
-                        (mousedown)="attrMouseDown(a, ai)"
-                    >
-                        <span>
-                            {{ a.Name }}
-                        </span>
-                        @if (a.Type === 'REF') {
-                        <!-- <i class="icon">keyboard_arrow_up</i> -->
-                        <i class="icon small accent-text">switch_access_shortcut</i>
-                        }
-                        @if (a.Option?.PrimaryKey) {
-                        <i class="icon small accent-text">key</i>
-                        }
-                        @if (a.Option?.Unique) {
-                        <i class="icon small accent-text">verified</i>
-                        <!-- <i class="icon">counter_1</i> -->
-                        }
-                        @if (a.Validation?.Required) {
-                        <i class="icon small accent-text">asterisk</i>
-                        }
-
-                        @if (a.warnings.length > 0) {
-                        <div class="fc align-center justify-center">
-                            @for (w of a.warnings; track $index) {
-                            <span class="error">
-                                {{ w }}
-                            </span>
-                            }
-                        </div>
-                        }
-                    </div>
-
-
-                    @if (
-                    showMoves &&
-                    draggingAttributeIndex >= 0 &&
-                    ai > draggingAttributeIndex &&
-                    draggingAttribute &&
-                    draggingAttribute.Parent.ID === t.ID
-                    ) {
-                    <div
-                        (mouseup)="attrMouseUpReorder(draggingAttribute, ai)"
-                        class="slot fc align-center justify-center accent-hover"
-                    >
-                        Move "{{ draggingAttribute.Name }}" down here
-                    </div>
-                    }
-                    }
-                    <div class="pl-4">
-
-                        <button
-                            class="fr align-center g-1 hide-until-hover"
-                            (mouseup)="doShowModalAttribute(s, t)"
-                        >
-                            <span> Attribute </span>
-                            <i class="icon small">add</i>
-                        </button>
-                    </div>
                 </div>
+                }
             </div>
-
-
-            @if (showMoves && draggingTableIndex >= 0 && ti > draggingTableIndex && draggingTable &&
-            draggingTable.Parent.ID === s.ID) {
-            <div
-                (mouseup)="tblMouseUpReorder(draggingTable, ti)"
-                class="slot fc align-center justify-center accent-hover"
-            >
-                Move "{{ draggingTable.Name }}" down here
-            </div>
-            }
-
             }
             <div class="pl-4">
+
                 <button
                     class="fr align-center g-1 hide-until-hover"
-                    (mouseup)="doShowModalTable(s)"
+                    (mouseup)="doShowModalAttribute(s, t)"
                 >
-                    <span> Table </span>
+                    <span> Attribute </span>
                     <i class="icon small">add</i>
                 </button>
             </div>
         </div>
+    </div>
+
+    }
+    <div class="pl-4">
+        <button
+            class="fr align-center g-1 hide-until-hover"
+            (mouseup)="doShowModalTable(s)"
+        >
+            <span> Table </span>
+            <i class="icon small">add</i>
+        </button>
     </div>
     }
     <div class="pl-4">
@@ -190,8 +88,6 @@
             <i class="icon small">add</i>
         </button>
     </div>
-</div>
-</div>
 </div>
 
 @if (showModalSchema) {

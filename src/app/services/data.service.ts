@@ -84,7 +84,6 @@ export class DataService {
             if (!parsed['complexity']) {
                 parsed['complexity'] = AppComplexityMode.Advanced
             }
-            
 
             this.app = parsed
         } catch (err) {
@@ -114,7 +113,7 @@ export class DataService {
         this.schemas = schemas
     }
 
-    private saveState() {
+    saveState() {
         const schemasConfig: Record<string, SchemaConfig> = {}
         for (const s of this.schemas) {
             const s2: SchemaConfig = {
@@ -125,7 +124,8 @@ export class DataService {
                 const t2: TableConfig = {
                     ID: t.ID,
                     ParentID: t.Parent.ID,
-                    Attributes: {}
+                    Attributes: {},
+                    dragPosition: t.dragPosition
                 }
                 for (const a of t.Attributes) {
                     const a2: AttributeConfig = {
@@ -193,7 +193,8 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
             const t2p = [s2, ...schemas].find(e => e.ID === t.ParentID)
             if (!t2p) continue
 
-            const t2 = new Table(t.ID, tk, t2p)
+            const t2 = new Table(t.ID, tk, t2p, t.dragPosition)
+
             for (const ak in t.Attributes) {
                 if (!Object.prototype.hasOwnProperty.call(t.Attributes, ak)) {
                     continue
