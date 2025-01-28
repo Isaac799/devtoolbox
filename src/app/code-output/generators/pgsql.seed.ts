@@ -34,9 +34,10 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap, limi
                 v3.push('-'.repeat(cc(a.Name, 'sk').length))
             }
 
-            const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
+            const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} ) VALUES~~`
             const c2 = `\n${TAB}  ${v3.join(` ${alignmentKeyword} `)}`
             values.push(c)
+            values.push()
             values.push(c2)
             v2 = []
             v3 = []
@@ -115,7 +116,7 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap, limi
                 values = alignKeyword(values, alignmentKeyword)
                 values = values.map(e => e.replace(alignmentKeyword, ''))
             }
-            const stmt: string[] = ['INSERT INTO', t.FN, 'VALUES']
+            const stmt: string[] = ['INSERT INTO', t.FN]
 
             const lineParts = [stmt.join(' '), values, ';']
 
@@ -125,6 +126,7 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap, limi
         }
     }
     const all = ['BEGIN;', '', ...lines, '', 'COMMIT;']
-    const str = all.join('\n')
+    const str = all.join('\n').replaceAll('VALUES~~,', 'VALUES')
+
     return str
 }
