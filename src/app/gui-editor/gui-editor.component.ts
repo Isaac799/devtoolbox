@@ -280,7 +280,9 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
     constructor(private cdr: ChangeDetectorRef, public data: DataService, private notification: NotificationService) {}
 
     ngAfterViewInit() {
-        this.drawLines()
+      setTimeout(() => {
+        this.redraw()
+      }, 500);
     }
 
     redraw() {
