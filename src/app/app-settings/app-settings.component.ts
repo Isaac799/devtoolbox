@@ -73,12 +73,14 @@ export class AppSettingsComponent implements OnInit {
     }
 
     generatorModeSelectedIndex = [0, 0]
-    generatorModeOptions = [
+    generatorModeOptions: {title: string; icon?: string; items: {name: string; icon?: string; value: AppGeneratorMode}[]}[] = [
         {
             title: 'PostgreSQL',
+            icon: 'star',
             items: [
                 {
                     name: 'Tables',
+                    icon: 'star',
                     value: AppGeneratorMode.Postgres
                 },
                 {
@@ -87,6 +89,7 @@ export class AppSettingsComponent implements OnInit {
                 },
                 {
                     name: ' Seed Data',
+                    icon: 'star',
                     value: AppGeneratorMode.PostgresSeed
                 }
             ]
@@ -177,9 +180,11 @@ export class AppSettingsComponent implements OnInit {
         },
         {
             title: 'HTTP Servers',
+            icon: 'star',
             items: [
                 {
                     name: 'Go & PostgreSQL',
+                    icon: 'star',
                     value: AppGeneratorMode.APIGoPostgres
                 }
             ]

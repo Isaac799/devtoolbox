@@ -3,7 +3,7 @@
         <div class="settings-column">
             <div class="sticky">
                 <div class="accordion-groups">
-                    @for (x of generatorModeOptions; track $index; let i = $index) {
+                    @for (mode of generatorModeOptions; track $index; let i = $index) {
                     <div
                         class="accordion-group"
                         [ngClass]="{
@@ -12,12 +12,16 @@
         }"
                     >
                         <span
+                            class="fr g-2 align-center"
                             (mouseup)="generatorModeSelectedIndex[0] = i; generatorModeSelectedIndex[1] = 0;  setGenMode()"
                         >
-                            {{ x.title }}
+                            {{ mode.title }}
+                            @if (mode.icon) {
+                            <i class="icon small accent-text">{{mode.icon}}</i>
+                            }
                         </span>
                         @if (generatorModeSelectedIndex[0] === i) {
-                        @for (x of x.items; track $index; let k = $index) {
+                        @for (x of mode.items; track $index; let k = $index) {
                         <div
                             class="accordion-item"
                             [ngClass]="{
@@ -25,8 +29,15 @@
                         'can-hover': generatorModeSelectedIndex[1] !== k,
                     }"
                         >
-                            <span (mouseup)="generatorModeSelectedIndex[1] = k; setGenMode()">
+                            <span
+                                class="fr g-2 align-center"
+                                (mouseup)="generatorModeSelectedIndex[1] = k; setGenMode()"
+                            >
                                 {{x.name}}
+
+                                @if (x.icon) {
+                                <i class="icon small accent-text">{{x.icon}}</i>
+                                }
                             </span>
                         </div>
                         }
