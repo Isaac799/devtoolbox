@@ -280,9 +280,9 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
     constructor(private cdr: ChangeDetectorRef, public data: DataService, private notification: NotificationService) {}
 
     ngAfterViewInit() {
-      setTimeout(() => {
-        this.redraw()
-      }, 500);
+        setTimeout(() => {
+            this.redraw()
+        }, 500)
     }
 
     redraw() {
@@ -361,7 +361,7 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
         const yDiff = sourceY - targetY
 
         if (Math.abs(xDiff) > widthToOvercome && xDiff > 0) {
-            targetX += targetTableRect.width - REM
+            targetX += targetTableRect.width - REM / 2
         }
 
         if (Math.abs(yDiff) > heightToOvercome && yDiff > 0) {
@@ -420,7 +420,8 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
 
         const gradient = ctx.createLinearGradient(sourceX, sourceY, targetX, targetY)
         gradient.addColorStop(0, 'rgba(0, 114, 178, 1)')
-        gradient.addColorStop(1, 'rgba(0,0,0,0.2)')
+        gradient.addColorStop(0.8, 'rgba(0,0,0,0.3)')
+        gradient.addColorStop(1, 'rgba(0,0,0,0.1)')
 
         // Set the gradient as the stroke style
         ctx.strokeStyle = gradient
@@ -442,6 +443,7 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
 
         // Calculate the distance between the bend and target points
         const distance = Math.sqrt(Math.pow(sourceX - bendX, 2) + Math.pow(sourceY - bendY, 2))
+        const distance2 = Math.sqrt(Math.pow(sourceX - targetX, 2) + Math.pow(sourceY - targetY, 2))
 
         // If `this.bend` is true, use Bézier curves
         if (this.bend) {
@@ -461,11 +463,10 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
         } else {
             // First, draw horizontal line to bend point
             ctx.moveTo(sourceX, sourceY)
-
             ctx.lineTo(bendX, sourceY)
 
             // Check if the distance is greater than 100 before drawing the vertical and target lines
-            if (distance >= 100) {
+            if (distance >= 200) {
                 // Draw the vertical line to the bend point
                 ctx.lineTo(bendX, bendY)
             }
@@ -481,16 +482,9 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
     }
 
     doneDrag(table: Table, event: CdkDragEnd) {
-        const before = {
-            x: table.dragPosition.x,
-            y: table.dragPosition.y
-        }
-
-        // Update the table's drag position
         table.dragPosition.x += event.distance.x
         table.dragPosition.y += event.distance.y
 
-        // Ensure the dragged table doesn't go out of bounds (negative coordinates)
         if (table.dragPosition.x < 0) {
             table.dragPosition.x = 0
         }
@@ -499,77 +493,8 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
             table.dragPosition.y = 0
         }
 
-        let isOverlapping = false
-
-        // Get the root element position to calculate relative positioning
-        const rootEl = document.getElementById('root-editor')
-        if (!rootEl) return // Exit if root element is not found
-
-        const rootElRect = rootEl.getBoundingClientRect()
-
-        // Check if the new position of the table overlaps with any other table
-        for (const s of this.data.schemas) {
-            for (const t of s.Tables) {
-                // Skip checking the table being dragged
-                if (t === table) continue
-
-                // Get the DOM element of the target table and its position
-                const targetTableEl = document.getElementById('table:' + t.ID)
-                if (!targetTableEl) continue
-
-                const targetTableRect = targetTableEl.getBoundingClientRect()
-
-                // Adjust the target table position to the root element's coordinate system
-                const targetTableSrc = {
-                    x: targetTableRect.left - rootElRect.left,
-                    y: targetTableRect.top - rootElRect.top
-                }
-
-                // Check if the dragged table's bounding box overlaps with the target table's bounding box
-                const doesOverlap = this.checkOverlap(table.dragPosition, targetTableSrc, targetTableRect)
-
-                if (doesOverlap) {
-                    isOverlapping = true
-                    break // Exit the loop early if there's an overlap
-                }
-            }
-
-            if (isOverlapping) break
-        }
-
-        // If the dragged table overlaps with another table, prevent the move or handle the logic
-        if (!isOverlapping) {
-            this.data.saveState()
-            setTimeout(() => {
-                this.redraw()
-            }, 0)
-        } else {
-            this.data.Reload()
-            setTimeout(() => {
-                this.redraw()
-            }, 0)
-            // Handle what should happen if the tables overlap (e.g., revert position, show warning, etc.)
-            console.log('The dragged table overlaps with another table area. Move not allowed.')
-        }
-    }
-
-    // Helper function to check if two rectangles overlap
-    checkOverlap(dragPos: {x: number; y: number}, targetPos: {x: number; y: number}, targetRect: DOMRect) {
-        // Define the dragged table's bounding box
-        const dragRect = {
-            left: dragPos.x,
-            top: dragPos.y,
-            right: dragPos.x + targetRect.width, // Assuming dragged table has same width as target table
-            bottom: dragPos.y + targetRect.height // Assuming dragged table has same height as target table
-        }
-
-        // Check for overlap between the dragged table and the target table
-        return !(
-            dragRect.right <= targetPos.x || // dragged table is to the left of target table
-            dragRect.left >= targetPos.x + targetRect.width || // dragged table is to the right of target table
-            dragRect.bottom <= targetPos.y || // dragged table is above target table
-            dragRect.top >= targetPos.y + targetRect.height
-        ) // dragged table is below target table
+        this.redraw()
+        this.data.saveState()
     }
 
     ngOnInit(): void {
