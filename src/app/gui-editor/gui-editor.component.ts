@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core'
+import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, AfterViewInit} from '@angular/core'
 import {DataService} from '../services/data.service'
 import {Schema, AttrType, Table, Attribute, AppComplexityMode, AttributeSuggestion, validationMap} from '../structure'
 import {AbstractControl, ValidationErrors, Validators, FormGroup, FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms'
@@ -26,7 +26,7 @@ import {CdkDrag, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
     templateUrl: './gui-editor.component.html',
     styleUrl: './gui-editor.component.scss'
 })
-export class GuiEditorComponent implements OnInit {
+export class GuiEditorComponent implements OnInit, AfterViewInit {
     hoveredTable: Table | null = null
     hoveredSchema: Schema | null = null
 
@@ -84,6 +84,7 @@ export class GuiEditorComponent implements OnInit {
         this._selectedSchema = value
     }
 
+    @ViewChild('canvas') canvasRef: ElementRef<HTMLCanvasElement> | undefined = undefined
     @ViewChild('schemaName') schemaNameRef: ElementRef | null = null
     @ViewChild('tableName') tableNameRef: ElementRef | null = null
     @ViewChild('attrName') attrNameRef: ElementRef | null = null
@@ -277,6 +278,91 @@ export class GuiEditorComponent implements OnInit {
 
     constructor(private cdr: ChangeDetectorRef, public data: DataService, private notification: NotificationService) {}
 
+    ngAfterViewInit() {
+        this.drawLines()
+    }
+
+    redraw() {
+        if (!this.canvasRef) {
+            return
+        }
+        const canvas = this.canvasRef.nativeElement
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+            return
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height) // Clear the canvas before redrawing
+        this.drawLines()
+    }
+
+    drawLines() {
+        if (!this.canvasRef) {
+            return
+        }
+        const canvas = this.canvasRef.nativeElement
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+            return
+        }
+
+        // Example of drawing lines with cardinality:
+        ctx.strokeStyle = '#000'
+        ctx.lineWidth = 2
+
+        for (const s of this.data.schemas) {
+            for (const t of s.Tables) {
+                for (const a of t.Attributes) {
+                    if (!a.RefTo) {
+                        continue
+                    }
+                    this.DrawLine(t, a, ctx)
+                }
+            }
+        }
+    }
+
+    private DrawLine(t: Table, a: Attribute, ctx: CanvasRenderingContext2D) {
+        const sourceTable = t
+        const targetTable = a.RefTo!
+
+        // Get the positions of the tables (centered positions)
+        const sourceX = sourceTable.dragPosition.x + 50 // Center of element
+        const sourceY = sourceTable.dragPosition.y + 25
+        const targetX = targetTable.dragPosition.x + 50 // Center of element
+        const targetY = targetTable.dragPosition.y + 25
+
+        // Calculate the middle point for the bend
+        let bendX = sourceX
+        let bendY = sourceY
+
+        // Logic to determine where the bend should happen
+        if (Math.abs(targetX - sourceX) > Math.abs(targetY - sourceY)) {
+            // If the horizontal distance is larger, bend horizontally
+            bendX = targetX > sourceX ? targetX - 100 : targetX + 100 // Move bend left or right
+        } else {
+            // If the vertical distance is larger, bend vertically
+            bendY = targetY > sourceY ? targetY - 100 : targetY + 100 // Move bend up or down
+        }
+
+        // Draw the 90-degree path (horizontal then vertical)
+        ctx.strokeStyle = '#000'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+
+        // First, draw horizontal line to bend point
+        ctx.moveTo(sourceX, sourceY)
+        ctx.lineTo(bendX, sourceY)
+
+        // Then, draw vertical line to target
+        ctx.lineTo(bendX, bendY)
+        ctx.lineTo(targetX, targetY)
+
+        ctx.stroke()
+
+        // Draw cardinality label in the middle of the line
+        ctx.fillText('1-N', (sourceX + targetX) / 2, (sourceY + targetY) / 2 - 10)
+    }
+
     doneDrag(table: Table, event: CdkDragEnd) {
         table.dragPosition.x += event.distance.x
         table.dragPosition.y += event.distance.y
@@ -289,6 +375,7 @@ export class GuiEditorComponent implements OnInit {
             table.dragPosition.y = 0
         }
 
+        this.redraw()
         this.data.saveState()
     }
 

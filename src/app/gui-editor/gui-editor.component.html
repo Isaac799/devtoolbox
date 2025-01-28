@@ -1,4 +1,11 @@
 <div class="section-parent table-boundary">
+    <canvas
+        class="canvas"
+        #canvas
+        width="1000"
+        height="1000"
+    ></canvas>
+
     @for (s of data.schemas; track $index) {
     @for (t of s.Tables; track $index; let ti = $index) {
     <div
