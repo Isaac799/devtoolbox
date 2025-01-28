@@ -45,6 +45,10 @@ export class DataService {
         this.EmitChangesForApp()
     }
 
+    Reload() {
+        this.loadLastSession()
+    }
+
     EmitChangesForApp() {
         this.schemasChange.next(this.schemas)
         this.schemasConfigChange.next(this.schemasConfig)
