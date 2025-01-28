@@ -8,53 +8,71 @@
         [cdkDragFreeDragPosition]="t.dragPosition"
         (cdkDragEnded)="doneDrag(t, $event)"
     >
-        <!-- Table -->
-        <div
-            (mouseenter)="hoveredTable = t"
-            class="fr align-center g-1 can-hover"
-        >
-            <!-- (mouseup)="doShowModalTable(s, t)" -->
-            <span class="title-2 primary-text">
-                {{ t.Name }}
-            </span>
-        </div>
+        <div>
+            <table>
+                <tr>
+                    <th> {{ t.Name | titlecase }} </th>
+                    <th>
+                        <i class="icon small accent-text">switch_access_shortcut</i>
+                    </th>
+                    <th>
+                        <i class="icon small accent-text">key</i>
+                    </th>
+                    <th>
+                        <i class="icon small accent-text">verified</i>
+                    </th>
+                    <th>
+                        <i class="icon small accent-text">asterisk</i>
+                    </th>
+                    <th>
 
-        <div class="fc">
-            @for (a of t.Attributes; track $index; let ai = $index) {
-            <!-- Attribute -->
-            <div
-                class="accordion-item can-hover"
-                (mouseup)="doShowModalAttribute(s, t, a)"
-            >
-                <span>
-                    {{ a.Name }}
-                </span>
-                @if (a.Type === 'REF') {
-                <!-- <i class="icon">keyboard_arrow_up</i> -->
-                <i class="icon small accent-text">switch_access_shortcut</i>
-                }
-                @if (a.Option?.PrimaryKey) {
-                <i class="icon small accent-text">key</i>
-                }
-                @if (a.Option?.Unique) {
-                <i class="icon small accent-text">verified</i>
-                <!-- <i class="icon">counter_1</i> -->
-                }
-                @if (a.Validation?.Required) {
-                <i class="icon small accent-text">asterisk</i>
-                }
+                    </th>
+                </tr>
+                @for (a of t.Attributes; track $index; let ai = $index) {
+                <!-- Attribute -->
+                <tr
+                    class="can-hover"
+                    (mouseup)="doShowModalAttribute(s, t, a)"
+                >
 
-                @if (a.warnings.length > 0) {
-                <div class="fc align-center justify-center">
-                    @for (w of a.warnings; track $index) {
-                    <span class="error">
-                        {{ w }}
-                    </span>
-                    }
-                </div>
+                    <td>
+                        {{ a.Name | lowercase }}
+                    </td>
+                    <td>
+                        @if (a.Type === 'REF') {
+                        <i class="icon small">check</i>
+                        }
+                    </td>
+                    <td>
+                        @if (a.Option?.PrimaryKey) {
+                        <i class="icon small">check</i>
+                        }
+                    </td>
+                    <td>
+                        @if (a.Option?.Unique) {
+                        <i class="icon small">check</i>
+                        }
+                    </td>
+                    <td>
+                        @if (a.Validation?.Required) {
+                        <i class="icon small">check</i>
+                        }
+                    </td>
+                    <td>
+                        @if (a.warnings.length > 0) {
+                        <div class="fc align-center justify-center">
+                            @for (w of a.warnings; track $index) {
+                            <span class="error">
+                                {{ w }}
+                            </span>
+                            }
+                        </div>
+                        }
+                    </td>
+                </tr>
                 }
-            </div>
-            }
+            </table>
+
             <div class="pl-4">
 
                 <button

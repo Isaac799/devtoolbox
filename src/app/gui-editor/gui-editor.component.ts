@@ -8,7 +8,7 @@ import {CommonModule} from '@angular/common'
 import {MinMaxLabelFromAttrTypePipe} from '../pipes/min-max-label-from-attr-type.pipe'
 import {DefaultValueHintPipe} from '../pipes/default-value-hint.pipe'
 import {NotificationService} from '../services/notification.service'
-import {CdkDrag, CdkDragDrop, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
+import {CdkDrag, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
 
 @Component({
     selector: 'app-gui-editor',
