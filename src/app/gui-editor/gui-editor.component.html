@@ -1,4 +1,7 @@
-<div class="section-parent table-boundary">
+<div
+    class="section-parent table-boundary"
+    id="root-editor"
+>
     <canvas
         class="canvas"
         #canvas
@@ -9,6 +12,7 @@
     @for (s of data.schemas; track $index) {
     @for (t of s.Tables; track $index; let ti = $index) {
     <div
+        [id]="'table:' + t.ID"
         class="table"
         cdkDrag
         cdkDragBoundary=".table-boundary"
@@ -40,6 +44,7 @@
                 <tr
                     class="can-hover"
                     (mouseup)="doShowModalAttribute(s, t, a)"
+                    [id]="'attribute:' + a.ID"
                 >
 
                     <td>
