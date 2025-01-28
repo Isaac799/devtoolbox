@@ -361,7 +361,7 @@ export class GuiEditorComponent implements OnInit, AfterViewInit {
         const yDiff = sourceY - targetY
 
         if (Math.abs(xDiff) > widthToOvercome && xDiff > 0) {
-            targetX += targetTableRect.width - REM / 2
+            targetX += targetTableRect.width - REM 
         }
 
         if (Math.abs(yDiff) > heightToOvercome && yDiff > 0) {
