@@ -1,9 +1,7 @@
 <h2 mat-dialog-title>Blueprint</h2>
 <mat-dialog-content class="mat-typography">
     <div [formGroup]="tableForm">
-        <table
-            cellspacing="8"
-        >
+        <table cellspacing="8">
             <tr>
                 <td>
                     <mat-form-field>
@@ -39,16 +37,18 @@
     >
         Cancel
     </button>
+    @if (data.t) {
     <button
         mat-button
-        mat-dialog-close
+        (click)="clickDelTable()"
     >
         Delete
     </button>
+    }
     <button
+    [disabled]="tableForm.invalid"
         mat-button
-        mat-dialog-close
-        cdkFocusInitial
+        (click)="clickSaveTable()"
     >
         Save
     </button>

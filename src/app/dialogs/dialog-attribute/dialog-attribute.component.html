@@ -202,6 +202,7 @@
     </button>
     }
     <button
+        [disabled]="attributeForm.invalid"
         mat-button
         (click)="clickSaveAttribute()"
     >

@@ -25,16 +25,18 @@
     >
         Cancel
     </button>
+    @if (data.s) {
     <button
         mat-button
-        mat-dialog-close
+        (click)="clickDelSchema()"
     >
         Delete
     </button>
+    }
     <button
+        [disabled]="schemaForm.invalid"
         mat-button
-        mat-dialog-close
-        cdkFocusInitial
+        (click)="clickDelSchema()"
     >
         Save
     </button>
