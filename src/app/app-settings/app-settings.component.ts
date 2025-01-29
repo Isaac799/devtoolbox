@@ -10,12 +10,15 @@ import {DialogSchemaComponent} from '../dialogs/dialog-schema/dialog-schema.comp
 import {DialogTableComponent} from '../dialogs/dialog-table/dialog-table.component'
 import {MatDialog} from '@angular/material/dialog'
 import {MatButtonModule} from '@angular/material/button'
-import {MatIconModule} from '@angular/material/icon';
+import {MatIconModule} from '@angular/material/icon'
+import {MatSelectModule} from '@angular/material/select'
+import {MatSliderModule} from '@angular/material/slider'
+import {MatChipsModule} from '@angular/material/chips'
 
 @Component({
     standalone: true,
     selector: 'app-app-settings',
-    imports: [CommonModule, FormsModule, IsSeedModePipe, MatButtonModule, MatIconModule],
+    imports: [CommonModule, FormsModule, IsSeedModePipe, MatButtonModule, MatIconModule, MatSelectModule, MatSliderModule, MatChipsModule],
     templateUrl: './app-settings.component.html',
     styleUrl: './app-settings.component.scss'
 })
@@ -108,7 +111,7 @@ export class AppSettingsComponent implements OnInit {
     generatorModeSelectedIndex = [0, 0]
     generatorModeOptions: {title: string; icon?: string; items: {name: string; icon?: string; value: AppGeneratorMode}[]}[] = [
         {
-            title: 'PostgreSQL',
+            title: 'PSQL',
             icon: 'star',
             items: [
                 {
@@ -121,7 +124,7 @@ export class AppSettingsComponent implements OnInit {
                     value: AppGeneratorMode.PostgresFunctions
                 },
                 {
-                    name: ' Seed Data',
+                    name: 'Seed',
                     icon: 'star',
                     value: AppGeneratorMode.PostgresSeed
                 }
@@ -135,7 +138,7 @@ export class AppSettingsComponent implements OnInit {
                     value: AppGeneratorMode.TSQLTables
                 },
                 {
-                    name: ' Stored Procedures',
+                    name: 'Procedures',
                     value: AppGeneratorMode.TSQLStoredProcedures
                 }
             ]
@@ -154,23 +157,23 @@ export class AppSettingsComponent implements OnInit {
             ]
         },
         {
-            title: 'JavaScript',
+            title: 'JS',
             items: [
                 {
-                    name: 'Classes (with JSDoc)',
+                    name: 'Classes',
                     value: AppGeneratorMode.JSClasses
                 }
             ]
         },
         {
-            title: 'TypeScript',
+            title: 'TS',
             items: [
                 {
                     name: 'Classes',
                     value: AppGeneratorMode.TSClasses
                 },
                 {
-                    name: 'Types & new ƒ',
+                    name: 'Types & ƒ',
                     value: AppGeneratorMode.TSTypesAndFns
                 }
             ]
@@ -188,7 +191,7 @@ export class AppSettingsComponent implements OnInit {
             title: 'Go',
             items: [
                 {
-                    name: 'Structs & new ƒ',
+                    name: 'Structs & ƒ',
                     value: AppGeneratorMode.GoStructsAndFns
                 }
             ]
@@ -197,7 +200,7 @@ export class AppSettingsComponent implements OnInit {
             title: 'Rust',
             items: [
                 {
-                    name: 'Rust: structs & impl ƒ',
+                    name: 'structs & impl ƒ',
                     value: AppGeneratorMode.RustStructAndImpl
                 }
             ]
@@ -212,7 +215,7 @@ export class AppSettingsComponent implements OnInit {
             ]
         },
         {
-            title: 'HTTP Servers',
+            title: 'Server',
             icon: 'star',
             items: [
                 {

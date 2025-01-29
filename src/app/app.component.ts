@@ -7,27 +7,30 @@ import {DataService} from './services/data.service'
 import {CodeOutputComponent} from './code-output/code-output.component'
 import {NotificationService} from './services/notification.service'
 import {AppSettingsComponent} from './app-settings/app-settings.component'
-import { TopBarComponent } from "./top-bar/top-bar.component";
+import {MatSidenavModule} from '@angular/material/sidenav'
+import {MatToolbarModule} from '@angular/material/toolbar'
+import {MatIconModule} from '@angular/material/icon'
+import {MatButtonModule} from '@angular/material/button'
 
 @Component({
     selector: 'app-root',
-    imports: [CommonModule, AppSettingsComponent, FormsModule, ReactiveFormsModule, GuiEditorComponent, CodeOutputComponent, TopBarComponent],
+    imports: [
+        CommonModule,
+        AppSettingsComponent,
+        FormsModule,
+        ReactiveFormsModule,
+        GuiEditorComponent,
+        CodeOutputComponent,
+        MatSidenavModule,
+        MatToolbarModule,
+        MatIconModule,
+        MatButtonModule
+    ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
     readonly title = 'devtoolbox'
-
-    complexityOptions = [
-        {
-            name: 'Easy Mode',
-            value: AppComplexityMode.Simple
-        },
-        {
-            name: 'Advanced Mode',
-            value: AppComplexityMode.Advanced
-        }
-    ]
 
     constructor(public data: DataService, public notification: NotificationService) {}
 

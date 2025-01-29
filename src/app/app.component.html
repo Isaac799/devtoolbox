@@ -1,20 +1,41 @@
-<div class="app-container">
-    <div class="top-bar">
-        <app-top-bar></app-top-bar>
-    </div>
-    <div class="split">
-        <div>
-            <app-app-settings></app-app-settings>
-        </div>
-        <div>
-            <app-gui-editor></app-gui-editor>
-        </div>
-        <div>
-            <app-code-output></app-code-output>
-        </div>
-    </div>
-</div>
+<div class="max-size">
+    <mat-toolbar>
+        <button
+            mat-icon-button
+            (click)="drawer.toggle()"
+            aria-label="See the menu"
+        >
+            <mat-icon>menu</mat-icon>
+        </button>
+        <span>Dev Toolbox</span>
+    </mat-toolbar>
 
+    <mat-drawer-container
+        autosize
+        [hasBackdrop]="true"
+    >
+        <mat-drawer
+            #drawer
+            mode="over"
+            class="p2"
+        >
+            <app-app-settings></app-app-settings>
+        </mat-drawer>
+
+        <div class="max-size">
+            <table [cellSpacing]="8">
+                <tr>
+                    <td>
+                        <app-gui-editor></app-gui-editor>
+                    </td>
+                    <td>
+                        <app-code-output></app-code-output>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </mat-drawer-container>
+</div>
 <div class="fixed-top-right">
     <div class="notifications m-2">
         @for (x of notification.Notifications; track $index) {
