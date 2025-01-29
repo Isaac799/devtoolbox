@@ -53,6 +53,8 @@ export class DialogAttributeComponent implements OnInit {
     private cdr = inject(ChangeDetectorRef)
     private dialogRef = inject(MatDialogRef<DialogAttributeComponent>)
 
+    private readonly idSuggestionName = 'unique identifier'
+
     get isReference(): boolean {
         return this.attributeForm.controls.Type.value === AttrType.REFERENCE
     }
@@ -91,7 +93,7 @@ export class DialogAttributeComponent implements OnInit {
 
     readonly presetAttributes: AttributeSuggestion[] = [
         {
-            Name: 'id',
+            Name: this.idSuggestionName,
             Type: AttrType.SERIAL,
             Option: {
                 PrimaryKey: true,
@@ -127,7 +129,35 @@ export class DialogAttributeComponent implements OnInit {
             }
         },
         {
-            Name: 'time stamp',
+            Name: 'yes / no',
+            Type: AttrType.BOOLEAN,
+            Validation: {
+                Required: true
+            }
+        },
+        {
+            Name: 'whole number',
+            Type: AttrType.INT,
+            Validation: {
+                Required: true
+            }
+        },
+        {
+            Name: 'time',
+            Type: AttrType.TIME,
+            Validation: {
+                Required: true
+            }
+        },
+        {
+            Name: 'date',
+            Type: AttrType.DATE,
+            Validation: {
+                Required: true
+            }
+        },
+        {
+            Name: 'date time',
             Type: AttrType.TIMESTAMP,
             Option: {
                 PrimaryKey: false,
@@ -218,7 +248,7 @@ export class DialogAttributeComponent implements OnInit {
                 this.attributeForm.controls.ReferenceTo.setValue(null)
                 this.attributeForm.controls.Name.enable()
             }
-            
+
             if (x === AttrType.SERIAL) {
                 this.attributeForm.controls.PrimaryKey.setValue(true)
                 this.RequirePrimaryKey()
@@ -238,8 +268,10 @@ export class DialogAttributeComponent implements OnInit {
         })
 
         this.attributeForm.controls.ReferenceTo.valueChanges.subscribe(x => {
-            this.attributeForm.controls.Name.setValue(x?.Name || '')
-            this.cdr.detectChanges()
+            if (x) {
+                this.attributeForm.controls.Name.setValue(x?.Name || '')
+                this.cdr.detectChanges()
+            }
         })
 
         this.attributeForm.controls.ReferenceTo.addValidators(this.validReference())
@@ -437,12 +469,12 @@ export class DialogAttributeComponent implements OnInit {
 
         this.attributeForm.controls.Type.setValue(x.Type)
 
-        if (x.Name === 'id' && this.attributeForm.controls.Name.invalid && !this.existingNames.includes(x.Name)) {
+        if (x.Name === this.idSuggestionName && this.attributeForm.controls.Name.invalid && !this.existingNames.includes(x.Name)) {
             this.justSetIDName = true
-            this.attributeForm.controls.Name.setValue(x.Name)
+            this.attributeForm.controls.Name.setValue('id')
         }
 
-        if (this.justSetIDName && x.Name !== 'id' && this.attributeForm.controls.Name.value === 'id') {
+        if (this.justSetIDName && x.Name !== this.idSuggestionName && this.attributeForm.controls.Name.value === 'id') {
             this.justSetIDName = false
             this.attributeForm.controls.Name.setValue('')
         }
