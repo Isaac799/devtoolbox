@@ -382,7 +382,7 @@ export class Schema {
     Name: string
     Tables: Table[]
 
-    constructor(Name: string, ID: string) {
+    constructor(ID: string, Name: string) {
         this.ID = ID
         this.Name = Name
 

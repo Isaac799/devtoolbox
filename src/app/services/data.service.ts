@@ -189,6 +189,7 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
         }
         const s = schemasConfig[sk]
         const s2 = new Schema(s.ID, sk)
+
         for (const tk in s.Tables) {
             if (!Object.prototype.hasOwnProperty.call(s.Tables, tk)) {
                 continue

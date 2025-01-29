@@ -8,7 +8,7 @@ import {CdkDrag, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
 import {MatDialog} from '@angular/material/dialog'
 import {DialogAttributeComponent} from '../dialogs/dialog-attribute/dialog-attribute.component'
 import {MatButtonModule} from '@angular/material/button'
-import { MatIconModule } from '@angular/material/icon'
+import {MatIconModule} from '@angular/material/icon'
 
 @Component({
     selector: 'app-gui-editor',
@@ -17,25 +17,13 @@ import { MatIconModule } from '@angular/material/icon'
     styleUrl: './gui-editor.component.scss'
 })
 export class GuiEditorComponent implements AfterViewInit {
-    hoveredTable: Table | null = null
-    hoveredSchema: Schema | null = null
     private matDialog = inject(MatDialog)
 
     bend = false
-    showMoves = false
-    readonly showMovesTimeoutMS: number = 500
-
-    private _serial = 0
-    private get serial() {
-        return this._serial
-    }
-    private set serial(value) {
-        this._serial = value
-    }
 
     @ViewChild('canvas') canvasRef: ElementRef<HTMLCanvasElement> | undefined = undefined
 
-    constructor(private cdr: ChangeDetectorRef, public data: DataService, private notification: NotificationService) {}
+    constructor(public data: DataService) {}
 
     ngAfterViewInit() {
         setTimeout(() => {
