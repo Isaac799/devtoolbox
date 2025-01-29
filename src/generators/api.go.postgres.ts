@@ -1,6 +1,7 @@
-import {TAB} from '../../constants'
-import {cc, fixPluralGrammar} from '../../formatting'
-import {AppGeneratorMode, Func, FuncOut, Schema, Table} from '../../structure'
+import { TAB } from '../app/constants'
+import { cc, fixPluralGrammar } from '../app/formatting'
+import { Table, Schema, AppGeneratorMode, Func, FuncOut } from '../app/structure'
+
 
 export function SchemasToApiGoPostgres(schemas: Schema[]): string {
     const funcs: [Func, Table][] = []

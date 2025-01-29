@@ -1,5 +1,5 @@
-import {TAB} from '../../constants'
-import {Schema, Func, AppGeneratorMode, FuncIn} from '../../structure'
+import {TAB} from '../app/constants'
+import {AppGeneratorMode, Func, FuncIn, Schema} from '../app/structure'
 
 export function SchemasToAngularFormControls(schemas: Schema[]): string {
     const funcs: Func[] = []

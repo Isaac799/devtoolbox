@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/prefer-for-of */
-import {TAB} from '../../constants'
-import {alignKeyword, cc} from '../../formatting'
-import {AttrType, generateSeedData, Schema} from '../../structure'
-import {AttributeMap} from '../../varchar'
+import { TAB } from '../app/constants'
+import { cc, alignKeyword } from '../app/formatting'
+import { AttrType, generateSeedData, Schema } from '../app/structure'
+import { AttributeMap } from '../app/varchar'
+
 
 function genRandomRef(max: number): number {
     return Math.floor(Math.random() * max) + 1

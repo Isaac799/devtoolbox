@@ -1,12 +1,11 @@
 <div
     class="table-boundary"
     id="root-editor"
+    #rootEditor
 >
     <canvas
         class="canvas"
         #canvas
-        width="1000"
-        height="1000"
     ></canvas>
 
     @for (s of data.schemas; track $index) {

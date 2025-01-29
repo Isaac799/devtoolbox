@@ -1,14 +1,14 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, inject } from '@angular/core'
-import { DataService } from '../services/data.service'
-import { Schema, Table, Attribute } from '../structure'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { CommonModule } from '@angular/common'
-import { CdkDrag, CdkDragEnd, DragDropModule } from '@angular/cdk/drag-drop'
-import { MatDialog } from '@angular/material/dialog'
-import { DialogAttributeComponent } from '../dialogs/dialog-attribute/dialog-attribute.component'
-import { MatButtonModule } from '@angular/material/button'
-import { MatIconModule } from '@angular/material/icon'
-import { MatCardModule } from '@angular/material/card'
+import {Component, ElementRef, ViewChild, AfterViewInit, inject, OnInit, OnDestroy, Renderer2} from '@angular/core'
+import {DataService} from '../services/data.service'
+import {Schema, Table, Attribute} from '../structure'
+import {FormsModule, ReactiveFormsModule} from '@angular/forms'
+import {CommonModule} from '@angular/common'
+import {CdkDrag, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
+import {MatDialog} from '@angular/material/dialog'
+import {DialogAttributeComponent} from '../dialogs/dialog-attribute/dialog-attribute.component'
+import {MatButtonModule} from '@angular/material/button'
+import {MatIconModule} from '@angular/material/icon'
+import {MatCardModule} from '@angular/material/card'
 
 @Component({
     selector: 'app-gui-editor',
@@ -16,14 +16,46 @@ import { MatCardModule } from '@angular/material/card'
     templateUrl: './gui-editor.component.html',
     styleUrl: './gui-editor.component.scss'
 })
-export class GuiEditorComponent implements AfterViewInit {
+export class GuiEditorComponent implements AfterViewInit, OnInit, OnDestroy {
     private matDialog = inject(MatDialog)
 
     bend = false
+    resizeDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
     @ViewChild('canvas') canvasRef: ElementRef<HTMLCanvasElement> | undefined = undefined
+    @ViewChild('rootEditor') rootEditor: ElementRef<HTMLDivElement> | undefined = undefined
 
-    constructor(public data: DataService) {}
+    constructor(public data: DataService, private renderer: Renderer2) {}
+    ngOnInit(): void {
+        // Resize the canvas when the component is initialized
+        this.resizeCanvas()
+
+        // Listen to the window resize event
+        this.renderer.listen('window', 'resize', () => {
+            this.resizeCanvas()
+        })
+    }
+
+    ngOnDestroy(): void {
+        // this.renderer.listen('window', 'resize', () => {}).remove()
+    }
+
+    resizeCanvas(): void {
+        clearTimeout(this.resizeDebounce)
+        this.resizeDebounce = setTimeout(() => {
+            if (!this.canvasRef) {
+                return
+            }
+            if (!this.rootEditor) {
+                return
+            }
+
+            const rootSize = this.rootEditor.nativeElement.getBoundingClientRect()
+            this.canvasRef.nativeElement.width = rootSize.width
+            this.canvasRef.nativeElement.height = rootSize.height
+            this.redraw()
+        }, 500)
+    }
 
     ngAfterViewInit() {
         setTimeout(() => {

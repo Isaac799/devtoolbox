@@ -1,6 +1,7 @@
-import {TAB} from '../../constants'
-import {cc, alignKeyword} from '../../formatting'
-import {Table, AttrType, Schema} from '../../structure'
+import { TAB } from '../app/constants'
+import { cc, alignKeyword } from '../app/formatting'
+import { Table, AttrType, Schema } from '../app/structure'
+
 
 export class UseI {
     iUsages: Record<string, number> = {}

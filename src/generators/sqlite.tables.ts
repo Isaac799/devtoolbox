@@ -1,19 +1,16 @@
-import {TAB} from '../../constants'
-import {cc, alignKeyword, alignKeywords} from '../../formatting'
-import {Table, AttrType, Schema, Attribute, GenerateDefaultValue, Lang} from '../../structure'
+import { TAB } from '../app/constants'
+import { cc, alignKeyword, alignKeywords } from '../app/formatting'
+import { Table, AttrType, GenerateDefaultValue, Lang, Attribute, Schema, SQL_TO_SQL_LITE_TYPE } from '../app/structure'
+import { GenerateUniqueAttributes } from './pgsql.tables'
 
-export function SchemasToPostgreSQL(schemas: Schema[]): string {
+
+export function SchemasToTablesForSQLite(schemas: Schema[]): string {
     let drops: string[] = []
     const createTableLines: string[] = []
-
     for (const s of schemas) {
-        drops.push(`DROP SCHEMA IF EXISTS ${cc(s.Name, 'sk')};`)
-        createTableLines.push('')
-        createTableLines.push(`CREATE SCHEMA IF NOT EXISTS ${cc(s.Name, 'sk')};`)
-        createTableLines.push('')
         for (const t of s.Tables) {
-            drops.push(`DROP TABLE IF EXISTS ${t.FN};`)
-            createTableLines.push(`CREATE TABLE IF NOT EXISTS ${t.FN} (`)
+            drops.push(`DROP TABLE IF EXISTS ${cc(t.FN, 'sk')};`)
+            createTableLines.push(`\nCREATE TABLE IF NOT EXISTS ${cc(t.FN, 'sk')} (`)
             const attrs: string[] = generateAttributesForTable(t)
 
             const endThings: string[] = generateTableEndParts(t)
@@ -30,7 +27,7 @@ export function SchemasToPostgreSQL(schemas: Schema[]): string {
         }
     }
     drops = drops.reverse()
-    const all = ['BEGIN;', '', '-- Drop Everything', '', ...drops, '', '-- Create Everything', ...createTableLines, '', 'COMMIT;']
+    const all = ['BEGIN TRANSACTION;', '', '-- Drop Everything', '', ...drops, '', '-- Create Everything', ...createTableLines, '', 'COMMIT;']
     const str = all.join('\n')
     return str
 }
@@ -73,7 +70,10 @@ function generateTableEndParts(t: Table) {
             const r = e.RefTo!
             const rPks = r.Attributes.filter(e => e.Option?.PrimaryKey)
             for (const rPk of rPks) {
-                const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(rPk.Name, 'sk')} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 'sk')} ) ON DELETE CASCADE`
+                const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(rPk.Name, 'sk')} ) REFERENCES ${cc(r.FN, 'sk')} ( ${cc(
+                    rPk.Name,
+                    'sk'
+                )} ) ON DELETE CASCADE`
                 endThings.push(rStr)
             }
         }
@@ -82,29 +82,6 @@ function generateTableEndParts(t: Table) {
     endThings = alignKeyword(endThings, '(')
     return endThings
 }
-
-// function generateTableIndexes(t: Table) {
-//   let endThings: string[] = [];
-
-//   let refs = t.Attributes.filter((e) => e.RefTo);
-//   if (refs.length > 0) {
-//     for (const e of refs) {
-//       let r = e.RefTo!;
-//       let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
-//       for (const rPk of rPks) {
-//         if (rPk.Option?.PrimaryKey) continue;
-//         let rStr = `CREATE INDEX  ${convertCase(
-//           `idx_${AttributeNameWithSchemaAndTable(rPk)}`,
-//           'snake'
-//         )} ON ${TableFullName(r)} ( ${convertCase(rPk.Name, 'snake')} );`;
-//         endThings.push(rStr);
-//       }
-//     }
-//   }
-
-//   endThings = alignKeyword(endThings, 'ON');
-//   return endThings;
-// }
 
 function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
     let attrs: string[] = []
@@ -116,15 +93,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         }
         const name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk')
         let type = ''
-        if ([AttrType.VARCHAR].includes(a.Type)) {
-            let max = 15
-            if (!a.Validation || !a.Validation.Max) {
-                console.warn(`missing max validation on "${name}"`)
-            } else {
-                max = a.Validation.Max
-            }
-            type = [a.Type, `(${max || '15'})`].join('')
-        } else if (a.Type === AttrType.REFERENCE) {
+        if (a.Type === AttrType.REFERENCE) {
             if (beingReferences) {
                 // prevents endless recursion
                 continue
@@ -137,7 +106,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
             attrs = attrs.concat(referencedAttrs)
             continue
         } else {
-            type = a.Type
+            type = SQL_TO_SQL_LITE_TYPE[a.Type]
         }
 
         if (beingReferences && a.Type === AttrType.SERIAL) {
@@ -147,7 +116,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         const attrLine = [`${cc(name, 'sk')} ${type}`]
 
         if (a.Option?.Default) {
-            const def = GenerateDefaultValue(a, Lang.PGSQL)
+            const def = GenerateDefaultValue(a, Lang.SQLite)
             if (def !== null) {
                 attrLine.push(`DEFAULT ${def}`)
             }
@@ -158,27 +127,6 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         attrs.push(attrLine.join(' '))
     }
 
-    attrs = alignKeywords(attrs, Object.values(AttrType))
+    attrs = alignKeywords(attrs, Object.values(SQL_TO_SQL_LITE_TYPE))
     return attrs
-}
-
-export function GenerateUniqueAttributes(t: Table): string[] {
-    const uniques: string[] = []
-    for (const a of t.Attributes) {
-        if (a.Option?.PrimaryKey) continue
-
-        if (a.Type === AttrType.REFERENCE && a.RefTo) {
-            for (const ra of a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)) {
-                uniques.push(`${a.Name}_${ra.Name}`)
-            }
-            continue
-        }
-
-        if (!a.Option?.Unique) {
-            continue
-        }
-
-        uniques.push(a.Name)
-    }
-    return uniques
 }

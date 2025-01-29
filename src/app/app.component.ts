@@ -1,16 +1,16 @@
-import {Component, OnInit} from '@angular/core'
-import {AppComplexityMode} from './structure'
+import {Component, inject, OnInit} from '@angular/core'
 import {CommonModule} from '@angular/common'
 import {FormsModule, ReactiveFormsModule} from '@angular/forms'
 import {GuiEditorComponent} from './gui-editor/gui-editor.component'
 import {DataService} from './services/data.service'
-import {CodeOutputComponent} from './code-output/code-output.component'
 import {NotificationService} from './services/notification.service'
 import {AppSettingsComponent} from './app-settings/app-settings.component'
 import {MatSidenavModule} from '@angular/material/sidenav'
 import {MatToolbarModule} from '@angular/material/toolbar'
 import {MatIconModule} from '@angular/material/icon'
 import {MatButtonModule} from '@angular/material/button'
+import {MatDialog} from '@angular/material/dialog'
+import {DialogCodeOutputComponent} from './dialogs/dialog-code-output/dialog-code-output.component'
 
 @Component({
     selector: 'app-root',
@@ -20,7 +20,6 @@ import {MatButtonModule} from '@angular/material/button'
         FormsModule,
         ReactiveFormsModule,
         GuiEditorComponent,
-        CodeOutputComponent,
         MatSidenavModule,
         MatToolbarModule,
         MatIconModule,
@@ -32,9 +31,18 @@ import {MatButtonModule} from '@angular/material/button'
 export class AppComponent implements OnInit {
     readonly title = 'devtoolbox'
 
+    private matDialog = inject(MatDialog)
+
     constructor(public data: DataService, public notification: NotificationService) {}
 
     ngOnInit(): void {
         this.data.Initialize()
+    }
+
+    doShowModalCode() {
+        const dialogRef = this.matDialog.open(DialogCodeOutputComponent, {})
+        dialogRef.afterOpened().subscribe(() => {
+            this.data.EmitChangesForApp()
+        })
     }
 }

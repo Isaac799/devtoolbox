@@ -1,15 +1,28 @@
-import {TAB} from '../../constants'
-import {cc, alignKeyword, alignKeywords} from '../../formatting'
-import {Table, AttrType, Schema, Attribute, SQL_TO_SQL_LITE_TYPE, GenerateDefaultValue, Lang} from '../../structure'
+import { TAB } from '../app/constants'
+import { cc, alignKeyword, alignKeywords } from '../app/formatting'
+import { Table, AttrType, SQL_TO_TSQL_TYPE, GenerateDefaultValue, Lang, Attribute, Schema } from '../app/structure'
 import {GenerateUniqueAttributes} from './pgsql.tables'
 
-export function SchemasToTablesForSQLite(schemas: Schema[]): string {
+export function SchemasToTablesForTSQL(schemas: Schema[]): string {
     let drops: string[] = []
     const createTableLines: string[] = []
     for (const s of schemas) {
+        drops.push(
+            `IF EXISTS (SELECT * FROM sys.schemas WHERE name = '${cc(s.Name, 'sk')}') 
+    DROP SCHEMA ${cc(s.Name, 'sk')};`
+        )
+        createTableLines.push('')
+        createTableLines.push(
+            `IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '${cc(s.Name, 'sk')}') 
+    CREATE SCHEMA ${cc(s.Name, 'sk')};`
+        )
+        createTableLines.push('')
         for (const t of s.Tables) {
-            drops.push(`DROP TABLE IF EXISTS ${cc(t.FN, 'sk')};`)
-            createTableLines.push(`\nCREATE TABLE IF NOT EXISTS ${cc(t.FN, 'sk')} (`)
+            drops.push(
+                `IF OBJECT_ID('${cc(t.Name, 'sk')}', 'U') IS NOT NULL 
+    DROP TABLE ${t.FN};`
+            )
+            createTableLines.push(`CREATE TABLE ${t.FN} (`)
             const attrs: string[] = generateAttributesForTable(t)
 
             const endThings: string[] = generateTableEndParts(t)
@@ -56,6 +69,7 @@ function generateTableEndParts(t: Table) {
     }
 
     const uniques = GenerateUniqueAttributes(t)
+
     if (uniques.length > 0) {
         for (const e of uniques) {
             const uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`
@@ -69,10 +83,7 @@ function generateTableEndParts(t: Table) {
             const r = e.RefTo!
             const rPks = r.Attributes.filter(e => e.Option?.PrimaryKey)
             for (const rPk of rPks) {
-                const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(rPk.Name, 'sk')} ) REFERENCES ${cc(r.FN, 'sk')} ( ${cc(
-                    rPk.Name,
-                    'sk'
-                )} ) ON DELETE CASCADE`
+                const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(rPk.Name, 'sk')} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 'sk')} ) ON DELETE CASCADE`
                 endThings.push(rStr)
             }
         }
@@ -92,7 +103,15 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         }
         const name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk')
         let type = ''
-        if (a.Type === AttrType.REFERENCE) {
+        if ([AttrType.VARCHAR].includes(a.Type)) {
+            let max = 15
+            if (!a.Validation || !a.Validation.Max) {
+                console.warn(`missing max validation on "${name}"`)
+            } else {
+                max = a.Validation.Max
+            }
+            type = [SQL_TO_TSQL_TYPE[a.Type], `(${max || '15'})`].join('')
+        } else if (a.Type === AttrType.REFERENCE) {
             if (beingReferences) {
                 // prevents endless recursion
                 continue
@@ -105,7 +124,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
             attrs = attrs.concat(referencedAttrs)
             continue
         } else {
-            type = SQL_TO_SQL_LITE_TYPE[a.Type]
+            type = SQL_TO_TSQL_TYPE[a.Type]
         }
 
         if (beingReferences && a.Type === AttrType.SERIAL) {
@@ -115,7 +134,7 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         const attrLine = [`${cc(name, 'sk')} ${type}`]
 
         if (a.Option?.Default) {
-            const def = GenerateDefaultValue(a, Lang.SQLite)
+            const def = GenerateDefaultValue(a, Lang.TSQL)
             if (def !== null) {
                 attrLine.push(`DEFAULT ${def}`)
             }
@@ -126,6 +145,6 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
         attrs.push(attrLine.join(' '))
     }
 
-    attrs = alignKeywords(attrs, Object.values(SQL_TO_SQL_LITE_TYPE))
+    attrs = alignKeywords(attrs, Object.values(AttrType))
     return attrs
 }

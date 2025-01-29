@@ -1,6 +1,7 @@
-import {TAB} from '../../constants'
-import {cc} from '../../formatting'
-import {Schema, Func, AppGeneratorMode} from '../../structure'
+import { TAB } from '../app/constants'
+import { cc } from '../app/formatting'
+import { AppGeneratorMode, Func, Schema } from '../app/structure'
+
 
 export function SchemasToRustStructsImpl(schemas: Schema[]): string {
     const funcs: Func[] = []

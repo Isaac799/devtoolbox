@@ -1,32 +1,34 @@
-import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core'
-import {DataService} from '../services/data.service'
-import {AppGeneratorMode, Notification, NotificationKind, NotificationLife} from '../structure'
-import {Subscription} from 'rxjs'
-import {SchemasToPostgreSQL} from './generators/pgsql.tables'
-import {SchemasToGoStructs} from './generators/go.structs.fns'
-import {SchemasToTsTypesAndFns} from './generators/ts.types.fns'
-import {SchemasToSqlFuncs} from './generators/pgsql.functions'
+import {Component, ViewChild, ElementRef} from '@angular/core'
+import {MatButtonModule} from '@angular/material/button'
+import {MatDialogContent, MatDialogActions, MatDialogClose, MatDialogTitle} from '@angular/material/dialog'
 import hljs from 'highlight.js'
-import {NotificationService} from '../services/notification.service'
-import {SchemasToAngularFormControls} from './generators/angular.form.controls'
-import {SchemasToTablesForTSQL} from './generators/tsql.tables'
-import {SchemasToTSQLStoredProcedures} from './generators/tsql.stored.procedures'
-import {SchemasToTsClasses} from './generators/ts.class'
-import {SchemasToJsClasses} from './generators/js.class'
-import {SchemasToTablesForSQLite} from './generators/sqlite.tables'
-import {SchemasToSQLiteJoinQuery} from './generators/sqlite.join.query'
-import {SchemasToRustStructsImpl} from './generators/rust.structs.impls'
-import {SchemasToCSClasses} from './generators/cs.class'
-import {SchemasToApiGoPostgres} from './generators/api.go.postgres'
-import {SchemasToPostgresSeed} from './generators/pgsql.seed'
+import {Subscription} from 'rxjs'
+import {DataService} from '../../services/data.service'
+import {NotificationService} from '../../services/notification.service'
+import {AppGeneratorMode, Notification, NotificationLife, NotificationKind} from '../../structure'
+import {SchemasToAngularFormControls} from '../../../generators/angular.form.controls'
+import {SchemasToApiGoPostgres} from '../../../generators/api.go.postgres'
+import {SchemasToCSClasses} from '../../../generators/cs.class'
+import {SchemasToGoStructs} from '../../../generators/go.structs.fns'
+import {SchemasToJsClasses} from '../../../generators/js.class'
+import {SchemasToSqlFuncs} from '../../../generators/pgsql.functions'
+import {SchemasToPostgresSeed} from '../../../generators/pgsql.seed'
+import {SchemasToPostgreSQL} from '../../../generators/pgsql.tables'
+import {SchemasToRustStructsImpl} from '../../../generators/rust.structs.impls'
+import {SchemasToSQLiteJoinQuery} from '../../../generators/sqlite.join.query'
+import {SchemasToTablesForSQLite} from '../../../generators/sqlite.tables'
+import {SchemasToTsClasses} from '../../../generators/ts.class'
+import {SchemasToTsTypesAndFns} from '../../../generators/ts.types.fns'
+import {SchemasToTSQLStoredProcedures} from '../../../generators/tsql.stored.procedures'
+import {SchemasToTablesForTSQL} from '../../../generators/tsql.tables'
 
 @Component({
-    selector: 'app-code-output',
-    imports: [],
-    templateUrl: './code-output.component.html',
-    styleUrl: './code-output.component.scss'
+    selector: 'app-dialog-code-output',
+    imports: [MatDialogContent, MatDialogActions, MatDialogClose, MatDialogTitle, MatButtonModule],
+    templateUrl: './dialog-code-output.component.html',
+    styleUrl: './dialog-code-output.component.scss'
 })
-export class CodeOutputComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DialogCodeOutputComponent {
     output = ''
     subscription: Subscription | null = null
     @ViewChild('codeOutput') codeOutput?: ElementRef<HTMLPreElement>

@@ -1,12 +1,12 @@
-import {groupBy, TAB} from '../../constants'
-import {cc, alignKeyword} from '../../formatting'
-import {Schema, Func, AppGeneratorMode} from '../../structure'
+import { TAB } from '../app/constants'
+import { cc, alignKeyword } from '../app/formatting'
+import { AppGeneratorMode, Func, Schema } from '../app/structure'
 
-export function SchemasToGoStructs(schemas: Schema[]): string {
+export function SchemasToTsTypesAndFns(schemas: Schema[]): string {
     const funcs: Func[] = []
     for (const s of schemas) {
         for (const t of s.Tables) {
-            const func = new Func(t, AppGeneratorMode.GoStructsAndFns)
+            const func = new Func(t, AppGeneratorMode.TSTypesAndFns)
             funcs.push(func)
         }
     }
@@ -16,7 +16,7 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
     for (const f of funcs) {
         // Struct
 
-        lines.push(`type ${f.title} = struct {`)
+        lines.push(`type ${f.title} = {`)
         const attrs: string[] = generateStructAttributes(f)
         lines = lines.concat(attrs)
         lines.push(`}\n`)
@@ -26,8 +26,10 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
         let funcAttrs: string[] = generateFuncReturnStruct(f)
         const {title, params} = generateTitleAndParams(f)
 
-        lines.push(`func ${title} (${params}) *${f.title} {`)
-        lines.push(`${TAB}return &${f.title} {`)
+        lines.push(`function ${title} (
+${TAB}${params}
+): ${f.title} {`)
+        lines.push(`${TAB}return {`)
 
         funcAttrs = alignKeyword(funcAttrs, ' :')
         lines = lines.concat(funcAttrs)
@@ -42,16 +44,7 @@ export function SchemasToGoStructs(schemas: Schema[]): string {
 
 function generateTitleAndParams(f: Func) {
     const relevantInputs = f.outputs.map(e => e.relatedInput).filter(e => !!e)
-    const params = Object.entries(groupBy(relevantInputs, 'type'))
-        // .sort((a, b) => a[0].localeCompare(b[0]))
-        // .map((e) => {
-        //   e[1] = e[1].sort((a, b) => a.label.localeCompare(b.label));
-        //   return e;
-        // })
-        .map(e => {
-            return `${e[1].map(r => r.label).join(', ')} ${e[0]}`
-        })
-        .join(', ')
+    const params = relevantInputs.map(e => `${e.label}: ${e.type}`).join(`,\n${TAB}`)
 
     const title = cc(`New_${f.title}`, 'pl')
     return {title, params}
@@ -73,10 +66,8 @@ function generateFuncReturnStruct(f: Func) {
 function generateStructAttributes(f: Func) {
     let attrs: string[] = []
     for (const e of f.outputs) {
-        attrs.push(`${TAB}${e.label} ~~${e.relatedInput ? e.relatedInput.type : e.type} \`json:"${cc(e.label, 'sk')}"\``)
+        attrs.push(`${TAB}${e.label}: ${e.relatedInput ? e.relatedInput.type : e.type},`)
     }
-    attrs = alignKeyword(attrs, '~~')
-    attrs = attrs.map(e => e.replace('~~', ''))
-    attrs = alignKeyword(attrs, '`json:')
+    attrs = alignKeyword(attrs, ':')
     return attrs
 }

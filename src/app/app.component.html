@@ -8,6 +8,8 @@
             <mat-icon>menu</mat-icon>
         </button>
         <span>Dev Toolbox</span>
+        <span class="toolbar-icon-spacer"> </span>
+        <mat-icon (click)="doShowModalCode()">code</mat-icon>
     </mat-toolbar>
 
     <mat-drawer-container
@@ -23,16 +25,7 @@
         </mat-drawer>
 
         <div class="max-size">
-            <table [cellSpacing]="8">
-                <tr>
-                    <td>
-                        <app-gui-editor></app-gui-editor>
-                    </td>
-                    <td>
-                        <app-code-output></app-code-output>
-                    </td>
-                </tr>
-            </table>
+            <app-gui-editor></app-gui-editor>
         </div>
     </mat-drawer-container>
 </div>

@@ -1,7 +1,7 @@
-import {TAB} from '../../constants'
-import {cc, alignKeyword} from '../../formatting'
-import {Table, AttrType, Schema, SQL_TO_TSQL_TYPE} from '../../structure'
-import {GenerateJoinLines, UseI} from './pgsql.functions'
+import { TAB } from '../app/constants'
+import { cc, alignKeyword } from '../app/formatting'
+import { Table, AttrType, SQL_TO_TSQL_TYPE, Schema } from '../app/structure'
+import { GenerateJoinLines, UseI } from './pgsql.functions'
 
 export function SchemasToTSQLStoredProcedures(schemas: Schema[]): string {
     let lines: string[] = []

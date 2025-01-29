@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>Generated Code</h2>
+<mat-dialog-content class="mat-typography">
+    <div class="scroll-box">
+        <pre
+            #codeOutput
+            class="mono-space"
+            style="display: block; width: min-content; height: min-content"
+        ></pre>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button
+        mat-button
+        mat-dialog-close
+    >
+        Close
+    </button>
+    <button
+        mat-button
+        (click)="copy()"
+    >
+        Copy
+    </button>
+</mat-dialog-actions>

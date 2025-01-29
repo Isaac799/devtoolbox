@@ -1,6 +1,7 @@
-import {TAB} from '../../constants'
-import {cc, alignKeyword} from '../../formatting'
-import {Schema, AppGeneratorMode, Func} from '../../structure'
+import { TAB } from '../app/constants'
+import { cc, alignKeyword } from '../app/formatting'
+import { AppGeneratorMode, Func, Schema } from '../app/structure'
+
 
 export function SchemasToCSClasses(schemas: Schema[]): string {
     const funcs: Func[] = []
