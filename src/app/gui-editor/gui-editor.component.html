@@ -1,5 +1,5 @@
 <div
-    class="section-parent table-boundary"
+    class="table-boundary"
     id="root-editor"
 >
     <canvas
@@ -10,7 +10,18 @@
     ></canvas>
 
     @for (s of data.schemas; track $index) {
+    <h1>
+        {{
+        s.Name
+        }}
+    </h1>
     @for (t of s.Tables; track $index; let ti = $index) {
+    <h1>
+
+        {{
+        t.Name
+        }}
+    </h1>
     <div
         [id]="'table:' + t.ID"
         class="table"
@@ -24,16 +35,16 @@
                 <tr>
                     <th> {{ t.Name | titlecase }} </th>
                     <th>
-                        <i class="icon small accent-text">switch_access_shortcut</i>
+                        <mat-icon>switch_access_shortcut</mat-icon>
                     </th>
                     <th>
-                        <i class="icon small accent-text">key</i>
+                        <mat-icon>key</mat-icon>
                     </th>
                     <th>
-                        <i class="icon small accent-text">verified</i>
+                        <mat-icon>verified</mat-icon>
                     </th>
                     <th>
-                        <i class="icon small accent-text">asterisk</i>
+                        <mat-icon>asterisk</mat-icon>
                     </th>
                     <th>
 
@@ -52,22 +63,22 @@
                     </td>
                     <td>
                         @if (a.Type === 'REF') {
-                        <i class="icon small">check</i>
+                        <mat-icon>check</mat-icon>
                         }
                     </td>
                     <td>
                         @if (a.Option?.PrimaryKey) {
-                        <i class="icon small">check</i>
+                        <mat-icon>check</mat-icon>
                         }
                     </td>
                     <td>
                         @if (a.Option?.Unique) {
-                        <i class="icon small">check</i>
+                        <mat-icon>check</mat-icon>
                         }
                     </td>
                     <td>
                         @if (a.Validation?.Required) {
-                        <i class="icon small">check</i>
+                        <mat-icon>check</mat-icon>
                         }
                     </td>
                     <td>

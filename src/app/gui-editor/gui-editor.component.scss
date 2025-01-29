@@ -14,63 +14,27 @@
                                     supported by Chrome, Edge, Opera and Firefox */
 }
 
-.slot {
-    cursor: pointer;
-    height: 1rem;
-    font-size: 0;
-    background-color: var(--accent-transparent);
-}
-
-.slot:hover {
-    height: 2rem;
-    font-size: 1rem;
-    transition: ease-in-out 100ms;
-}
-
-.pink {
-    background-color: var(--accent-transparent);
-    border-left-width: 0.2rem;
-    padding-left: 0.35rem;
-    padding-right: 0.35rem;
-    color: var(--black);
-}
-
-.pink:hover {
-    transition: ease-in-out 100ms;
-}
-
-.dragging * {
-    cursor: move;
-}
-
-.sticky {
-    top: -1px;
-    position: sticky;
-    background-color: var(--white);
-    padding-top: var(--space-sm);
-}
-
-button {
-    padding: 0;
-}
-
-
-.table {
-    position: fixed;
-    width: min-content;
-    background-color: rgba(255, 255, 255, 0.8);
-    // background-color: rgba(255, 255, 255, 1);
-
-    border: 0.1rem solid var(--black-transparent);
-    border-radius: var(--space-sm);
-    padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
-
-    >span {
-        color: var(--primary);
-        font-weight: 700;
-    }
-}
-
 .canvas {
     position: fixed;
 }
+
+#root-editor {
+    width: 600px;
+    height: 600px;
+}
+
+// .table {
+//     position: fixed;
+//     width: min-content;
+//     background-color: rgba(255, 255, 255, 0.8);
+//     // background-color: rgba(255, 255, 255, 1);
+
+//     border: 0.1rem solid var(--black-transparent);
+//     border-radius: var(--space-sm);
+//     padding: var(--space-sm) var(--space) var(--space-sm) var(--space);
+
+//     >span {
+//         color: var(--primary);
+//         font-weight: 700;
+//     }
+// }

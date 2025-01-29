@@ -8,10 +8,11 @@ import {CdkDrag, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
 import {MatDialog} from '@angular/material/dialog'
 import {DialogAttributeComponent} from '../dialogs/dialog-attribute/dialog-attribute.component'
 import {MatButtonModule} from '@angular/material/button'
+import { MatIconModule } from '@angular/material/icon'
 
 @Component({
     selector: 'app-gui-editor',
-    imports: [FormsModule, CommonModule, ReactiveFormsModule, DragDropModule, CdkDrag, MatButtonModule],
+    imports: [FormsModule, CommonModule, ReactiveFormsModule, DragDropModule, CdkDrag, MatButtonModule, MatIconModule],
     templateUrl: './gui-editor.component.html',
     styleUrl: './gui-editor.component.scss'
 })
