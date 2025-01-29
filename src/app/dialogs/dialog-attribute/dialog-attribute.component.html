@@ -4,186 +4,122 @@
         <table cellspacing="8">
             <tr>
                 <td>
+                    <mat-form-field>
+                        <mat-label>Name</mat-label>
+                        <input
+                            cdkFocusInitial
+                            matInput
+                            formControlName="Name"
+                        >
+                    </mat-form-field>
+                </td>
+                <td>
+                    <mat-form-field>
+                        <mat-label>Type</mat-label>
+                        <mat-select formControlName="Type">
+                            <mat-option>None</mat-option>
+                            @for (x of attrTypeOptions; track $index) {
+                            <mat-option [value]="x.value">
+                                {{ x.name }}
+                            </mat-option>
+                            }
+                        </mat-select>
+                        <mat-hint align="start"> Another Blueprint </mat-hint>
+                    </mat-form-field>
+                </td>
+            </tr>
+            @if (!isReference && attributeForm.controls.Type.value !== "SERIAL") {
+            <tr>
+                <td>
+                    <mat-form-field>
+                        <mat-label>Default</mat-label>
+                        <input
+                            matInput
+                            formControlName="Default"
+                        >
+                        @if (!attributeForm.controls.Default.valid) {
+                        <mat-hint align="start"> {{ attributeForm.controls.Type.value | defaultValueHint }} </mat-hint>
+                        }
+                    </mat-form-field>
+                </td>
+            </tr>
+            } @else if (isReference && attributeForm.controls.Type.value !== "SERIAL") {
+            <tr>
+                <td>
+                    <mat-form-field>
+                        <mat-label>Reference To</mat-label>
+                        <mat-select formControlName="ReferenceTo">
+                            <mat-option>None</mat-option>
+                            @for (x of referenceOptions; track $index) {
+                            <mat-option [value]="x">
+                                {{ x.Name }}
+                            </mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                </td>
+            </tr>
+            }
+            @if (attributeForm.controls.Type.value | minMaxRelevant) {
+            <tr>
+                <td>
+                    <mat-form-field>
+                        <mat-label>
+                            {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType: 'min' }}
+                        </mat-label>
+                        <input
+                            cdkFocusInitial
+                            matInput
+                            formControlName="Min"
+                        >
+                    </mat-form-field>
+                </td>
+                <td>
+                    <mat-form-field>
+                        <mat-label>
+                            {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType: 'max' }}
+                        </mat-label>
+                        <input
+                            cdkFocusInitial
+                            matInput
+                            formControlName="Max"
+                        >
+                    </mat-form-field>
+                </td>
+
+            </tr>
+            }
+            <tr>
+                <td>
+                    <mat-checkbox formControlName="PrimaryKey">
+                        Primary Key
+                    </mat-checkbox>
+                    <mat-checkbox formControlName="Required">
+                        Required
+                    </mat-checkbox>
+                </td>
+                <td>
+                    <mat-checkbox formControlName="Unique">
+                        Unique
+                    </mat-checkbox>
+                    <mat-checkbox formControlName="SystemField">
+                        System Field
+                    </mat-checkbox>
                 </td>
             </tr>
         </table>
 
-        <div class="controls">
-            <div class="control">
-                <label for="attrName">Name</label>
-                <input
-                    cdkFocusInitial
-                    type="text"
-                    formControlName="Name"
-                    autocomplete="none"
-                    id="attrName"
-                />
-            </div>
-            <div class="control">
-                <label for="attrType">Type</label>
-                <select
-                    id="attrType"
-                    formControlName="Type"
-                >
-                    @for (x of attrTypeOptions; track $index) {
-                    <option [ngValue]="x.value">
-                        {{ x.name }}
-                    </option>
-                    }
-                </select>
-            </div>
-        </div>
-
-        @if (showAttrOptions) {
-        <div class="controls">
-            <div class="control">
-                <label for="attrPrimaryKey">Primary Key</label>
-                <input
-                    type="checkbox"
-                    id="attrPrimaryKey"
-                    formControlName="PrimaryKey"
-                />
-            </div>
-            <div class="control">
-                <label for="attrUnique">Unique</label>
-                <input
-                    type="checkbox"
-                    id="attrUnique"
-                    formControlName="Unique"
-                />
-            </div>
-            <div class="control">
-                <label for="attrSystemField">SystemField</label>
-                <input
-                    type="checkbox"
-                    id="attrSystemField"
-                    formControlName="SystemField"
-                />
-            </div>
-            @if (!isReference) {
-            <div class="control with-hint">
-                <label for="attrDefault">Default Value</label>
-                <input
-                    type="text"
-                    id="attrDefault"
-                    formControlName="Default"
-                />
-            </div>
-            }
-        </div>
-        }
-
-        @if (isReference) {
-        <div class="controls">
-            <div class="control">
-                <label for="attrReference">Reference To</label>
-                <select
-                    id="attrReference"
-                    formControlName="ReferenceTo"
-                >
-                    @for (x of referenceOptions; track $index) {
-                    <option [ngValue]="x">{{ x.Name }}</option>
-                    }
-                </select>
-            </div>
-        </div>
-        }
-
-        @if (showAttrOptions && !attributeForm.controls.Default.valid) {
-        <div class="info">
-            <small>
-                <strong>Default Value:</strong>
-                {{ attributeForm.controls.Type.value | defaultValueHint }}
-            </small>
-        </div>
-        }
-
-        @if (showAttrValidation) {
-        <div class="controls">
-            <div class="control">
-                <label for="attrRequired">Required</label>
-                <input
-                    type="checkbox"
-                    id="attrRequired"
-                    formControlName="Required"
-                />
-            </div>
-            @if (attributeForm.controls.Type.value | minMaxRelevant) {
-            <div class="control">
-                <label for="attrMin">
-                    {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType: 'min' }}
-                </label>
-                <input
-                    type="number"
-                    id="attrMin"
-                    formControlName="Min"
-                />
-            </div>
-            <div class="control">
-                <label for="attrMax">
-                    {{ attributeForm.controls.Type.value | minMaxLabelFromAttrType: 'max' }}
-                </label>
-                <input
-                    type="number"
-                    id="attrMax"
-                    formControlName="Max"
-                />
-            </div>
-            }
-        </div>
-        }
-
-        @if (showSmartAttributes) {
-        <div class="chips">
-            @for (x of smartSuggestions; track $index) {
-            <span
-                tabindex="4"
-                (mouseup)="clickSmartSuggestion(x)"
-                class="chip clickable"
-            >
+        @if(!data.a) {
+        <mat-divider></mat-divider>
+        <h3>Quicksets</h3>
+        <mat-chip-set aria-label="Fish selection">
+            @for (x of presetAttributes; track $index) {
+            <mat-chip (click)="clickSmartSuggestion(x)">
                 {{ x.Name }}
-            </span>
+            </mat-chip>
             }
-        </div>
+        </mat-chip-set>
         }
-
-        <div class="fr g-2">
-            @if (!showSmartAttributes && smartSuggestions.length > 0) {
-            <button
-                class="small-font"
-                (mouseup)="showSmartAttributes = true"
-            >Show Suggestions</button>
-            } @else if (showSmartAttributes) {
-            <button
-                class="small-font"
-                (mouseup)="showSmartAttributes = false"
-            >Hide Suggestions</button>
-            }
-
-            @if (showAttrValidation) {
-            <button
-                class="small-font"
-                (mouseup)="showAttrValidation = false"
-            >Remove Validation</button>
-            } @else {
-            <button
-                class="small-font"
-                (mouseup)="showAttrValidation = true"
-            >Add Validation</button>
-            }
-
-            @if (showAttrOptions) {
-            <button
-                class="small-font"
-                (mouseup)="showAttrOptions = false"
-            >Remove Options</button>
-            } @else {
-            <button
-                class="small-font"
-                (mouseup)="showAttrOptions = true"
-            >Add Options</button>
-            }
-        </div>
     </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

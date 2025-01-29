@@ -1,5 +1,5 @@
 import {CommonModule} from '@angular/common'
-import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, inject} from '@angular/core'
+import {ChangeDetectorRef, Component, OnInit, inject} from '@angular/core'
 import {AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators} from '@angular/forms'
 import {MatDialogContent, MatDialogActions, MAT_DIALOG_DATA, MatDialogRef, MatDialogClose, MatDialogTitle} from '@angular/material/dialog'
 import {DefaultValueHintPipe} from '../../pipes/default-value-hint.pipe'
@@ -10,6 +10,9 @@ import {v4 as uuidv4} from 'uuid'
 import {MatButtonModule} from '@angular/material/button'
 import {MatInputModule} from '@angular/material/input'
 import {MatSelectModule} from '@angular/material/select'
+import {MatChipsModule} from '@angular/material/chips'
+import {MatCheckboxModule} from '@angular/material/checkbox'
+import {MatDividerModule} from '@angular/material/divider'
 
 @Component({
     standalone: true,
@@ -27,15 +30,18 @@ import {MatSelectModule} from '@angular/material/select'
         MatDialogTitle,
         MinMaxRelevantPipe,
         MinMaxLabelFromAttrTypePipe,
-        DefaultValueHintPipe
+        DefaultValueHintPipe,
+        MatInputModule,
+        MatChipsModule,
+        MatCheckboxModule,
+        MatDividerModule
     ],
     templateUrl: './dialog-attribute.component.html',
     styleUrl: './dialog-attribute.component.scss'
 })
 export class DialogAttributeComponent implements OnInit {
-    showAttrOptions = false
-    showAttrValidation = false
-    showSmartAttributes = false
+    existingNames: string[] = []
+    justSetIDName = false
 
     data: {
         a: Attribute | undefined
@@ -52,7 +58,7 @@ export class DialogAttributeComponent implements OnInit {
     }
 
     attributeForm = new FormGroup({
-        Name: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(128)]),
+        Name: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(63)]),
         Type: new FormControl<AttrType | null>(AttrType.VARCHAR, [Validators.required]),
         PrimaryKey: new FormControl(false, []),
         Readonly: new FormControl(false, []),
@@ -83,7 +89,7 @@ export class DialogAttributeComponent implements OnInit {
         {name: 'Varchar', value: AttrType.VARCHAR}
     ]
 
-    private readonly presetAttributes: AttributeSuggestion[] = [
+    readonly presetAttributes: AttributeSuggestion[] = [
         {
             Name: 'id',
             Type: AttrType.SERIAL,
@@ -93,56 +99,47 @@ export class DialogAttributeComponent implements OnInit {
             }
         },
         {
-            Name: 'title',
+            Name: 'word',
             Type: AttrType.VARCHAR,
             Option: {
-                PrimaryKey: false,
                 Unique: true
             },
             Validation: {
                 Required: true,
                 Min: 3,
-                Max: 31
+                Max: 30
             }
         },
         {
-            Name: 'inserted_at',
-            Type: AttrType.TIMESTAMP,
-            Option: {
-                PrimaryKey: false,
-                Default: 'CURRENT_TIMESTAMP',
-                SystemField: true
-            },
-            Validation: {
-                Required: true
-            }
-        },
-        {
-            Name: 'updated_at',
-            Type: AttrType.TIMESTAMP,
-            Option: {
-                PrimaryKey: false,
-                Default: 'CURRENT_TIMESTAMP',
-                SystemField: true
-            },
-            Validation: {
-                Required: true
-            }
-        },
-        {
-            Name: 'email',
+            Name: 'sentence',
             Type: AttrType.VARCHAR,
-            Option: {
-                Unique: true
-            },
             Validation: {
-                Min: 5,
-                Max: 63,
+                Required: true,
+                Min: 30,
+                Max: 300
+            }
+        },
+        {
+            Name: 'number',
+            Type: AttrType.FLOAT,
+            Validation: {
                 Required: true
             }
         },
         {
-            Name: 'parent',
+            Name: 'time stamp',
+            Type: AttrType.TIMESTAMP,
+            Option: {
+                PrimaryKey: false,
+                Default: 'CURRENT_TIMESTAMP',
+                SystemField: true
+            },
+            Validation: {
+                Required: true
+            }
+        },
+        {
+            Name: 'reference',
             Type: AttrType.REFERENCE,
             Validation: {
                 Required: true
@@ -213,27 +210,87 @@ export class DialogAttributeComponent implements OnInit {
          * Trigger detection again on default value if the type changed is ref by
          *
          */
-        this.attributeForm.controls.Type.valueChanges.subscribe(() => {
+        this.attributeForm.controls.Type.valueChanges.subscribe(x => {
             this.attributeForm.controls.Default.setValue(this.attributeForm.controls.Default.value)
+            if (x === AttrType.REFERENCE) {
+                this.attributeForm.controls.Name.disable()
+            } else {
+                this.attributeForm.controls.Name.enable()
+            }
+
+            if (x === AttrType.SERIAL) {
+                this.attributeForm.controls.PrimaryKey.setValue(true)
+                this.RequirePrimaryKey()
+            } else if (x && [AttrType.INT, AttrType.SERIAL, AttrType.VARCHAR].includes(x)) {
+                this.AllowPrimaryKey()
+            } else {
+                this.DenyPrimaryKey()
+            }
+
+            this.PrimaryKeyChange(this.attributeForm.controls.PrimaryKey.value || false)
+
+            this.cdr.detectChanges()
+        })
+
+        this.attributeForm.controls.PrimaryKey.valueChanges.subscribe(x => {
+            this.PrimaryKeyChange(x || false)
+        })
+
+        this.attributeForm.controls.ReferenceTo.valueChanges.subscribe(x => {
+            this.attributeForm.controls.Name.setValue(x?.Name || '')
             this.cdr.detectChanges()
         })
 
         this.attributeForm.controls.ReferenceTo.addValidators(this.validReference())
         this.attributeForm.controls.Default.addValidators(this.validDefault())
 
+        this.existingNames = this.data.t.Attributes.map(e => e.Name)
+
         if (!this.data.a) {
             this.attributeForm.reset()
-            this.showSmartAttributes = true
             return
         }
+
         this.setAttributeForm(this.data.a)
+    }
+
+    private RequirePrimaryKey() {
+        this.attributeForm.controls.PrimaryKey.disable()
+        this.attributeForm.controls.PrimaryKey.setValue(true)
+    }
+
+    private DenyPrimaryKey() {
+        this.attributeForm.controls.PrimaryKey.disable()
+        this.attributeForm.controls.PrimaryKey.setValue(false)
+    }
+
+    private AllowPrimaryKey() {
+        this.attributeForm.controls.PrimaryKey.enable()
+    }
+
+    private PrimaryKeyChange(isPrimaryKey: boolean) {
+        if (isPrimaryKey && !this.isReference) {
+            this.attributeForm.controls.Required.disable()
+            this.attributeForm.controls.Unique.disable()
+            this.attributeForm.controls.SystemField.disable()
+
+            this.attributeForm.controls.Required.setValue(true)
+            this.attributeForm.controls.Unique.setValue(true)
+            this.attributeForm.controls.SystemField.setValue(true)
+        } else {
+            this.attributeForm.controls.Required.setValue(false)
+            this.attributeForm.controls.Unique.setValue(false)
+            this.attributeForm.controls.SystemField.setValue(false)
+
+            this.attributeForm.controls.Required.enable()
+            this.attributeForm.controls.Unique.enable()
+            this.attributeForm.controls.SystemField.enable()
+        }
+        this.cdr.detectChanges()
     }
 
     private setAttributeForm(a: Attribute) {
         this.attributeForm.reset()
-
-        this.showAttrOptions = a.Option !== undefined
-        this.showAttrValidation = a.Validation !== undefined
 
         const c = this.attributeForm.controls
         c.Name.setValue(a.Name)
@@ -368,22 +425,28 @@ export class DialogAttributeComponent implements OnInit {
         this.dialogRef.close()
     }
 
-    clickSmartSuggestion(a: Attribute) {
-        this.setAttributeForm(a)
-        this.cdr.detectChanges()
-    }
+    clickSmartSuggestion(x: AttributeSuggestion) {
+        this.attributeForm.controls.PrimaryKey.setValue(x.Option?.PrimaryKey || null)
+        this.attributeForm.controls.Unique.setValue(x.Option?.Unique || null)
+        this.attributeForm.controls.Default.setValue(x.Option?.Default || '')
+        this.attributeForm.controls.SystemField.setValue(x.Option?.SystemField || null)
+        this.attributeForm.controls.Required.setValue(x.Validation?.Required || null)
+        this.attributeForm.controls.Min.setValue(x.Validation?.Min || null)
+        this.attributeForm.controls.Max.setValue(x.Validation?.Max || null)
 
-    get smartSuggestions(): Attribute[] {
-        const t = this.data.t
-        const attrNames = t.Attributes.map(e => e.Name.toLowerCase())
-        const answer = []
-        for (const e of this.presetAttributes) {
-            if (attrNames.includes(e.Name.toLowerCase())) {
-                continue
-            }
-            answer.push(JSON.parse(JSON.stringify(e)))
+        this.attributeForm.controls.Type.setValue(x.Type)
+
+        if (x.Name === 'id' && this.attributeForm.controls.Name.invalid && !this.existingNames.includes(x.Name)) {
+            this.justSetIDName = true
+            this.attributeForm.controls.Name.setValue(x.Name)
         }
-        return answer
+
+        if (this.justSetIDName && x.Name !== 'id' && this.attributeForm.controls.Name.value === 'id') {
+            this.justSetIDName = false
+            this.attributeForm.controls.Name.setValue('')
+        }
+
+        this.cdr.detectChanges()
     }
 
     get referenceOptions(): Table[] {

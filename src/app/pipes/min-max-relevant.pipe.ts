@@ -1,7 +1,7 @@
 import {Pipe, PipeTransform} from '@angular/core'
 import {AttrType} from '../structure'
 
-const RELEVANT = [AttrType.DECIMAL, AttrType.REAL, AttrType.FLOAT, AttrType.SERIAL, AttrType.INT, AttrType.VARCHAR, AttrType.MONEY]
+const RELEVANT = [AttrType.DECIMAL, AttrType.REAL, AttrType.FLOAT, AttrType.INT, AttrType.VARCHAR, AttrType.MONEY]
 
 @Pipe({
     name: 'minMaxRelevant'

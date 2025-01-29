@@ -248,7 +248,8 @@ export class GuiEditorComponent implements AfterViewInit {
             data: {
                 a,
                 t,
-                s
+                s,
+                ss: this.data.schemas
             }
         })
 
