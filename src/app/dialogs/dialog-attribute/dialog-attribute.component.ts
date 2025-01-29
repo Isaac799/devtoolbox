@@ -252,7 +252,7 @@ export class DialogAttributeComponent implements OnInit {
             if (x === AttrType.SERIAL) {
                 this.attributeForm.controls.PrimaryKey.setValue(true)
                 this.RequirePrimaryKey()
-            } else if (x && [AttrType.INT, AttrType.SERIAL, AttrType.VARCHAR].includes(x)) {
+            } else if (x && [AttrType.INT, AttrType.SERIAL, AttrType.VARCHAR].includes(x) || x === AttrType.REFERENCE) {
                 this.AllowPrimaryKey()
             } else {
                 this.DenyPrimaryKey()
