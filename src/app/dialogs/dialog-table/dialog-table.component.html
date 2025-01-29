@@ -1,0 +1,55 @@
+<h2 mat-dialog-title>Blueprint</h2>
+<mat-dialog-content class="mat-typography">
+    <div [formGroup]="tableForm">
+        <table
+            cellspacing="8"
+        >
+            <tr>
+                <td>
+                    <mat-form-field>
+                        <mat-label>Blueprint Name</mat-label>
+                        <input
+                            cdkFocusInitial
+                            matInput
+                            formControlName="Name"
+                        >
+                        <mat-hint align="start"> Singular thing or entity </mat-hint>
+                    </mat-form-field>
+                </td>
+                <td>
+                    <mat-form-field>
+                        <mat-label>Folder</mat-label>
+                        <mat-select formControlName="Schema">
+                            <mat-option>None</mat-option>
+                            @for (s of data.ss; track s.ID) {
+                            <mat-option [value]="s">{{s.Name}}</mat-option>
+                            }
+                        </mat-select>
+                        <mat-hint align="start"> Give it a home </mat-hint>
+                    </mat-form-field>
+                </td>
+            </tr>
+        </table>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button
+        mat-button
+        mat-dialog-close
+    >
+        Cancel
+    </button>
+    <button
+        mat-button
+        mat-dialog-close
+    >
+        Delete
+    </button>
+    <button
+        mat-button
+        mat-dialog-close
+        cdkFocusInitial
+    >
+        Save
+    </button>
+</mat-dialog-actions>

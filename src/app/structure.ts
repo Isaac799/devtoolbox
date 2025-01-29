@@ -297,9 +297,9 @@ export interface AttributeOptions {
 
 // Attribute represents an individual attribute of a table
 export interface AttributeConfig {
-    ID: number
-    ParentID: number
-    RefToID?: number
+    ID: string
+    ParentID: string
+    RefToID?: string
     Type: AttrType
     Option?: AttributeOptions
     Validation?: Validation
@@ -318,7 +318,7 @@ export class AttributeSuggestion {
 }
 // Attribute represents an individual attribute of a table
 export class Attribute {
-    ID: number
+    ID: string
     Parent: Table
     RefTo?: Table
     Name: string
@@ -327,7 +327,7 @@ export class Attribute {
     Validation?: Validation
     warnings: string[] = []
 
-    constructor(ID: number, Name: string, Type: AttrType, Parent: Table) {
+    constructor(ID: string, Name: string, Type: AttrType, Parent: Table) {
         this.ID = ID
         this.Name = Name
         this.Type = Type
@@ -373,16 +373,16 @@ export class Attribute {
 
 // Schema represents the entire schema containing multiple tables
 export interface SchemaConfig {
-    ID: number
+    ID: string
     Tables: Record<string, TableConfig>
 }
 // Schema represents the entire schema containing multiple tables
 export class Schema {
-    ID: number
+    ID: string
     Name: string
     Tables: Table[]
 
-    constructor(ID: number, Name: string) {
+    constructor(Name: string, ID: string) {
         this.ID = ID
         this.Name = Name
 
@@ -398,8 +398,8 @@ export class Schema {
 
 // Table represents a database table with its attributes and options
 export interface TableConfig {
-    ID: number
-    ParentID: number
+    ID: string
+    ParentID: string
     // Options: TableOptions;
     Attributes: Record<string, AttributeConfig>
     dragPosition: {
@@ -410,7 +410,7 @@ export interface TableConfig {
 
 // Table represents a database table with its attributes and options
 export class Table {
-    ID: number
+    ID
     Parent: Schema
     RefBy?: Table[]
     Name: string
@@ -418,7 +418,7 @@ export class Table {
     Attributes: Attribute[]
     dragPosition
 
-    constructor(ID: number, Name: string, Parent: Schema, dragPosition = {x: 0, y: 0}) {
+    constructor(ID: string, Name: string, Parent: Schema, dragPosition = {x: 0, y: 0}) {
         this.ID = ID
         this.Name = Name
         this.Parent = Parent

@@ -160,7 +160,7 @@ export class DataService {
         }
     }
 
-    getReference(id: number): Table | null {
+    getReference(id: string): Table | null {
         for (const s of this.schemas) {
             for (const t of s.Tables) {
                 if (t.ID !== id) {
