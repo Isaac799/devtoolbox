@@ -215,9 +215,10 @@ export class DialogAttributeComponent implements OnInit {
             if (x === AttrType.REFERENCE) {
                 this.attributeForm.controls.Name.disable()
             } else {
+                this.attributeForm.controls.ReferenceTo.setValue(null)
                 this.attributeForm.controls.Name.enable()
             }
-
+            
             if (x === AttrType.SERIAL) {
                 this.attributeForm.controls.PrimaryKey.setValue(true)
                 this.RequirePrimaryKey()
