@@ -1,18 +1,18 @@
-import {ChangeDetectorRef, Component, ElementRef, ViewChild, AfterViewInit, inject} from '@angular/core'
-import {DataService} from '../services/data.service'
-import {Schema, Table, Attribute} from '../structure'
-import {FormsModule, ReactiveFormsModule} from '@angular/forms'
-import {CommonModule} from '@angular/common'
-import {NotificationService} from '../services/notification.service'
-import {CdkDrag, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
-import {MatDialog} from '@angular/material/dialog'
-import {DialogAttributeComponent} from '../dialogs/dialog-attribute/dialog-attribute.component'
-import {MatButtonModule} from '@angular/material/button'
-import {MatIconModule} from '@angular/material/icon'
+import { Component, ElementRef, ViewChild, AfterViewInit, inject } from '@angular/core'
+import { DataService } from '../services/data.service'
+import { Schema, Table, Attribute } from '../structure'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { CommonModule } from '@angular/common'
+import { CdkDrag, CdkDragEnd, DragDropModule } from '@angular/cdk/drag-drop'
+import { MatDialog } from '@angular/material/dialog'
+import { DialogAttributeComponent } from '../dialogs/dialog-attribute/dialog-attribute.component'
+import { MatButtonModule } from '@angular/material/button'
+import { MatIconModule } from '@angular/material/icon'
+import { MatCardModule } from '@angular/material/card'
 
 @Component({
     selector: 'app-gui-editor',
-    imports: [FormsModule, CommonModule, ReactiveFormsModule, DragDropModule, CdkDrag, MatButtonModule, MatIconModule],
+    imports: [FormsModule, CommonModule, ReactiveFormsModule, MatCardModule, DragDropModule, CdkDrag, MatButtonModule, MatIconModule],
     templateUrl: './gui-editor.component.html',
     styleUrl: './gui-editor.component.scss'
 })

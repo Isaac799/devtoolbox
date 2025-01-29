@@ -10,18 +10,9 @@
     ></canvas>
 
     @for (s of data.schemas; track $index) {
-    <h1>
-        {{
-        s.Name
-        }}
-    </h1>
     @for (t of s.Tables; track $index; let ti = $index) {
-    <h1>
-        {{
-        t.Name
-        }}
-    </h1>
-    <div
+    <mat-card
+        appearance="outlined"
         [id]="'table:' + t.ID"
         class="table"
         cdkDrag
@@ -29,72 +20,77 @@
         [cdkDragFreeDragPosition]="t.dragPosition"
         (cdkDragEnded)="doneDrag(t, $event)"
     >
-        <div>
-            <table>
-                <tr>
-                    <th> {{ t.Name | titlecase }} </th>
-                    <th>
-                        <mat-icon>switch_access_shortcut</mat-icon>
-                    </th>
-                    <th>
-                        <mat-icon>key</mat-icon>
-                    </th>
-                    <th>
-                        <mat-icon>verified</mat-icon>
-                    </th>
-                    <th>
-                        <mat-icon>asterisk</mat-icon>
-                    </th>
-                    <th>
+        <mat-card-header>
+            <mat-card-title>
+                {{ t.Name | titlecase }}
+            </mat-card-title>
+        </mat-card-header>
 
-                    </th>
-                </tr>
-                @for (a of t.Attributes; track $index; let ai = $index) {
-                <!-- Attribute -->
-                <tr
-                    class="can-hover"
-                    (mouseup)="doShowModalAttribute(s, t, a)"
-                    [id]="'attribute:' + a.ID"
-                >
+        <table cellspacing="8">
+            <tr>
+                <th> </th>
+                <th>
+                    <mat-icon>switch_access_shortcut</mat-icon>
+                </th>
+                <th>
+                    <mat-icon>key</mat-icon>
+                </th>
+                <th>
+                    <mat-icon>verified</mat-icon>
+                </th>
+                <th>
+                    <mat-icon>asterisk</mat-icon>
+                </th>
+                <th>
 
-                    <td>
-                        {{ a.Name | lowercase }}
-                    </td>
-                    <td>
-                        @if (a.Type === 'REF') {
-                        <mat-icon>check</mat-icon>
-                        }
-                    </td>
-                    <td>
-                        @if (a.Option?.PrimaryKey) {
-                        <mat-icon>check</mat-icon>
-                        }
-                    </td>
-                    <td>
-                        @if (a.Option?.Unique) {
-                        <mat-icon>check</mat-icon>
-                        }
-                    </td>
-                    <td>
-                        @if (a.Validation?.Required) {
-                        <mat-icon>check</mat-icon>
-                        }
-                    </td>
-                    <td>
-                        @if (a.warnings.length > 0) {
-                        <div class="fc align-center justify-center">
-                            @for (w of a.warnings; track $index) {
-                            <span class="error">
-                                {{ w }}
-                            </span>
-                            }
-                        </div>
-                        }
-                    </td>
-                </tr>
-                }
-            </table>
+                </th>
+            </tr>
+            @for (a of t.Attributes; track $index; let ai = $index) {
+            <!-- Attribute -->
+            <tr
+                class="can-hover"
+                (mouseup)="doShowModalAttribute(s, t, a)"
+                [id]="'attribute:' + a.ID"
+            >
 
+                <td>
+                    {{ a.Name | lowercase }}
+                </td>
+                <td>
+                    @if (a.Type === 'REF') {
+                    <mat-icon>check</mat-icon>
+                    }
+                </td>
+                <td>
+                    @if (a.Option?.PrimaryKey) {
+                    <mat-icon>check</mat-icon>
+                    }
+                </td>
+                <td>
+                    @if (a.Option?.Unique) {
+                    <mat-icon>check</mat-icon>
+                    }
+                </td>
+                <td>
+                    @if (a.Validation?.Required) {
+                    <mat-icon>check</mat-icon>
+                    }
+                </td>
+                <td>
+                    @if (a.warnings.length > 0) {
+                    <div class="fc align-center justify-center">
+                        @for (w of a.warnings; track $index) {
+                        <span class="error">
+                            {{ w }}
+                        </span>
+                        }
+                    </div>
+                    }
+                </td>
+            </tr>
+            }
+        </table>
+        <mat-card-actions>
             <button
                 type="button"
                 mat-button
@@ -103,8 +99,8 @@
                 <span> Attribute </span>
                 <i class="icon small">add</i>
             </button>
-        </div>
-    </div>
+        </mat-card-actions>
+    </mat-card>
     }
     }
 </div>
