@@ -1,7 +1,6 @@
 import {Component, inject, OnInit} from '@angular/core'
 import {CommonModule} from '@angular/common'
 import {FormsModule, ReactiveFormsModule} from '@angular/forms'
-import {GuiEditorComponent} from './gui-editor/gui-editor.component'
 import {DataService} from './services/data.service'
 import {NotificationService} from './services/notification.service'
 import {AppSettingsComponent} from './app-settings/app-settings.component'
@@ -10,7 +9,7 @@ import {MatToolbarModule} from '@angular/material/toolbar'
 import {MatIconModule} from '@angular/material/icon'
 import {MatButtonModule} from '@angular/material/button'
 import {MatDialog} from '@angular/material/dialog'
-import {DialogCodeOutputComponent} from './dialogs/dialog-code-output/dialog-code-output.component'
+import {RouterModule} from '@angular/router'
 
 @Component({
     selector: 'app-root',
@@ -19,11 +18,11 @@ import {DialogCodeOutputComponent} from './dialogs/dialog-code-output/dialog-cod
         AppSettingsComponent,
         FormsModule,
         ReactiveFormsModule,
-        GuiEditorComponent,
         MatSidenavModule,
         MatToolbarModule,
         MatIconModule,
-        MatButtonModule
+        MatButtonModule,
+        RouterModule
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
@@ -37,12 +36,5 @@ export class AppComponent implements OnInit {
 
     ngOnInit(): void {
         this.data.Initialize()
-    }
-
-    doShowModalCode() {
-        const dialogRef = this.matDialog.open(DialogCodeOutputComponent, {})
-        dialogRef.afterOpened().subscribe(() => {
-            this.data.EmitChangesForApp()
-        })
     }
 }

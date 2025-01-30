@@ -1,6 +1,5 @@
 import {Component, ViewChild, ElementRef} from '@angular/core'
 import {MatButtonModule} from '@angular/material/button'
-import {MatDialogContent, MatDialogActions, MatDialogClose, MatDialogTitle} from '@angular/material/dialog'
 import hljs from 'highlight.js'
 import {Subscription} from 'rxjs'
 import {DataService} from '../../services/data.service'
@@ -23,12 +22,12 @@ import {SchemasToTSQLStoredProcedures} from '../../../generators/tsql.stored.pro
 import {SchemasToTablesForTSQL} from '../../../generators/tsql.tables'
 
 @Component({
-    selector: 'app-dialog-code-output',
-    imports: [MatDialogContent, MatDialogActions, MatDialogClose, MatDialogTitle, MatButtonModule],
-    templateUrl: './dialog-code-output.component.html',
-    styleUrl: './dialog-code-output.component.scss'
+    selector: 'app-page-code-output',
+    imports: [MatButtonModule],
+    templateUrl: './page-code-output.component.html',
+    styleUrl: './page-code-output.component.scss'
 })
-export class DialogCodeOutputComponent {
+export class PageCodeOutputComponent {
     output = ''
     subscription: Subscription | null = null
     @ViewChild('codeOutput') codeOutput?: ElementRef<HTMLPreElement>
