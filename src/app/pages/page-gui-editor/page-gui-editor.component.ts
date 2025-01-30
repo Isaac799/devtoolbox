@@ -9,16 +9,32 @@ import {DialogAttributeComponent} from '../../dialogs/dialog-attribute/dialog-at
 import {MatButtonModule} from '@angular/material/button'
 import {MatIconModule} from '@angular/material/icon'
 import {MatCardModule} from '@angular/material/card'
-import { SideBarEditorComponent } from "../../components/side-bar-editor/side-bar-editor.component";
+import {SideBarEditorComponent} from '../../components/side-bar-editor/side-bar-editor.component'
+import {MatChipsModule} from '@angular/material/chips'
+import { SideBarService } from '../../services/side-bar.service'
+import {MatListModule} from '@angular/material/list'; 
 
 @Component({
     selector: 'app-page-gui-editor',
-    imports: [FormsModule, CommonModule, ReactiveFormsModule, MatCardModule, DragDropModule, CdkDrag, MatButtonModule, MatIconModule, SideBarEditorComponent],
+    imports: [
+        FormsModule,
+        CommonModule,
+        ReactiveFormsModule,
+        MatCardModule,
+        DragDropModule,
+        CdkDrag,
+        MatButtonModule,
+        MatIconModule,
+        SideBarEditorComponent,
+        MatChipsModule,
+        MatListModule
+    ],
     templateUrl: './page-gui-editor.component.html',
     styleUrl: './page-gui-editor.component.scss'
 })
 export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy {
     private matDialog = inject(MatDialog)
+    readonly sideBarService = inject(SideBarService)
 
     bend = false
     resizeDebounce: ReturnType<typeof setTimeout> | undefined = undefined

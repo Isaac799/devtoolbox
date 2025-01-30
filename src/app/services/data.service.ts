@@ -122,6 +122,7 @@ export class DataService {
         for (const s of this.schemas) {
             const s2: SchemaConfig = {
                 ID: s.ID,
+                Color: s.Color,
                 Tables: {}
             }
             for (const t of s.Tables) {
@@ -188,7 +189,7 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
             continue
         }
         const s = schemasConfig[sk]
-        const s2 = new Schema(s.ID, sk)
+        const s2 = new Schema(s.ID, sk, s.Color)
 
         for (const tk in s.Tables) {
             if (!Object.prototype.hasOwnProperty.call(s.Tables, tk)) {

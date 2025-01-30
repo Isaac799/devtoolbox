@@ -6,7 +6,9 @@ import {Schema} from '../../structure'
 import {v4 as uuidv4} from 'uuid'
 import {MatButtonModule} from '@angular/material/button'
 import {MatInputModule} from '@angular/material/input'
-import { MatSelectModule } from '@angular/material/select'
+import {MatSelectModule} from '@angular/material/select'
+import {ColorPickerModule} from 'ngx-color-picker'
+import {MatChipsModule} from '@angular/material/chips'
 
 @Component({
     standalone: true,
@@ -21,12 +23,15 @@ import { MatSelectModule } from '@angular/material/select'
         MatInputModule,
         MatSelectModule,
         MatDialogClose,
-        MatDialogTitle
+        MatDialogTitle,
+        ColorPickerModule,
+        MatChipsModule
     ],
     templateUrl: './dialog-schema.component.html',
     styleUrl: './dialog-schema.component.scss'
 })
 export class DialogSchemaComponent implements OnInit, AfterViewInit {
+    [x: string]: any
     data: {
         s: Schema | undefined
         ss: Schema[]
@@ -37,7 +42,8 @@ export class DialogSchemaComponent implements OnInit, AfterViewInit {
     @ViewChild('schemaName') schemaNameRef: ElementRef<HTMLInputElement> | null = null
 
     schemaForm = new FormGroup({
-        Name: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(128)])
+        Name: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(128)]),
+        Color: new FormControl('#FFFFFF', [Validators.required, Validators.minLength(7), Validators.maxLength(7)])
     })
 
     ngOnInit(): void {
@@ -77,8 +83,51 @@ export class DialogSchemaComponent implements OnInit, AfterViewInit {
         if (this.data.s) {
             this.data.s.Name = c.Name.value!.trim()
         } else {
-            this.data.ss.push(new Schema(uuidv4(), c.Name.value!))
+            this.data.ss.push(new Schema(uuidv4(), c.Name.value!, c.Color.value!))
         }
         this.dialogRef.close()
     }
+
+    colorSuggestions = [
+        {
+            name: 'Red',
+            hex: '#FF0000'
+        },
+        {
+            name: 'Green',
+            hex: '#00FF00'
+        },
+        {
+            name: 'Blue',
+            hex: '#0000FF'
+        },
+        {
+            name: 'Yellow',
+            hex: '#FFFF00'
+        },
+        {
+            name: 'Orange',
+            hex: '#FFA500'
+        },
+        {
+            name: 'Purple',
+            hex: '#800080'
+        },
+        {
+            name: 'Pink',
+            hex: '#FFC0CB'
+        },
+        {
+            name: 'Cyan',
+            hex: '#00FFFF'
+        },
+        {
+            name: 'Black',
+            hex: '#000000'
+        },
+        {
+            name: 'White',
+            hex: '#FFFFFF'
+        }
+    ]
 }

@@ -14,6 +14,32 @@
                         <mat-hint align="start"> For storing blueprints </mat-hint>
                     </mat-form-field>
                 </td>
+                <td>
+                    <mat-form-field>
+                        <mat-label>Color</mat-label>
+                        <input
+                            matInput
+                            formControlName="Color"
+                            [style.background]="schemaForm.controls.Color"
+                        />
+                        <mat-hint align="start"> For storing blueprints </mat-hint>
+                    </mat-form-field>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <mat-chip-set>
+                        @for (x of colorSuggestions; track $index;) {
+                        <mat-chip-option
+                            (click)="schemaForm.controls.Color.setValue(x.hex)"
+                            [selected]="schemaForm.controls.Color.value === x.hex"
+                        >
+                            {{x.name}}
+                        </mat-chip-option>
+                        }
+                    </mat-chip-set>
+                </td>
             </tr>
         </table>
     </div>
@@ -36,7 +62,7 @@
     <button
         [disabled]="schemaForm.invalid"
         mat-button
-        (click)="clickDelSchema()"
+        (click)="clickSaveSchema()"
     >
         Save
     </button>

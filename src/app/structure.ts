@@ -342,6 +342,23 @@ export class Attribute {
         return [cc(this.Parent.Parent.Name, 'sk'), cc(this.Parent.Name, 'sk'), cc(this.Name, 'sk')].join('.')
     }
 
+    get Description(): string {
+        const items: string[] = []
+        if (this.Option?.PrimaryKey) {
+            items.push('P')
+        }
+        if (this.Type === 'REF') {
+            items.push('F')
+        }
+        if (this.Option?.Unique) {
+            items.push('U')
+        }
+        if (this.Validation?.Required) {
+            items.push('R')
+        }
+        return items.join(', ')
+    }
+
     isNumerical(): boolean {
         return [
             AttrType.DECIMAL,
@@ -374,17 +391,20 @@ export class Attribute {
 // Schema represents the entire schema containing multiple tables
 export interface SchemaConfig {
     ID: string
+    Color: string
     Tables: Record<string, TableConfig>
 }
 // Schema represents the entire schema containing multiple tables
 export class Schema {
     ID: string
     Name: string
+    Color: string
     Tables: Table[]
 
-    constructor(ID: string, Name: string) {
+    constructor(ID: string, Name: string, Color: string) {
         this.ID = ID
         this.Name = Name
+        this.Color = Color || '#FFFFFF'
 
         this.Tables = []
     }

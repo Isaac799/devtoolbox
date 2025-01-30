@@ -24,83 +24,83 @@
             (cdkDragEnded)="doneDrag(t, $event)"
         >
             <mat-card-header>
-                <mat-card-title>
+                <mat-card-title (dblclick)="sideBarService.doShowModalTable(t)">
                     {{ t.Name | titlecase }}
                 </mat-card-title>
+                <mat-card-subtitle>
+                    {{ s.Name | titlecase }}
+                </mat-card-subtitle>
             </mat-card-header>
 
-            <table cellspacing="8">
-                <tr>
-                    <th> </th>
-                    <th>
-                        <mat-icon>switch_access_shortcut</mat-icon>
-                    </th>
-                    <th>
-                        <mat-icon>key</mat-icon>
-                    </th>
-                    <th>
-                        <mat-icon>verified</mat-icon>
-                    </th>
-                    <th>
-                        <mat-icon>asterisk</mat-icon>
-                    </th>
-                    <th>
-
-                    </th>
-                </tr>
+            <mat-list>
                 @for (a of t.Attributes; track $index; let ai = $index) {
                 <!-- Attribute -->
-                <tr
-                    class="can-hover"
-                    (mouseup)="doShowModalAttribute(s, t, a)"
-                    [id]="'attribute:' + a.ID"
-                >
 
-                    <td>
-                        {{ a.Name | lowercase }}
-                    </td>
-                    <td>
-                        @if (a.Type === 'REF') {
-                        <mat-icon>check</mat-icon>
-                        }
-                    </td>
-                    <td>
-                        @if (a.Option?.PrimaryKey) {
-                        <mat-icon>check</mat-icon>
-                        }
-                    </td>
-                    <td>
-                        @if (a.Option?.Unique) {
-                        <mat-icon>check</mat-icon>
-                        }
-                    </td>
-                    <td>
-                        @if (a.Validation?.Required) {
-                        <mat-icon>check</mat-icon>
-                        }
-                    </td>
-                    <td>
-                        @if (a.warnings.length > 0) {
-                        <div class="fc align-center justify-center">
-                            @for (w of a.warnings; track $index) {
-                            <span class="error">
-                                {{ w }}
-                            </span>
+                <mat-list-item>
+                    <div
+                        class="attribute"
+                        (dblclick)="doShowModalAttribute(s, t, a)"
+                        [id]="'attribute:' + a.ID"
+                    >
+
+
+                        <span [ngClass]="
+                        {
+                            'attr-is-primary': !sideBarService.showMoreDetails && a.Option?.PrimaryKey,
+                            'attr-is-unique': !sideBarService.showMoreDetails && a.Option?.Unique,
+                            'attr-is-required': !sideBarService.showMoreDetails && a.Validation?.Required,
+                            'attr-is-reference': !sideBarService.showMoreDetails && a.Type === 'REF',
+                        }">
+                            {{ a.Name | titlecase }}
+                            @if (sideBarService.showMoreDetails) {
+                            ({{ a.Type | lowercase }})
                             }
-                        </div>
+                        </span>
+
+                        @if (sideBarService.showMoreDetails) {
+                        <mat-chip-set aria-label="Attribute properties">
+                            @if(a.Option?.PrimaryKey) {
+                            <mat-chip> PK </mat-chip>
+                            }
+                            @if(a.Type === 'REF' ) {
+                            <mat-chip> FK </mat-chip>
+                            }
+                            @if(a.Option?.Unique) {
+                            <mat-chip> Unique </mat-chip>
+                            }
+                            @if(a.Validation?.Required) {
+                            <mat-chip> Required </mat-chip>
+                            }
+                        </mat-chip-set>
                         }
-                    </td>
-                </tr>
+
+                        <!-- <span>
+                            {{a.Description}}
+                        </span> -->
+                    </div>
+
+
+                </mat-list-item>
+
+                @if (a.warnings.length > 0) {
+                <div class="fc align-center justify-center">
+                    @for (w of a.warnings; track $index) {
+                    <span class="error">
+                        {{ w }}
+                    </span>
+                    }
+                </div>
                 }
-            </table>
+                }
+            </mat-list>
+
             <mat-card-actions>
                 <button
-                    type="button"
-                    mat-button
+                    mat-icon-button
                     (click)="doShowModalAttribute(s, t)"
+                    aria-label="Add attribute to table"
                 >
-                    <span> Attribute </span>
-                    <i class="icon small">add</i>
+                    <mat-icon>add</mat-icon>
                 </button>
             </mat-card-actions>
         </mat-card>
