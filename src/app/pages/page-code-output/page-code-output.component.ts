@@ -1,10 +1,9 @@
-import {Component, ViewChild, ElementRef} from '@angular/core'
+import {Component, ViewChild, ElementRef, inject, AfterViewInit, OnInit, OnDestroy} from '@angular/core'
 import {MatButtonModule} from '@angular/material/button'
 import hljs from 'highlight.js'
 import {Subscription} from 'rxjs'
 import {DataService} from '../../services/data.service'
-import {NotificationService} from '../../services/notification.service'
-import {AppGeneratorMode, Notification, NotificationLife, NotificationKind} from '../../structure'
+import {AppGeneratorMode} from '../../structure'
 import {SchemasToAngularFormControls} from '../../../generators/angular.form.controls'
 import {SchemasToApiGoPostgres} from '../../../generators/api.go.postgres'
 import {SchemasToCSClasses} from '../../../generators/cs.class'
@@ -20,23 +19,35 @@ import {SchemasToTsClasses} from '../../../generators/ts.class'
 import {SchemasToTsTypesAndFns} from '../../../generators/ts.types.fns'
 import {SchemasToTSQLStoredProcedures} from '../../../generators/tsql.stored.procedures'
 import {SchemasToTablesForTSQL} from '../../../generators/tsql.tables'
+import {MatTabsModule} from '@angular/material/tabs'
+import {SideBarService} from '../../services/side-bar.service'
+import {MatChipsModule} from '@angular/material/chips'
+import {MatIconModule} from '@angular/material/icon'
+import {CommonModule} from '@angular/common'
+import {FormsModule} from '@angular/forms'
+import {IsSeedModePipe} from '../../pipes/is-seed-mode.pipe'
+import {MatSliderModule} from '@angular/material/slider'
+import {MatSnackBar} from '@angular/material/snack-bar'
 
 @Component({
     selector: 'app-page-code-output',
-    imports: [MatButtonModule],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatTabsModule, MatChipsModule, MatIconModule, IsSeedModePipe, MatSliderModule],
     templateUrl: './page-code-output.component.html',
     styleUrl: './page-code-output.component.scss'
 })
-export class PageCodeOutputComponent {
+export class PageCodeOutputComponent implements AfterViewInit, OnDestroy {
     output = ''
     subscription: Subscription | null = null
     @ViewChild('codeOutput') codeOutput?: ElementRef<HTMLPreElement>
 
-    constructor(public data: DataService, private notification: NotificationService) {}
+    readonly dataService = inject(DataService)
+    readonly sideBarService = inject(SideBarService)
+    private readonly snackBar = inject(MatSnackBar)
+
     ngAfterViewInit(): void {
-        this.subscription = this.data.schemasChange.subscribe(schemas => {
+        this.subscription = this.dataService.schemasChange.subscribe(schemas => {
             let ext = ''
-            switch (this.data.app.generatorMode) {
+            switch (this.dataService.app.generatorMode) {
                 case AppGeneratorMode.Postgres:
                     this.output = SchemasToPostgreSQL(schemas)
                     ext = 'SQL'
@@ -94,7 +105,7 @@ export class PageCodeOutputComponent {
                     ext = 'CS'
                     break
                 case AppGeneratorMode.PostgresSeed:
-                    this.output = SchemasToPostgresSeed(schemas, this.data.varcharMap, this.data.app.seedLimit)
+                    this.output = SchemasToPostgresSeed(schemas, this.dataService.varcharMap, this.dataService.app.seedLimit)
                     ext = 'SQL'
                     break
             }
@@ -106,10 +117,8 @@ export class PageCodeOutputComponent {
             const code = hljs.highlight(this.output, {language: ext}).value
             this.codeOutput.nativeElement.innerHTML = code
         })
-    }
 
-    ngOnInit(): void {
-        this.data.EmitChangesForApp()
+        this.dataService.EmitChangesForApp()
     }
 
     ngOnDestroy(): void {
@@ -120,6 +129,13 @@ export class PageCodeOutputComponent {
 
     copy() {
         navigator.clipboard.writeText(this.output)
-        this.notification.Add(new Notification('Copied', 'The code was copied to your clipboard.', NotificationKind.Info, NotificationLife.Short))
+        this.snackBar.open('Copied to clipboard', '', {
+            duration: 2500
+        })
+    }
+
+    selectedTabChanged(event: number) {
+        this.sideBarService.generatorModeSelectedIndex = [event, 0]
+        this.sideBarService.setGenMode()
     }
 }

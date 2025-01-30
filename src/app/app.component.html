@@ -1,49 +1,41 @@
-<div class="max-size">
+<mat-drawer-container
+    autosize
+    [hasBackdrop]="true"
+>
+    <!-- <mat-drawer
+        #drawer
+        mode="over"
+        class="p2"
+    >
+    </mat-drawer> -->
+
     <mat-toolbar>
-        <button
+        <!-- <button
             mat-icon-button
             (click)="drawer.toggle()"
             aria-label="See the menu"
         >
             <mat-icon>menu</mat-icon>
-        </button>
+        </button> -->
         <span>Dev Toolbox</span>
 
-        <span class="toolbar-icon-spacer"></span>
-
-        <a mat-button routerLink="view">Code</a>
-        <a mat-button routerLink="editor">Editor</a>
+        <div class="flex-row">
+            <a
+                mat-button
+                routerLink="manage-blueprints"
+            >
+                Manage Blueprints
+            </a>
+            <a
+                mat-button
+                routerLink="explore-results"
+            >
+                Explore Results
+            </a>
+        </div>
     </mat-toolbar>
 
-    <mat-drawer-container
-        autosize
-        [hasBackdrop]="true"
-    >
-        <mat-drawer
-            #drawer
-            mode="over"
-            class="p2"
-        >
-            <app-app-settings></app-app-settings>
-        </mat-drawer>
-
-        <div class="max-size">
-            <router-outlet></router-outlet>
-        </div>
-    </mat-drawer-container>
-</div>
-
-<div class="fixed-top-right">
-    <div class="notifications m-2">
-        @for (x of notification.Notifications; track $index) {
-        <div [class]="'fc gap-1 p-1 ' + x.kind">
-            <span class="title-2">
-                {{ x.title }}
-            </span>
-            <span>
-                {{ x.message }}
-            </span>
-        </div>
-        }
+    <div class="max-size">
+        <router-outlet></router-outlet>
     </div>
-</div>
+</mat-drawer-container>

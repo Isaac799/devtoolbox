@@ -1,105 +1,110 @@
-<div
-    class="table-boundary"
-    id="root-editor"
-    #rootEditor
->
-    <canvas
-        class="canvas"
-        #canvas
-    ></canvas>
-
-    @for (s of data.schemas; track $index) {
-    @for (t of s.Tables; track $index; let ti = $index) {
-    <mat-card
-        appearance="outlined"
-        [id]="'table:' + t.ID"
-        class="table"
-        cdkDrag
-        cdkDragBoundary=".table-boundary"
-        [cdkDragFreeDragPosition]="t.dragPosition"
-        (cdkDragEnded)="doneDrag(t, $event)"
+<div class="container">
+    <div class="side">
+        <app-side-bar-editor></app-side-bar-editor>
+    </div>
+    <div
+        class="main table-boundary"
+        id="root-editor"
+        #rootEditor
     >
-        <mat-card-header>
-            <mat-card-title>
-                {{ t.Name | titlecase }}
-            </mat-card-title>
-        </mat-card-header>
+        <canvas
+            class="canvas"
+            #canvas
+        ></canvas>
 
-        <table cellspacing="8">
-            <tr>
-                <th> </th>
-                <th>
-                    <mat-icon>switch_access_shortcut</mat-icon>
-                </th>
-                <th>
-                    <mat-icon>key</mat-icon>
-                </th>
-                <th>
-                    <mat-icon>verified</mat-icon>
-                </th>
-                <th>
-                    <mat-icon>asterisk</mat-icon>
-                </th>
-                <th>
+        @for (s of data.schemas; track $index) {
+        @for (t of s.Tables; track $index; let ti = $index) {
+        <mat-card
+            appearance="outlined"
+            [id]="'table:' + t.ID"
+            class="table"
+            cdkDrag
+            cdkDragBoundary=".table-boundary"
+            [cdkDragFreeDragPosition]="t.dragPosition"
+            (cdkDragEnded)="doneDrag(t, $event)"
+        >
+            <mat-card-header>
+                <mat-card-title>
+                    {{ t.Name | titlecase }}
+                </mat-card-title>
+            </mat-card-header>
 
-                </th>
-            </tr>
-            @for (a of t.Attributes; track $index; let ai = $index) {
-            <!-- Attribute -->
-            <tr
-                class="can-hover"
-                (mouseup)="doShowModalAttribute(s, t, a)"
-                [id]="'attribute:' + a.ID"
-            >
+            <table cellspacing="8">
+                <tr>
+                    <th> </th>
+                    <th>
+                        <mat-icon>switch_access_shortcut</mat-icon>
+                    </th>
+                    <th>
+                        <mat-icon>key</mat-icon>
+                    </th>
+                    <th>
+                        <mat-icon>verified</mat-icon>
+                    </th>
+                    <th>
+                        <mat-icon>asterisk</mat-icon>
+                    </th>
+                    <th>
 
-                <td>
-                    {{ a.Name | lowercase }}
-                </td>
-                <td>
-                    @if (a.Type === 'REF') {
-                    <mat-icon>check</mat-icon>
-                    }
-                </td>
-                <td>
-                    @if (a.Option?.PrimaryKey) {
-                    <mat-icon>check</mat-icon>
-                    }
-                </td>
-                <td>
-                    @if (a.Option?.Unique) {
-                    <mat-icon>check</mat-icon>
-                    }
-                </td>
-                <td>
-                    @if (a.Validation?.Required) {
-                    <mat-icon>check</mat-icon>
-                    }
-                </td>
-                <td>
-                    @if (a.warnings.length > 0) {
-                    <div class="fc align-center justify-center">
-                        @for (w of a.warnings; track $index) {
-                        <span class="error">
-                            {{ w }}
-                        </span>
+                    </th>
+                </tr>
+                @for (a of t.Attributes; track $index; let ai = $index) {
+                <!-- Attribute -->
+                <tr
+                    class="can-hover"
+                    (mouseup)="doShowModalAttribute(s, t, a)"
+                    [id]="'attribute:' + a.ID"
+                >
+
+                    <td>
+                        {{ a.Name | lowercase }}
+                    </td>
+                    <td>
+                        @if (a.Type === 'REF') {
+                        <mat-icon>check</mat-icon>
                         }
-                    </div>
-                    }
-                </td>
-            </tr>
-            }
-        </table>
-        <mat-card-actions>
-            <button
-                type="button"
-                mat-button
-                (click)="doShowModalAttribute(s, t)"
-            >
-                <span> Attribute </span>
-                <i class="icon small">add</i>
-            </button>
-        </mat-card-actions>
-    </mat-card>
-    }
-    }
+                    </td>
+                    <td>
+                        @if (a.Option?.PrimaryKey) {
+                        <mat-icon>check</mat-icon>
+                        }
+                    </td>
+                    <td>
+                        @if (a.Option?.Unique) {
+                        <mat-icon>check</mat-icon>
+                        }
+                    </td>
+                    <td>
+                        @if (a.Validation?.Required) {
+                        <mat-icon>check</mat-icon>
+                        }
+                    </td>
+                    <td>
+                        @if (a.warnings.length > 0) {
+                        <div class="fc align-center justify-center">
+                            @for (w of a.warnings; track $index) {
+                            <span class="error">
+                                {{ w }}
+                            </span>
+                            }
+                        </div>
+                        }
+                    </td>
+                </tr>
+                }
+            </table>
+            <mat-card-actions>
+                <button
+                    type="button"
+                    mat-button
+                    (click)="doShowModalAttribute(s, t)"
+                >
+                    <span> Attribute </span>
+                    <i class="icon small">add</i>
+                </button>
+            </mat-card-actions>
+        </mat-card>
+        }
+        }
+    </div>
 </div>

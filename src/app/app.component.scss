@@ -1,8 +1,12 @@
-.max-size {
-    width: 100vw;
-    height: calc(100vh - 4rem);
-}
-
 .toolbar-icon-spacer {
     flex: 1 1 auto;
-  }
+}
+
+.flex-row {
+    display: flex;
+    gap: 1rem;
+    flex-direction: row;
+    padding-left: 2rem;
+    align-items: flex-end;
+    justify-content: flex-start;
+}

@@ -1,14 +1,81 @@
-Generated Code
-    <div class="scroll-box">
+<div class="top">
+    <mat-tab-group
+        [selectedIndex]="sideBarService.generatorModeSelectedIndex[0]"
+        (selectedIndexChange)="selectedTabChanged($event)"
+    >
+        @for (mode of sideBarService.generatorModeOptions; track $index; let i = $index) {
+        <mat-tab [label]="mode.title">
+            @if(sideBarService.generatorModeSelectedIndex[0] === i){
+            <mat-chip-set class="chips">
+                @for (x of mode.items; track $index; let k = $index) {
+                <mat-chip-option
+                    (mouseup)="sideBarService.generatorModeSelectedIndex = [i, k]; sideBarService.setGenMode()"
+                    [selected]="sideBarService.generatorModeSelectedIndex[0] === i && sideBarService.generatorModeSelectedIndex[1] === k"
+                >
+                    {{x.name}}
+                    <!-- @if (x.icon) {
+            <span matChipAvatar>
+                <mat-icon>
+                    {{x.icon}}
+                </mat-icon>
+            </span>
+            } -->
+                </mat-chip-option>
+                }
+            </mat-chip-set>
+            }
+        </mat-tab>
+        }
+    </mat-tab-group>
+</div>
+<div [class]="(dataService.app.generatorMode | isSeedMode) ? 'container-split':'container'">
+    <div class="side">
+        <table>
+            <tr>
+                <td>
+                    <mat-slider
+                        min="1"
+                        max="50"
+                        value="10"
+                    >
+                        <input
+                            matSliderThumb
+                            [(ngModel)]="dataService.app.seedLimit"
+                            (ngModelChange)="sideBarService.debounceReload()"
+                            type="range"
+                        >
+                    </mat-slider>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button
+                        mat-fab
+                        extended
+                        (click)="sideBarService.doShowModalTable()"
+                    >
+                        Regenerate (size: {{dataService.app.seedLimit}})
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="main">
         <pre
             #codeOutput
             class="mono-space"
             style="display: block; width: min-content; height: min-content"
         ></pre>
     </div>
- <button
-        mat-button
+</div>
+
+<div class="copy-button">
+    <button
+        mat-fab
+        aria-label="Copy the generate code"
         (click)="copy()"
     >
-        Copy
+        <mat-icon>content_copy</mat-icon>
     </button>
+</div>

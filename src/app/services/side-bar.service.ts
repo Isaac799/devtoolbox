@@ -1,29 +1,19 @@
-import {Component, inject, OnInit} from '@angular/core'
-import {CommonModule} from '@angular/common'
-import {AppGeneratorMode, AppMode, Notification, NotificationKind, NotificationLife, Schema, Table} from '../structure'
-import {FormsModule} from '@angular/forms'
+import {AppGeneratorMode, AppMode, Schema, Table} from '../structure'
 import YAML from 'yaml'
-import {NotificationService} from '../services/notification.service'
 import {DataService} from '../services/data.service'
-import {IsSeedModePipe} from '../pipes/is-seed-mode.pipe'
 import {DialogSchemaComponent} from '../dialogs/dialog-schema/dialog-schema.component'
 import {DialogTableComponent} from '../dialogs/dialog-table/dialog-table.component'
 import {MatDialog} from '@angular/material/dialog'
-import {MatButtonModule} from '@angular/material/button'
-import {MatIconModule} from '@angular/material/icon'
-import {MatSelectModule} from '@angular/material/select'
-import {MatSliderModule} from '@angular/material/slider'
-import {MatChipsModule} from '@angular/material/chips'
+import {inject, Injectable} from '@angular/core'
+import {MatSnackBar} from '@angular/material/snack-bar'
 
-@Component({
-    standalone: true,
-    selector: 'app-app-settings',
-    imports: [CommonModule, FormsModule, IsSeedModePipe, MatButtonModule, MatIconModule, MatSelectModule, MatSliderModule, MatChipsModule],
-    templateUrl: './app-settings.component.html',
-    styleUrl: './app-settings.component.scss'
+@Injectable({
+    providedIn: 'root'
 })
-export class AppSettingsComponent implements OnInit {
+export class SideBarService {
     private matDialog = inject(MatDialog)
+    private data = inject(DataService)
+    private readonly snackBar = inject(MatSnackBar)
 
     debounce: ReturnType<typeof setTimeout> | undefined = undefined
     modeOptions = [
@@ -37,9 +27,7 @@ export class AppSettingsComponent implements OnInit {
         }
     ]
 
-    constructor(public data: DataService, private notification: NotificationService) {}
-
-    ngOnInit(): void {
+    constructor() {
         for (let i = 0; i < this.generatorModeOptions.length; i++) {
             const e = this.generatorModeOptions[i]
             for (let k = 0; k < e.items.length; k++) {
@@ -79,7 +67,9 @@ export class AppSettingsComponent implements OnInit {
             str = YAML.stringify(this.data.schemasConfig)
         }
         navigator.clipboard.writeText(str)
-        this.notification.Add(new Notification('Copied', 'The config was copied to your clipboard.', NotificationKind.Info, NotificationLife.Short))
+        this.snackBar.open('Copied to clipboard', '', {
+            duration: 2500
+        })
     }
 
     doShowModalTable(t?: Table) {
@@ -173,8 +163,12 @@ export class AppSettingsComponent implements OnInit {
                     value: AppGeneratorMode.TSClasses
                 },
                 {
-                    name: 'Types & ƒ',
+                    name: 'Types & new functions',
                     value: AppGeneratorMode.TSTypesAndFns
+                },
+                {
+                    name: 'Angular reactive form',
+                    value: AppGeneratorMode.AngularFormControl
                 }
             ]
         },
@@ -191,7 +185,7 @@ export class AppSettingsComponent implements OnInit {
             title: 'Go',
             items: [
                 {
-                    name: 'Structs & ƒ',
+                    name: 'Structs & new functions',
                     value: AppGeneratorMode.GoStructsAndFns
                 }
             ]
@@ -200,22 +194,13 @@ export class AppSettingsComponent implements OnInit {
             title: 'Rust',
             items: [
                 {
-                    name: 'structs & impl ƒ',
+                    name: 'structs & impl functions',
                     value: AppGeneratorMode.RustStructAndImpl
                 }
             ]
         },
         {
-            title: 'Angular',
-            items: [
-                {
-                    name: 'Reactive form',
-                    value: AppGeneratorMode.AngularFormControl
-                }
-            ]
-        },
-        {
-            title: 'Server',
+            title: 'Http Server',
             icon: 'star',
             items: [
                 {

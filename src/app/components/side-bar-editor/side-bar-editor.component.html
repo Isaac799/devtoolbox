@@ -1,0 +1,51 @@
+<table cellspacing="8">
+    <tr>
+        <td>
+            <mat-form-field>
+                <mat-label>Config File</mat-label>
+                <mat-select
+                    [(ngModel)]="dataService.app.mode"
+                    (ngModelChange)="dataService.ReloadAndSave()"
+                >
+                    @for (x of sideBarService. modeOptions; track $index) {
+                    <mat-option [value]="x.value">{{ x.name }}</mat-option>
+                    }
+                </mat-select>
+                <mat-hint align="start"> Save for later </mat-hint>
+            </mat-form-field>
+        </td>
+        <td>
+            <button
+                mat-icon-button
+                aria-label="Copy config file"
+                (mouseup)="sideBarService.copyConfig()"
+            >
+                <mat-icon>content_copy</mat-icon>
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button
+                mat-fab
+                extended
+                (click)="sideBarService. doShowModalSchema()"
+            >
+                Folder
+                <mat-icon>add</mat-icon>
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button
+                mat-fab
+                extended
+                (click)="sideBarService. doShowModalTable()"
+            >
+                Blueprint
+                <mat-icon>add</mat-icon>
+            </button>
+        </td>
+    </tr>
+</table>

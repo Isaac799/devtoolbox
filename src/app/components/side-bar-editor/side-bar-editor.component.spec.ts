@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AppSettingsComponent } from './app-settings.component';
+import { SideBarEditorComponent } from './side-bar-editor.component';
 
-describe('AppSettingsComponent', () => {
-  let component: AppSettingsComponent;
-  let fixture: ComponentFixture<AppSettingsComponent>;
+describe('SideBarEditorComponent', () => {
+  let component: SideBarEditorComponent;
+  let fixture: ComponentFixture<SideBarEditorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppSettingsComponent]
+      imports: [SideBarEditorComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(AppSettingsComponent);
+    fixture = TestBed.createComponent(SideBarEditorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

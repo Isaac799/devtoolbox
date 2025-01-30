@@ -9,10 +9,11 @@ import {DialogAttributeComponent} from '../../dialogs/dialog-attribute/dialog-at
 import {MatButtonModule} from '@angular/material/button'
 import {MatIconModule} from '@angular/material/icon'
 import {MatCardModule} from '@angular/material/card'
+import { SideBarEditorComponent } from "../../components/side-bar-editor/side-bar-editor.component";
 
 @Component({
     selector: 'app-page-gui-editor',
-    imports: [FormsModule, CommonModule, ReactiveFormsModule, MatCardModule, DragDropModule, CdkDrag, MatButtonModule, MatIconModule],
+    imports: [FormsModule, CommonModule, ReactiveFormsModule, MatCardModule, DragDropModule, CdkDrag, MatButtonModule, MatIconModule, SideBarEditorComponent],
     templateUrl: './page-gui-editor.component.html',
     styleUrl: './page-gui-editor.component.scss'
 })

@@ -1,0 +1,47 @@
+.chips {
+    padding: 0.5rem 0.5rem 0 0.5rem
+}
+
+.container {
+    display: grid;
+    grid-template-columns: auto;
+    height: calc(100vh - 10.5rem);
+
+    >.side {
+        display: none;
+    }
+
+    >.main {
+        padding: 1rem;
+        overflow: auto;
+        position: relative;
+    }
+}
+
+.container-split {
+    display: grid;
+    grid-template-columns: 13rem auto;
+    height: calc(100vh - 10.5rem);
+
+    >.side {
+        padding: 1rem
+    }
+
+    >.main {
+        padding: 1rem;
+        overflow: auto;
+    }
+}
+
+pre {
+    padding: 0;
+    margin: 0;
+
+    padding-bottom: 4rem;
+}
+
+.copy-button {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+}

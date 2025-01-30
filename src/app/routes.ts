@@ -4,14 +4,14 @@ import {Routes} from '@angular/router'
 
 const routeConfig: Routes = [
     {
-        path: 'view',
-        component: PageCodeOutputComponent,
-        title: 'Code View'
+        path: 'manage-blueprints',
+        component: PageGuiEditorComponent,
+        title: 'Manage Blueprints'
     },
     {
-        path: 'editor',
-        component: PageGuiEditorComponent,
-        title: 'Blueprint Editor'
+        path: 'explore-results',
+        component: PageCodeOutputComponent,
+        title: 'Explore Results'
     },
     {
         path: '**',
