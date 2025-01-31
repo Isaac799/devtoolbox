@@ -298,7 +298,6 @@ export interface AttributeOptions {
 // Attribute represents an individual attribute of a table
 export interface AttributeConfig {
     ID: string
-    ParentID: string
     RefToID?: string
     Type: AttrType
     Option?: AttributeOptions
@@ -419,7 +418,6 @@ export class Schema {
 // Table represents a database table with its attributes and options
 export interface TableConfig {
     ID: string
-    ParentID: string
     // Options: TableOptions;
     Attributes: Record<string, AttributeConfig>
     dragPosition: {
@@ -526,6 +524,72 @@ export enum AttrType {
     VARCHAR = 'VARCHAR',
     MONEY = 'MONEY',
     REFERENCE = 'REF'
+}
+
+export const attrTypeMap: Record<string, AttrType> = {
+    // TIMESTAMP
+    ts: AttrType.TIMESTAMP,
+    timestamp: AttrType.TIMESTAMP,
+
+    // REFERENCE
+    '^': AttrType.REFERENCE,
+    ref: AttrType.REFERENCE,
+    reference: AttrType.REFERENCE,
+
+    // BIT
+    bit: AttrType.BIT,
+
+    // DATE
+    d: AttrType.DATE,
+    date: AttrType.DATE,
+
+    // CHAR
+    c: AttrType.CHAR,
+    char: AttrType.CHAR,
+    character: AttrType.CHAR,
+
+    // TIME
+    t: AttrType.TIME,
+    time: AttrType.TIME,
+
+    // DECIMAL
+    dec: AttrType.DECIMAL,
+    decimal: AttrType.DECIMAL,
+
+    // REAL
+    r: AttrType.REAL,
+    real: AttrType.REAL,
+
+    // FLOAT
+    f: AttrType.FLOAT,
+    float: AttrType.FLOAT,
+
+    // SERIAL
+    srl: AttrType.SERIAL,
+    serial: AttrType.SERIAL,
+    '++': AttrType.SERIAL,
+
+    // INT (INTEGER)
+    i: AttrType.INT,
+    int: AttrType.INT,
+    integer: AttrType.INT,
+
+    // BOOLEAN
+    b: AttrType.BOOLEAN,
+    bool: AttrType.BOOLEAN,
+    boolean: AttrType.BOOLEAN,
+
+    // VARCHAR
+    vc: AttrType.VARCHAR,
+    varchar: AttrType.VARCHAR,
+    s: AttrType.VARCHAR,
+    str: AttrType.VARCHAR,
+    string: AttrType.VARCHAR,
+    word: AttrType.VARCHAR,
+
+    // MONEY
+    m: AttrType.MONEY,
+    money: AttrType.MONEY
 }
 
 export interface App {

@@ -128,14 +128,12 @@ export class DataService {
             for (const t of s.Tables) {
                 const t2: TableConfig = {
                     ID: t.ID,
-                    ParentID: t.Parent.ID,
                     Attributes: {},
                     dragPosition: t.dragPosition
                 }
                 for (const a of t.Attributes) {
                     const a2: AttributeConfig = {
                         ID: a.ID,
-                        ParentID: a.Parent.ID,
                         RefToID: a.RefTo?.ID,
                         Type: a.Type,
                         Option: a.Option,
@@ -196,7 +194,7 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
                 continue
             }
             const t = s.Tables[tk]
-            const t2p = [s2, ...schemas].find(e => e.ID === t.ParentID)
+            const t2p = [s2, ...schemas].find(e => e.ID === s.ID)
             if (!t2p) continue
 
             const t2 = new Table(t.ID, tk, t2p, t.dragPosition)
@@ -206,7 +204,7 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
                     continue
                 }
                 const a = t.Attributes[ak]
-                const a2p = [t2, ...s2.Tables, ...allTables].find(e => e.ID === a.ParentID)
+                const a2p = [t2, ...s2.Tables, ...allTables].find(e => e.ID === t.ID)
                 const r2 = [t2, ...s2.Tables, ...allTables].find(e => e.ID === a.RefToID)
                 if (r2) {
                     if (!r2.RefBy) {
@@ -274,8 +272,10 @@ function CheckForBadReferences(recheckAttrs: AttributeConfig[], allTables: Table
         } else if (!r) {
             realAttr.warnings.push(`reference to does not exist`)
         } else {
-            realAttr.warnings.push(`"${r.Name}" must exist before referencing`)
             realAttr.RefTo = r
+            const index = realAttr.RefTo.Parent.Tables.findIndex(e => e.ID === realAttr.RefTo!.ID)
+            const rm = realAttr.RefTo.Parent.Tables.splice(index, 1)
+            realAttr.RefTo.Parent.Tables.unshift(rm[0])
         }
     }
 }

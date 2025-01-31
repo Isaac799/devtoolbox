@@ -1,11 +1,11 @@
 import {PageCodeOutputComponent} from './pages/page-code-output/page-code-output.component'
-import {PageGuiEditorComponent} from './pages/page-gui-editor/page-gui-editor.component'
 import {Routes} from '@angular/router'
+import { PageTextEditorComponent } from './pages/page-text-editor/page-text-editor.component'
 
 const routeConfig: Routes = [
     {
         path: 'manage-blueprints',
-        component: PageGuiEditorComponent,
+        component: PageTextEditorComponent,
         title: 'Manage Blueprints'
     },
     {

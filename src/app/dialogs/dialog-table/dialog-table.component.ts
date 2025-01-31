@@ -82,7 +82,6 @@ export class DialogTableComponent implements OnInit {
             this.data.t.Name = c.Name.value!.trim()
         } else {
             const newTbl = new Table(uuidv4(), c.Name.value!, s)
-            console.log('newTbl :>> ', newTbl);
             s.Tables.push(newTbl)
         }
         this.dialogRef.close()
