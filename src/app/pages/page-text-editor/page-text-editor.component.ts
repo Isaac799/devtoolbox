@@ -10,7 +10,9 @@ enum State {
     S,
     T,
     A,
-    AO
+    AO,
+    BR,
+    BU
 }
 
 @Component({
@@ -20,7 +22,8 @@ enum State {
     styleUrl: './page-text-editor.component.scss'
 })
 export class PageTextEditorComponent implements OnInit {
-    textInput = `# public
+    textInput = `
+# public
 
 ## author
 - ++ id
@@ -29,8 +32,9 @@ export class PageTextEditorComponent implements OnInit {
 
 ## book
 - ++ id 
-- str title
+- str title | 12..34
 - ^ author | required
+
 `
     attributeOptionKeywordMap = new Map<string, string>()
 
@@ -49,9 +53,8 @@ export class PageTextEditorComponent implements OnInit {
         let stack = ''
         const chars = input.split('')
 
-        let buildingRange = false
-        let buildingUnique = false
         let determinedAttrType: AttrType | null = null
+        let uniqueStr = ''
 
         const getAttrType = (input: string | null): AttrType | null => {
             if (!input) return null
@@ -131,8 +134,6 @@ export class PageTextEditorComponent implements OnInit {
             if (state === State.N) {
                 const candidate = stack.replaceAll('\r', '').replaceAll('\n', '')
 
-                console.log({candidate})
-
                 if (candidate === '# ') {
                     console.log('Schema start')
                     state = State.S
@@ -151,17 +152,53 @@ export class PageTextEditorComponent implements OnInit {
                     stack = ''
                     stack += c
                     continue
-                } else if (candidate === ' |') {
-                    state = State.AO
-                    stack = ''
-                    continue
                 }
 
                 stack += c
                 continue
             }
 
-            if (state === State.S) {
+            if (state === State.BU) {
+                if (c === ')') {
+                    state = State.AO
+                    const o = lastAttribute().Option
+                    if (o) {
+                        o.Unique = uniqueStr.split(',')
+                    }
+                    uniqueStr = ''
+                    continue
+                }
+                uniqueStr += c
+                continue
+            } else if (state === State.BR) {
+                if (isNum(c) || c === '.') {
+                    stack += c
+                    continue
+                }
+                const a = lastAttribute()
+
+                if (!a.Validation) {
+                    a.Validation = {}
+                }
+
+                const parts = stack.split('..')
+
+                const min = parts[0]
+                const parsedMin = parseFloat(min)
+                if (!Number.isNaN(parsedMin)) {
+                    a.Validation.Min = parsedMin
+                }
+
+                const max = parts[1]
+                const parsedMax = parseFloat(max)
+                if (!Number.isNaN(parsedMax)) {
+                    a.Validation.Max = parsedMax
+                }
+
+                state = State.AO
+                stack = ''
+                continue
+            } else if (state === State.S) {
                 if (!isChar(c)) {
                     const item: SchemaConfig = {
                         ID: uuidv4(),
@@ -193,9 +230,8 @@ export class PageTextEditorComponent implements OnInit {
                 }
             } else if (state === State.A) {
                 if (c === '|') {
+                    state = State.AO
                     stack = ''
-                    stack = ' |'
-                    state = State.N
                     continue
                 }
                 if (!determinedAttrType && c === ' ') {
@@ -245,12 +281,15 @@ export class PageTextEditorComponent implements OnInit {
             } else if (state === State.AO) {
                 const a = lastAttribute()
 
-                if (!a.Validation) {
-                    a.Validation = {}
-                }
-
                 if (!a.Option) {
                     a.Option = {}
+                }
+
+                if (isNum(c) || (c === '.' && !stack.includes('.'))) {
+                    console.log('starting to build range')
+                    state = State.BR
+                    stack += c
+                    continue
                 }
 
                 if (isChar(c)) {
@@ -260,26 +299,22 @@ export class PageTextEditorComponent implements OnInit {
                         switch (option) {
                             case 'p':
                                 a.Option.PrimaryKey = true
-                                buildingRange = false
-                                buildingUnique = false
                                 stack = ''
                                 break
                             case 'u':
-                                a.Option.Unique = true
-                                buildingRange = false
-                                buildingUnique = true
+                                a.Option.Unique = []
+                                state = State.BU
                                 stack = ''
                                 break
                             case 's':
                                 a.Option.SystemField = true
-                                buildingRange = false
-                                buildingUnique = false
                                 stack = ''
                                 break
                             case 'r':
+                                if (!a.Validation) {
+                                    a.Validation = {}
+                                }
                                 a.Validation.Required = true
-                                buildingRange = false
-                                buildingUnique = false
                                 stack = ''
                                 break
                             default:
@@ -288,28 +323,6 @@ export class PageTextEditorComponent implements OnInit {
                                 break
                         }
                     }
-                } else if (c === '(' && buildingUnique) {
-                    // todo
-                    continue
-                } else if (c === ')' && buildingUnique) {
-                    // todo
-                    continue
-                } else if (c === '.' && buildingRange) {
-                    if (!a.Validation.Min) {
-                        const parsed = parseFloat(stack)
-                        if (!Number.isNaN(parsed)) {
-                            a.Validation.Min = parsed
-                        }
-                    } else if (!a.Validation.Max) {
-                        const parsed = parseFloat(stack)
-                        if (!Number.isNaN(parsed)) {
-                            a.Validation.Max = parsed
-                        }
-                    }
-                    continue
-                } else if (isNum(c)) {
-                    buildingRange = true
-                    buildingUnique = false
                 }
             }
             stack += c

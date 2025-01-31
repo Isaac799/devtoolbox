@@ -1,5 +1,3 @@
-import {AttrType} from './structure'
-
 export const TAB = '    '
 
 export const defaultConfig: any = {

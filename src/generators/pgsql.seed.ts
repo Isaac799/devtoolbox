@@ -51,7 +51,7 @@ export function SchemasToPostgresSeed(schemas: Schema[], map: AttributeMap, limi
             adding: for (let index = 0; index < limit; index++) {
                 for (let i = 0; i < t.Attributes.length; i++) {
                     const a = t.Attributes[i]
-                    u = a.Option?.Unique || a.Option?.PrimaryKey || false
+                    // u = a.Option?.Unique || a.Option?.PrimaryKey || false
 
                     if (a.Type === AttrType.SERIAL) {
                         u = false

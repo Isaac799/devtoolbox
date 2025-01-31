@@ -290,7 +290,7 @@ export interface Validation {
 // Options holds additional options for attributes and tables
 export interface AttributeOptions {
     PrimaryKey?: boolean
-    Unique?: boolean
+    Unique?: string[]
     Default?: string
     SystemField?: boolean
 }
