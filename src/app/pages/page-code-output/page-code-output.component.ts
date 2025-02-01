@@ -129,7 +129,7 @@ export class PageCodeOutputComponent implements AfterViewInit, OnDestroy {
 
     copy() {
         navigator.clipboard.writeText(this.output)
-        this.snackBar.open('Copied to clipboard', '', {
+        this.snackBar.open('Copied generate code to the clipboard', '', {
             duration: 2500
         })
     }

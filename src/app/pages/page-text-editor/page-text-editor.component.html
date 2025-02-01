@@ -1,7 +1,7 @@
 <div class="container-split">
     <div class="side">
         <mat-accordion>
-            <mat-expansion-panel>
+            <mat-expansion-panel expanded>
                 <mat-expansion-panel-header>
                     <mat-panel-title> Code </mat-panel-title>
                     <!-- <mat-panel-description> </mat-panel-description> -->
@@ -82,6 +82,25 @@
         </mat-accordion>
     </div>
     <div class="main">
+        <mat-toolbar>
+            <button
+                mat-icon-button
+                aria-label="Undo the last change"
+                (click)="Undo()"
+                [disabled]="dataService.textInputUndoStack.length === 0"
+            >
+                <mat-icon>undo</mat-icon>
+            </button>
+            <button
+                mat-icon-button
+                aria-label="Redo the last change"
+                (click)="Redo()"
+                [disabled]="dataService.textInputRedoStack.length === 0"
+            >
+                <mat-icon>redo</mat-icon>
+            </button>
+            <span class="toolbar-icon-spacer"></span>
+        </mat-toolbar>
         <div class="input-container">
             <div class="render-box">
                 @for (el of renderElements; track $index) {
@@ -96,9 +115,20 @@
             </div>
             <textarea
                 [(ngModel)]="dataService.textInput"
-                (ngModelChange)="Run()"
+                (ngModelChange)="Run(); SaveToUndo($event)"
                 class="input-box"
             ></textarea>
         </div>
     </div>
+</div>
+
+
+<div class="copy-button">
+    <button
+        mat-fab
+        aria-label="Copy the generate code"
+        (click)="Copy()"
+    >
+        <mat-icon>content_copy</mat-icon>
+    </button>
 </div>

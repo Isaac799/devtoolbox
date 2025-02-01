@@ -16,6 +16,9 @@ export class DataService {
     private initialized = false
 
     textInput = ''
+    textInputUndoStack: string[] = []
+    textInputRedoStack: string[] = []
+
     schemas: Schema[] = []
     varcharMap: AttributeMap = new Map()
     schemasConfig: Record<string, SchemaConfig> = {}

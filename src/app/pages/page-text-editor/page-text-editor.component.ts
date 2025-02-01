@@ -22,6 +22,8 @@ import {MatButtonModule} from '@angular/material/button'
 import {MatIconModule} from '@angular/material/icon'
 import {MatSelectModule} from '@angular/material/select'
 import {MatExpansionModule} from '@angular/material/expansion'
+import {MatToolbar} from '@angular/material/toolbar'
+import {MatSnackBar} from '@angular/material/snack-bar'
 
 interface RenderE {
     innerText: string
@@ -30,7 +32,7 @@ interface RenderE {
 
 @Component({
     selector: 'app-page-text-editor',
-    imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule, MatIconModule, MatSelectModule],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule, MatIconModule, MatSelectModule, MatToolbar],
     templateUrl: './page-text-editor.component.html',
     styleUrl: './page-text-editor.component.scss'
 })
@@ -42,6 +44,9 @@ export class PageTextEditorComponent implements OnInit {
     renderElements: RenderE[] = []
     readonly NEWLINE = '~NEWLINE~'
     readonly SPACE = '~SPACE~'
+    private readonly snackBar = inject(MatSnackBar)
+
+    saveUndoTimeout: ReturnType<typeof setTimeout> | undefined = undefined
 
     //     textInput = `
     // # public
@@ -62,6 +67,38 @@ export class PageTextEditorComponent implements OnInit {
         const config = PageTextEditorComponent.parse(this.dataService.textInput)
         this.dataService.ReloadAndSaveFromConfig(config)
         this.Render(this.dataService.textInput)
+    }
+
+    SaveToUndo(x: string) {
+        clearTimeout(this.saveUndoTimeout)
+        this.saveUndoTimeout = setTimeout(() => {
+            this.dataService.textInputUndoStack.push(x)
+            this.dataService.textInputRedoStack = []
+            console.log(this.dataService.textInputUndoStack);
+        }, 500)
+    }
+
+    Undo() {
+        console.log('UNDO')
+        this.dataService.textInputRedoStack.push(this.dataService.textInput)
+        this.dataService.textInput = this.dataService.textInputUndoStack.pop() || ''
+        this.dataService.ReloadAndSave()
+        this.RefreshRender()
+    }
+
+    Redo() {
+        console.log('REDO')
+        this.dataService.textInputUndoStack.push(this.dataService.textInput)
+        this.dataService.textInput = this.dataService.textInputRedoStack.pop() || ''
+        this.dataService.ReloadAndSave()
+        this.RefreshRender()
+    }
+
+    Copy() {
+        navigator.clipboard.writeText(this.dataService.textInput)
+        this.snackBar.open('Copied your code to the clipboard', '', {
+            duration: 2500
+        })
     }
 
     Render(tbInput: string) {
@@ -110,6 +147,7 @@ export class PageTextEditorComponent implements OnInit {
     HardRefresh() {
         this.dataService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorSyntax)
         this.RefreshRender()
+        this.dataService.ReloadAndSave()
     }
 
     private static parse(input: string): Record<string, SchemaConfig> {
