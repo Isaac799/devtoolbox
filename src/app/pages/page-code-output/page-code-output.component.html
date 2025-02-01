@@ -52,7 +52,7 @@
                     <button
                         mat-fab
                         extended
-                        (click)="sideBarService.doShowModalTable()"
+                        (click)="dataService.EmitChangesForApp()"
                     >
                         Regenerate (size: {{dataService.app.seedLimit}})
                         <mat-icon>refresh</mat-icon>

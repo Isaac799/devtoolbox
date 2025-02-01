@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core'
-import {AttributeConfig, AttrType, attrTypeMap, SchemaConfig, TableConfig} from '../../structure'
+import {AttributeConfig, AttributeOptions, AttrType, attrTypeMap, SchemaConfig, TableConfig, Validation} from '../../structure'
 import {v4 as uuidv4} from 'uuid'
 import {CommonModule} from '@angular/common'
 import {FormsModule} from '@angular/forms'
@@ -26,20 +26,22 @@ export class PageTextEditorComponent implements OnInit {
 # public
 
 ## author
-- ++ id
-- string first name
-- word last name
+- id as ++
+- first name as string with unique:pair, required, 2..34
+- last name as s with u:pair, r, 3..45
 
 ## book
-- ++ id 
-- str title | 12..34
-- ^ author | required
-
+- id as ++
+- title as string with 12..34, 
+- @author with required
+- co author as author with required
 `
+
     attributeOptionKeywordMap = new Map<string, string>()
 
     ngOnInit(): void {
         this.buildMap()
+        this.Run()
     }
 
     Run() {
@@ -49,12 +51,6 @@ export class PageTextEditorComponent implements OnInit {
 
     private static parse(input: string, attributeOptionKeywordMap: Map<string, string>): Record<string, SchemaConfig> {
         const answer: Record<string, SchemaConfig> = {}
-        let state: State = State.N
-        let stack = ''
-        const chars = input.split('')
-
-        let determinedAttrType: AttrType | null = null
-        let uniqueStr = ''
 
         const getAttrType = (input: string | null): AttrType | null => {
             if (!input) return null
@@ -62,14 +58,6 @@ export class PageTextEditorComponent implements OnInit {
             const normalizedInput = input.toLowerCase()
 
             return attrTypeMap[normalizedInput] || null
-        }
-
-        const isChar = (c: string): boolean => {
-            return c.match(/[a-zA-Z ]/) !== null
-        }
-
-        const isNum = (c: string): boolean => {
-            return c.match(/[0-9]/) !== null
         }
 
         const lastSchema = (): SchemaConfig => {
@@ -107,225 +95,176 @@ export class PageTextEditorComponent implements OnInit {
             return s.Tables[lastKey]
         }
 
-        const lastAttribute = (): AttributeConfig => {
-            const t = lastTable()
-            const keys = Object.keys(t.Attributes)
+        // const lastAttribute = (): AttributeConfig => {
+        //     const t = lastTable()
+        //     const keys = Object.keys(t.Attributes)
 
-            if (keys.length === 0) {
-                const item: AttributeConfig = {
+        //     if (keys.length === 0) {
+        //         const item: AttributeConfig = {
+        //             ID: uuidv4(),
+        //             Type: AttrType.BOOLEAN
+        //         }
+        //         t.Attributes['unnamed attribute'] = item
+        //         return t.Attributes['unnamed attribute']
+        //     }
+        //     const lastKey = keys[keys.length - 1]
+        //     return t.Attributes[lastKey]
+        // }
+
+        const lines = input
+            .split('\n')
+            .map(e => e.trim())
+            .filter(e => e.length > 3)
+
+        for (const line of lines) {
+            if (line.startsWith('# ')) {
+                console.log('schema', line)
+                const name = cc(line.substring(2, line.length).trim(), 'sk')
+                const item: SchemaConfig = {
                     ID: uuidv4(),
-                    Type: AttrType.BOOLEAN
+                    Color: '',
+                    Tables: {}
                 }
-                t.Attributes['unnamed attribute'] = item
-                return t.Attributes['unnamed attribute']
-            }
-            const lastKey = keys[keys.length - 1]
-            return t.Attributes[lastKey]
-        }
-
-        for (const c of chars) {
-            if (!c) continue
-
-            if (!stack) {
-                stack += c
-                continue
-            }
-
-            if (state === State.N) {
-                const candidate = stack.replaceAll('\r', '').replaceAll('\n', '')
-
-                if (candidate === '# ') {
-                    console.log('Schema start')
-                    state = State.S
-                    stack = ''
-                    stack += c
-                    continue
-                } else if (candidate === '##') {
-                    console.log('Table start')
-                    state = State.T
-                    stack = ''
-                    continue
-                } else if (candidate === '- ') {
-                    console.log('Attribute start')
-
-                    state = State.A
-                    stack = ''
-                    stack += c
-                    continue
-                }
-
-                stack += c
-                continue
-            }
-
-            if (state === State.BU) {
-                if (c === ')') {
-                    state = State.AO
-                    const o = lastAttribute().Option
-                    if (o) {
-                        o.Unique = uniqueStr.split(',')
+                answer[name] = item
+            } else if (line.startsWith('##')) {
+                console.log('table', line)
+                const name = cc(line.substring(2, line.length).trim(), 'sk')
+                const item: TableConfig = {
+                    ID: uuidv4(),
+                    Attributes: {},
+                    dragPosition: {
+                        x: 0,
+                        y: 0
                     }
-                    uniqueStr = ''
-                    continue
                 }
-                uniqueStr += c
-                continue
-            } else if (state === State.BR) {
-                if (isNum(c) || c === '.') {
-                    stack += c
-                    continue
-                }
-                const a = lastAttribute()
+                lastSchema().Tables[name] = item
+            } else if (line.startsWith('- ')) {
+                let cleanLine = line.substring(2, line.length).trim()
 
-                if (!a.Validation) {
-                    a.Validation = {}
-                }
-
-                const parts = stack.split('..')
-
-                const min = parts[0]
-                const parsedMin = parseFloat(min)
-                if (!Number.isNaN(parsedMin)) {
-                    a.Validation.Min = parsedMin
-                }
-
-                const max = parts[1]
-                const parsedMax = parseFloat(max)
-                if (!Number.isNaN(parsedMax)) {
-                    a.Validation.Max = parsedMax
-                }
-
-                state = State.AO
-                stack = ''
-                continue
-            } else if (state === State.S) {
-                if (!isChar(c)) {
-                    const item: SchemaConfig = {
-                        ID: uuidv4(),
-                        Color: '',
-                        Tables: {}
+                if (cleanLine.startsWith('@')) {
+                    const a = cleanLine.split(' with ')
+                    const name = a[0] || ''
+                    if (!name) {
+                        continue
                     }
-                    const name = cc(stack.trim(), 'sk')
-                    answer[name] = item
-                    state = State.N
-                    stack = ''
-                    continue
-                }
-            } else if (state === State.T) {
-                if (!isChar(c)) {
-                    const item: TableConfig = {
-                        ID: uuidv4(),
-                        Attributes: {},
-                        dragPosition: {
-                            x: 0,
-                            y: 0
-                        }
+                    const refName = name.substring(1, name.length)
+                    const newParts: string[] = [`${refName} as reference`]
+                    if (a[1]) {
+                        newParts.push(a[1])
                     }
-
-                    const name = cc(stack.trim(), 'sk')
-                    lastSchema().Tables[name] = item
-                    state = State.N
-                    stack = ''
-                    continue
+                    cleanLine = newParts.join(' with ')
                 }
-            } else if (state === State.A) {
-                if (c === '|') {
-                    state = State.AO
-                    stack = ''
-                    continue
-                }
-                if (!determinedAttrType && c === ' ') {
-                    determinedAttrType = getAttrType(stack)
-                    if (determinedAttrType) {
-                        stack = ''
-                    }
-                } else if (!isChar(c) && determinedAttrType) {
-                    const item: AttributeConfig = {
-                        ID: uuidv4(),
-                        Type: determinedAttrType
-                    }
-                    determinedAttrType = null
 
-                    const name = cc(stack.trim(), 'sk')
+                console.log('attribute: ', cleanLine)
 
-                    if (item.Type === AttrType.REFERENCE) {
-                        let refTo = ''
+                const a = cleanLine.split(' with ')
+                const b = a[0].split(' as ')
 
-                        search: for (const sk in answer) {
-                            const s = answer[sk]
-                            for (const tk in s.Tables) {
-                                const t = s.Tables[tk]
-                                if (tk !== name) {
-                                    continue
-                                }
-                                refTo = t.ID
-                                break search
+                const name = cc(b[0], 'sk')
+                const potentialType = b[1]
+                let type = getAttrType(potentialType)
+                const options = (a[1] || '')
+                    .split(',')
+                    .map(e => e.trim())
+                    .filter(e => e)
+
+                let refTo = ''
+
+                if (!type) {
+                    let matchingTblID = ''
+
+                    search: for (const sk in answer) {
+                        const s = answer[sk]
+                        for (const tk in s.Tables) {
+                            const t = s.Tables[tk]
+                            if (tk !== potentialType && `${sk}.${tk}` !== potentialType && `${sk}:${tk}` !== potentialType) {
+                                continue
                             }
+                            matchingTblID = t.ID
+                            break search
                         }
+                    }
 
-                        if (!refTo) {
-                            console.warn('cannot find reference')
-                            stack = ''
-                            state = State.N
+                    if (!matchingTblID) {
+                        console.warn('cannot find reference from type')
+                        continue
+                    }
+                    refTo = matchingTblID
+                    type = AttrType.REFERENCE
+                }
+
+                const attrValidation: Validation = {}
+                const attrOptions: AttributeOptions = {}
+
+                for (const option of options) {
+                    if (option.startsWith('p')) {
+                        attrOptions.PrimaryKey = true
+                    } else if (option.startsWith('s')) {
+                        attrOptions.SystemField = true
+                    } else if (option.startsWith('r')) {
+                        attrValidation.Required = true
+                    } else if (option.startsWith('u')) {
+                        const uSplit = option.split(':')
+                        const label = uSplit[1] || 'unlabeled'
+                        if (!attrOptions.Unique) {
+                            attrOptions.Unique = []
+                        }
+                        if (!attrOptions.Unique.includes(label)) {
+                            attrOptions.Unique.push(label)
+                        }
+                    } else {
+                        const range = option.split('..')
+                        if (range.length !== 2) {
                             continue
                         }
+                        const min = range[0]
+                        const parsedMin = parseFloat(min)
+                        if (!Number.isNaN(parsedMin)) {
+                            attrValidation.Min = parsedMin
+                        }
 
-                        item.RefToID = refTo
-                    }
-
-                    lastTable().Attributes[name] = item
-                    stack = ''
-                    state = State.N
-                    continue
-                }
-            } else if (state === State.AO) {
-                const a = lastAttribute()
-
-                if (!a.Option) {
-                    a.Option = {}
-                }
-
-                if (isNum(c) || (c === '.' && !stack.includes('.'))) {
-                    console.log('starting to build range')
-                    state = State.BR
-                    stack += c
-                    continue
-                }
-
-                if (isChar(c)) {
-                    const option = attributeOptionKeywordMap.get(stack.trim().toLowerCase())
-
-                    if (option) {
-                        switch (option) {
-                            case 'p':
-                                a.Option.PrimaryKey = true
-                                stack = ''
-                                break
-                            case 'u':
-                                a.Option.Unique = []
-                                state = State.BU
-                                stack = ''
-                                break
-                            case 's':
-                                a.Option.SystemField = true
-                                stack = ''
-                                break
-                            case 'r':
-                                if (!a.Validation) {
-                                    a.Validation = {}
-                                }
-                                a.Validation.Required = true
-                                stack = ''
-                                break
-                            default:
-                                console.warn('unknown attribute option: ', option)
-                                stack = ''
-                                break
+                        const max = range[1]
+                        const parsedMax = parseFloat(max)
+                        if (!Number.isNaN(parsedMax)) {
+                            attrValidation.Max = parsedMax
                         }
                     }
                 }
+
+                const item: AttributeConfig = {
+                    ID: uuidv4(),
+                    Type: type,
+                    Validation: attrValidation,
+                    Option: attrOptions
+                }
+
+                if (refTo && item.Type === AttrType.REFERENCE) {
+                    item.RefToID = refTo
+                } else if (!refTo && item.Type === AttrType.REFERENCE) {
+                    let refTo = ''
+
+                    search: for (const sk in answer) {
+                        const s = answer[sk]
+                        for (const tk in s.Tables) {
+                            const t = s.Tables[tk]
+                            if (tk !== name) {
+                                continue
+                            }
+                            refTo = t.ID
+                            break search
+                        }
+                    }
+
+                    if (!refTo) {
+                        console.warn('cannot find reference')
+                        continue
+                    }
+
+                    item.RefToID = refTo
+                }
+
+                lastTable().Attributes[name] = item
             }
-            stack += c
         }
 
         return answer
