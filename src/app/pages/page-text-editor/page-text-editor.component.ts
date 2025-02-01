@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core'
+import {AfterViewInit, Component, ElementRef, inject, ViewChild, viewChild} from '@angular/core'
 import {
     Attribute,
     AttributeConfig,
@@ -21,16 +21,18 @@ import {DataService} from '../../services/data.service'
 import {MatButtonModule} from '@angular/material/button'
 import {MatIconModule} from '@angular/material/icon'
 import {MatSelectModule} from '@angular/material/select'
-import {MatExpansionModule} from '@angular/material/expansion'; 
+import {MatExpansionModule} from '@angular/material/expansion'
 
 @Component({
     selector: 'app-page-text-editor',
-    imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule,MatIconModule, MatSelectModule],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule, MatIconModule, MatSelectModule],
     templateUrl: './page-text-editor.component.html',
     styleUrl: './page-text-editor.component.scss'
 })
-export class PageTextEditorComponent {
+export class PageTextEditorComponent implements AfterViewInit {
     dataService = inject(DataService)
+    @ViewChild('renderBox') renderBox: ElementRef<HTMLDivElement> | undefined = undefined
+
     //     textInput = `
     // # public
 
@@ -46,14 +48,54 @@ export class PageTextEditorComponent {
     // - co author as author
     // `
 
+    ngAfterViewInit(): void {
+        this.RefreshRender()
+    }
+
     Run() {
         const config = PageTextEditorComponent.parse(this.dataService.textInput)
         this.dataService.ReloadAndSaveFromConfig(config)
+        this.Render(this.dataService.textInput)
     }
 
-    RunAndReRender() {
-        this.Run()
+    Render(tbInput: string) {
+        if (!this.renderBox) {
+            console.error('missing render box')
+            return
+        }
+        const sc = (w: string, c: string) => `<span class="${c}">${w}</span>`
+
+        const lines = tbInput.split('\n')
+        const newLines: string[] = []
+        for (const line of lines) {
+            const newLine: string[] = []
+            const words = line.split(' ')
+            for (const word of words) {
+                let newWord = `<span>${word}</span>`
+                if (word.startsWith('@')) {
+                    newWord = sc(word, 'is-ref')
+                } else if (['with', 'as'].includes(word)) {
+                    newWord = sc(word, 'is-delimiter')
+                } else if (['#', '##'].includes(word)) {
+                    newWord = sc(word, 'is-header')
+                }
+                newLine.push(newWord)
+            }
+            // newLines.push(newLine.join('&nbsp;'))
+            newLines.push(newLine.join(' '))
+        }
+
+        const rendered = newLines.join('<br />')
+        this.renderBox.nativeElement.innerHTML = rendered
+    }
+
+    RefreshRender() {
+        this.Render(this.dataService.textInput)
+    }
+
+    HardRefresh() {
         this.dataService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorSyntax)
+        this.RefreshRender()
     }
 
     private static parse(input: string): Record<string, SchemaConfig> {
@@ -174,7 +216,7 @@ export class PageTextEditorComponent {
                     .map(e => e.trim())
                     .filter(e => e)
 
-                let refTo = ''
+                let refToID = ''
 
                 if (!type) {
                     let matchingTblID = ''
@@ -192,10 +234,10 @@ export class PageTextEditorComponent {
                     }
 
                     if (!matchingTblID) {
-                        console.warn('cannot find reference from type')
+                        // console.warn('cannot find reference from type')
                         continue
                     }
-                    refTo = matchingTblID
+                    refToID = matchingTblID
                     type = AttrType.REFERENCE
                 }
 
@@ -244,11 +286,9 @@ export class PageTextEditorComponent {
                     Option: attrOptions
                 }
 
-                if (refTo && item.Type === AttrType.REFERENCE) {
-                    item.RefToID = refTo
-                } else if (!refTo && item.Type === AttrType.REFERENCE) {
-                    let refTo = ''
-
+                if (refToID && item.Type === AttrType.REFERENCE) {
+                    item.RefToID = refToID
+                } else if (!refToID && item.Type === AttrType.REFERENCE) {
                     search: for (const sk in answer) {
                         const s = answer[sk]
                         for (const tk in s.Tables) {
@@ -256,17 +296,17 @@ export class PageTextEditorComponent {
                             if (tk !== name) {
                                 continue
                             }
-                            refTo = t.ID
+                            refToID = t.ID
                             break search
                         }
                     }
 
-                    if (!refTo) {
+                    if (!refToID) {
                         console.warn('cannot find reference')
                         continue
                     }
 
-                    item.RefToID = refTo
+                    item.RefToID = refToID
                 }
 
                 lastTable().Attributes[name] = item

@@ -289,7 +289,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         }
 
         this.redraw()
-        this.data.saveState()
+        this.data.saveSchemasConfig()
     }
 
     doShowModalAttribute(s: Schema, t: Table, a?: Attribute) {

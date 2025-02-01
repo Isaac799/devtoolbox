@@ -14,13 +14,13 @@ export class DataService {
     private readonly configSessionKey = 'devtoolboxAppConfig'
     private initialized = false
 
-    textInput = ''
-
+   textInput = ''
     schemas: Schema[] = []
     varcharMap: AttributeMap = new Map()
     schemasConfig: Record<string, SchemaConfig> = {}
     schemasChange = new Subject<Schema[]>()
     schemasConfigChange = new Subject<Record<string, SchemaConfig>>()
+    textInputChange = new Subject<string>()
 
     constructor() {
         let all: VarcharJSONData = {}
@@ -33,14 +33,13 @@ export class DataService {
         this.varcharMap = generateAttributeMap(all)
     }
 
-    
     textEditorSyntaxAttributeOptions = [
-        {name: "Expanded", value: "Expanded"},
-        {name: "Compact", value: "Compact"},
+        {name: 'Expanded', value: 'Expanded'},
+        {name: 'Compact', value: 'Compact'}
     ]
     textEditorSyntaxOptionsOptions = [
-        {name: "Expanded", value: "Expanded"},
-        {name: "Compact", value: "Compact"},
+        {name: 'Expanded', value: 'Expanded'},
+        {name: 'Compact', value: 'Compact'}
     ]
 
     app: App = {
@@ -55,19 +54,19 @@ export class DataService {
     }
 
     ReloadAndSave() {
-        this.saveConfig()
-        this.saveState()
+        this.saveAppConfig()
+        this.saveSchemasConfig()
         this.loadLastSession()
         this.EmitChangesForApp()
     }
 
     ReloadAndSaveFromConfig(config: Record<string, SchemaConfig>) {
-        this.saveConfig()
         this.schemasConfig = config
         const s = JSON.stringify(this.schemasConfig, null, 2)
         if (s) {
             localStorage.setItem(this.stateSessionKey, s)
         }
+        this.saveAppConfig()
         this.loadLastSession()
         this.EmitChangesForApp()
     }
@@ -79,6 +78,7 @@ export class DataService {
     EmitChangesForApp() {
         this.schemasChange.next(this.schemas)
         this.schemasConfigChange.next(this.schemasConfig)
+        this.textInputChange.next(this.textInput)
     }
 
     Initialize() {
@@ -151,7 +151,7 @@ export class DataService {
         this.schemas = schemas
     }
 
-    saveState() {
+    saveSchemasConfig() {
         const schemasConfig: Record<string, SchemaConfig> = {}
         for (const s of this.schemas) {
             const s2: SchemaConfig = {
@@ -186,7 +186,7 @@ export class DataService {
         }
     }
 
-    private saveConfig() {
+    private saveAppConfig() {
         const s = JSON.stringify(this.app, null, 2)
         if (s) {
             localStorage.setItem(this.configSessionKey, s)

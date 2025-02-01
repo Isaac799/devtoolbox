@@ -1,11 +1,46 @@
 .input-container {
-    >textarea {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+
+    >.input-box,
+    >div.render-box {
+        position: absolute;
+        inset: 0;
+
         font-size: 1rem;
+        font-family: 'Courier New', Courier, monospace;
         border: 0;
         border-radius: 1.5rem;
-        background-color: rgb(252, 245, 229);
         padding: 1.5rem;
+    }
+
+    >.input-box {
+        background-color: rgb(0, 0, 0, 0);
+        color: rgba(0, 0, 0, 0);
+        caret-color: black;
+        resize: none;
         outline: none;
+        text-wrap-mode: nowrap;
+    }
+
+    >div.render-box {
+        color: black;
+        // background-color: rgb(252, 245, 229);    
+        background-color: var(--mat-sidenav-content-background-color, var(--mat-sys-background));
+
+        >.is-ref {
+            color: #aa5d00;
+        }
+
+        >.is-delimiter {
+            color: #7928a1;
+        }
+
+        >.is-header {
+            color: #007faa;
+        }
     }
 }
 

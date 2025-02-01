@@ -14,7 +14,7 @@
                                     <mat-label>Type</mat-label>
                                     <mat-select
                                         [(ngModel)]="dataService.app.textEditorSyntax.attributes"
-                                        (ngModelChange)="RunAndReRender()"
+                                        (ngModelChange)="HardRefresh()"
                                     >
                                         @for (x of dataService.textEditorSyntaxAttributeOptions; track $index) {
                                         <mat-option [value]="x.value">{{ x.name }}</mat-option>
@@ -34,7 +34,7 @@
                                     <mat-label>Options</mat-label>
                                     <mat-select
                                         [(ngModel)]="dataService.app.textEditorSyntax.options"
-                                        (ngModelChange)="RunAndReRender()"
+                                        (ngModelChange)="HardRefresh()"
                                     >
                                         @for (x of dataService.textEditorSyntaxOptionsOptions; track $index) {
                                         <mat-option [value]="x.value">{{ x.name }}</mat-option>
@@ -55,11 +55,14 @@
     </div>
     <div class="main">
         <div class="input-container">
+            <div
+                #renderBox
+                class="render-box"
+            ></div>
             <textarea
                 [(ngModel)]="dataService.textInput"
-                (ngModelChange)="RunAndReRender()"
-                rows="30"
-                cols="50"
+                (ngModelChange)="Run()"
+                class="input-box"
             ></textarea>
         </div>
     </div>
