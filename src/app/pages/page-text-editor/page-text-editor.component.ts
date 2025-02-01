@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, inject, OnInit, ViewChild, viewChild} from '@angular/core'
+import { Component, inject, OnInit } from '@angular/core'
 import {
     Attribute,
     AttributeConfig,
@@ -13,15 +13,15 @@ import {
     TextEditorSyntax,
     Validation
 } from '../../structure'
-import {v4 as uuidv4} from 'uuid'
-import {CommonModule} from '@angular/common'
-import {FormsModule} from '@angular/forms'
-import {cc} from '../../formatting'
-import {DataService} from '../../services/data.service'
-import {MatButtonModule} from '@angular/material/button'
-import {MatIconModule} from '@angular/material/icon'
-import {MatSelectModule} from '@angular/material/select'
-import {MatExpansionModule} from '@angular/material/expansion'
+import { v4 as uuidv4 } from 'uuid'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { cc } from '../../formatting'
+import { DataService } from '../../services/data.service'
+import { MatButtonModule } from '@angular/material/button'
+import { MatIconModule } from '@angular/material/icon'
+import { MatSelectModule } from '@angular/material/select'
+import { MatExpansionModule } from '@angular/material/expansion'
 
 interface RenderE {
     innerText: string
