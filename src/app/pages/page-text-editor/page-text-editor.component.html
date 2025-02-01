@@ -55,10 +55,21 @@
     </div>
     <div class="main">
         <div class="input-container">
-            <div
-                #renderBox
-                class="render-box"
-            ></div>
+            <div class="render-box">
+                @for (el of renderElements; track $index) {
+                @if (el.innerText === NEWLINE) {
+                <br />
+                } @else if (el.class) {
+                <span [class]="el.class">
+                    {{ el.innerText }}
+                </span>
+                } @else {
+                <span>
+                    {{ el.innerText }}
+                </span>
+                }
+                }
+            </div>
             <textarea
                 [(ngModel)]="dataService.textInput"
                 (ngModelChange)="Run()"

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, inject, ViewChild, viewChild} from '@angular/core'
+import {AfterViewInit, Component, ElementRef, inject, OnInit, ViewChild, viewChild} from '@angular/core'
 import {
     Attribute,
     AttributeConfig,
@@ -23,15 +23,24 @@ import {MatIconModule} from '@angular/material/icon'
 import {MatSelectModule} from '@angular/material/select'
 import {MatExpansionModule} from '@angular/material/expansion'
 
+interface RenderE {
+    innerText: string
+    class?: string
+}
+
 @Component({
     selector: 'app-page-text-editor',
     imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule, MatIconModule, MatSelectModule],
     templateUrl: './page-text-editor.component.html',
     styleUrl: './page-text-editor.component.scss'
 })
-export class PageTextEditorComponent implements AfterViewInit {
+export class PageTextEditorComponent implements OnInit {
+    ngOnInit(): void {
+        this.RefreshRender()
+    }
     dataService = inject(DataService)
-    @ViewChild('renderBox') renderBox: ElementRef<HTMLDivElement> | undefined = undefined
+    renderElements: RenderE[] = []
+    readonly NEWLINE = '~NEWLINE~'
 
     //     textInput = `
     // # public
@@ -48,10 +57,6 @@ export class PageTextEditorComponent implements AfterViewInit {
     // - co author as author
     // `
 
-    ngAfterViewInit(): void {
-        this.RefreshRender()
-    }
-
     Run() {
         const config = PageTextEditorComponent.parse(this.dataService.textInput)
         this.dataService.ReloadAndSaveFromConfig(config)
@@ -59,34 +64,30 @@ export class PageTextEditorComponent implements AfterViewInit {
     }
 
     Render(tbInput: string) {
-        if (!this.renderBox) {
-            console.error('missing render box')
-            return
-        }
-        const sc = (w: string, c: string) => `<span class="${c}">${w}</span>`
+        this.renderElements = []
 
         const lines = tbInput.split('\n')
-        const newLines: string[] = []
+        let newLines: RenderE[] = []
+
         for (const line of lines) {
-            const newLine: string[] = []
+            const newLine: RenderE[] = []
             const words = line.split(' ')
             for (const word of words) {
-                let newWord = `<span>${word}</span>`
+                const newWord: RenderE = {innerText: word}
                 if (word.startsWith('@')) {
-                    newWord = sc(word, 'is-ref')
+                    newWord.class = 'is-ref'
                 } else if (['with', 'as'].includes(word)) {
-                    newWord = sc(word, 'is-delimiter')
+                    newWord.class = 'is-delimiter'
                 } else if (['#', '##'].includes(word)) {
-                    newWord = sc(word, 'is-header')
+                    newWord.class = 'is-header'
                 }
                 newLine.push(newWord)
             }
-            // newLines.push(newLine.join('&nbsp;'))
-            newLines.push(newLine.join(' '))
+            newLine.push({innerText: this.NEWLINE})
+            newLines = newLines.concat(newLine)
         }
 
-        const rendered = newLines.join('<br />')
-        this.renderBox.nativeElement.innerHTML = rendered
+        this.renderElements = newLines
     }
 
     RefreshRender() {

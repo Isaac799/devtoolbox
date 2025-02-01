@@ -14,7 +14,7 @@ export class DataService {
     private readonly configSessionKey = 'devtoolboxAppConfig'
     private initialized = false
 
-   textInput = ''
+    textInput = ''
     schemas: Schema[] = []
     varcharMap: AttributeMap = new Map()
     schemasConfig: Record<string, SchemaConfig> = {}
