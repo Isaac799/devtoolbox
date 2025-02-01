@@ -88,13 +88,9 @@
                 @if (el.innerText === NEWLINE) {
                 <br />
                 } @else if (el.class) {
-                <span [class]="el.class">
-                    {{ el.innerText }}
-                </span>
+                <span [class]="el.class">{{ el.innerText }}</span>
                 } @else {
-                <span>
-                    {{ el.innerText }}
-                </span>
+                <span>{{ el.innerText }}</span>
                 }
                 }
             </div>

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core'
+import {Component, inject, OnInit} from '@angular/core'
 import {
     Attribute,
     AttributeConfig,
@@ -13,15 +13,15 @@ import {
     TextEditorSyntax,
     Validation
 } from '../../structure'
-import { v4 as uuidv4 } from 'uuid'
-import { CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms'
-import { cc } from '../../formatting'
-import { DataService } from '../../services/data.service'
-import { MatButtonModule } from '@angular/material/button'
-import { MatIconModule } from '@angular/material/icon'
-import { MatSelectModule } from '@angular/material/select'
-import { MatExpansionModule } from '@angular/material/expansion'
+import {v4 as uuidv4} from 'uuid'
+import {CommonModule} from '@angular/common'
+import {FormsModule} from '@angular/forms'
+import {cc} from '../../formatting'
+import {DataService} from '../../services/data.service'
+import {MatButtonModule} from '@angular/material/button'
+import {MatIconModule} from '@angular/material/icon'
+import {MatSelectModule} from '@angular/material/select'
+import {MatExpansionModule} from '@angular/material/expansion'
 
 interface RenderE {
     innerText: string
@@ -41,6 +41,7 @@ export class PageTextEditorComponent implements OnInit {
     dataService = inject(DataService)
     renderElements: RenderE[] = []
     readonly NEWLINE = '~NEWLINE~'
+    readonly SPACE = '~SPACE~'
 
     //     textInput = `
     // # public
@@ -71,9 +72,21 @@ export class PageTextEditorComponent implements OnInit {
 
         for (const line of lines) {
             const newLine: RenderE[] = []
-            const words = line.split(' ')
+            const words2 = line.split(/(\s+|\S+|\n)/).filter(str => str.length > 0)
+            let words: string[] = []
+            for (const w of words2) {
+                if (!w.trim()) {
+                    words = words.concat(...w)
+                    continue
+                }
+                words.push(w)
+            }
             for (const word of words) {
                 const newWord: RenderE = {innerText: word}
+                if (newWord.innerText === ' ') {
+                    newLine.push(newWord)
+                    continue
+                }
                 if (word.startsWith('@')) {
                     newWord.class = 'is-ref'
                 } else if (['with', 'as'].includes(word)) {

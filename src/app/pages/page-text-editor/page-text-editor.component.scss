@@ -14,15 +14,19 @@
         border: 0;
         border-radius: 1.5rem;
         padding: 1.5rem;
+
+        white-space: pre;
+        overflow-wrap: normal;
+        overflow-x: scroll;
     }
 
     >.input-box {
         background-color: rgb(0, 0, 0, 0);
+        // color: rgba(255, 122, 122, .7);
         color: rgba(0, 0, 0, 0);
         caret-color: black;
         resize: none;
         outline: none;
-        text-wrap-mode: nowrap;
     }
 
     >div.render-box {

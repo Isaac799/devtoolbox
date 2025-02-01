@@ -178,3 +178,33 @@ const convertString = (str: string, toCase: 'sk' | 'pl' | 'cm' | 'up'): string =
 export function cc(str: string, caseType: 'sk' | 'pl' | 'cm' | 'up'): string {
     return convertString(str, caseType)
 }
+
+export const splitWithSpaces = (input: string): string[] => {
+    const result: string[] = []
+    let currentWord = ''
+
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i]
+
+        if (char === ' ') {
+            if (currentWord) {
+                result.push(currentWord)
+                currentWord = ''
+            }
+            // Handle multiple consecutive spaces by adding an empty string for each space
+            let spaces = ''
+            while (i < input.length && input[i] === ' ') {
+                spaces += ' '
+                i++
+            }
+            result.push(spaces)
+            i-- // Move back one step to avoid skipping a character
+        } else {
+            currentWord += char
+        }
+    }
+
+    if (currentWord) result.push(currentWord) // Add the last word, if any
+
+    return result
+}
