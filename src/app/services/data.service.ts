@@ -12,6 +12,7 @@ import {PageTextEditorComponent} from '../pages/page-text-editor/page-text-edito
 export class DataService {
     private readonly stateSessionKey = 'devtoolboxState'
     private readonly configSessionKey = 'devtoolboxAppConfig'
+    private readonly rawTextInput = 'devtoolboxRawextInput'
     private initialized = false
 
     textInput = ''
@@ -56,6 +57,7 @@ export class DataService {
     ReloadAndSave() {
         this.saveAppConfig()
         this.saveSchemasConfig()
+        this.saveLastTextEdit()
         this.loadLastSession()
         this.EmitChangesForApp()
     }
@@ -67,6 +69,7 @@ export class DataService {
             localStorage.setItem(this.stateSessionKey, s)
         }
         this.saveAppConfig()
+        this.saveLastTextEdit()
         this.loadLastSession()
         this.EmitChangesForApp()
     }
@@ -88,7 +91,10 @@ export class DataService {
         this.initialized = true
         this.loadConfig()
         this.loadLastSession()
-        this.textInput = PageTextEditorComponent.reverseParse(this.schemas, this.app.textEditorSyntax)
+        this.loadLastTextEdit()
+        if (!this.textInput) {
+            this.textInput = PageTextEditorComponent.reverseParse(this.schemas, this.app.textEditorSyntax)
+        }
         setTimeout(() => {
             this.EmitChangesForApp()
         }, 0)
@@ -149,6 +155,16 @@ export class DataService {
 
         this.schemasConfig = schemasConfig
         this.schemas = schemas
+    }
+
+    private loadLastTextEdit() {
+        const rawTextInput = localStorage.getItem(this.rawTextInput)
+        if (!rawTextInput) return
+        this.textInput = rawTextInput
+    }
+
+    private saveLastTextEdit() {
+        localStorage.setItem(this.rawTextInput, this.textInput)
     }
 
     saveSchemasConfig() {

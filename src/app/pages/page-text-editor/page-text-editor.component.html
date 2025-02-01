@@ -1,12 +1,40 @@
 <div class="container-split">
     <div class="side">
         <mat-accordion>
-            <mat-expansion-panel hideToggle>
+            <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                    <mat-panel-title> Code </mat-panel-title>
+                    <!-- <mat-panel-description> </mat-panel-description> -->
+                </mat-expansion-panel-header>
+                <div>
+                    <p>
+                        <strong>Disclaimer: </strong> Invalid syntax will be discarded
+                    </p>
+                    <table>
+                        <tr>
+                            <td>
+                                <button
+                                    mat-fab
+                                    extended
+                                    (click)="HardRefresh()"
+                                >
+                                    Format
+                                    <mat-icon>grading</mat-icon>
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </mat-expansion-panel>
+            <mat-expansion-panel>
                 <mat-expansion-panel-header>
                     <mat-panel-title> Attribute Syntax </mat-panel-title>
                     <!-- <mat-panel-description> </mat-panel-description> -->
                 </mat-expansion-panel-header>
                 <div>
+                    <p>
+                        <strong>Disclaimer: </strong> Invalid syntax will be discarded. Code will be formatted.
+                    </p>
                     <table>
                         <tr>
                             <td>
