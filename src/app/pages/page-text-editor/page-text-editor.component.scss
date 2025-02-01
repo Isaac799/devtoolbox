@@ -1,7 +1,26 @@
 .input-container {
-    padding: 1rem;
-
     >textarea {
         font-size: 1rem;
+        border: 0;
+        border-radius: 1.5rem;
+        background-color: rgb(252, 245, 229);
+        padding: 1.5rem;
+        outline: none;
+    }
+}
+
+
+.container-split {
+    display: grid;
+    grid-template-columns: 18.65rem auto;
+    height: calc(100vh - 4rem);
+
+    >.side {
+        padding: 1rem
+    }
+
+    >.main {
+        padding: 1rem;
+        overflow: auto;
     }
 }

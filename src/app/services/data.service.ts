@@ -4,6 +4,7 @@ import {Subject} from 'rxjs'
 import {defaultConfig} from '../constants'
 import {AttributeMap, generateAttributeMap, VarcharJSONData} from '../varchar'
 import varcharJSON from '../../../public/varchar.json'
+import {PageTextEditorComponent} from '../pages/page-text-editor/page-text-editor.component'
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,8 @@ export class DataService {
     private readonly configSessionKey = 'devtoolboxAppConfig'
     private initialized = false
 
-    editor = ''
+    textInput = ''
+
     schemas: Schema[] = []
     varcharMap: AttributeMap = new Map()
     schemasConfig: Record<string, SchemaConfig> = {}
@@ -31,9 +33,23 @@ export class DataService {
         this.varcharMap = generateAttributeMap(all)
     }
 
+    
+    textEditorSyntaxAttributeOptions = [
+        {name: "Expanded", value: "Expanded"},
+        {name: "Compact", value: "Compact"},
+    ]
+    textEditorSyntaxOptionsOptions = [
+        {name: "Expanded", value: "Expanded"},
+        {name: "Compact", value: "Compact"},
+    ]
+
     app: App = {
         seedLimit: 4,
         mode: AppMode.YAML,
+        textEditorSyntax: {
+            attributes: 'Expanded',
+            options: 'Expanded'
+        },
         generatorMode: AppGeneratorMode.Postgres,
         complexity: AppComplexityMode.Advanced
     }
@@ -41,6 +57,17 @@ export class DataService {
     ReloadAndSave() {
         this.saveConfig()
         this.saveState()
+        this.loadLastSession()
+        this.EmitChangesForApp()
+    }
+
+    ReloadAndSaveFromConfig(config: Record<string, SchemaConfig>) {
+        this.saveConfig()
+        this.schemasConfig = config
+        const s = JSON.stringify(this.schemasConfig, null, 2)
+        if (s) {
+            localStorage.setItem(this.stateSessionKey, s)
+        }
         this.loadLastSession()
         this.EmitChangesForApp()
     }
@@ -61,6 +88,7 @@ export class DataService {
         this.initialized = true
         this.loadConfig()
         this.loadLastSession()
+        this.textInput = PageTextEditorComponent.reverseParse(this.schemas, this.app.textEditorSyntax)
         setTimeout(() => {
             this.EmitChangesForApp()
         }, 0)
@@ -87,6 +115,12 @@ export class DataService {
             }
             if (!parsed['complexity']) {
                 parsed['complexity'] = AppComplexityMode.Advanced
+            }
+            if (!parsed['textEditorSyntax']) {
+                parsed['textEditorSyntax'] = {
+                    attributes: 'Expanded',
+                    options: 'Expanded'
+                }
             }
 
             this.app = parsed

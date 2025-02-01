@@ -1,49 +1,59 @@
-import {Component, OnInit} from '@angular/core'
-import {AttributeConfig, AttributeOptions, AttrType, attrTypeMap, SchemaConfig, TableConfig, Validation} from '../../structure'
+import {Component, inject} from '@angular/core'
+import {
+    Attribute,
+    AttributeConfig,
+    AttributeOptions,
+    AttrType,
+    attrTypeMap,
+    attrTypeMapCompact,
+    attrTypeMapExpanded,
+    Schema,
+    SchemaConfig,
+    TableConfig,
+    TextEditorSyntax,
+    Validation
+} from '../../structure'
 import {v4 as uuidv4} from 'uuid'
 import {CommonModule} from '@angular/common'
 import {FormsModule} from '@angular/forms'
 import {cc} from '../../formatting'
-
-enum State {
-    N,
-    S,
-    T,
-    A,
-    AO,
-    BR,
-    BU
-}
+import {DataService} from '../../services/data.service'
+import {MatButtonModule} from '@angular/material/button'
+import {MatIconModule} from '@angular/material/icon'
+import {MatSelectModule} from '@angular/material/select'
+import {MatExpansionModule} from '@angular/material/expansion'; 
 
 @Component({
     selector: 'app-page-text-editor',
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule,MatIconModule, MatSelectModule],
     templateUrl: './page-text-editor.component.html',
     styleUrl: './page-text-editor.component.scss'
 })
-export class PageTextEditorComponent implements OnInit {
-    textInput = `
-# public
+export class PageTextEditorComponent {
+    dataService = inject(DataService)
+    //     textInput = `
+    // # public
 
-## author
-- id as ++
-- first name as string with required, unique:pair, 2..34
-- last name as s with r, u:pair, 3..45
+    // ## author
+    // - id as ++
+    // - first name as string with required, unique:pair, 2..34
+    // - last name as s with r, u:pair, 3..45
 
-## book
-- id as ++
-- title as string with 12..34, 
-- @author with required
-- co author as author
-`
-
-    ngOnInit(): void {
-        this.Run()
-    }
+    // ## book
+    // - id as ++
+    // - title as string with 12..34,
+    // - @author with required
+    // - co author as author
+    // `
 
     Run() {
-        const config = PageTextEditorComponent.parse(this.textInput)
-        console.log(JSON.stringify(config, null, 4))
+        const config = PageTextEditorComponent.parse(this.dataService.textInput)
+        this.dataService.ReloadAndSaveFromConfig(config)
+    }
+
+    RunAndReRender() {
+        this.Run()
+        this.dataService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorSyntax)
     }
 
     private static parse(input: string): Record<string, SchemaConfig> {
@@ -52,7 +62,7 @@ export class PageTextEditorComponent implements OnInit {
         const getAttrType = (input: string | null): AttrType | null => {
             if (!input) return null
 
-            const normalizedInput = input.toLowerCase()
+            const normalizedInput = input.trim().toLowerCase()
 
             return attrTypeMap[normalizedInput] || null
         }
@@ -115,7 +125,6 @@ export class PageTextEditorComponent implements OnInit {
 
         for (const line of lines) {
             if (line.startsWith('# ')) {
-                console.log('schema', line)
                 const name = cc(line.substring(2, line.length).trim(), 'sk')
                 const item: SchemaConfig = {
                     ID: uuidv4(),
@@ -124,7 +133,6 @@ export class PageTextEditorComponent implements OnInit {
                 }
                 answer[name] = item
             } else if (line.startsWith('##')) {
-                console.log('table', line)
                 const name = cc(line.substring(2, line.length).trim(), 'sk')
                 const item: TableConfig = {
                     ID: uuidv4(),
@@ -149,10 +157,11 @@ export class PageTextEditorComponent implements OnInit {
                     if (a[1]) {
                         newParts.push(a[1])
                     }
-                    cleanLine = newParts.join(' with ')
+                    cleanLine = newParts
+                        .map(e => e.trim())
+                        .filter(e => e)
+                        .join(' with ')
                 }
-
-                console.log('attribute: ', cleanLine)
 
                 const a = cleanLine.split(' with ')
                 const b = a[0].split(' as ')
@@ -265,5 +274,109 @@ export class PageTextEditorComponent implements OnInit {
         }
 
         return answer
+    }
+
+    static reverseParse(schemas: Schema[], textEditorSyntax: TextEditorSyntax): string {
+        const lines: string[] = []
+
+        const getAttrType = (input: AttrType): string | null => {
+            if (!input) return null
+
+            if (textEditorSyntax.attributes === 'Compact') {
+                return attrTypeMapCompact[input] || null
+            } else if (textEditorSyntax.attributes === 'Expanded') {
+                return attrTypeMapExpanded[input] || null
+            } else {
+                console.warn('unhandled TextEditorSyntaxMode')
+                return null
+            }
+        }
+
+        for (const s of schemas) {
+            lines.push(``)
+            lines.push(`# ${s.Name}`)
+            for (const t of s.Tables) {
+                lines.push(``)
+                lines.push(`## ${t.Name}`)
+                for (const a of t.Attributes) {
+                    const type = getAttrType(a.Type)
+
+                    if (!type) {
+                        continue
+                    }
+
+                    getAttrType(a.Type)
+
+                    let nameAndType = `${a.Name} as ${type}`
+                    if (a.Type === AttrType.REFERENCE && a.RefTo) {
+                        if (a.Name === a.RefTo.Name) {
+                            nameAndType = `@${a.RefTo.Name}`
+                        }
+                    }
+
+                    const newParts: string[] = [`- ${nameAndType}`]
+
+                    const options: string[] = gatherOptions(a)
+
+                    newParts.push(options.join(', '))
+
+                    const line = newParts
+                        .map(e => e.trim())
+                        .filter(e => e)
+                        .join(' with ')
+
+                    lines.push(line)
+                }
+            }
+        }
+
+        return lines.join('\n').trim()
+
+        function gatherOptions(a: Attribute) {
+            const options: string[] = []
+
+            if (a.Option?.PrimaryKey) {
+                if (textEditorSyntax.options === 'Compact') {
+                    options.push('p')
+                } else {
+                    options.push('primary')
+                }
+            }
+            if (a.Option?.SystemField) {
+                if (textEditorSyntax.options === 'Compact') {
+                    options.push('sys')
+                } else {
+                    options.push('system')
+                }
+            }
+            if (a.Option?.Unique) {
+                if (textEditorSyntax.options === 'Compact') {
+                    options.push('u')
+                } else {
+                    options.push('unique')
+                }
+            }
+            if (a.Option?.Default) {
+                if (textEditorSyntax.options === 'Compact') {
+                    options.push('d')
+                } else {
+                    options.push('default')
+                }
+            }
+            if (a.Validation?.Required) {
+                if (textEditorSyntax.options === 'Compact') {
+                    options.push('r')
+                } else {
+                    options.push('required')
+                }
+            }
+
+            const min = a.Validation?.Min
+            const max = a.Validation?.Max
+            if (min || max) {
+                options.push(`${min || ''}..${max || ''}`)
+            }
+            return options
+        }
     }
 }

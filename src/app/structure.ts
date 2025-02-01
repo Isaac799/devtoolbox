@@ -486,6 +486,11 @@ export enum AppMode {
     YAML
 }
 
+export interface TextEditorSyntax {
+    attributes: 'Compact' | 'Expanded'
+    options: 'Compact' | 'Expanded'
+}
+
 export enum AppGeneratorMode {
     PostgresFunctions,
     Postgres,
@@ -567,6 +572,7 @@ export const attrTypeMap: Record<string, AttrType> = {
     // SERIAL
     srl: AttrType.SERIAL,
     serial: AttrType.SERIAL,
+    'auto increment': AttrType.SERIAL,
     '++': AttrType.SERIAL,
 
     // INT (INTEGER)
@@ -592,9 +598,46 @@ export const attrTypeMap: Record<string, AttrType> = {
     money: AttrType.MONEY
 }
 
+// Compact form mappings (shortened representations)
+export const attrTypeMapCompact: Record<AttrType, string> = {
+    [AttrType.TIMESTAMP]: 'ts',
+    [AttrType.VARCHAR]: 'str',
+    [AttrType.BIT]: 'bit',
+    [AttrType.DATE]: 'date',
+    [AttrType.CHAR]: 'char',
+    [AttrType.TIME]: 'time',
+    [AttrType.DECIMAL]: 'dec',
+    [AttrType.REAL]: 'real',
+    [AttrType.FLOAT]: 'float',
+    [AttrType.SERIAL]: '++',
+    [AttrType.INT]: 'int',
+    [AttrType.BOOLEAN]: 'bool',
+    [AttrType.MONEY]: 'money',
+    [AttrType.REFERENCE]: 'ref'
+}
+
+// Expanded form mappings (full names)
+export const attrTypeMapExpanded: Record<AttrType, string> = {
+    [AttrType.TIMESTAMP]: 'timestamp',
+    [AttrType.VARCHAR]: 'string',
+    [AttrType.BIT]: 'bit',
+    [AttrType.DATE]: 'date',
+    [AttrType.CHAR]: 'character',
+    [AttrType.TIME]: 'time',
+    [AttrType.DECIMAL]: 'decimal',
+    [AttrType.REAL]: 'real',
+    [AttrType.FLOAT]: 'float',
+    [AttrType.SERIAL]: 'auto increment',
+    [AttrType.INT]: 'integer',
+    [AttrType.BOOLEAN]: 'boolean',
+    [AttrType.MONEY]: 'money',
+    [AttrType.REFERENCE]: 'reference'
+}
+
 export interface App {
     seedLimit: number
     mode: AppMode
+    textEditorSyntax: TextEditorSyntax
     generatorMode: AppGeneratorMode
     complexity: AppComplexityMode
 }

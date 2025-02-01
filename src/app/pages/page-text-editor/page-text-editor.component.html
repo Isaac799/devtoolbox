@@ -1,8 +1,66 @@
-<div class="input-container">
-    <textarea
-        [(ngModel)]="textInput"
-        (ngModelChange)="Run()"
-        rows="30"
-        cols="50"
-    ></textarea>
+<div class="container-split">
+    <div class="side">
+        <mat-accordion>
+            <mat-expansion-panel hideToggle>
+                <mat-expansion-panel-header>
+                    <mat-panel-title> Attribute Syntax </mat-panel-title>
+                    <!-- <mat-panel-description> </mat-panel-description> -->
+                </mat-expansion-panel-header>
+                <div>
+                    <table>
+                        <tr>
+                            <td>
+                                <mat-form-field>
+                                    <mat-label>Type</mat-label>
+                                    <mat-select
+                                        [(ngModel)]="dataService.app.textEditorSyntax.attributes"
+                                        (ngModelChange)="RunAndReRender()"
+                                    >
+                                        @for (x of dataService.textEditorSyntaxAttributeOptions; track $index) {
+                                        <mat-option [value]="x.value">{{ x.name }}</mat-option>
+                                        }
+                                    </mat-select>
+                                    <!-- @if (dataService.app.textEditorSyntax.attributes === "Expanded") {
+                                    <mat-hint align="start"> timestamp, string </mat-hint>
+                                    } @else {
+                                    <mat-hint align="start"> ts, str </mat-hint>
+                                    } -->
+                                </mat-form-field>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <mat-form-field>
+                                    <mat-label>Options</mat-label>
+                                    <mat-select
+                                        [(ngModel)]="dataService.app.textEditorSyntax.options"
+                                        (ngModelChange)="RunAndReRender()"
+                                    >
+                                        @for (x of dataService.textEditorSyntaxOptionsOptions; track $index) {
+                                        <mat-option [value]="x.value">{{ x.name }}</mat-option>
+                                        }
+                                    </mat-select>
+                                    <!-- @if (dataService.app.textEditorSyntax.options === "Expanded") {
+                                    <mat-hint align="start"> required, unique </mat-hint>
+                                    } @else {
+                                    <mat-hint align="start"> r, u </mat-hint>
+                                    } -->
+                                </mat-form-field>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </mat-expansion-panel>
+        </mat-accordion>
+    </div>
+    <div class="main">
+        <div class="input-container">
+            <textarea
+                [(ngModel)]="dataService.textInput"
+                (ngModelChange)="RunAndReRender()"
+                rows="30"
+                cols="50"
+            ></textarea>
+        </div>
+    </div>
 </div>
