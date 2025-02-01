@@ -27,29 +27,26 @@ export class PageTextEditorComponent implements OnInit {
 
 ## author
 - id as ++
-- first name as string with unique:pair, required, 2..34
-- last name as s with u:pair, r, 3..45
+- first name as string with required, unique:pair, 2..34
+- last name as s with r, u:pair, 3..45
 
 ## book
 - id as ++
 - title as string with 12..34, 
 - @author with required
-- co author as author with required
+- co author as author
 `
 
-    attributeOptionKeywordMap = new Map<string, string>()
-
     ngOnInit(): void {
-        this.buildMap()
         this.Run()
     }
 
     Run() {
-        const config = PageTextEditorComponent.parse(this.textInput, this.attributeOptionKeywordMap)
+        const config = PageTextEditorComponent.parse(this.textInput)
         console.log(JSON.stringify(config, null, 4))
     }
 
-    private static parse(input: string, attributeOptionKeywordMap: Map<string, string>): Record<string, SchemaConfig> {
+    private static parse(input: string): Record<string, SchemaConfig> {
         const answer: Record<string, SchemaConfig> = {}
 
         const getAttrType = (input: string | null): AttrType | null => {
@@ -268,27 +265,5 @@ export class PageTextEditorComponent implements OnInit {
         }
 
         return answer
-    }
-
-    private buildMap() {
-        const pk = ['p', 'pk', 'primary']
-        for (const e of pk) {
-            this.attributeOptionKeywordMap.set(e, 'p')
-        }
-
-        const u = ['u', 'un', 'unique']
-        for (const e of u) {
-            this.attributeOptionKeywordMap.set(e, 'u')
-        }
-
-        const s = ['s', 'sy', 'sys', 'system']
-        for (const e of s) {
-            this.attributeOptionKeywordMap.set(e, 's')
-        }
-
-        const r = ['r', 'req', 'required']
-        for (const e of r) {
-            this.attributeOptionKeywordMap.set(e, 'r')
-        }
     }
 }
