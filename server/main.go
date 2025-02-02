@@ -36,7 +36,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// Check if the file exists
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
-		http.Error(w, "404 Not Found", http.StatusNotFound)
+		// http.Error(w, "404 Not Found", http.StatusNotFound)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -74,6 +75,7 @@ func main() {
 	http.HandleFunc("/", handler)
 
 	port := 1313
+
 	fmt.Printf("Server is running at http://localhost:%d\n", port)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
 		fmt.Println("Error starting server:", err)
