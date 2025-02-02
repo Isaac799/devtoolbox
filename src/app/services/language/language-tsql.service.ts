@@ -46,7 +46,7 @@ export class LanguageTsqlService {
             }
 
             params.push(`@${cc(a.FN, 'sk')} ${type}`)
-            whereAND.push(`${useI.get(t, a)}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`)
+            whereAND.push(`${useI.get(t, null)}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`)
         }
         const whereStr: string = whereAND.join(' AND ')
 

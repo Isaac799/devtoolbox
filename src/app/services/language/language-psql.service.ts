@@ -274,8 +274,8 @@ export class LanguagePsqlService {
         const whereAND = []
         for (const a of t.Attributes) {
             if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue
-            params.push(`${cc(a.Name, 'sk')} ${a.Type}`)
-            whereAND.push(`${useI.get(t, a)}.${cc(a.Name, 'sk')} = ${cc(a.Name, 'sk')}`)
+            params.push(`desired_${cc(a.Name, 'sk')} ${a.Type}`)
+            whereAND.push(`${useI.get(t, null)}.${cc(a.Name, 'sk')} = desired_${cc(a.Name, 'sk')}`)
         }
         const whereStr: string = whereAND.join(' AND ')
 
