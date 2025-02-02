@@ -34,7 +34,7 @@
         mat-icon-button
         aria-label="Format code"
         [disabled]="textEditorService.justCleaned"
-        (click)="HardRefresh()"
+        (click)="Format()"
     >
         <mat-icon>dry_cleaning</mat-icon>
     </button>
@@ -48,7 +48,10 @@
 </mat-toolbar>
 
 <div class="main">
-    <div class="input-container" #inputContainer>
+    <div
+        class="input-container"
+        #inputContainer
+    >
         <div class="render-suggestion-box">
             @for (el of renderSuggestionElements; track $index) {
             @if (el.innerText === NEWLINE) {

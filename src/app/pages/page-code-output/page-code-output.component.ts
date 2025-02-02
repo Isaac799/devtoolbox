@@ -52,7 +52,7 @@ export class PageCodeOutputComponent implements AfterViewInit {
 
     copy() {
         navigator.clipboard.writeText(this.output)
-        this.snackBar.open('Copied generate code to the clipboard', '', {
+        this.snackBar.open('Copied to clipboard', '', {
             duration: 2500
         })
     }

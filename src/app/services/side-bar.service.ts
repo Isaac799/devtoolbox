@@ -67,7 +67,7 @@ export class SideBarService {
             str = YAML.stringify(this.data.previousParse.data)
         }
         navigator.clipboard.writeText(str)
-        this.snackBar.open('Copied config to the clipboard', '', {
+        this.snackBar.open('Copied to clipboard', '', {
             duration: 2500
         })
     }

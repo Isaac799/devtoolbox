@@ -113,6 +113,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         }
 
         this.HardRefresh()
+
+        this.snackBar.open('Switched syntax mode', '', {
+            duration: 2500
+        })
     }
 
     Run() {
@@ -125,7 +129,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     Copy() {
         navigator.clipboard.writeText(this.textEditorService.textInput)
-        this.snackBar.open('Copied your code to the clipboard', '', {
+        this.snackBar.open('Copied to clipboard', '', {
             duration: 2500
         })
     }
@@ -249,9 +253,16 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         return words
     }
 
+    Format() {  
+        this.HardRefresh()
+        this.snackBar.open('Formatting applied', '', {
+            duration: 2500
+        })
+    }
+
     HardRefresh() {
         this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.appService.app.textEditorState)
-        this.appService.RefreshOutput()
+        this.appService.Run()
         this.textEditorService.justCleaned = true
     }
 
