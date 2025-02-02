@@ -26,6 +26,8 @@ import {MatSnackBar} from '@angular/material/snack-bar'
 import {TextEditorService} from '../../services/text-editor.service'
 import {AppService} from '../../services/app.service'
 import {BitwiseOperations} from '../../constants'
+import {MatDialog} from '@angular/material/dialog'
+import {DialogSyntaxGuideComponent} from '../../dialogs/dialog-syntax-guide/dialog-syntax-guide.component'
 
 interface RenderE {
     innerText: string
@@ -42,8 +44,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     @ViewChild('textEditor') textEditor: ElementRef<HTMLTextAreaElement> | null = null
 
     readonly dataService = inject(DataService)
-    private readonly appService = inject(AppService)
     readonly textEditorService = inject(TextEditorService)
+
+    private readonly matDialog = inject(MatDialog)
+    private readonly appService = inject(AppService)
 
     toggleMode = 0
     readonly SPACE = '~SPACE~'
@@ -101,6 +105,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.runDebounce = setTimeout(() => {
             this.appService.ReloadAndSaveFromConfig(config)
         }, 300)
+    }
+
+    OpenSyntaxGuide() {
+        this.matDialog.open(DialogSyntaxGuideComponent)
     }
 
     Copy() {

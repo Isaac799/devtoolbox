@@ -1,0 +1,139 @@
+<h2 mat-dialog-title>Guide</h2>
+<mat-dialog-content class="mat-typography">
+    <p>
+        The blueprint editor has a markdown inspired syntax, making it easier to rapidly prototype ideas.
+    </p>
+
+    <h2>
+        Folders
+    </h2>
+    <p>
+        Firstly, create a folder (schema)
+    </p>
+    <pre>
+#  [ identifier ] 
+    </pre>
+
+    <h2>
+        Blueprints
+    </h2>
+    <p>
+        Secondly, create a blueprint (entity / table)
+    </p>
+    <pre>
+##  [ identifier ] 
+    </pre>
+
+    <h2>
+        Attributes
+    </h2>
+    <p>
+        Finally, add attribute (properties / columns)
+    </p>
+    <pre>
+-  [ identifier ] as [ type ] with [ options ]
+    </pre>
+
+    <p>
+        Shorthand to referencing other blueprints (identifier must already exist)
+    </p>
+    <pre>
+-  &#64;[ identifier ] with [ options ]
+    </pre>
+
+    <h3>Options</h3>
+    <p>Note that all options can be truncated</p>
+    <ul>
+        <li>
+            <code>[ required ]</code> must have a value, cannot be null
+        </li>
+        <li>
+            <code>[ unique ]:[ identifier ]</code> must be unique for matching identifier(s) (identifier is optional)
+        </li>
+        <li>
+            <code>[ primary ]</code> this is a primary identifier.
+        </li>
+        <li>
+            <code>[ system ]</code> excludes it from certain things, like needing passed in on creation.
+        </li>
+    </ul>
+
+    <h3>Types</h3>
+    <ul>
+        <li>
+            <code>[ date ]</code> a calender date, <code>YYYY-MM-DD</code>
+        </li>
+        <li>
+            <code>[ time ]</code> a point in time <code>HH:MM:SS</code>
+        </li>
+        <li>
+            <code>[ timestamp | ts ]</code> includes date and time <code>YYYY-MM-DD HH:MM:SS</code>
+        </li>
+        <li>
+            <code>[ string | str ]</code> a word or phrase
+        </li>
+        <li>
+            <code>[ bit ]</code> 0 or 1
+        </li>
+        <li>
+            <code>[ character | char ]</code> a single character or letter
+        </li>
+        <li>
+            <code>[ decimal | dec ]</code> a decimal point number
+        </li>
+        <li>
+            <code>[ real ]</code> a real number
+        </li>
+        <li>
+            <code>[ float ]</code> a float number
+        </li>
+        <li>
+            <code>[ integer | int ]</code> a signed (+/-) integer
+        </li>
+        <li>
+            <code>[ boolean | bool ]</code> true or false
+        </li>
+        <li>
+            <code>[ money ]</code> a monetary value
+        </li>
+    </ul>
+
+    <h3>Special Types</h3>
+    <ul>
+        <li>
+            <code>[ auto increment | ++ ]</code> is a unique integer that increments. Automatically gains
+            <code>[ primary & required & unique & system ]</code>
+        </li>
+        <li>
+            <code>[ reference | ref ]</code> indicating another blueprint
+        </li>
+    </ul>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button
+        mat-button
+        mat-dialog-close
+    >
+        close
+    </button>
+</mat-dialog-actions>
+
+<!-- 
+
+&lt;folder&gt; ::= "# " &lt;identifier&gt;
+
+&lt;blueprint&gt; ::= "## " &lt;identifier&gt;
+
+&lt;attribute&gt; ::= "- " &lt;identifier&gt; " as " &lt;type&gt; [ &lt;options&gt; ]
+
+&lt;type&gt; ::= "date" | "time" | "timestamp" | "string" | "str" | "bit" | "char" | "decimal" | "real" | "float" | "int" | "bool" | "money" | "auto increment" | "reference"
+
+&lt;options&gt; ::= "required" | "unique" [ ":" &lt;identifier&gt; ] | "primary" | "system"
+
+&lt;identifier&gt; ::= &lt;letter&gt; &lbrack; &lt;letter&gt; | &lt;digit&gt; &rbrack;
+
+&lt;letter&gt; ::= "a" | "b" | "c" ... | "z" | "A" | "B" ... | "Z"
+
+&lt;digit&gt; ::= "0" | "1" | "2" ... | "9"
+
+-->

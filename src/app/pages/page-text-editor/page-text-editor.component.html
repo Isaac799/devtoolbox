@@ -18,10 +18,17 @@
     <span class="toolbar-icon-spacer"></span>
     <button
         mat-icon-button
+        aria-label="Open syntax guide"
+        (click)="OpenSyntaxGuide()"
+    >
+        <mat-icon>help</mat-icon>
+    </button>
+    <button
+        mat-icon-button
         aria-label="Change syntax size"
         (click)="ToggleMode()"
     >
-        <mat-icon>code</mat-icon>
+        <mat-icon>tune</mat-icon>
     </button>
     <button
         mat-icon-button
