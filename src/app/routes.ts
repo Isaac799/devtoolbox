@@ -1,6 +1,7 @@
 import {PageCodeOutputComponent} from './pages/page-code-output/page-code-output.component'
 import {Routes} from '@angular/router'
 import { PageTextEditorComponent } from './pages/page-text-editor/page-text-editor.component'
+import { PageSplitViewComponent } from './pages/page-split-view/page-split-view.component'
 
 const routeConfig: Routes = [
     {
@@ -14,8 +15,13 @@ const routeConfig: Routes = [
         title: 'Explore Results'
     },
     {
+        path: 'manage-and-explore',
+        component: PageSplitViewComponent,
+        title: 'Manage & Explore'
+    },
+    {
         path: '**',
-        redirectTo: 'code'
+        redirectTo: 'manage-blueprints'
     }
 ]
 

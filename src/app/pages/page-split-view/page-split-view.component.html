@@ -1,0 +1,23 @@
+<div class="split-container">
+    <div
+        class="left-panel"
+        #leftPanel
+        [style.width.%]="dividerPosition"
+    >
+        <app-page-text-editor></app-page-text-editor>
+    </div>
+
+    <div
+        class="divider"
+        #divider
+        (mousedown)="startDrag($event)"
+    ></div>
+
+    <div
+        class="right-panel"
+        #rightPanel
+        [style.width.%]="100 - dividerPosition"
+    >
+        <app-page-code-output></app-page-code-output>
+    </div>
+</div>

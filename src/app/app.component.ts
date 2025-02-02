@@ -7,6 +7,7 @@ import {MatIconModule} from '@angular/material/icon'
 import {MatButtonModule} from '@angular/material/button'
 import {RouterModule} from '@angular/router'
 import {AppService} from './services/app.service'
+import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout'
 
 @Component({
     selector: 'app-root',
@@ -17,8 +18,15 @@ import {AppService} from './services/app.service'
 export class AppComponent implements OnInit {
     readonly title = 'devtoolbox'
     private readonly appService = inject(AppService)
+    private readonly breakpointObserver = inject(BreakpointObserver)
+
+    showSplitPage = false
 
     ngOnInit(): void {
         this.appService.Initialize()
+
+        if (this.breakpointObserver.isMatched(Breakpoints.Large) || this.breakpointObserver.isMatched(Breakpoints.XLarge)) {
+            this.showSplitPage = true
+        }
     }
 }
