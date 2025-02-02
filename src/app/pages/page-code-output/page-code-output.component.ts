@@ -51,12 +51,13 @@ export class PageCodeOutputComponent implements AfterViewInit {
     }
 
     private _render() {
-        const code = this.languageService.GenerateCode(this.dataService.schemas, this.appService.app.generatorMode, this.appService.app.seedLimit)
+        const generation = this.languageService.GenerateCode(this.dataService.schemas, this.appService.app.generatorMode, this.appService.app.seedLimit)
+        this.output = generation.code
         if (!this.codeOutput?.nativeElement) {
             console.error('Missing this.codeGeneratorViewHtml')
             return
         }
-        this.codeOutput.nativeElement.innerHTML = code
+        this.codeOutput.nativeElement.innerHTML = generation.html
     }
 
     Copy() {

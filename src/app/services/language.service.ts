@@ -39,7 +39,14 @@ export class LanguageService {
         this.varcharMap = generateAttributeMap(all)
     }
 
-    GenerateCode(schemas: Schema[], mode: AppGeneratorMode, seedLimit: number) {
+    GenerateCode(
+        schemas: Schema[],
+        mode: AppGeneratorMode,
+        seedLimit: number
+    ): {
+        code: string
+        html: string
+    } {
         let ext = ''
         let output = ''
 
@@ -107,6 +114,9 @@ export class LanguageService {
         }
 
         const code = hljs.highlight(output, {language: ext}).value
-        return code
+        return {
+            html: code,
+            code: output
+        }
     }
 }
