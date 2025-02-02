@@ -68,16 +68,6 @@ export class LanguageSqlService {
         for (const a of t.Attributes) {
             if (a.Option?.PrimaryKey) continue
 
-            if (a.Type === AttrType.REFERENCE && a.RefTo) {
-                for (const ra of a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)) {
-                    if (!uniques['primary']) {
-                        uniques['primary'] = []
-                    }
-                    uniques['primary'].push(`${a.Name}_${ra.Name}`)
-                }
-                continue
-            }
-
             if (!a.Option?.Unique) {
                 continue
             }
@@ -89,6 +79,9 @@ export class LanguageSqlService {
                 uniques[u].push(a.Name)
             }
         }
+
+        console.log(JSON.stringify(uniques, null, 4));
+        
         return uniques
     }
 
