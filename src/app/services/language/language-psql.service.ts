@@ -269,13 +269,13 @@ export class LanguagePsqlService {
         let selectingLines: string[] = []
 
         const useI = LanguageSqlService.NewTableTracker()
-        useI.increment(t)
+        useI.increment(t, null)
 
         const whereAND = []
         for (const a of t.Attributes) {
             if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue
             params.push(`${cc(a.Name, 'sk')} ${a.Type}`)
-            whereAND.push(`${useI.get(t)}.${cc(a.Name, 'sk')} = ${cc(a.Name, 'sk')}`)
+            whereAND.push(`${useI.get(t, a)}.${cc(a.Name, 'sk')} = ${cc(a.Name, 'sk')}`)
         }
         const whereStr: string = whereAND.join(' AND ')
 
@@ -287,16 +287,16 @@ export class LanguagePsqlService {
 
         for (const a of t.Attributes) {
             if (!a.RefTo) {
-                const n = cc(`${useI.get(t)}_${cc(a.Name, 'sk')}`, 'sk')
+                const n = cc(`${useI.get(t, a)}_${cc(a.Name, 'sk')}`, 'sk')
                 returnTableLines.push(`${n} ${a.Type}`)
-                selectingLines.push(`${useI.get(t)}.${cc(a.Name, 'sk')} AS ${n}`)
+                selectingLines.push(`${useI.get(t, a)}.${cc(a.Name, 'sk')} AS ${n}`)
                 continue
             }
 
             for (const ra of a.RefTo.Attributes) {
-                const n = cc(`${useI.get(t)}_${cc(ra.Name, 'sk')}`, 'sk')
+                const n = cc(`${useI.get(t, a)}_${cc(ra.Name, 'sk')}`, 'sk')
                 returnTableLines.push(`${n} ${ra.Type}`)
-                selectingLines.push(`${useI.get(t)}.${cc(ra.Name, 'sk')} AS ${n}`)
+                selectingLines.push(`${useI.get(t, a)}.${cc(ra.Name, 'sk')} AS ${n}`)
             }
         }
 

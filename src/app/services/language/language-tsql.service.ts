@@ -35,7 +35,7 @@ export class LanguageTsqlService {
         const whereAND = []
 
         const useI = LanguageSqlService.NewTableTracker()
-        useI.increment(t)
+        useI.increment(t, null)
 
         for (const a of t.Attributes) {
             if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue
@@ -46,7 +46,7 @@ export class LanguageTsqlService {
             }
 
             params.push(`@${cc(a.FN, 'sk')} ${type}`)
-            whereAND.push(`${useI.get(t)}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`)
+            whereAND.push(`${useI.get(t, a)}.${cc(a.Name, 'sk')} = @${cc(a.FN, 'sk')}`)
         }
         const whereStr: string = whereAND.join(' AND ')
 
@@ -57,13 +57,13 @@ export class LanguageTsqlService {
         for (const a of t.Attributes) {
             if (!a.RefTo) {
                 const n = cc(a.FN, 'sk')
-                selectingLines.push(`${useI.get(t)}.${cc(a.Name, 'sk')} AS ${n}`)
+                selectingLines.push(`${useI.get(t, a)}.${cc(a.Name, 'sk')} AS ${n}`)
                 continue
             }
 
             for (const ra of a.RefTo.Attributes) {
                 const n = cc(a.FN, 'sk')
-                selectingLines.push(`${useI.get(t)}.${cc(ra.Name, 'sk')} AS ${n}`)
+                selectingLines.push(`${useI.get(t, a)}.${cc(ra.Name, 'sk')} AS ${n}`)
             }
         }
 
