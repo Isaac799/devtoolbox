@@ -407,7 +407,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     continue
                 }
 
-                const potentialType = b[1]
+                const potentialType = b[1].trim()
                 let type = getAttrType(potentialType)
                 const options = (a[1] || '')
                     .split(',')
@@ -423,9 +423,11 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                         const s = answer[sk]
                         for (const tk in s.Tables) {
                             const t = s.Tables[tk]
-                            if (tk !== potentialType && `${sk}.${tk}` !== potentialType && `${sk}:${tk}` !== potentialType) {
+                            if (cc(tk, 'sk') !== potentialType && cc(`${sk}.${tk}`, 'sk') !== potentialType && cc(`${sk}:${tk}`, 'sk') !== potentialType) {
                                 continue
                             }
+                            console.log({matchingTblID})
+
                             matchingTblID = t.ID
                             break search
                         }
