@@ -7,8 +7,11 @@ import {
     attrTypeMap,
     attrTypeMapCompact,
     attrTypeMapExpanded,
+    ParseResult,
+    RenderE,
     Schema,
     SchemaConfig,
+    Suggestions,
     TableConfig,
     Validation
 } from '../../structure'
@@ -28,13 +31,6 @@ import {AppService} from '../../services/app.service'
 import {BitwiseOperations} from '../../constants'
 import {MatDialog} from '@angular/material/dialog'
 import {DialogSyntaxGuideComponent} from '../../dialogs/dialog-syntax-guide/dialog-syntax-guide.component'
-
-interface RenderE {
-    innerText: string
-    class?: string
-}
-
-type Suggestions = Record<number, string[]>
 
 @Component({
     selector: 'app-page-text-editor',
@@ -79,6 +75,9 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     ngOnInit(): void {
         this.RefreshRender()
+        this.textEditorService.rerun.subscribe(() => {
+            this.Run()
+        })
     }
     ngAfterViewInit(): void {
         this.textEditorService.textEditor = this.textEditor
@@ -107,12 +106,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     Run() {
         this.justCleaned = false
-        const config = PageTextEditorComponent.parse(this.textEditorService.textInput)
-        this.Render(this.textEditorService.textInput)
+        this.dataService.previousParse = PageTextEditorComponent.parse(this.textEditorService.textInput)
+        this.Render(this.textEditorService.textInput, this.dataService.previousParse)
 
         clearTimeout(this.runDebounce)
         this.runDebounce = setTimeout(() => {
-            this.appService.ReloadAndSaveFromConfig(config.data)
+            this.appService.ReloadAndSaveFromConfig()
         }, 300)
     }
 
@@ -143,7 +142,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         }, 0)
     }
 
-    Render(textAreaInput: string) {
+    Render(textAreaInput: string, previousParse: ParseResult) {
         this.renderElements = []
 
         const lines = textAreaInput.split('\n')
@@ -179,31 +178,36 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         clearTimeout(this.suggestionDebounce)
         this.suggestionDebounce = setTimeout(() => {
-            this.RenderSuggestions(textAreaInput)
+            this.RenderSuggestions(textAreaInput, previousParse)
         }, 300)
     }
 
     private AdjustEditorHeight(lines: number) {
         if (this.inputContainer) {
+            if (lines < 20) {
+                lines = 20
+            }
             this.inputContainer.nativeElement.style.height = lines + 'rem'
         }
     }
 
-    private RenderSuggestions(textAreaInput: string) {
+    private RenderSuggestions(textAreaInput: string, parsed: ParseResult) {
+        if (!parsed) {
+            return
+        }
+
         this.renderSuggestionElements = []
 
         const lines = textAreaInput.split('\n')
         let newLines: RenderE[] = []
-
-        const parsed = PageTextEditorComponent.parse(textAreaInput)
 
         let li = 0
 
         for (const line of lines) {
             li += 1
 
-            const suggestions = parsed.suggestions[li]
-            const errors = parsed.errors[li]
+            const suggestions = (parsed.suggestions || [])[li]
+            const errors = (parsed.errors || [])[li]
 
             const newLine: RenderE[] = []
             const words = this.ExtractLineWords(line)
@@ -246,7 +250,11 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     RefreshRender() {
-        this.Render(this.textEditorService.textInput)
+        if (!this.dataService.previousParse) {
+            console.warn('missing previous parse')
+            return
+        }
+        this.Render(this.textEditorService.textInput, this.dataService.previousParse)
     }
 
     HardRefresh() {
@@ -256,11 +264,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.justCleaned = true
     }
 
-    private static parse(input: string): {
-        data: Record<string, SchemaConfig>
-        suggestions: Suggestions
-        errors: Suggestions
-    } {
+    static parse(input: string): ParseResult {
         const answer: Record<string, SchemaConfig> = {}
         const suggestions: Suggestions = {}
         const errors: Suggestions = {}
@@ -481,14 +485,34 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                             addError('unknown option')
                             continue
                         }
+
                         const min = range[0]
+                        const max = range[1]
+
+                        function isValidNumber(str: string): boolean {
+                            const regex = /^[0-9]*\.?[0-9]+$/
+                            return regex.test(str)
+                        }
+
+                        if (min && !isValidNumber(min)) {
+                            addError(`invalid min value`)
+                            continue
+                        } else if (max && !isValidNumber(max)) {
+                            addError(`invalid max value`)
+                            continue
+                        }
+
                         const parsedMin = parseFloat(min)
+                        const parsedMax = parseFloat(max)
+
+                        if (!Number.isNaN(parsedMin) && !Number.isNaN(parsedMax) && parsedMin > parsedMax) {
+                            addError(`invalid range`)
+                            continue
+                        }
+
                         if (!Number.isNaN(parsedMin)) {
                             attrValidation.Min = parsedMin
                         }
-
-                        const max = range[1]
-                        const parsedMax = parseFloat(max)
                         if (!Number.isNaN(parsedMax)) {
                             attrValidation.Max = parsedMax
                         }
@@ -525,7 +549,13 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     item.RefToID = refToID
                 }
 
-                lastTable().Attributes[name] = item
+                const max = item.Validation?.Max
+
+                if (item.Type === AttrType.VARCHAR && max === undefined) {
+                    addError('missing range max')
+                } else if (item.Type === AttrType.VARCHAR && max !== undefined && max < 2) {
+                    addSuggestion(`consider using 'character' type`)
+                } else lastTable().Attributes[name] = item
             }
         }
 

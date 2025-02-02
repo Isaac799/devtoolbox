@@ -2,7 +2,6 @@ import {inject, Injectable} from '@angular/core'
 import {DataService} from './data.service'
 import {TextEditorService} from './text-editor.service'
 import {PageTextEditorComponent} from '../pages/page-text-editor/page-text-editor.component'
-import {SchemaConfig} from '../structure'
 
 @Injectable({
     providedIn: 'root'
@@ -12,6 +11,19 @@ export class AppService {
     textEditorService = inject(TextEditorService)
 
     private initialized = false
+    private readonly defaultConfig = `# library
+
+## author
+- id as ++
+- first name as string with r, u:a, ..30
+- last name as string with r, u:a, u:b, 4..30
+
+
+## book
+- id as ++
+- title as string with r, u, ..50
+- @author
+`
 
     Initialize() {
         if (this.initialized) {
@@ -21,10 +33,16 @@ export class AppService {
         this.dataService.loadConfig()
         this.dataService.loadLastSession()
         this.textEditorService.loadLastTextEdit()
-        if (!this.textEditorService.textInput) {
-            this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorState)
-        }
+
         setTimeout(() => {
+            if (!this.dataService.schemas.length && !this.textEditorService.textInput) {
+                this.textEditorService.textInput = this.defaultConfig
+                this.textEditorService.rerun.next()
+            } else if (!this.textEditorService.textInput) {
+                this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorState)
+                this.textEditorService.rerun.next()
+            }
+
             this.EmitChangesForApp()
         }, 0)
     }
@@ -37,15 +55,15 @@ export class AppService {
         this.EmitChangesForApp()
     }
 
-    ReloadAndSaveFromConfig(config: Record<string, SchemaConfig>) {
-        this.dataService.schemasConfig = config
-        const s = JSON.stringify(this.dataService.schemasConfig, null, 2)
+    ReloadAndSaveFromConfig() {
+        const s = JSON.stringify(this.dataService.previousParse, null, 2)
         if (s) {
             localStorage.setItem(this.dataService.stateSessionKey, s)
         }
         this.dataService.saveAppConfig()
         this.textEditorService.saveLastTextEdit()
         this.dataService.loadLastSession()
+
         this.EmitChangesForApp()
     }
 
@@ -55,6 +73,5 @@ export class AppService {
 
     EmitChangesForApp() {
         this.dataService.schemasChange.next(this.dataService.schemas)
-        this.dataService.schemasConfigChange.next(this.dataService.schemasConfig)
     }
 }

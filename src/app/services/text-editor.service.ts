@@ -1,4 +1,4 @@
-import {ElementRef, Injectable} from '@angular/core'
+import {ElementRef, EventEmitter, Injectable} from '@angular/core'
 
 @Injectable({
     providedIn: 'root'
@@ -24,6 +24,7 @@ export class TextEditorService {
     pastFirstLoad = false
     saveUndoValue: string | null = null
     saveUndoDebounce: ReturnType<typeof setTimeout> | undefined = undefined
+    rerun = new EventEmitter<void>()
 
     private _textEditor: ElementRef<HTMLTextAreaElement> | null = null
     public get textEditor(): ElementRef<HTMLTextAreaElement> | null {

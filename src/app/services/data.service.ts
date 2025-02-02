@@ -1,5 +1,18 @@
 import {Injectable} from '@angular/core'
-import {Schema, App, AppComplexityMode, AppGeneratorMode, AppMode, Table, Attribute, SchemaConfig, TableConfig, AttributeConfig, AttrType} from '../structure'
+import {
+    Schema,
+    App,
+    AppComplexityMode,
+    AppGeneratorMode,
+    AppMode,
+    Table,
+    Attribute,
+    SchemaConfig,
+    TableConfig,
+    AttributeConfig,
+    AttrType,
+    ParseResult
+} from '../structure'
 import {Subject} from 'rxjs'
 import {defaultConfig} from '../constants'
 import {AttributeMap, generateAttributeMap, VarcharJSONData} from '../varchar'
@@ -14,9 +27,8 @@ export class DataService {
 
     schemas: Schema[] = []
     varcharMap: AttributeMap = new Map()
-    schemasConfig: Record<string, SchemaConfig> = {}
+    previousParse: ParseResult | null = null
     schemasChange = new Subject<Schema[]>()
-    schemasConfigChange = new Subject<Record<string, SchemaConfig>>()
     textInputChange = new Subject<string>()
 
     constructor() {
@@ -73,22 +85,26 @@ export class DataService {
 
     loadLastSession() {
         const stateStr = localStorage.getItem(this.stateSessionKey)
-        let schemasConfig: Record<string, SchemaConfig> = {}
+        let cfg: ParseResult | null = null
 
         try {
             if (!stateStr) {
                 throw new Error('save was falsy, reset to default')
             }
-            schemasConfig = JSON.parse(stateStr)
+            cfg = JSON.parse(stateStr)
         } catch (err) {
             console.error(err)
-            schemasConfig = defaultConfig
-            localStorage.setItem(this.stateSessionKey, JSON.stringify(defaultConfig))
+            // cfg = defaultConfig
+            // localStorage.setItem(this.stateSessionKey, JSON.stringify(defaultConfig))
         }
 
-        const schemas: Schema[] = ParseSchemaConfig(schemasConfig)
+        if (!cfg) {
+            return
+        }
 
-        this.schemasConfig = schemasConfig
+        const schemas: Schema[] = ParseSchemaConfig(cfg.data)
+
+        this.previousParse = cfg
         this.schemas = schemas
     }
 
@@ -131,7 +147,6 @@ export class DataService {
             }
             schemasConfig[s.Name] = s2
         }
-        this.schemasConfig = schemasConfig
         const s = JSON.stringify(schemasConfig, null, 2)
         if (s) {
             localStorage.setItem(this.stateSessionKey, s)

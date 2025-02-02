@@ -23,6 +23,22 @@ export enum Lang {
     CS = 1 << 13
 }
 
+export  interface ParseResult {
+    data: Record<string, SchemaConfig>
+    suggestions?: Suggestions
+    errors?: Suggestions
+}
+
+
+export interface RenderE {
+    innerText: string
+    class?: string
+}
+
+export type Suggestions = Record<number, string[]>
+
+
+
 export class FuncIn {
     label: string
     type: string

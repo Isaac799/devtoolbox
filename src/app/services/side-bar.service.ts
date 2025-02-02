@@ -65,10 +65,13 @@ export class SideBarService {
 
     copyConfig() {
         let str = ''
+        if (!this.data.previousParse) {
+            return
+        }
         if (this.data.app.mode === AppMode.JSON) {
-            str = JSON.stringify(this.data.schemasConfig, null, 4)
+            str = JSON.stringify(this.data.previousParse.data, null, 4)
         } else if (this.data.app.mode === AppMode.YAML) {
-            str = YAML.stringify(this.data.schemasConfig)
+            str = YAML.stringify(this.data.previousParse.data)
         }
         navigator.clipboard.writeText(str)
         this.snackBar.open('Copied config to the clipboard', '', {
