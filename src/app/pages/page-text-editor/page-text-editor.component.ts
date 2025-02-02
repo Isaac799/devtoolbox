@@ -185,6 +185,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             if (lines < 20) {
                 lines = 20
             }
+            lines += 1
             this.inputContainer.nativeElement.style.height = lines + 'rem'
         }
     }
