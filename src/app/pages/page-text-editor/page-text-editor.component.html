@@ -33,6 +33,7 @@
     <button
         mat-icon-button
         aria-label="Format code"
+        [disabled]="justCleaned"
         (click)="HardRefresh()"
     >
         <mat-icon>dry_cleaning</mat-icon>

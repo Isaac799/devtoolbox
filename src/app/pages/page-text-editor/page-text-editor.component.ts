@@ -49,6 +49,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     private readonly matDialog = inject(MatDialog)
     private readonly appService = inject(AppService)
 
+    justCleaned = false
     toggleMode = 0
     readonly SPACE = '~SPACE~'
     readonly NEWLINE = '~NEWLINE~'
@@ -98,6 +99,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     Run() {
+        this.justCleaned = false
         const config = PageTextEditorComponent.parse(this.textEditorService.textInput)
         this.Render(this.textEditorService.textInput)
 
@@ -181,6 +183,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorState)
         this.RefreshRender()
         this.appService.ReloadAndSave()
+        this.justCleaned = true
     }
 
     private static parse(input: string): Record<string, SchemaConfig> {
