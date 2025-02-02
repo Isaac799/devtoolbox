@@ -50,8 +50,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     justCleaned = false
     toggleMode = 0
-    readonly SPACE = '~SPACE~'
-    readonly NEWLINE = '~NEWLINE~'
+    readonly SPACE = '~S~'
+    readonly NEWLINE = '~N~'
     renderElements: RenderE[] = []
     renderSuggestionElements: RenderE[] = []
     private readonly snackBar = inject(MatSnackBar)
