@@ -24,6 +24,8 @@ import {MatSelectModule} from '@angular/material/select'
 import {MatExpansionModule} from '@angular/material/expansion'
 import {MatToolbar} from '@angular/material/toolbar'
 import {MatSnackBar} from '@angular/material/snack-bar'
+import {TextEditorService} from '../../services/text-editor.service'
+import {AppService} from '../../services/app.service'
 
 interface RenderE {
     innerText: string
@@ -40,12 +42,14 @@ export class PageTextEditorComponent implements OnInit {
     ngOnInit(): void {
         this.RefreshRender()
     }
-    dataService = inject(DataService)
+    readonly dataService = inject(DataService)
+    readonly textEditorService = inject(TextEditorService)
+    private readonly appService = inject(AppService)
+
     renderElements: RenderE[] = []
     readonly NEWLINE = '~NEWLINE~'
     readonly SPACE = '~SPACE~'
     private readonly snackBar = inject(MatSnackBar)
-
 
     //     textInput = `
     // # public
@@ -63,34 +67,28 @@ export class PageTextEditorComponent implements OnInit {
     // `
 
     Run() {
-        const config = PageTextEditorComponent.parse(this.dataService.textInput)
-        this.dataService.ReloadAndSaveFromConfig(config)
-        this.Render(this.dataService.textInput)
-    }
-
-    Undo() {
-        this.dataService.fromUndo = true
-        console.log('UNDO')
-        this.dataService.textInputRedoStack.push(this.dataService.textInput)
-        this.dataService.textInput = this.dataService.textInputUndoStack.pop() || ''
-        this.dataService.ReloadAndSave()
-        this.RefreshRender()
-        this.dataService.fromUndo = false
-    }
-
-    Redo() {
-        console.log('REDO')
-        this.dataService.textInputUndoStack.push(this.dataService.textInput)
-        this.dataService.textInput = this.dataService.textInputRedoStack.pop() || ''
-        this.dataService.ReloadAndSave()
-        this.RefreshRender()
+        const config = PageTextEditorComponent.parse(this.textEditorService.textInput)
+        this.appService.ReloadAndSaveFromConfig(config)
+        this.Render(this.textEditorService.textInput)
     }
 
     Copy() {
-        navigator.clipboard.writeText(this.dataService.textInput)
+        navigator.clipboard.writeText(this.textEditorService.textInput)
         this.snackBar.open('Copied your code to the clipboard', '', {
             duration: 2500
         })
+    }
+
+    Undo() {
+        this.textEditorService.Undo()
+        this.appService.ReloadAndSave()
+        this.RefreshRender()
+    }
+
+    Redo() {
+        this.textEditorService.Redo()
+        this.appService.ReloadAndSave()
+        this.RefreshRender()
     }
 
     Render(tbInput: string) {
@@ -133,13 +131,13 @@ export class PageTextEditorComponent implements OnInit {
     }
 
     RefreshRender() {
-        this.Render(this.dataService.textInput)
+        this.Render(this.textEditorService.textInput)
     }
 
     HardRefresh() {
-        this.dataService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorSyntax)
+        this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorSyntax)
         this.RefreshRender()
-        this.dataService.ReloadAndSave()
+        this.appService.ReloadAndSave()
     }
 
     private static parse(input: string): Record<string, SchemaConfig> {

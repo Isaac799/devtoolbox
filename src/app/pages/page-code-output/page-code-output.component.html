@@ -52,7 +52,7 @@
                     <button
                         mat-fab
                         extended
-                        (click)="dataService.EmitChangesForApp()"
+                        (click)="appService.EmitChangesForApp()"
                     >
                         Regenerate (size: {{dataService.app.seedLimit}})
                         <mat-icon>refresh</mat-icon>

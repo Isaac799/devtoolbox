@@ -6,6 +6,7 @@ import {DialogTableComponent} from '../dialogs/dialog-table/dialog-table.compone
 import {MatDialog} from '@angular/material/dialog'
 import {inject, Injectable} from '@angular/core'
 import {MatSnackBar} from '@angular/material/snack-bar'
+import {AppService} from './app.service'
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,8 @@ export class SideBarService {
     private matDialog = inject(MatDialog)
     private data = inject(DataService)
     private readonly snackBar = inject(MatSnackBar)
+    private readonly appService = inject(AppService)
+
     showMoreDetails = false
 
     debounce: ReturnType<typeof setTimeout> | undefined = undefined
@@ -50,13 +53,13 @@ export class SideBarService {
             return
         }
         this.data.app.generatorMode = c.value
-        this.data.ReloadAndSave()
+        this.appService.ReloadAndSave()
     }
 
     debounceReload() {
         clearTimeout(this.debounce)
         this.debounce = setTimeout(() => {
-            this.data.ReloadAndSave()
+            this.appService.ReloadAndSave()
         }, 500)
     }
 
@@ -82,7 +85,7 @@ export class SideBarService {
         })
 
         dialogRef.afterClosed().subscribe(() => {
-            this.data.ReloadAndSave()
+            this.appService.ReloadAndSave()
         })
     }
 
@@ -95,7 +98,7 @@ export class SideBarService {
         })
 
         dialogRef.afterClosed().subscribe(() => {
-            this.data.ReloadAndSave()
+            this.appService.ReloadAndSave()
         })
     }
 

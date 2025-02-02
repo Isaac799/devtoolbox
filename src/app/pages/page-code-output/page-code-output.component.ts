@@ -28,6 +28,7 @@ import {FormsModule} from '@angular/forms'
 import {IsSeedModePipe} from '../../pipes/is-seed-mode.pipe'
 import {MatSliderModule} from '@angular/material/slider'
 import {MatSnackBar} from '@angular/material/snack-bar'
+import { AppService } from '../../services/app.service'
 
 @Component({
     selector: 'app-page-code-output',
@@ -43,6 +44,7 @@ export class PageCodeOutputComponent implements AfterViewInit, OnDestroy {
     readonly dataService = inject(DataService)
     readonly sideBarService = inject(SideBarService)
     private readonly snackBar = inject(MatSnackBar)
+    readonly appService = inject(AppService)
 
     ngAfterViewInit(): void {
         this.subscription = this.dataService.schemasChange.subscribe(schemas => {
@@ -118,7 +120,7 @@ export class PageCodeOutputComponent implements AfterViewInit, OnDestroy {
             this.codeOutput.nativeElement.innerHTML = code
         })
 
-        this.dataService.EmitChangesForApp()
+        this.appService.EmitChangesForApp()
     }
 
     ngOnDestroy(): void {

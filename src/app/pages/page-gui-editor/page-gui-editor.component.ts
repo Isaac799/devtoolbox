@@ -13,6 +13,7 @@ import {SideBarEditorComponent} from '../../components/side-bar-editor/side-bar-
 import {MatChipsModule} from '@angular/material/chips'
 import { SideBarService } from '../../services/side-bar.service'
 import {MatListModule} from '@angular/material/list'; 
+import { AppService } from '../../services/app.service'
 
 @Component({
     selector: 'app-page-gui-editor',
@@ -35,6 +36,7 @@ import {MatListModule} from '@angular/material/list';
 export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy {
     private matDialog = inject(MatDialog)
     readonly sideBarService = inject(SideBarService)
+    private readonly appService = inject(AppService)
 
     bend = false
     resizeDebounce: ReturnType<typeof setTimeout> | undefined = undefined
@@ -303,7 +305,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         })
 
         dialogRef.afterClosed().subscribe(() => {
-            this.data.ReloadAndSave()
+            this.appService.ReloadAndSave()
         })
     }
 }

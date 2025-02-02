@@ -1,12 +1,12 @@
-import {Component, OnInit} from '@angular/core'
+import {Component, inject, OnInit} from '@angular/core'
 import {CommonModule} from '@angular/common'
 import {FormsModule, ReactiveFormsModule} from '@angular/forms'
-import {DataService} from './services/data.service'
 import {MatSidenavModule} from '@angular/material/sidenav'
 import {MatToolbarModule} from '@angular/material/toolbar'
 import {MatIconModule} from '@angular/material/icon'
 import {MatButtonModule} from '@angular/material/button'
 import {RouterModule} from '@angular/router'
+import {AppService} from './services/app.service'
 
 @Component({
     selector: 'app-root',
@@ -16,10 +16,11 @@ import {RouterModule} from '@angular/router'
 })
 export class AppComponent implements OnInit {
     readonly title = 'devtoolbox'
+    private readonly appService = inject(AppService)
 
-    constructor(public data: DataService,) {}
+    constructor() {}
 
     ngOnInit(): void {
-        this.data.Initialize()
+        this.appService.Initialize()
     }
 }

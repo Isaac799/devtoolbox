@@ -4,56 +4,13 @@ import {Subject} from 'rxjs'
 import {defaultConfig} from '../constants'
 import {AttributeMap, generateAttributeMap, VarcharJSONData} from '../varchar'
 import varcharJSON from '../../../public/varchar.json'
-import {PageTextEditorComponent} from '../pages/page-text-editor/page-text-editor.component'
 
 @Injectable({
     providedIn: 'root'
 })
 export class DataService {
-    private readonly stateSessionKey = 'devtoolboxState'
-    private readonly configSessionKey = 'devtoolboxAppConfig'
-    private readonly rawTextInput = 'devtoolboxRawextInput'
-    private initialized = false
-    fromUndo = false
-    undoCount = 0
-
-    saveUndoTimeout: ReturnType<typeof setTimeout> | undefined = undefined
-
-    fv: string | null = null
-
-    SaveToUndo(x: string) {
-        if (this.undoCount === 0) {
-            this.undoCount = 1
-            return
-        }
-
-        if (this.fv === null) {
-            this.fv = x
-        }
-
-        clearTimeout(this.saveUndoTimeout)
-        this.saveUndoTimeout = setTimeout(() => {
-            if (!this.fv) {
-                return
-            }
-            this.textInputUndoStack.push(this.fv)
-            this.fv = null
-            this.textInputRedoStack = []
-        }, 500)
-    }
-
-    private _textInput = ''
-    public get textInput() {
-        return this._textInput
-    }
-    public set textInput(value) {
-        if (!this.fromUndo) {
-            this.SaveToUndo(this._textInput)
-        }
-        this._textInput = value
-    }
-    textInputUndoStack: string[] = []
-    textInputRedoStack: string[] = []
+    readonly stateSessionKey = 'devtoolboxState'
+    readonly configSessionKey = 'devtoolboxAppConfig'
 
     schemas: Schema[] = []
     varcharMap: AttributeMap = new Map()
@@ -73,15 +30,6 @@ export class DataService {
         this.varcharMap = generateAttributeMap(all)
     }
 
-    textEditorSyntaxAttributeOptions = [
-        {name: 'Expanded', value: 'Expanded'},
-        {name: 'Compact', value: 'Compact'}
-    ]
-    textEditorSyntaxOptionsOptions = [
-        {name: 'Expanded', value: 'Expanded'},
-        {name: 'Compact', value: 'Compact'}
-    ]
-
     app: App = {
         seedLimit: 4,
         mode: AppMode.YAML,
@@ -93,53 +41,7 @@ export class DataService {
         complexity: AppComplexityMode.Advanced
     }
 
-    ReloadAndSave() {
-        this.saveAppConfig()
-        this.saveSchemasConfig()
-        this.saveLastTextEdit()
-        this.loadLastSession()
-        this.EmitChangesForApp()
-    }
-
-    ReloadAndSaveFromConfig(config: Record<string, SchemaConfig>) {
-        this.schemasConfig = config
-        const s = JSON.stringify(this.schemasConfig, null, 2)
-        if (s) {
-            localStorage.setItem(this.stateSessionKey, s)
-        }
-        this.saveAppConfig()
-        this.saveLastTextEdit()
-        this.loadLastSession()
-        this.EmitChangesForApp()
-    }
-
-    Reload() {
-        this.loadLastSession()
-    }
-
-    EmitChangesForApp() {
-        this.schemasChange.next(this.schemas)
-        this.schemasConfigChange.next(this.schemasConfig)
-        this.textInputChange.next(this.textInput)
-    }
-
-    Initialize() {
-        if (this.initialized) {
-            return
-        }
-        this.initialized = true
-        this.loadConfig()
-        this.loadLastSession()
-        this.loadLastTextEdit()
-        if (!this.textInput) {
-            this.textInput = PageTextEditorComponent.reverseParse(this.schemas, this.app.textEditorSyntax)
-        }
-        setTimeout(() => {
-            this.EmitChangesForApp()
-        }, 0)
-    }
-
-    private loadConfig() {
+    loadConfig() {
         const save = localStorage.getItem(this.configSessionKey)
         if (!save) {
             return
@@ -175,7 +77,7 @@ export class DataService {
         }
     }
 
-    private loadLastSession() {
+    loadLastSession() {
         const stateStr = localStorage.getItem(this.stateSessionKey)
         let schemasConfig: Record<string, SchemaConfig> = {}
 
@@ -194,16 +96,6 @@ export class DataService {
 
         this.schemasConfig = schemasConfig
         this.schemas = schemas
-    }
-
-    private loadLastTextEdit() {
-        const rawTextInput = localStorage.getItem(this.rawTextInput)
-        if (!rawTextInput) return
-        this.textInput = rawTextInput
-    }
-
-    private saveLastTextEdit() {
-        localStorage.setItem(this.rawTextInput, this.textInput)
     }
 
     saveSchemasConfig() {
@@ -241,7 +133,7 @@ export class DataService {
         }
     }
 
-    private saveAppConfig() {
+    saveAppConfig() {
         const s = JSON.stringify(this.app, null, 2)
         if (s) {
             localStorage.setItem(this.configSessionKey, s)

@@ -44,7 +44,7 @@
                                         [(ngModel)]="dataService.app.textEditorSyntax.attributes"
                                         (ngModelChange)="HardRefresh()"
                                     >
-                                        @for (x of dataService.textEditorSyntaxAttributeOptions; track $index) {
+                                        @for (x of textEditorService.textEditorSyntaxAttributeOptions; track $index) {
                                         <mat-option [value]="x.value">{{ x.name }}</mat-option>
                                         }
                                     </mat-select>
@@ -64,7 +64,7 @@
                                         [(ngModel)]="dataService.app.textEditorSyntax.options"
                                         (ngModelChange)="HardRefresh()"
                                     >
-                                        @for (x of dataService.textEditorSyntaxOptionsOptions; track $index) {
+                                        @for (x of textEditorService.textEditorSyntaxOptionsOptions; track $index) {
                                         <mat-option [value]="x.value">{{ x.name }}</mat-option>
                                         }
                                     </mat-select>
@@ -87,7 +87,7 @@
                 mat-icon-button
                 aria-label="Undo the last change"
                 (click)="Undo()"
-                [disabled]="dataService.textInputUndoStack.length === 0"
+                [disabled]="textEditorService.textInputUndoStack.length === 0"
             >
                 <mat-icon>undo</mat-icon>
             </button>
@@ -95,7 +95,7 @@
                 mat-icon-button
                 aria-label="Redo the last change"
                 (click)="Redo()"
-                [disabled]="dataService.textInputRedoStack.length === 0"
+                [disabled]="textEditorService.textInputRedoStack.length === 0"
             >
                 <mat-icon>redo</mat-icon>
             </button>
@@ -114,7 +114,7 @@
                 }
             </div>
             <textarea
-                [(ngModel)]="dataService.textInput"
+                [(ngModel)]="textEditorService.textInput"
                 (ngModelChange)="Run();"
                 class="input-box"
             ></textarea>
