@@ -12,11 +12,15 @@
     overflow: auto;
 
     >.input-box,
-    >div.render-box {
+    >div.render-box,
+    >div.render-suggestion-box {
         position: absolute;
         inset: 0;
 
         font-size: 1rem;
+        line-height: 1rem;
+        letter-spacing: 0.1rem;
+
         font-family: 'Courier New', Courier, monospace;
         border: 0;
         border-radius: 0;
@@ -36,10 +40,22 @@
         outline: none;
     }
 
+    >div.render-suggestion-box {
+        color: white;
+        background-color: var(--mat-sidenav-content-background-color, var(--mat-sys-background));
+        font-size: 0.8rem;
+        line-height: 1rem;
+        letter-spacing: 0.21rem;
+
+        >.is-suggestion {
+            padding-left: 1.5rem;
+            color: color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent);
+        }
+    }
+
     >div.render-box {
         color: black;
-        // background-color: rgb(252, 245, 229);    
-        background-color: var(--mat-sidenav-content-background-color, var(--mat-sys-background));
+        background-color: rgb(0, 0, 0, 0);
 
         >.is-shortcut {
             color: #aa5d00;

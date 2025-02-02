@@ -54,6 +54,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     readonly SPACE = '~SPACE~'
     readonly NEWLINE = '~NEWLINE~'
     renderElements: RenderE[] = []
+    renderSuggestionElements: RenderE[] = []
     private readonly snackBar = inject(MatSnackBar)
     private runDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
@@ -144,35 +145,68 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         for (const line of lines) {
             const newLine: RenderE[] = []
-            const words2 = line.split(/(\s+|\S+|\n)/).filter(str => str.length > 0)
-            let words: string[] = []
-            for (const w of words2) {
-                if (!w.trim()) {
-                    words = words.concat(...w)
-                    continue
-                }
-                words.push(w)
-            }
+            const words = this.ExtractLineWords(line)
+
             for (const word of words) {
-                const newWord: RenderE = {innerText: word}
-                if (newWord.innerText === ' ') {
-                    newLine.push(newWord)
+                const el: RenderE = {innerText: word}
+                if (el.innerText === ' ') {
+                    newLine.push(el)
                     continue
                 }
                 if (word.startsWith('@')) {
-                    newWord.class = 'is-shortcut'
+                    el.class = 'is-shortcut'
                 } else if (['with', 'as'].includes(word)) {
-                    newWord.class = 'is-delimiter'
+                    el.class = 'is-delimiter'
                 } else if (['#', '##'].includes(word)) {
-                    newWord.class = 'is-header'
+                    el.class = 'is-header'
                 }
-                newLine.push(newWord)
+                newLine.push(el)
             }
             newLine.push({innerText: this.NEWLINE})
             newLines = newLines.concat(newLine)
         }
 
         this.renderElements = newLines
+
+        this.RenderSuggestions(tbInput)
+    }
+
+    private RenderSuggestions(tbInput: string) {
+        this.renderSuggestionElements = []
+
+        const lines = tbInput.split('\n')
+        let newLines: RenderE[] = []
+
+        for (const line of lines) {
+            const newLine: RenderE[] = []
+            const words = this.ExtractLineWords(line)
+
+            for (const word of words) {
+                const el: RenderE = {innerText: word}
+                newLine.push(el)
+            }
+
+            const tip = {innerText: 'hi', class: 'is-suggestion'}
+            newLine.push(tip)
+
+            newLine.push({innerText: this.NEWLINE})
+            newLines = newLines.concat(newLine)
+        }
+
+        this.renderSuggestionElements = newLines
+    }
+
+    private ExtractLineWords(line: string): string[] {
+        let words: string[] = []
+        const words2 = line.split(/(\s+|\S+|\n)/).filter(str => str.length > 0)
+        for (const w of words2) {
+            if (!w.trim()) {
+                words = words.concat(...w)
+                continue
+            }
+            words.push(w)
+        }
+        return words
     }
 
     RefreshRender() {
