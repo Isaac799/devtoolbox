@@ -136,7 +136,6 @@ export class LanguagePsqlService {
 
                 let v2: string[] = []
                 let v3: string[] = []
-
                 for (const a of t.Attributes) {
                     v2.push(cc(a.Name, 'sk'))
                     v3.push('-'.repeat(cc(a.Name, 'sk').length))
@@ -198,43 +197,41 @@ export class LanguagePsqlService {
                             v2.push(v)
                             usedMap[a.FN].push(v)
                         }
+                    }
+                    const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
 
-                        const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
-
-                        if (u && values.map(e => e.includes(c)).filter(e => e).length !== 0) {
-                            v2 = []
-                            continue
-                        }
-
-                        if (tGenCount[t.FNInitials] === undefined) {
-                            tGenCount[t.FNInitials] = 0
-                        }
-                        tGenCount[t.FNInitials] += 1
-
-                        values.push(c)
-                        tblRows[t.FN] += 1
-
+                    if (u && values.map(e => e.includes(c)).filter(e => e).length !== 0) {
                         v2 = []
+                        continue
                     }
 
-                    // console.log('tblRows[t.FN] :>> ', t.FN, tblRows[t.FN])
-
-                    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-                    for (let index = 0; index < t.Attributes.length; index++) {
-                        values = alignKeyword(values, alignmentKeyword)
-                        values = values.map(e => e.replace(alignmentKeyword, ''))
+                    if (tGenCount[t.FNInitials] === undefined) {
+                        tGenCount[t.FNInitials] = 0
                     }
-                    const stmt: string[] = ['INSERT INTO', t.FN]
+                    tGenCount[t.FNInitials] += 1
 
-                    const lineParts = [stmt.join(' '), values, ';']
+                    values.push(c)
+                    tblRows[t.FN] += 1
 
-                    const line: string = lineParts.join(' ')
-                    lines.push(line)
-                    lines.push('')
+                    v2 = []
                 }
+
+                // console.log('tblRows[t.FN] :>> ', t.FN, tblRows[t.FN])
+
+                // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                for (let index = 0; index < t.Attributes.length; index++) {
+                    values = alignKeyword(values, alignmentKeyword)
+                    values = values.map(e => e.replace(alignmentKeyword, ''))
+                }
+                const stmt: string[] = ['INSERT INTO', t.FN]
+
+                const lineParts = [stmt.join(' '), values, ';']
+
+                const line: string = lineParts.join(' ')
+                lines.push(line)
+                lines.push('')
             }
         }
-
         const all = ['BEGIN;', '', ...lines, '', 'COMMIT;']
         const str = all.join('\n').replaceAll('VALUES~~,', 'VALUES')
 
