@@ -1,4 +1,4 @@
-import {AfterViewChecked, AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild} from '@angular/core'
+import {AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild} from '@angular/core'
 import {
     Attribute,
     AttributeConfig,
@@ -26,6 +26,7 @@ import {MatToolbar} from '@angular/material/toolbar'
 import {MatSnackBar} from '@angular/material/snack-bar'
 import {TextEditorService} from '../../services/text-editor.service'
 import {AppService} from '../../services/app.service'
+import {BitwiseOperations} from '../../constants'
 
 interface RenderE {
     innerText: string
@@ -49,6 +50,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     readonly NEWLINE = '~NEWLINE~'
     readonly SPACE = '~SPACE~'
     private readonly snackBar = inject(MatSnackBar)
+    toggleMode = 0
 
     //     textInput = `
     // # public
@@ -76,16 +78,16 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     ToggleMode() {
-        const s = this.dataService.app.textEditorSyntax
+        const s = this.dataService.app.textEditorState
+        const aC = TextEditorService.AttributeTypeCompact
+        const oC = TextEditorService.AttributeOptionCompact
 
-        if (s.attributes === 'Compact' && s.options === 'Compact') {
-            s.attributes = 'Expanded'
-        } else if (s.attributes === 'Expanded' && s.options === 'Expanded') {
-            s.attributes = 'Compact'
-        } else if (s.attributes === 'Compact' && s.options === 'Expanded') {
-            s.options = 'Compact'
-        } else if (s.attributes === 'Expanded' && s.options === 'Compact') {
-            s.options = 'Expanded'
+        if (this.toggleMode === 0) {
+            this.dataService.app.textEditorState = BitwiseOperations.toggleBit(s, aC)
+            this.toggleMode = 1
+        } else {
+            this.toggleMode = 0
+            this.dataService.app.textEditorState = BitwiseOperations.toggleBit(s, oC)
         }
 
         this.HardRefresh()
@@ -164,7 +166,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     HardRefresh() {
-        this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorSyntax)
+        this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorState)
         this.RefreshRender()
         this.appService.ReloadAndSave()
     }
@@ -387,19 +389,16 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         return answer
     }
 
-    static reverseParse(schemas: Schema[], textEditorSyntax: TextEditorSyntax): string {
+    static reverseParse(schemas: Schema[], textEditorState: number): string {
         const lines: string[] = []
 
         const getAttrType = (input: AttrType): string | null => {
             if (!input) return null
 
-            if (textEditorSyntax.attributes === 'Compact') {
+            if (BitwiseOperations.isBitSet(textEditorState, TextEditorService.AttributeTypeCompact)) {
                 return attrTypeMapCompact[input] || null
-            } else if (textEditorSyntax.attributes === 'Expanded') {
-                return attrTypeMapExpanded[input] || null
             } else {
-                console.warn('unhandled TextEditorSyntaxMode')
-                return null
+                return attrTypeMapExpanded[input] || null
             }
         }
 
@@ -446,36 +445,38 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         function gatherOptions(a: Attribute) {
             const options: string[] = []
 
+            const optionCompact = BitwiseOperations.isBitSet(textEditorState, TextEditorService.AttributeOptionCompact)
+
             if (a.Option?.PrimaryKey) {
-                if (textEditorSyntax.options === 'Compact') {
+                if (optionCompact) {
                     options.push('p')
                 } else {
                     options.push('primary')
                 }
             }
             if (a.Option?.SystemField) {
-                if (textEditorSyntax.options === 'Compact') {
+                if (optionCompact) {
                     options.push('sys')
                 } else {
                     options.push('system')
                 }
             }
             if (a.Option?.Unique) {
-                if (textEditorSyntax.options === 'Compact') {
+                if (optionCompact) {
                     options.push('u')
                 } else {
                     options.push('unique')
                 }
             }
             if (a.Option?.Default) {
-                if (textEditorSyntax.options === 'Compact') {
+                if (optionCompact) {
                     options.push('d')
                 } else {
                     options.push('default')
                 }
             }
             if (a.Validation?.Required) {
-                if (textEditorSyntax.options === 'Compact') {
+                if (optionCompact) {
                     options.push('r')
                 } else {
                     options.push('required')

@@ -637,7 +637,7 @@ export const attrTypeMapExpanded: Record<AttrType, string> = {
 export interface App {
     seedLimit: number
     mode: AppMode
-    textEditorSyntax: TextEditorSyntax
+    textEditorState: number
     generatorMode: AppGeneratorMode
     complexity: AppComplexityMode
 }

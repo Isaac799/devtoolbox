@@ -22,7 +22,7 @@ export class AppService {
         this.dataService.loadLastSession()
         this.textEditorService.loadLastTextEdit()
         if (!this.textEditorService.textInput) {
-            this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorSyntax)
+            this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorState)
         }
         setTimeout(() => {
             this.EmitChangesForApp()

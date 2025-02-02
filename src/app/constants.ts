@@ -1,15 +1,82 @@
 export const TAB = '    '
 
+export class BitwiseOperations {
+    // Bitwise AND
+    static bitwiseAnd(a: number, b: number): number {
+        return a & b
+    }
+
+    // Bitwise OR
+    static bitwiseOr(a: number, b: number): number {
+        return a | b
+    }
+
+    // Bitwise XOR
+    static bitwiseXor(a: number, b: number): number {
+        return a ^ b
+    }
+
+    // Bitwise NOT
+    static bitwiseNot(a: number): number {
+        return ~a
+    }
+
+    // Left Shift
+    static leftShift(a: number, n: number): number {
+        return a << n
+    }
+
+    // Right Shift
+    static rightShift(a: number, n: number): number {
+        return a >> n
+    }
+
+    // Unsigned Right Shift
+    static unsignedRightShift(a: number, n: number): number {
+        return a >>> n
+    }
+
+    // Check if a number is a power of two
+    static isPowerOfTwo(n: number): boolean {
+        return n > 0 && (n & (n - 1)) === 0
+    }
+
+    // Set a bit (turn it to 1)
+    static setBit(a: number, position: number): number {
+        return a | (1 << position)
+    }
+
+    // Clear a bit (turn it to 0)
+    static clearBit(a: number, position: number): number {
+        return a & ~(1 << position)
+    }
+
+    // Toggle a bit (flip it)
+    static toggleBit(a: number, position: number): number {
+        return a ^ (1 << position)
+    }
+
+    // Get the value of a specific bit
+    static getBit(a: number, position: number): number {
+        return (a >> position) & 1
+    }
+
+    // Check if the bit at a specific position is set
+    static isBitSet(a: number, position: number): boolean {
+        return (a & (1 << position)) !== 0
+    }
+}
+
 export const defaultConfig: any = {
     public: {
-        ID:' 13',
+        ID: ' 13',
         Tables: {
             user: {
-                ID:' 14',
+                ID: ' 14',
                 ParentID: 13,
                 Attributes: {
                     id: {
-                        ID:' 16',
+                        ID: ' 16',
                         ParentID: 14,
                         Type: 'SERIAL',
                         Option: {
@@ -20,14 +87,14 @@ export const defaultConfig: any = {
                         }
                     },
                     name: {
-                        ID:' 18',
+                        ID: ' 18',
                         ParentID: 14,
                         Type: 'VARCHAR',
                         Option: {Unique: true, PrimaryKey: false, Default: ''},
                         Validation: {Min: 3, Max: 31, Required: true}
                     },
                     email: {
-                        ID:' 36',
+                        ID: ' 36',
                         ParentID: 14,
                         Type: 'VARCHAR',
                         Option: {Default: null, Unique: true, PrimaryKey: null},
@@ -36,11 +103,11 @@ export const defaultConfig: any = {
                 }
             },
             profile: {
-                ID:' 15',
+                ID: ' 15',
                 ParentID: 13,
                 Attributes: {
                     user: {
-                        ID:' 20',
+                        ID: ' 20',
                         ParentID: 15,
                         RefToID: 14,
                         Type: 'REF',
@@ -48,14 +115,14 @@ export const defaultConfig: any = {
                         Validation: {Required: true}
                     },
                     bio: {
-                        ID:' 19',
+                        ID: ' 19',
                         ParentID: 15,
                         Type: 'VARCHAR',
                         Option: {PrimaryKey: false},
                         Validation: {Max: 255, Required: false}
                     },
                     status: {
-                        ID:' 32',
+                        ID: ' 32',
                         ParentID: 15,
                         Type: 'CHARACTER',
                         Option: {Default: 'z', Unique: null, PrimaryKey: null},
@@ -64,11 +131,11 @@ export const defaultConfig: any = {
                 }
             },
             item: {
-                ID:' 21',
+                ID: ' 21',
                 ParentID: 13,
                 Attributes: {
                     id: {
-                        ID:' 22',
+                        ID: ' 22',
                         ParentID: 21,
                         Type: 'SERIAL',
                         Option: {
@@ -78,7 +145,7 @@ export const defaultConfig: any = {
                         }
                     },
                     description: {
-                        ID:' 23',
+                        ID: ' 23',
                         ParentID: 21,
                         Type: 'VARCHAR',
                         Validation: {Min: 3, Max: 255, Required: true}
@@ -86,11 +153,11 @@ export const defaultConfig: any = {
                 }
             },
             listing: {
-                ID:' 24',
+                ID: ' 24',
                 ParentID: 13,
                 Attributes: {
                     listee: {
-                        ID:' 25',
+                        ID: ' 25',
                         ParentID: 24,
                         RefToID: 14,
                         Type: 'REF',
@@ -98,7 +165,7 @@ export const defaultConfig: any = {
                         Validation: {Required: false}
                     },
                     item: {
-                        ID:' 26',
+                        ID: ' 26',
                         ParentID: 24,
                         RefToID: 21,
                         Type: 'REF',
@@ -106,7 +173,7 @@ export const defaultConfig: any = {
                         Validation: {Required: false}
                     },
                     inserted_at: {
-                        ID:' 33',
+                        ID: ' 33',
                         ParentID: 24,
                         Type: 'TIMESTAMP',
                         Option: {
@@ -117,7 +184,7 @@ export const defaultConfig: any = {
                         Validation: {Required: true}
                     },
                     sold: {
-                        ID:' 37',
+                        ID: ' 37',
                         ParentID: 24,
                         Type: 'BOOLEAN',
                         Option: {
@@ -132,14 +199,14 @@ export const defaultConfig: any = {
         }
     },
     finance: {
-        ID:' 27',
+        ID: ' 27',
         Tables: {
             purchase: {
-                ID:' 28',
+                ID: ' 28',
                 ParentID: 27,
                 Attributes: {
                     payer: {
-                        ID:' 29',
+                        ID: ' 29',
                         ParentID: 28,
                         RefToID: 14,
                         Type: 'REF',
@@ -147,7 +214,7 @@ export const defaultConfig: any = {
                         Validation: {Required: false}
                     },
                     what: {
-                        ID:' 30',
+                        ID: ' 30',
                         ParentID: 28,
                         RefToID: 21,
                         Type: 'REF',
@@ -155,7 +222,7 @@ export const defaultConfig: any = {
                         Validation: {Required: false}
                     },
                     when: {
-                        ID:' 31',
+                        ID: ' 31',
                         ParentID: 28,
                         Type: 'TIMESTAMP',
                         Option: {
@@ -166,14 +233,14 @@ export const defaultConfig: any = {
                         Validation: {Required: true}
                     },
                     amount: {
-                        ID:' 34',
+                        ID: ' 34',
                         ParentID: 28,
                         Type: 'MONEY',
                         Option: {Default: ''},
                         Validation: {Min: 0.01, Max: 999.99, Required: true}
                     },
                     status: {
-                        ID:' 35',
+                        ID: ' 35',
                         ParentID: 28,
                         Type: 'CHARACTER',
                         Option: {Default: 'p'},

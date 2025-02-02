@@ -33,10 +33,7 @@ export class DataService {
     app: App = {
         seedLimit: 4,
         mode: AppMode.YAML,
-        textEditorSyntax: {
-            attributes: 'Expanded',
-            options: 'Expanded'
-        },
+        textEditorState: 1,
         generatorMode: AppGeneratorMode.Postgres,
         complexity: AppComplexityMode.Advanced
     }
@@ -63,11 +60,8 @@ export class DataService {
             if (!parsed['complexity']) {
                 parsed['complexity'] = AppComplexityMode.Advanced
             }
-            if (!parsed['textEditorSyntax']) {
-                parsed['textEditorSyntax'] = {
-                    attributes: 'Expanded',
-                    options: 'Expanded'
-                }
+            if (!parsed['textEditorState']) {
+                parsed['textEditorState'] = 1
             }
 
             this.app = parsed

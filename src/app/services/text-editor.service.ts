@@ -1,10 +1,13 @@
-import {ElementRef, HostListener, Injectable} from '@angular/core'
+import {ElementRef, Injectable} from '@angular/core'
 
 @Injectable({
     providedIn: 'root'
 })
 export class TextEditorService {
-    private readonly rawTextInput = 'devtoolboxRawextInput'
+    private readonly rawTextInput = 'devtoolboxRawTextInput'
+    
+    static readonly AttributeTypeCompact = 2;
+    static readonly AttributeOptionCompact = 3;
 
     focused = false
     caretPosition: {
