@@ -605,10 +605,20 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 }
             }
             if (a.Option?.Unique && a.Type !== AttrType.SERIAL) {
-                if (optionCompact) {
-                    options.push('u')
-                } else {
-                    options.push('unique')
+                for (const u of a.Option.Unique) {
+                    if (optionCompact) {
+                        if (u === 'unlabeled') {
+                            options.push(`u`)
+                        } else {
+                            options.push(`u:${u}`)
+                        }
+                    } else {
+                        if (u === 'unlabeled') {
+                            options.push(`unique`)
+                        } else {
+                            options.push(`unique:${u}`)
+                        }
+                    }
                 }
             }
             if (a.Option?.Default) {

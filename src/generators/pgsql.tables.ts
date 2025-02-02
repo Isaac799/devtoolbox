@@ -1,7 +1,6 @@
-import { TAB } from '../app/constants'
-import { cc, alignKeyword, alignKeywords } from '../app/formatting'
-import { Table, AttrType, GenerateDefaultValue, Lang, Attribute, Schema } from '../app/structure'
-
+import {TAB} from '../app/constants'
+import {cc, alignKeyword, alignKeywords} from '../app/formatting'
+import {Table, AttrType, GenerateDefaultValue, Lang, Attribute, Schema} from '../app/structure'
 
 export function SchemasToPostgreSQL(schemas: Schema[]): string {
     let drops: string[] = []
@@ -61,11 +60,10 @@ function generateTableEndParts(t: Table) {
     }
 
     const uniques = GenerateUniqueAttributes(t)
-    if (uniques.length > 0) {
-        for (const e of uniques) {
-            const uniquesStr = `UNIQUE ( ${cc(e, 'sk')} )`
-            endThings.push(uniquesStr)
-        }
+    for (const label in uniques) {
+        const attrNames = uniques[label].map(e => cc(e, 'sk')).join(', ')
+        const uniquesStr = `UNIQUE ( ${attrNames} )`
+        endThings.push(uniquesStr)
     }
 
     const refs = t.Attributes.filter(e => e.RefTo)
@@ -163,14 +161,17 @@ function generateAttributesForTable(t: Table, beingReferences?: Attribute) {
     return attrs
 }
 
-export function GenerateUniqueAttributes(t: Table): string[] {
-    const uniques: string[] = []
+export function GenerateUniqueAttributes(t: Table): Record<string, string[]> {
+    const uniques: Record<string, string[]> = {}
     for (const a of t.Attributes) {
         if (a.Option?.PrimaryKey) continue
 
         if (a.Type === AttrType.REFERENCE && a.RefTo) {
             for (const ra of a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)) {
-                uniques.push(`${a.Name}_${ra.Name}`)
+                if (!uniques['primary']) {
+                    uniques['primary'] = []
+                }
+                uniques['primary'].push(`${a.Name}_${ra.Name}`)
             }
             continue
         }
@@ -179,7 +180,12 @@ export function GenerateUniqueAttributes(t: Table): string[] {
             continue
         }
 
-        uniques.push(a.Name)
+        for (const u of a.Option.Unique) {
+            if (!uniques[u]) {
+                uniques[u] = []
+            }
+            uniques[u].push(a.Name)
+        }
     }
     return uniques
 }
