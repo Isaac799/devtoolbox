@@ -60,7 +60,7 @@ export class SideBarService {
         clearTimeout(this.debounce)
         this.debounce = setTimeout(() => {
             this.appService.ReloadAndSave()
-        }, 500)
+        }, 300)
     }
 
     copyConfig() {

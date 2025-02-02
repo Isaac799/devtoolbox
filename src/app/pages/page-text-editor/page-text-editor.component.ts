@@ -10,7 +10,6 @@ import {
     Schema,
     SchemaConfig,
     TableConfig,
-    TextEditorSyntax,
     Validation
 } from '../../structure'
 import {v4 as uuidv4} from 'uuid'
@@ -43,14 +42,15 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     @ViewChild('textEditor') textEditor: ElementRef<HTMLTextAreaElement> | null = null
 
     readonly dataService = inject(DataService)
-    readonly textEditorService = inject(TextEditorService)
     private readonly appService = inject(AppService)
+    readonly textEditorService = inject(TextEditorService)
 
-    renderElements: RenderE[] = []
-    readonly NEWLINE = '~NEWLINE~'
-    readonly SPACE = '~SPACE~'
-    private readonly snackBar = inject(MatSnackBar)
     toggleMode = 0
+    readonly SPACE = '~SPACE~'
+    readonly NEWLINE = '~NEWLINE~'
+    renderElements: RenderE[] = []
+    private readonly snackBar = inject(MatSnackBar)
+    private runDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
     //     textInput = `
     // # public
@@ -95,8 +95,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     Run() {
         const config = PageTextEditorComponent.parse(this.textEditorService.textInput)
-        this.appService.ReloadAndSaveFromConfig(config)
         this.Render(this.textEditorService.textInput)
+
+        clearTimeout(this.runDebounce)
+        this.runDebounce = setTimeout(() => {
+            this.appService.ReloadAndSaveFromConfig(config)
+        }, 300)
     }
 
     Copy() {
@@ -262,7 +266,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 let cleanLine = line.substring(2, line.length).trim()
 
                 if (cleanLine.startsWith('@')) {
-                    const a = cleanLine.split(' with ')
+                    const a = cleanLine.split(' with')
                     const name = a[0] || ''
                     if (!name) {
                         continue
@@ -278,8 +282,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                         .join(' with ')
                 }
 
-                const a = cleanLine.split(' with ')
-                const b = a[0].split(' as ')
+                const a = cleanLine.split(' with')
+                const b = a[0].split(' as')
 
                 const name = cc(b[0], 'sk')
                 const potentialType = b[1]

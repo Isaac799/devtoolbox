@@ -5,9 +5,9 @@ import {ElementRef, Injectable} from '@angular/core'
 })
 export class TextEditorService {
     private readonly rawTextInput = 'devtoolboxRawTextInput'
-    
-    static readonly AttributeTypeCompact = 2;
-    static readonly AttributeOptionCompact = 3;
+
+    static readonly AttributeTypeCompact = 2
+    static readonly AttributeOptionCompact = 3
 
     focused = false
     caretPosition: {
@@ -23,6 +23,7 @@ export class TextEditorService {
     fromUndo = false
     pastFirstLoad = false
     saveUndoValue: string | null = null
+    saveUndoDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
     private _textEditor: ElementRef<HTMLTextAreaElement> | null = null
     public get textEditor(): ElementRef<HTMLTextAreaElement> | null {
@@ -34,7 +35,6 @@ export class TextEditorService {
             this.populateEditor(value.nativeElement)
         }
     }
-    saveUndoDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
     private _textInput = ''
     public get textInput() {
@@ -64,22 +64,22 @@ export class TextEditorService {
         // el.selectionDirection = this.caretPosition.direction
 
         el.addEventListener('keydown', (ev: KeyboardEvent) => {
-            // if (this.focused) {
-            //     const isCtrlPressed = ev.ctrlKey || ev.metaKey
+            if (this.focused) {
+                const isCtrlPressed = ev.ctrlKey || ev.metaKey
 
-            //     if (isCtrlPressed && ev.key === 'z') {
-            //         if (ev.shiftKey) {
-            //             // Ctrl + Shift + Z → Redo
-            //             this.Redo()
-            //         } else {
-            //             // Ctrl + Z → Undo
-            //             this.Undo()
-            //         }
-            //     } else if (ev.key === 'y') {
-            //         // Ctrl + Y → Redo (alternative)
-            //         this.Redo()
-            //     }
-            // }
+                if (isCtrlPressed && ev.key === 'z') {
+                    if (ev.shiftKey) {
+                        // Ctrl + Shift + Z → Redo
+                        this.Redo()
+                    } else {
+                        // Ctrl + Z → Undo
+                        this.Undo()
+                    }
+                } else if (ev.key === 'y') {
+                    // Ctrl + Y → Redo (alternative)
+                    this.Redo()
+                }
+            }
 
             if (!(ev.target instanceof HTMLTextAreaElement)) return
             this.caretPosition.start = ev.target.selectionStart
@@ -106,7 +106,7 @@ export class TextEditorService {
             this.textInputUndoStack.push(this.saveUndoValue)
             this.saveUndoValue = null
             this.textInputRedoStack = []
-        }, 500)
+        }, 300)
     }
 
     loadLastTextEdit() {
