@@ -48,6 +48,11 @@
         letter-spacing: 0.21rem;
 
         >.is-suggestion {
+            padding-left: 1rem;
+            color: #008000;
+        }
+
+        >.is-error {
             padding-left: 1.5rem;
             color: #d91e18;
         }
@@ -68,7 +73,7 @@
         >.is-header {
             color: #007faa;
         }
-        
+
         // >.is-string {
         //     color: #008000;
         // }

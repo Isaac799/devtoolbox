@@ -303,6 +303,7 @@ export interface AttributeConfig {
     Option?: AttributeOptions
     Validation?: Validation
     Suggestions?: string[]
+    Errors?: string[]
 }
 // Attribute represents an individual attribute of a table
 export class AttributeSuggestion {
@@ -394,6 +395,7 @@ export interface SchemaConfig {
     Color: string
     Tables: Record<string, TableConfig>
     Suggestions?: string[]
+    Errors?: string[]
 }
 // Schema represents the entire schema containing multiple tables
 export class Schema {
@@ -427,6 +429,7 @@ export interface TableConfig {
         y: number
     }
     Suggestions?: string[]
+    Errors?: string[]
 }
 
 // Table represents a database table with its attributes and options

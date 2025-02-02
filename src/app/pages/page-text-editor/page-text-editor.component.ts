@@ -181,21 +181,14 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         const parsed = PageTextEditorComponent.parse(textAreaInput)
 
-        // let lastA = "";
-
         let li = 0
 
-        console.log(JSON.stringify(parsed.suggestions, null, 4))
-
         for (const line of lines) {
-            const suggestions = parsed.suggestions[li - 1]
+            const suggestions = parsed.suggestions[li]
+            const errors = parsed.errors[li]
 
             const newLine: RenderE[] = []
             const words = this.ExtractLineWords(line)
-
-            // else if (line.startsWith('- ')) {
-            //     lastA = cc(line.substring(2, line.length).trim(), 'sk')
-            // }
 
             for (const word of words) {
                 const el: RenderE = {innerText: word}
@@ -203,25 +196,14 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             }
 
             if (suggestions) {
-                const counter: Record<string, number> = {}
-                for (const s of suggestions) {
-                    console.log({s})
-                    if (!counter[s]) {
-                        counter[s] = 0
-                    }
-                    counter[s] += 1
-                }
+                const revised: string[] = consolidateSuggestions(suggestions)
+                const tip = {innerText: revised.join(', '), class: 'is-suggestion'}
+                newLine.push(tip)
+            }
 
-                const suggestionsRevised: string[] = []
-                for (const s in counter) {
-                    const count = counter[s]
-                    if (count > 1) {
-                        suggestionsRevised.push(s + `s (${count})`)
-                    } else {
-                        suggestionsRevised.push(s)
-                    }
-                }
-                const tip = {innerText: suggestionsRevised.join(', '), class: 'is-suggestion'}
+            if (errors) {
+                const revised: string[] = consolidateSuggestions(errors)
+                const tip = {innerText: revised.join(', '), class: 'is-error'}
                 newLine.push(tip)
             }
 
@@ -260,9 +242,11 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     private static parse(input: string): {
         data: Record<string, SchemaConfig>
         suggestions: Suggestions
+        errors: Suggestions
     } {
         const answer: Record<string, SchemaConfig> = {}
         const suggestions: Suggestions = {}
+        const errors: Suggestions = {}
 
         const getAttrType = (input: string | null): AttrType | null => {
             if (!input) return null
@@ -340,6 +324,16 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 }
                 suggestions[li].push(x)
             }
+            const addError = (x: string): void => {
+                const last = lastTable()
+                if (!last.Errors) {
+                    last.Errors = []
+                }
+                if (!errors[li]) {
+                    errors[li] = []
+                }
+                errors[li].push(x)
+            }
             li += 1
 
             if (line.startsWith('# ')) {
@@ -368,7 +362,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     const a = cleanLine.split(' with')
                     const name = a[0] || ''
                     if (!name) {
-                        addSuggestion('an attribute was missing name')
+                        addError('an attribute was missing name')
                         continue
                     }
                     const refName = name.substring(1, name.length)
@@ -411,7 +405,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     }
 
                     if (!matchingTblID) {
-                        addSuggestion('cannot determine type')
+                        addError('cannot determine type')
                         continue
                     }
                     refToID = matchingTblID
@@ -420,6 +414,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
                 const attrValidation: Validation = {}
                 const attrOptions: AttributeOptions = {}
+
+                if (line.includes('with') && options.length === 0 && type !== AttrType.SERIAL) {
+                    addSuggestion('no options')
+                } else if (line.includes('with') && type === AttrType.SERIAL) {
+                    addSuggestion('options are redundant')
+                }
 
                 for (const option of options) {
                     if (option.startsWith('p')) {
@@ -440,7 +440,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     } else {
                         const range = option.split('..')
                         if (range.length !== 2) {
-                            addSuggestion('unknown option')
+                            addError('unknown option')
                             continue
                         }
                         const min = range[0]
@@ -480,7 +480,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     }
 
                     if (!refToID) {
-                        addSuggestion('cannot find referenced blueprint')
+                        addError(`cannot find '${name}'`)
                         continue
                     }
 
@@ -493,7 +493,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         return {
             data: answer,
-            suggestions
+            suggestions,
+            errors
         }
     }
 
@@ -599,4 +600,24 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             return options
         }
     }
+}
+function consolidateSuggestions(suggestions: string[]) {
+    const counter: Record<string, number> = {}
+    for (const s of suggestions) {
+        if (!counter[s]) {
+            counter[s] = 0
+        }
+        counter[s] += 1
+    }
+
+    const suggestionsRevised: string[] = []
+    for (const s in counter) {
+        const count = counter[s]
+        if (count > 1) {
+            suggestionsRevised.push(s + `s (${count})`)
+        } else {
+            suggestionsRevised.push(s)
+        }
+    }
+    return suggestionsRevised
 }
