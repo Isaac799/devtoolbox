@@ -191,6 +191,12 @@ export class SideBarService {
                 {
                     name: 'Structs & new functions',
                     value: AppGeneratorMode.GoStructsAndFns
+                },
+
+                {
+                    name: 'HTTP handlers using PostgreSQL',
+                    icon: 'star',
+                    value: AppGeneratorMode.APIGoPostgres
                 }
             ]
         },
@@ -200,17 +206,6 @@ export class SideBarService {
                 {
                     name: 'structs & impl functions',
                     value: AppGeneratorMode.RustStructAndImpl
-                }
-            ]
-        },
-        {
-            title: 'Http Server',
-            icon: 'star',
-            items: [
-                {
-                    name: 'Go & PostgreSQL',
-                    icon: 'star',
-                    value: AppGeneratorMode.APIGoPostgres
                 }
             ]
         }
