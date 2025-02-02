@@ -36,7 +36,7 @@ export class SideBarService {
             const e = this.generatorModeOptions[i]
             for (let k = 0; k < e.items.length; k++) {
                 const r = e.items[k]
-                if (r.value !== this.data.app.generatorMode) {
+                if (r.value !== this.appService.app.generatorMode) {
                     continue
                 }
                 this.generatorModeSelectedIndex = [i, k]
@@ -52,15 +52,8 @@ export class SideBarService {
             this.setGenMode()
             return
         }
-        this.data.app.generatorMode = c.value
-        this.appService.ReloadAndSave()
-    }
-
-    debounceReload() {
-        clearTimeout(this.debounce)
-        this.debounce = setTimeout(() => {
-            this.appService.ReloadAndSave()
-        }, 300)
+        this.appService.app.generatorMode = c.value
+        this.appService.RefreshOutput()
     }
 
     copyConfig() {
@@ -68,9 +61,9 @@ export class SideBarService {
         if (!this.data.previousParse) {
             return
         }
-        if (this.data.app.mode === AppMode.JSON) {
+        if (this.appService.app.mode === AppMode.JSON) {
             str = JSON.stringify(this.data.previousParse.data, null, 4)
-        } else if (this.data.app.mode === AppMode.YAML) {
+        } else if (this.appService.app.mode === AppMode.YAML) {
             str = YAML.stringify(this.data.previousParse.data)
         }
         navigator.clipboard.writeText(str)
@@ -88,7 +81,7 @@ export class SideBarService {
         })
 
         dialogRef.afterClosed().subscribe(() => {
-            this.appService.ReloadAndSave()
+            this.appService.RefreshOutput()
         })
     }
 
@@ -101,7 +94,7 @@ export class SideBarService {
         })
 
         dialogRef.afterClosed().subscribe(() => {
-            this.appService.ReloadAndSave()
+            this.appService.RefreshOutput()
         })
     }
 

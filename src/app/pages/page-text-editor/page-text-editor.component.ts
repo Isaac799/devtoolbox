@@ -48,14 +48,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     private readonly matDialog = inject(MatDialog)
     private readonly appService = inject(AppService)
 
-    justCleaned = false
     toggleMode = 0
     readonly SPACE = '~S~'
     readonly NEWLINE = '~N~'
     renderElements: RenderE[] = []
     renderSuggestionElements: RenderE[] = []
     private readonly snackBar = inject(MatSnackBar)
-    private runDebounce: ReturnType<typeof setTimeout> | undefined = undefined
     private suggestionDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
     //     textInput = `
@@ -74,45 +72,50 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     // `
 
     ngOnInit(): void {
-        this.RefreshRender()
-        this.textEditorService.rerun.subscribe(() => {
-            this.Run()
+        if (this.appService.initialized) {
+            this._refreshRender()
+        }
+
+        this.appService.doRender.subscribe(() => {
+            this._refreshRender()
         })
     }
+
+    private _refreshRender() {
+        if (!this.dataService.previousParse) {
+            console.warn('missing previous parse')
+            return
+        }
+        this.Render(this.textEditorService.textInput, this.dataService.previousParse)
+    }
+
     ngAfterViewInit(): void {
-        this.textEditorService.textEditor = this.textEditor
         const lines = this.textEditorService.textInput.split('\n').length
         this.AdjustEditorHeight(lines)
     }
+
     ngOnDestroy(): void {
-        this.textEditorService.textEditor = null
+        this.textEditorService.textEditorEl = null
     }
 
     ToggleMode() {
-        const s = this.dataService.app.textEditorState
+        const s = this.appService.app.textEditorState
         const aC = TextEditorService.AttributeTypeCompact
         const oC = TextEditorService.AttributeOptionCompact
 
         if (this.toggleMode === 0) {
-            this.dataService.app.textEditorState = BitwiseOperations.toggleBit(s, aC)
+            this.appService.app.textEditorState = BitwiseOperations.toggleBit(s, aC)
             this.toggleMode = 1
         } else {
             this.toggleMode = 0
-            this.dataService.app.textEditorState = BitwiseOperations.toggleBit(s, oC)
+            this.appService.app.textEditorState = BitwiseOperations.toggleBit(s, oC)
         }
 
         this.HardRefresh()
     }
 
     Run() {
-        this.justCleaned = false
-        this.dataService.previousParse = PageTextEditorComponent.parse(this.textEditorService.textInput)
-        this.Render(this.textEditorService.textInput, this.dataService.previousParse)
-
-        clearTimeout(this.runDebounce)
-        this.runDebounce = setTimeout(() => {
-            this.appService.ReloadAndSaveFromConfig()
-        }, 300)
+        this.appService.Run()
     }
 
     OpenSyntaxGuide() {
@@ -128,18 +131,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     Undo() {
         this.textEditorService.Undo()
-        setTimeout(() => {
-            this.appService.ReloadAndSave()
-            this.RefreshRender()
-        }, 0)
+        this.appService.RefreshOutput()
     }
 
     Redo() {
         this.textEditorService.Redo()
-        setTimeout(() => {
-            this.appService.ReloadAndSave()
-            this.RefreshRender()
-        }, 0)
+        this.appService.RefreshOutput()
     }
 
     Render(textAreaInput: string, previousParse: ParseResult) {
@@ -249,19 +246,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         return words
     }
 
-    RefreshRender() {
-        if (!this.dataService.previousParse) {
-            console.warn('missing previous parse')
-            return
-        }
-        this.Render(this.textEditorService.textInput, this.dataService.previousParse)
-    }
-
     HardRefresh() {
-        this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.dataService.app.textEditorState)
-        this.RefreshRender()
-        this.appService.ReloadAndSave()
-        this.justCleaned = true
+        this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.appService.app.textEditorState)
+        this.appService.RefreshOutput()
+        this.textEditorService.justCleaned = true
     }
 
     static parse(input: string): ParseResult {

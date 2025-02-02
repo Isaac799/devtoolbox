@@ -18,8 +18,6 @@ export class AppComponent implements OnInit {
     readonly title = 'devtoolbox'
     private readonly appService = inject(AppService)
 
-    constructor() {}
-
     ngOnInit(): void {
         this.appService.Initialize()
     }

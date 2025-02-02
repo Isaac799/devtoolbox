@@ -6,8 +6,8 @@ import {MatChipsModule} from '@angular/material/chips'
 import {MatIconModule} from '@angular/material/icon'
 import {MatSelectModule} from '@angular/material/select'
 import {MatSliderModule} from '@angular/material/slider'
-import {DataService} from '../../services/data.service'
 import {SideBarService} from '../../services/side-bar.service'
+import { AppService } from '../../services/app.service'
 
 @Component({
     standalone: true,
@@ -17,6 +17,6 @@ import {SideBarService} from '../../services/side-bar.service'
     styleUrl: './side-bar-editor.component.scss'
 })
 export class SideBarEditorComponent {
-    readonly dataService = inject(DataService)
+    readonly appService = inject(AppService)
     readonly sideBarService = inject(SideBarService)
 }

@@ -305,7 +305,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         })
 
         dialogRef.afterClosed().subscribe(() => {
-            this.appService.ReloadAndSave()
+            this.appService.RefreshOutput()
         })
     }
 }

@@ -4,8 +4,8 @@
             <mat-form-field>
                 <mat-label>Config File</mat-label>
                 <mat-select
-                    [(ngModel)]="dataService.app.mode"
-                    (ngModelChange)="dataService.ReloadAndSave()"
+                    [(ngModel)]="appService.app.mode"
+                    (ngModelChange)="appService.RefreshOutput()"
                 >
                     @for (x of sideBarService. modeOptions; track $index) {
                     <mat-option [value]="x.value">{{ x.name }}</mat-option>

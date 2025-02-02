@@ -1,6 +1,5 @@
-import {Component, ViewChild, ElementRef, inject, AfterViewInit, OnDestroy} from '@angular/core'
+import {Component, ViewChild, ElementRef, inject, AfterViewInit} from '@angular/core'
 import {MatButtonModule} from '@angular/material/button'
-import {Subscription} from 'rxjs'
 import {DataService} from '../../services/data.service'
 import {MatTabsModule} from '@angular/material/tabs'
 import {SideBarService} from '../../services/side-bar.service'
@@ -20,9 +19,8 @@ import {LanguageService} from '../../services/language.service'
     templateUrl: './page-code-output.component.html',
     styleUrl: './page-code-output.component.scss'
 })
-export class PageCodeOutputComponent implements AfterViewInit, OnDestroy {
+export class PageCodeOutputComponent implements AfterViewInit {
     output = ''
-    subscription: Subscription | null = null
     @ViewChild('codeOutput') codeOutput?: ElementRef<HTMLPreElement>
 
     readonly dataService = inject(DataService)
@@ -32,27 +30,23 @@ export class PageCodeOutputComponent implements AfterViewInit, OnDestroy {
     readonly appService = inject(AppService)
 
     ngAfterViewInit(): void {
-        this.subscription = this.dataService.schemasChange.subscribe(schemas => {
-            const code = this.languageService.GenerateCode(
-                schemas,
-                this.dataService.app.generatorMode,
-                this.dataService.app.seedLimit,
-                this.dataService.varcharMap
-            )
-            if (!this.codeOutput?.nativeElement) {
-                console.error('Missing this.codeGeneratorViewHtml')
-                return
-            }
-            this.codeOutput.nativeElement.innerHTML = code
+        this.appService.doRenderGenerated.subscribe(() => {
+            this._render()
         })
-
-        this.appService.EmitChangesForApp()
     }
 
-    ngOnDestroy(): void {
-        if (this.subscription) {
-            this.subscription.unsubscribe()
+    private _render() {
+        const code = this.languageService.GenerateCode(
+            this.dataService.schemas,
+            this.appService.app.generatorMode,
+            this.appService.app.seedLimit,
+            this.dataService.varcharMap
+        )
+        if (!this.codeOutput?.nativeElement) {
+            console.error('Missing this.codeGeneratorViewHtml')
+            return
         }
+        this.codeOutput.nativeElement.innerHTML = code
     }
 
     copy() {
@@ -65,5 +59,13 @@ export class PageCodeOutputComponent implements AfterViewInit, OnDestroy {
     selectedTabChanged(event: number) {
         this.sideBarService.generatorModeSelectedIndex = [event, 0]
         this.sideBarService.setGenMode()
+    }
+
+    ClearOutput() {
+        if (!this.codeOutput?.nativeElement) {
+            console.error('Missing this.codeGeneratorViewHtml')
+            return
+        }
+        this.codeOutput.nativeElement.innerHTML = ''
     }
 }

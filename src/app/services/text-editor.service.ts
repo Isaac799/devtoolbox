@@ -1,14 +1,14 @@
-import {ElementRef, EventEmitter, Injectable} from '@angular/core'
+import {ElementRef, Injectable} from '@angular/core'
 
 @Injectable({
     providedIn: 'root'
 })
 export class TextEditorService {
-    private readonly rawTextInput = 'devtoolboxRawTextInput'
-
+    private readonly rawKey = 'devtoolboxRawTextInput'
     static readonly AttributeTypeCompact = 2
     static readonly AttributeOptionCompact = 3
 
+    justCleaned = false
     focused = false
     caretPosition: {
         direction: 'forward' | 'backward' | 'none'
@@ -24,13 +24,12 @@ export class TextEditorService {
     pastFirstLoad = false
     saveUndoValue: string | null = null
     saveUndoDebounce: ReturnType<typeof setTimeout> | undefined = undefined
-    rerun = new EventEmitter<void>()
 
     private _textEditor: ElementRef<HTMLTextAreaElement> | null = null
-    public get textEditor(): ElementRef<HTMLTextAreaElement> | null {
+    public get textEditorEl(): ElementRef<HTMLTextAreaElement> | null {
         return this._textEditor
     }
-    public set textEditor(value: ElementRef<HTMLTextAreaElement> | null) {
+    public set textEditorEl(value: ElementRef<HTMLTextAreaElement> | null) {
         this._textEditor = value
         if (value) {
             this.populateEditor(value.nativeElement)
@@ -110,14 +109,14 @@ export class TextEditorService {
         }, 300)
     }
 
-    loadLastTextEdit() {
-        const rawTextInput = localStorage.getItem(this.rawTextInput)
+    LoadLastTextEdit() {
+        const rawTextInput = localStorage.getItem(this.rawKey)
         if (!rawTextInput) return
         this.textInput = rawTextInput
     }
 
-    saveLastTextEdit() {
-        localStorage.setItem(this.rawTextInput, this.textInput)
+    SaveLastTextEdit() {
+        localStorage.setItem(this.rawKey, this.textInput)
     }
 
     Undo() {

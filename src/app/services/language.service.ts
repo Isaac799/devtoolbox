@@ -15,14 +15,6 @@ import {AttributeMap} from '../varchar'
     providedIn: 'root'
 })
 export class LanguageService {
-    private _output = ''
-    public get output() {
-        return this._output
-    }
-    private set output(value) {
-        this._output = value
-    }
-
     // private readonly languageCsService = inject(LanguageCsService)
     // private readonly languageGoService = inject(LanguageGoService)
     // private readonly languageJsService = inject(LanguageJsService)
@@ -34,70 +26,72 @@ export class LanguageService {
 
     GenerateCode(schemas: Schema[], mode: AppGeneratorMode, seedLimit: number, varcharMap: AttributeMap) {
         let ext = ''
+        let output = ''
+
         switch (mode) {
             case AppGeneratorMode.Postgres:
-                this.output = LanguagePsqlService.ToTables(schemas)
+                output = LanguagePsqlService.ToTables(schemas)
                 ext = 'SQL'
                 break
             case AppGeneratorMode.GoStructsAndFns:
-                this.output = LanguageGoService.ToStructs(schemas)
+                output = LanguageGoService.ToStructs(schemas)
                 ext = 'GO'
                 break
             case AppGeneratorMode.TSTypesAndFns:
-                this.output = LanguageTsService.ToFunctions(schemas)
+                output = LanguageTsService.ToFunctions(schemas)
                 ext = 'TS'
                 break
             case AppGeneratorMode.TSClasses:
-                this.output = LanguageTsService.ToClasses(schemas)
+                output = LanguageTsService.ToClasses(schemas)
                 ext = 'TS'
                 break
             case AppGeneratorMode.JSClasses:
-                this.output = LanguageJsService.ToClasses(schemas)
+                output = LanguageJsService.ToClasses(schemas)
                 ext = 'JS'
                 break
             case AppGeneratorMode.PostgresFunctions:
-                this.output = LanguagePsqlService.ToFunctions(schemas)
+                output = LanguagePsqlService.ToFunctions(schemas)
                 ext = 'SQL'
                 break
             case AppGeneratorMode.AngularFormControl:
-                this.output = LanguageTsService.ToAngularFormControls(schemas)
+                output = LanguageTsService.ToAngularFormControls(schemas)
                 ext = 'TS'
                 break
             case AppGeneratorMode.TSQLTables:
-                this.output = LanguageTsqlService.ToTables(schemas)
+                output = LanguageTsqlService.ToTables(schemas)
                 ext = 'SQL'
                 break
             case AppGeneratorMode.SQLiteTables:
-                this.output = LanguageSqliteService.ToTables(schemas)
+                output = LanguageSqliteService.ToTables(schemas)
                 ext = 'SQL'
                 break
             case AppGeneratorMode.SQLiteJoinQuery:
-                this.output = LanguageSqliteService.ToJoinQuery(schemas)
+                output = LanguageSqliteService.ToJoinQuery(schemas)
                 ext = 'SQL'
                 break
             case AppGeneratorMode.TSQLStoredProcedures:
-                this.output = LanguageTsqlService.ToStoredProcedures(schemas)
+                output = LanguageTsqlService.ToStoredProcedures(schemas)
                 ext = 'SQL'
                 break
             case AppGeneratorMode.RustStructAndImpl:
-                this.output = LanguageRustService.ToStructs(schemas)
+                output = LanguageRustService.ToStructs(schemas)
                 ext = 'RS'
                 break
             case AppGeneratorMode.CSClasses:
-                this.output = LanguageCsService.ToClasses(schemas)
+                output = LanguageCsService.ToClasses(schemas)
                 ext = 'CS'
                 break
             case AppGeneratorMode.APIGoPostgres:
-                this.output = LanguageGoService.ToAPIWithPostgres(schemas)
+                output = LanguageGoService.ToAPIWithPostgres(schemas)
                 ext = 'CS'
                 break
             case AppGeneratorMode.PostgresSeed:
-                this.output = LanguagePsqlService.ToSeed(schemas, varcharMap, seedLimit)
+                output = LanguagePsqlService.ToSeed(schemas, varcharMap, seedLimit)
                 ext = 'SQL'
                 break
         }
 
-        const code = hljs.highlight(this.output, {language: ext}).value
+        const code = hljs.highlight(output, {language: ext}).value
         return code
     }
 }

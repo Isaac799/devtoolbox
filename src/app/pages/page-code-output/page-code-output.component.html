@@ -1,7 +1,7 @@
 <div class="top">
     <mat-tab-group
         [selectedIndex]="sideBarService.generatorModeSelectedIndex[0]"
-        (selectedIndexChange)="selectedTabChanged($event)"
+        (selectedIndexChange)="selectedTabChanged($event); ClearOutput()"
     >
         @for (mode of sideBarService.generatorModeOptions; track $index; let i = $index) {
         <mat-tab [label]="mode.title">
@@ -9,7 +9,7 @@
             <mat-chip-set class="chips">
                 @for (x of mode.items; track $index; let k = $index) {
                 <mat-chip-option
-                    (mouseup)="sideBarService.generatorModeSelectedIndex = [i, k]; sideBarService.setGenMode()"
+                    (mouseup)="sideBarService.generatorModeSelectedIndex = [i, k]; sideBarService.setGenMode(); ClearOutput()"
                     [selected]="sideBarService.generatorModeSelectedIndex[0] === i && sideBarService.generatorModeSelectedIndex[1] === k"
                 >
                     {{x.name}}
@@ -28,7 +28,7 @@
         }
     </mat-tab-group>
 </div>
-<div [class]="(dataService.app.generatorMode | isSeedMode) ? 'container-split':'container'">
+<div [class]="(appService.app.generatorMode | isSeedMode) ? 'container-split':'container'">
     <div class="side">
         <table>
             <tr>
@@ -40,8 +40,8 @@
                     >
                         <input
                             matSliderThumb
-                            [(ngModel)]="dataService.app.seedLimit"
-                            (ngModelChange)="sideBarService.debounceReload()"
+                            [(ngModel)]="appService.app.seedLimit"
+                            (ngModelChange)="appService.RefreshOutput()"
                             type="range"
                         >
                     </mat-slider>
@@ -52,9 +52,9 @@
                     <button
                         mat-fab
                         extended
-                        (click)="appService.EmitChangesForApp()"
+                        (click)="appService.RefreshOutput()"
                     >
-                        Regenerate (size: {{dataService.app.seedLimit}})
+                        Regenerate (size: {{appService.app.seedLimit}})
                         <mat-icon>refresh</mat-icon>
                     </button>
                 </td>

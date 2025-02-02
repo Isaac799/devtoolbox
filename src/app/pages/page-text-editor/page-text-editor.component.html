@@ -33,7 +33,7 @@
     <button
         mat-icon-button
         aria-label="Format code"
-        [disabled]="justCleaned"
+        [disabled]="textEditorService.justCleaned"
         (click)="HardRefresh()"
     >
         <mat-icon>dry_cleaning</mat-icon>
@@ -79,7 +79,7 @@
             (blur)="textEditorService.focused = false"
             (focus)="textEditorService.focused = true"
             [(ngModel)]="textEditorService.textInput"
-            (ngModelChange)="Run();"
+            (ngModelChange)="Run()"
             class="input-box"
         ></textarea>
     </div>
