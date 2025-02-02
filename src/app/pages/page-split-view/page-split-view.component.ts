@@ -20,7 +20,7 @@ export class PageSplitViewComponent implements OnInit {
     @ViewChild('rightPanel') rightPanel: ElementRef | undefined = undefined
 
     isDragging = false
-    dividerPosition = 50 // Initial position in percentage (50% for the initial split)
+    dividerPosition = 40 // Initial position in percentage (50% for the initial split)
     i = 0
 
     ngOnInit(): void {
