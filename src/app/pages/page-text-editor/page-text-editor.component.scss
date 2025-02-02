@@ -16,6 +16,7 @@
     >div.render-suggestion-box {
         position: absolute;
         inset: 0;
+        overflow: hidden;
 
         font-size: 1rem;
         line-height: 1rem;
@@ -33,7 +34,7 @@
 
     >.input-box {
         background-color: rgb(0, 0, 0, 0);
-        // color: rgba(255, 122, 122, .7);
+        // color: rgba(122, 122, 255, .7);
         color: rgba(0, 0, 0, 0);
         caret-color: black;
         resize: none;

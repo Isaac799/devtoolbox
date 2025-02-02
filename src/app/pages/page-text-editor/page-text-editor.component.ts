@@ -44,6 +44,7 @@ type Suggestions = Record<number, string[]>
 })
 export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('textEditor') textEditor: ElementRef<HTMLTextAreaElement> | null = null
+    @ViewChild('inputContainer') inputContainer: ElementRef<HTMLDivElement> | null = null
 
     readonly dataService = inject(DataService)
     readonly textEditorService = inject(TextEditorService)
@@ -80,6 +81,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
     ngAfterViewInit(): void {
         this.textEditorService.textEditor = this.textEditor
+        const lines = this.textEditorService.textInput.split('\n').length
+        this.AdjustEditorHeight(lines)
     }
     ngOnDestroy(): void {
         this.textEditorService.textEditor = null
@@ -143,6 +146,9 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.renderElements = []
 
         const lines = textAreaInput.split('\n')
+
+        this.AdjustEditorHeight(lines.length)
+
         let newLines: RenderE[] = []
 
         for (const line of lines) {
@@ -171,6 +177,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.renderElements = newLines
 
         this.RenderSuggestions(textAreaInput)
+    }
+
+    private AdjustEditorHeight(lines: number) {
+        if (this.inputContainer) {
+            this.inputContainer.nativeElement.style.height = lines + 'rem'
+        }
     }
 
     private RenderSuggestions(textAreaInput: string) {

@@ -48,7 +48,7 @@
 </mat-toolbar>
 
 <div class="main">
-    <div class="input-container">
+    <div class="input-container" #inputContainer>
         <div class="render-suggestion-box">
             @for (el of renderSuggestionElements; track $index) {
             @if (el.innerText === NEWLINE) {
