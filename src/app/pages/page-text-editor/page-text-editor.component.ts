@@ -184,6 +184,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         let li = 0
 
         for (const line of lines) {
+            li += 1
+
             const suggestions = parsed.suggestions[li]
             const errors = parsed.errors[li]
 
@@ -209,7 +211,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
             newLine.push({innerText: this.NEWLINE})
             newLines = newLines.concat(newLine)
-            li += 1
         }
 
         this.renderSuggestionElements = newLines
@@ -310,7 +311,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         const lines = input
             .split('\n')
             .map(e => e.trim())
-            .filter(e => e.length > 3)
 
         let li = 0
         for (const line of lines) {
