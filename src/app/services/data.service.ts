@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core'
 import {Schema, Table, Attribute, ParseResult, AttributeConfig, AttrType, SchemaConfig} from '../structure'
 
-
 @Injectable({
     providedIn: 'root'
 })
@@ -55,17 +54,21 @@ export class DataService {
                     const a = t.Attributes[ak]
                     const a2p = [t2, ...s2.Tables, ...allTables].find(e => e.ID === t.ID)
                     const r2 = [t2, ...s2.Tables, ...allTables].find(e => e.ID === a.RefToID)
+                    if (!a2p) {
+                        continue
+                    }
+                    const a2 = new Attribute(a.ID, ak, a.Type, a2p)
+
                     if (r2) {
                         if (!r2.RefBy) {
                             r2.RefBy = []
                         }
                         // console.log(r2.Name, ' is ref by ', t2.Name);
-                        r2.RefBy.push(t2)
+                        r2.RefBy.push({
+                            tlb: t2,
+                            attr: a2
+                        })
                     }
-                    if (!a2p) {
-                        continue
-                    }
-                    const a2 = new Attribute(a.ID, ak, a.Type, a2p)
 
                     if (!r2 && a2.Type === AttrType.REFERENCE) {
                         recheckAttrs.push(a)

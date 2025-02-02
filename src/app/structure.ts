@@ -452,7 +452,10 @@ export interface TableConfig {
 export class Table {
     ID
     Parent: Schema
-    RefBy?: Table[]
+    RefBy?: {
+        tlb: Table,
+        attr: Attribute
+    }[]
     Name: string
     // Options: TableOptions;
     Attributes: Attribute[]
