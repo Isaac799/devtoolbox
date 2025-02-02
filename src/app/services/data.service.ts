@@ -14,7 +14,6 @@ import {
     ParseResult
 } from '../structure'
 import {Subject} from 'rxjs'
-import {defaultConfig} from '../constants'
 import {AttributeMap, generateAttributeMap, VarcharJSONData} from '../varchar'
 import varcharJSON from '../../../public/varchar.json'
 

@@ -43,7 +43,7 @@ export class AppService {
                 this.textEditorService.rerun.next()
             }
 
-            this.EmitChangesForApp()
+            this.ReloadAndSaveFromConfig()
         }, 0)
     }
 
