@@ -49,7 +49,7 @@
 
         >.is-suggestion {
             padding-left: 1.5rem;
-            color: color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent);
+            color: #d91e18;
         }
     }
 
@@ -68,5 +68,9 @@
         >.is-header {
             color: #007faa;
         }
+        
+        // >.is-string {
+        //     color: #008000;
+        // }
     }
 }

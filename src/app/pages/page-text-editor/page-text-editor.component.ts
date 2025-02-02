@@ -34,6 +34,8 @@ interface RenderE {
     class?: string
 }
 
+type Suggestions = Record<number, string[]>
+
 @Component({
     selector: 'app-page-text-editor',
     imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule, MatIconModule, MatSelectModule, MatToolbar],
@@ -106,7 +108,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         clearTimeout(this.runDebounce)
         this.runDebounce = setTimeout(() => {
-            this.appService.ReloadAndSaveFromConfig(config)
+            this.appService.ReloadAndSaveFromConfig(config.data)
         }, 300)
     }
 
@@ -137,10 +139,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         }, 0)
     }
 
-    Render(tbInput: string) {
+    Render(textAreaInput: string) {
         this.renderElements = []
 
-        const lines = tbInput.split('\n')
+        const lines = textAreaInput.split('\n')
         let newLines: RenderE[] = []
 
         for (const line of lines) {
@@ -168,29 +170,47 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         this.renderElements = newLines
 
-        this.RenderSuggestions(tbInput)
+        this.RenderSuggestions(textAreaInput)
     }
 
-    private RenderSuggestions(tbInput: string) {
+    private RenderSuggestions(textAreaInput: string) {
         this.renderSuggestionElements = []
 
-        const lines = tbInput.split('\n')
+        const lines = textAreaInput.split('\n')
         let newLines: RenderE[] = []
 
+        const parsed = PageTextEditorComponent.parse(textAreaInput)
+
+        // let lastA = "";
+
+        let li = 0
+
+        console.log(JSON.stringify(parsed.suggestions, null, 4))
+
         for (const line of lines) {
+            const suggestions = parsed.suggestions[li - 1]
+
             const newLine: RenderE[] = []
             const words = this.ExtractLineWords(line)
+
+            // else if (line.startsWith('- ')) {
+            //     lastA = cc(line.substring(2, line.length).trim(), 'sk')
+            // }
 
             for (const word of words) {
                 const el: RenderE = {innerText: word}
                 newLine.push(el)
             }
 
-            const tip = {innerText: 'hi', class: 'is-suggestion'}
-            newLine.push(tip)
+            
+            if (suggestions && suggestions.length > 0) {
+                const tip = {innerText: suggestions.join(', '), class: 'is-suggestion'}
+                newLine.push(tip)
+            }
 
             newLine.push({innerText: this.NEWLINE})
             newLines = newLines.concat(newLine)
+            li += 1
         }
 
         this.renderSuggestionElements = newLines
@@ -220,8 +240,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.justCleaned = true
     }
 
-    private static parse(input: string): Record<string, SchemaConfig> {
+    private static parse(input: string): {
+        data: Record<string, SchemaConfig>
+        suggestions: Suggestions
+    } {
         const answer: Record<string, SchemaConfig> = {}
+        const suggestions: Suggestions = {}
 
         const getAttrType = (input: string | null): AttrType | null => {
             if (!input) return null
@@ -287,7 +311,20 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             .map(e => e.trim())
             .filter(e => e.length > 3)
 
+        let li = 0
         for (const line of lines) {
+            const addSuggestion = (x: string): void => {
+                const last = lastTable()
+                if (!last.Suggestions) {
+                    last.Suggestions = []
+                }
+                if (!suggestions[li]) {
+                    suggestions[li] = []
+                }
+                suggestions[li].push(x)
+            }
+            li += 1
+
             if (line.startsWith('# ')) {
                 const name = cc(line.substring(2, line.length).trim(), 'sk')
                 const item: SchemaConfig = {
@@ -314,6 +351,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     const a = cleanLine.split(' with')
                     const name = a[0] || ''
                     if (!name) {
+                        addSuggestion('an attribute was missing name')
                         continue
                     }
                     const refName = name.substring(1, name.length)
@@ -356,7 +394,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     }
 
                     if (!matchingTblID) {
-                        // console.warn('cannot find reference from type')
+                        addSuggestion('cannot determine type')
                         continue
                     }
                     refToID = matchingTblID
@@ -385,6 +423,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     } else {
                         const range = option.split('..')
                         if (range.length !== 2) {
+                            addSuggestion('unknown option')
                             continue
                         }
                         const min = range[0]
@@ -424,7 +463,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     }
 
                     if (!refToID) {
-                        console.warn('cannot find reference')
+                        addSuggestion('cannot find referenced blueprint')
                         continue
                     }
 
@@ -435,7 +474,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             }
         }
 
-        return answer
+        return {
+            data: answer,
+            suggestions
+        }
     }
 
     static reverseParse(schemas: Schema[], textEditorState: number): string {
