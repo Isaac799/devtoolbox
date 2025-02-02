@@ -202,9 +202,26 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 newLine.push(el)
             }
 
-            
-            if (suggestions && suggestions.length > 0) {
-                const tip = {innerText: suggestions.join(', '), class: 'is-suggestion'}
+            if (suggestions) {
+                const counter: Record<string, number> = {}
+                for (const s of suggestions) {
+                    console.log({s})
+                    if (!counter[s]) {
+                        counter[s] = 0
+                    }
+                    counter[s] += 1
+                }
+
+                const suggestionsRevised: string[] = []
+                for (const s in counter) {
+                    const count = counter[s]
+                    if (count > 1) {
+                        suggestionsRevised.push(s + `s (${count})`)
+                    } else {
+                        suggestionsRevised.push(s)
+                    }
+                }
+                const tip = {innerText: suggestionsRevised.join(', '), class: 'is-suggestion'}
                 newLine.push(tip)
             }
 
