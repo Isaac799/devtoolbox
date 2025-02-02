@@ -41,7 +41,7 @@ export class AppService {
 ## Book
 - id as ++
 - title as str with u, r, ..50
-- @author
+- @author with r
 - co author as author
 `.trim()
 
