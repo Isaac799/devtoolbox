@@ -308,9 +308,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         //     return t.Attributes[lastKey]
         // }
 
-        const lines = input
-            .split('\n')
-            .map(e => e.trim())
+        const lines = input.split('\n').map(e => e.trim())
 
         let li = 0
         for (const line of lines) {
@@ -417,8 +415,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
                 if (line.includes('with') && options.length === 0 && type !== AttrType.SERIAL) {
                     addSuggestion('no options')
-                } else if (line.includes('with') && type === AttrType.SERIAL) {
+                } else if (line.includes('with') && options.length > 0 && type === AttrType.SERIAL) {
                     addSuggestion('options are redundant')
+                } else if (line.includes('with') && type === AttrType.SERIAL) {
+                    addSuggestion(`'with' is unnecessary`)
                 }
 
                 for (const option of options) {
