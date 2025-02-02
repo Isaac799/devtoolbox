@@ -426,7 +426,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                             if (cc(tk, 'sk') !== potentialType && cc(`${sk}.${tk}`, 'sk') !== potentialType && cc(`${sk}:${tk}`, 'sk') !== potentialType) {
                                 continue
                             }
-                            console.log({matchingTblID})
 
                             matchingTblID = t.ID
                             break search
