@@ -336,14 +336,29 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
             if (line.startsWith('# ')) {
                 const name = cc(line.substring(2, line.length).trim(), 'sk')
+
+                const exists = answer[name] !== undefined
+                if (exists) {
+                    addError('this category already exists')
+                    continue
+                }
+
                 const item: SchemaConfig = {
                     ID: uuidv4(),
                     Color: '',
                     Tables: {}
                 }
+
                 answer[name] = item
             } else if (line.startsWith('##')) {
                 const name = cc(line.substring(2, line.length).trim(), 'sk')
+
+                const exists = lastSchema().Tables[name] !== undefined
+                if (exists) {
+                    addError('this blueprint already exists')
+                    continue
+                }
+
                 const item: TableConfig = {
                     ID: uuidv4(),
                     Attributes: {},
@@ -378,6 +393,13 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 const b = a[0].split(' as')
 
                 const name = cc(b[0], 'sk')
+
+                const exists = lastTable().Attributes[name] !== undefined
+                if (exists) {
+                    addError('this attribute already exists')
+                    continue
+                }
+
                 const potentialType = b[1]
                 let type = getAttrType(potentialType)
                 const options = (a[1] || '')
