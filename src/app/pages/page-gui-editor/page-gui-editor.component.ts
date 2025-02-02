@@ -73,13 +73,13 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
             this.canvasRef.nativeElement.width = rootSize.width
             this.canvasRef.nativeElement.height = rootSize.height
             this.redraw()
-        }, 500)
+        }, 300)
     }
 
     ngAfterViewInit() {
         setTimeout(() => {
             this.redraw()
-        }, 500)
+        }, 300)
     }
 
     redraw() {
