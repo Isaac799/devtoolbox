@@ -109,10 +109,10 @@ export class SideBarService {
                     icon: 'star',
                     value: AppGeneratorMode.Postgres
                 },
-                {
-                    name: 'Functions',
-                    value: AppGeneratorMode.PostgresFunctions
-                },
+                // {
+                //     name: 'Functions',
+                //     value: AppGeneratorMode.PostgresFunctions
+                // },
                 {
                     name: 'Seed',
                     icon: 'star',
@@ -127,10 +127,10 @@ export class SideBarService {
                     name: 'Tables',
                     value: AppGeneratorMode.TSQLTables
                 },
-                {
-                    name: 'Procedures',
-                    value: AppGeneratorMode.TSQLStoredProcedures
-                }
+                // {
+                //     name: 'Procedures',
+                //     value: AppGeneratorMode.TSQLStoredProcedures
+                // }
             ]
         },
         {
@@ -140,10 +140,10 @@ export class SideBarService {
                     name: 'Tables',
                     value: AppGeneratorMode.SQLiteTables
                 },
-                {
-                    name: 'Queries',
-                    value: AppGeneratorMode.SQLiteJoinQuery
-                }
+                // {
+                //     name: 'Queries',
+                //     value: AppGeneratorMode.SQLiteJoinQuery
+                // }
             ]
         },
         {
@@ -200,7 +200,7 @@ export class SideBarService {
             title: 'Rust',
             items: [
                 {
-                    name: 'structs & impl functions',
+                    name: 'Structs & impl functions',
                     value: AppGeneratorMode.RustStructAndImpl
                 }
             ]
