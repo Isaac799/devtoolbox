@@ -114,6 +114,17 @@ export class DataService {
                         Option: a.Option,
                         Validation: a.Validation
                     }
+
+                    if (a2.Type === AttrType.SERIAL) {
+                        if (a2.Option) {
+                            a2.Option.PrimaryKey = undefined
+                            a2.Option.SystemField = undefined
+                        }
+                        if (a2.Validation) {
+                            a2.Validation.Required = undefined
+                        }
+                    }
+
                     t2.Attributes[a.Name] = a2
                 }
                 s2.Tables[t.Name] = t2
@@ -206,6 +217,20 @@ function ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {
                 if (a.Validation) {
                     a2.Validation = a.Validation
                 }
+
+                if (a2.Type === AttrType.SERIAL) {
+                    if (!a2.Option) {
+                        a2.Option = {}
+                    }
+                    a2.Option.PrimaryKey = true
+                    a2.Option.SystemField = true
+
+                    if (!a2.Validation) {
+                        a2.Validation = {}
+                    }
+                    a2.Validation.Required = true
+                }
+
                 t2.Attributes.push(a2)
             }
             allTables.push(t2)

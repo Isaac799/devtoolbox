@@ -150,7 +150,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     continue
                 }
                 if (word.startsWith('@')) {
-                    newWord.class = 'is-ref'
+                    newWord.class = 'is-shortcut'
                 } else if (['with', 'as'].includes(word)) {
                     newWord.class = 'is-delimiter'
                 } else if (['#', '##'].includes(word)) {
