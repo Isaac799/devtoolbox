@@ -59,10 +59,20 @@ export class TextEditorService {
         {name: 'Compact', value: 'Compact'}
     ]
 
+    private _focus(el: HTMLTextAreaElement) {
+        el.focus()
+        setTimeout(() => {
+            el.setSelectionRange(this.caretPosition.start, this.caretPosition.end, this.caretPosition.direction)
+        }, 0)
+    }
+    private _saveFocus(el: HTMLTextAreaElement) {
+        this.caretPosition.start = el.selectionStart
+        this.caretPosition.end = el.selectionEnd
+        this.caretPosition.direction = el.selectionDirection
+    }
+
     private populateEditor(el: HTMLTextAreaElement) {
-        // el.selectionStart = this.caretPosition.start
-        // el.selectionEnd = this.caretPosition.end
-        // el.selectionDirection = this.caretPosition.direction
+        this._focus(el)
 
         el.addEventListener('keydown', (ev: KeyboardEvent) => {
             const isCtrlPressed = ev.ctrlKey || ev.metaKey
@@ -81,9 +91,12 @@ export class TextEditorService {
             }
 
             if (!(ev.target instanceof HTMLTextAreaElement)) return
-            this.caretPosition.start = ev.target.selectionStart
-            this.caretPosition.end = ev.target.selectionEnd
-            this.caretPosition.direction = ev.target.selectionDirection
+            this._saveFocus(ev.target)
+        })
+
+        el.addEventListener('mouseup', (ev: MouseEvent) => {
+            if (!(ev.target instanceof HTMLTextAreaElement)) return
+            this._saveFocus(ev.target)
         })
     }
 
