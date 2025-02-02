@@ -10,11 +10,15 @@ import {LanguageTsqlService} from './language/language-tsql.service'
 import {AppGeneratorMode, Schema} from '../structure'
 import hljs from 'highlight.js'
 import {AttributeMap} from '../varchar'
+import {generateAttributeMap, VarcharJSONData} from '../varchar'
+import varcharJSON from '../../../public/varchar.json'
 
 @Injectable({
     providedIn: 'root'
 })
 export class LanguageService {
+    varcharMap: AttributeMap = new Map()
+
     // private readonly languageCsService = inject(LanguageCsService)
     // private readonly languageGoService = inject(LanguageGoService)
     // private readonly languageJsService = inject(LanguageJsService)
@@ -24,7 +28,18 @@ export class LanguageService {
     // private readonly languageTsqlService = inject(LanguageTsqlService)
     // private readonly languageSqliteService = inject(LanguageSqliteService)
 
-    GenerateCode(schemas: Schema[], mode: AppGeneratorMode, seedLimit: number, varcharMap: AttributeMap) {
+    constructor() {
+        let all: VarcharJSONData = {}
+        for (const e of Object.values(varcharJSON)) {
+            all = {
+                ...all,
+                ...e
+            }
+        }
+        this.varcharMap = generateAttributeMap(all)
+    }
+
+    GenerateCode(schemas: Schema[], mode: AppGeneratorMode, seedLimit: number) {
         let ext = ''
         let output = ''
 
@@ -86,7 +101,7 @@ export class LanguageService {
                 ext = 'CS'
                 break
             case AppGeneratorMode.PostgresSeed:
-                output = LanguagePsqlService.ToSeed(schemas, varcharMap, seedLimit)
+                output = LanguagePsqlService.ToSeed(schemas, this.varcharMap, seedLimit)
                 ext = 'SQL'
                 break
         }

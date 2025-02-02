@@ -142,6 +142,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     Render(textAreaInput: string, previousParse: ParseResult) {
         this.renderElements = []
+        this.renderSuggestionElements = []
 
         const lines = textAreaInput.split('\n')
 
@@ -177,7 +178,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         clearTimeout(this.suggestionDebounce)
         this.suggestionDebounce = setTimeout(() => {
             this.RenderSuggestions(textAreaInput, previousParse)
-        }, 300)
+        }, 200)
     }
 
     private AdjustEditorHeight(lines: number) {
@@ -302,23 +303,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             return s.Tables[lastKey]
         }
 
-        // const lastAttribute = (): AttributeConfig => {
-        //     const t = lastTable()
-        //     const keys = Object.keys(t.Attributes)
-
-        //     if (keys.length === 0) {
-        //         const item: AttributeConfig = {
-        //             ID: uuidv4(),
-        //             Type: AttrType.BOOLEAN
-        //         }
-        //         t.Attributes['unnamed attribute'] = item
-        //         return t.Attributes['unnamed attribute']
-        //     }
-        //     const lastKey = keys[keys.length - 1]
-        //     return t.Attributes[lastKey]
-        // }
-
-        const lines = input.split('\n').map(e => e.trim())
+        const lines = input.split('\n')
 
         let li = 0
         for (const line of lines) {

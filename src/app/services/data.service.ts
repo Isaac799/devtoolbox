@@ -1,26 +1,14 @@
 import {Injectable} from '@angular/core'
 import {Schema, Table, Attribute, ParseResult, AttributeConfig, AttrType, SchemaConfig} from '../structure'
-import {AttributeMap, generateAttributeMap, VarcharJSONData} from '../varchar'
-import varcharJSON from '../../../public/varchar.json'
+
 
 @Injectable({
     providedIn: 'root'
 })
 export class DataService {
     schemas: Schema[] = []
-    varcharMap: AttributeMap = new Map()
     previousParse: ParseResult | null = null
 
-    constructor() {
-        let all: VarcharJSONData = {}
-        for (const e of Object.values(varcharJSON)) {
-            all = {
-                ...all,
-                ...e
-            }
-        }
-        this.varcharMap = generateAttributeMap(all)
-    }
     getReference(id: string): Table | null {
         for (const s of this.schemas) {
             for (const t of s.Tables) {

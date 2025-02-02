@@ -42,7 +42,6 @@ export class PageCodeOutputComponent implements AfterViewInit {
             this.dataService.schemas,
             this.appService.app.generatorMode,
             this.appService.app.seedLimit,
-            this.dataService.varcharMap
         )
         if (!this.codeOutput?.nativeElement) {
             console.error('Missing this.codeGeneratorViewHtml')
