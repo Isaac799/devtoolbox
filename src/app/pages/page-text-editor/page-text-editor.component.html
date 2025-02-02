@@ -63,6 +63,7 @@
 
         <textarea
             #textEditor
+            spellcheck="false"
             (blur)="textEditorService.focused = false"
             (focus)="textEditorService.focused = true"
             [(ngModel)]="textEditorService.textInput"
