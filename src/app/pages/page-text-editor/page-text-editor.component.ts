@@ -39,7 +39,7 @@ import {DialogSyntaxGuideComponent} from '../../dialogs/dialog-syntax-guide/dial
     styleUrl: './page-text-editor.component.scss'
 })
 export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
-    @ViewChild('textEditor') textEditor: ElementRef<HTMLTextAreaElement> | null = null
+    @ViewChild('textEditor') textEditorEl: ElementRef<HTMLTextAreaElement> | null = null
     @ViewChild('inputContainer') inputContainer: ElementRef<HTMLDivElement> | null = null
 
     readonly dataService = inject(DataService)
@@ -76,7 +76,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             this._refreshRender()
         }
 
-        this.appService.doRender.subscribe(() => {
+        this.textEditorService.doRender.subscribe(() => {
             this._refreshRender()
         })
     }
@@ -92,6 +92,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     ngAfterViewInit(): void {
         const lines = this.textEditorService.textInput.split('\n').length
         this.AdjustEditorHeight(lines)
+        this.textEditorService.textEditorEl = this.textEditorEl
     }
 
     ngOnDestroy(): void {

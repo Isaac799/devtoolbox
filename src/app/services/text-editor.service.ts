@@ -1,4 +1,4 @@
-import {ElementRef, Injectable} from '@angular/core'
+import {ElementRef, EventEmitter, Injectable} from '@angular/core'
 
 @Injectable({
     providedIn: 'root'
@@ -7,6 +7,7 @@ export class TextEditorService {
     private readonly rawKey = 'devtoolboxRawTextInput'
     static readonly AttributeTypeCompact = 2
     static readonly AttributeOptionCompact = 3
+    readonly doRender = new EventEmitter<void>()
 
     justCleaned = false
     focused = false
@@ -64,21 +65,19 @@ export class TextEditorService {
         // el.selectionDirection = this.caretPosition.direction
 
         el.addEventListener('keydown', (ev: KeyboardEvent) => {
-            if (this.focused) {
-                const isCtrlPressed = ev.ctrlKey || ev.metaKey
+            const isCtrlPressed = ev.ctrlKey || ev.metaKey
 
-                if (isCtrlPressed && ev.key === 'z') {
-                    if (ev.shiftKey) {
-                        // Ctrl + Shift + Z → Redo
-                        this.Redo()
-                    } else {
-                        // Ctrl + Z → Undo
-                        this.Undo()
-                    }
-                } else if (ev.key === 'y') {
-                    // Ctrl + Y → Redo (alternative)
+            if (isCtrlPressed && ev.key === 'z') {
+                if (ev.shiftKey) {
+                    // Ctrl + Shift + Z → Redo
                     this.Redo()
+                } else {
+                    // Ctrl + Z → Undo
+                    this.Undo()
                 }
+            } else if (ev.key === 'y') {
+                // Ctrl + Y → Redo (alternative)
+                this.Redo()
             }
 
             if (!(ev.target instanceof HTMLTextAreaElement)) return
@@ -124,10 +123,12 @@ export class TextEditorService {
         this.textInputRedoStack.push(this.textInput)
         this.textInput = this.textInputUndoStack.pop() || ''
         this.fromUndo = false
+        this.doRender.next()
     }
 
     Redo() {
         this.textInputUndoStack.push(this.textInput)
         this.textInput = this.textInputRedoStack.pop() || ''
+        this.doRender.next()
     }
 }

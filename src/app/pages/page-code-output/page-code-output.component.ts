@@ -30,6 +30,8 @@ export class PageCodeOutputComponent implements AfterViewInit {
     readonly appService = inject(AppService)
 
     ngAfterViewInit(): void {
+        this._render();
+        
         this.appService.doRenderGenerated.subscribe(() => {
             this._render()
         })

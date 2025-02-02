@@ -10,7 +10,6 @@ import {App, AppMode, AppGeneratorMode, AppComplexityMode, Schema} from '../stru
 export class AppService {
     private readonly dataService = inject(DataService)
     private readonly textEditorService = inject(TextEditorService)
-    readonly doRender = new EventEmitter<void>()
     readonly doRenderGenerated = new EventEmitter<Schema[]>()
 
     readonly preferencesKey = 'devtoolboxAppConfig'
@@ -72,7 +71,7 @@ export class AppService {
          */
         this.textEditorService.justCleaned = false
         this.dataService.previousParse = PageTextEditorComponent.parse(this.textEditorService.textInput)
-        this.doRender.next()
+        this.textEditorService.doRender.next()
 
         if (this.dataService.schemas.length === 0) {
             this._run()
@@ -103,7 +102,7 @@ export class AppService {
         clearTimeout(this.refreshOutDebounce)
         this.refreshOutDebounce = setTimeout(() => {
             this.doRenderGenerated.next(this.dataService.schemas)
-        }, 300);
+        }, 300)
     }
 
     private loadPreferences() {

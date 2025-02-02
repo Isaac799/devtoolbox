@@ -9,15 +9,7 @@ import varcharJSON from '../../../public/varchar.json'
 export class DataService {
     schemas: Schema[] = []
     varcharMap: AttributeMap = new Map()
-    private _previousParse: ParseResult | null = null
-    public get previousParse(): ParseResult | null {
-        return this._previousParse
-    }
-    public set previousParse(value: ParseResult | null) {
-        console.log(new Error('hi'))
-
-        this._previousParse = value
-    }
+    previousParse: ParseResult | null = null
 
     constructor() {
         let all: VarcharJSONData = {}
