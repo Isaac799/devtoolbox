@@ -60,6 +60,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     renderSuggestionElements: RenderE[] = []
     private readonly snackBar = inject(MatSnackBar)
     private runDebounce: ReturnType<typeof setTimeout> | undefined = undefined
+    private suggestionDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
     //     textInput = `
     // # public
@@ -176,7 +177,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         this.renderElements = newLines
 
-        this.RenderSuggestions(textAreaInput)
+        clearTimeout(this.suggestionDebounce)
+        this.suggestionDebounce = setTimeout(() => {
+            this.RenderSuggestions(textAreaInput)
+        }, 300)
     }
 
     private AdjustEditorHeight(lines: number) {
