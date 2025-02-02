@@ -407,7 +407,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     continue
                 }
 
-                const potentialType = b[1].trim()
+                const potentialType = (b[1] || '').trim()
                 let type = getAttrType(potentialType)
                 const options = (a[1] || '')
                     .split(',')
@@ -583,8 +583,15 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
                     getAttrType(a.Type)
 
-                    let nameAndType = `${cc(a.Name, 'nc')} as ${type}`
+                    let nameAndType = ''
+
                     if (a.Type === AttrType.REFERENCE && a.RefTo) {
+                        nameAndType = `${cc(a.Name, 'nc')} as ${cc(a.RefTo.Name, 'nc')}`
+                    } else {
+                        nameAndType = `${cc(a.Name, 'nc')} as ${type}`
+                    }
+
+                    if (a.Type === AttrType.REFERENCE && a.RefTo && a.Name === a.RefTo.Name) {
                         if (a.Name === a.RefTo.Name) {
                             nameAndType = `@${a.RefTo.Name}`
                         }

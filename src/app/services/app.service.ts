@@ -30,19 +30,20 @@ export class AppService {
     }
     private runDebounce: ReturnType<typeof setTimeout> | undefined = undefined
     private refreshOutDebounce: ReturnType<typeof setTimeout> | undefined = undefined
-    private readonly defaultConfig = `# library
+    private readonly defaultConfig = `
+# Library
 
-## author
+## Author
 - id as ++
-- first name as string with r, u:a, ..30
-- last name as string with r, u:a, u:b, 4..30
+- first name as str with u:a, r, ..30
+- last name as str with u:a, u:b, r, 4..30
 
-
-## book
+## Book
 - id as ++
-- title as string with r, u, ..50
+- title as str with u, r, ..50
 - @author
-`
+- co author as author
+`.trim()
 
     Initialize() {
         if (this.initialized) {
