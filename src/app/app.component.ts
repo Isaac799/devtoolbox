@@ -8,10 +8,11 @@ import {MatButtonModule} from '@angular/material/button'
 import {RouterModule} from '@angular/router'
 import {AppService} from './services/app.service'
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout'
+import {MatTooltipModule} from '@angular/material/tooltip'; 
 
 @Component({
     selector: 'app-root',
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, RouterModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, RouterModule, MatTooltipModule],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })

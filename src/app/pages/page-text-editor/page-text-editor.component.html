@@ -1,6 +1,7 @@
 <mat-toolbar>
     <button
         mat-icon-button
+        matTooltip="Undo"
         aria-label="Undo the last change"
         (click)="Undo()"
         [disabled]="textEditorService.textInputUndoStack.length === 0"
@@ -9,6 +10,7 @@
     </button>
     <button
         mat-icon-button
+        matTooltip="Redo"
         aria-label="Redo the last change"
         (click)="Redo()"
         [disabled]="textEditorService.textInputRedoStack.length === 0"
@@ -18,6 +20,7 @@
     <span class="toolbar-icon-spacer"></span>
     <button
         mat-icon-button
+        matTooltip="Help"
         aria-label="Open syntax guide"
         (click)="OpenSyntaxGuide()"
     >
@@ -25,6 +28,7 @@
     </button>
     <button
         mat-icon-button
+        matTooltip="Toggle syntax mode"
         aria-label="Change syntax size"
         (click)="ToggleMode()"
     >
@@ -32,6 +36,7 @@
     </button>
     <button
         mat-icon-button
+        matTooltip="Clean & Format"
         aria-label="Format code"
         [disabled]="textEditorService.justCleaned"
         (click)="Format()"
@@ -39,6 +44,7 @@
         <mat-icon>dry_cleaning</mat-icon>
     </button>
     <button
+        matTooltip="Copy"
         mat-icon-button
         aria-label="Copy code"
         (click)="Copy()"

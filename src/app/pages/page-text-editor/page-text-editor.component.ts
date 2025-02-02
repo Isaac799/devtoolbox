@@ -31,10 +31,11 @@ import {AppService} from '../../services/app.service'
 import {BitwiseOperations} from '../../constants'
 import {MatDialog} from '@angular/material/dialog'
 import {DialogSyntaxGuideComponent} from '../../dialogs/dialog-syntax-guide/dialog-syntax-guide.component'
+import {MatTooltipModule} from '@angular/material/tooltip'
 
 @Component({
     selector: 'app-page-text-editor',
-    imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule, MatIconModule, MatSelectModule, MatToolbar],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule, MatIconModule, MatSelectModule, MatToolbar, MatTooltipModule],
     templateUrl: './page-text-editor.component.html',
     styleUrl: './page-text-editor.component.scss'
 })
@@ -253,7 +254,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         return words
     }
 
-    Format() {  
+    Format() {
         this.HardRefresh()
         this.snackBar.open('Formatting applied', '', {
             duration: 2500

@@ -12,10 +12,23 @@ import {MatSliderModule} from '@angular/material/slider'
 import {MatSnackBar} from '@angular/material/snack-bar'
 import {AppService} from '../../services/app.service'
 import {LanguageService} from '../../services/language.service'
+import {MatToolbarModule} from '@angular/material/toolbar'
+import {MatTooltipModule} from '@angular/material/tooltip'
 
 @Component({
     selector: 'app-page-code-output',
-    imports: [CommonModule, FormsModule, MatButtonModule, MatTabsModule, MatChipsModule, MatIconModule, IsSeedModePipe, MatSliderModule],
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatButtonModule,
+        MatTabsModule,
+        MatChipsModule,
+        MatIconModule,
+        IsSeedModePipe,
+        MatSliderModule,
+        MatToolbarModule,
+        MatTooltipModule
+    ],
     templateUrl: './page-code-output.component.html',
     styleUrl: './page-code-output.component.scss'
 })
@@ -30,19 +43,15 @@ export class PageCodeOutputComponent implements AfterViewInit {
     readonly appService = inject(AppService)
 
     ngAfterViewInit(): void {
-        this._render();
-        
+        this._render()
+
         this.appService.doRenderGenerated.subscribe(() => {
             this._render()
         })
     }
 
     private _render() {
-        const code = this.languageService.GenerateCode(
-            this.dataService.schemas,
-            this.appService.app.generatorMode,
-            this.appService.app.seedLimit,
-        )
+        const code = this.languageService.GenerateCode(this.dataService.schemas, this.appService.app.generatorMode, this.appService.app.seedLimit)
         if (!this.codeOutput?.nativeElement) {
             console.error('Missing this.codeGeneratorViewHtml')
             return
@@ -50,7 +59,7 @@ export class PageCodeOutputComponent implements AfterViewInit {
         this.codeOutput.nativeElement.innerHTML = code
     }
 
-    copy() {
+    Copy() {
         navigator.clipboard.writeText(this.output)
         this.snackBar.open('Copied to clipboard', '', {
             duration: 2500
