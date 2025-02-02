@@ -14,8 +14,44 @@ export class DataService {
     private readonly configSessionKey = 'devtoolboxAppConfig'
     private readonly rawTextInput = 'devtoolboxRawextInput'
     private initialized = false
+    fromUndo = false
+    undoCount = 0
 
-    textInput = ''
+    saveUndoTimeout: ReturnType<typeof setTimeout> | undefined = undefined
+
+    fv: string | null = null
+
+    SaveToUndo(x: string) {
+        if (this.undoCount === 0) {
+            this.undoCount = 1
+            return
+        }
+
+        if (this.fv === null) {
+            this.fv = x
+        }
+
+        clearTimeout(this.saveUndoTimeout)
+        this.saveUndoTimeout = setTimeout(() => {
+            if (!this.fv) {
+                return
+            }
+            this.textInputUndoStack.push(this.fv)
+            this.fv = null
+            this.textInputRedoStack = []
+        }, 500)
+    }
+
+    private _textInput = ''
+    public get textInput() {
+        return this._textInput
+    }
+    public set textInput(value) {
+        if (!this.fromUndo) {
+            this.SaveToUndo(this._textInput)
+        }
+        this._textInput = value
+    }
     textInputUndoStack: string[] = []
     textInputRedoStack: string[] = []
 

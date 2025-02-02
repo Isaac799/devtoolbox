@@ -46,7 +46,6 @@ export class PageTextEditorComponent implements OnInit {
     readonly SPACE = '~SPACE~'
     private readonly snackBar = inject(MatSnackBar)
 
-    saveUndoTimeout: ReturnType<typeof setTimeout> | undefined = undefined
 
     //     textInput = `
     // # public
@@ -69,21 +68,14 @@ export class PageTextEditorComponent implements OnInit {
         this.Render(this.dataService.textInput)
     }
 
-    SaveToUndo(x: string) {
-        clearTimeout(this.saveUndoTimeout)
-        this.saveUndoTimeout = setTimeout(() => {
-            this.dataService.textInputUndoStack.push(x)
-            this.dataService.textInputRedoStack = []
-            console.log(this.dataService.textInputUndoStack);
-        }, 500)
-    }
-
     Undo() {
+        this.dataService.fromUndo = true
         console.log('UNDO')
         this.dataService.textInputRedoStack.push(this.dataService.textInput)
         this.dataService.textInput = this.dataService.textInputUndoStack.pop() || ''
         this.dataService.ReloadAndSave()
         this.RefreshRender()
+        this.dataService.fromUndo = false
     }
 
     Redo() {
