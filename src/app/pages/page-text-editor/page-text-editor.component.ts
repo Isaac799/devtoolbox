@@ -459,21 +459,21 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
             const optionCompact = BitwiseOperations.isBitSet(textEditorState, TextEditorService.AttributeOptionCompact)
 
-            if (a.Option?.PrimaryKey) {
+            if (a.Option?.PrimaryKey && a.Type !== AttrType.SERIAL) {
                 if (optionCompact) {
                     options.push('p')
                 } else {
                     options.push('primary')
                 }
             }
-            if (a.Option?.SystemField) {
+            if (a.Option?.SystemField && a.Type !== AttrType.SERIAL) {
                 if (optionCompact) {
                     options.push('sys')
                 } else {
                     options.push('system')
                 }
             }
-            if (a.Option?.Unique) {
+            if (a.Option?.Unique && a.Type !== AttrType.SERIAL) {
                 if (optionCompact) {
                     options.push('u')
                 } else {
@@ -487,7 +487,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     options.push('default')
                 }
             }
-            if (a.Validation?.Required) {
+            if (a.Validation?.Required && a.Type !== AttrType.SERIAL) {
                 if (optionCompact) {
                     options.push('r')
                 } else {
