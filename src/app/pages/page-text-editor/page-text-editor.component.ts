@@ -535,10 +535,10 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         for (const s of schemas) {
             lines.push(``)
-            lines.push(`# ${s.Name}`)
+            lines.push(`# ${cc(s.Name, 'tc')}`)
             for (const t of s.Tables) {
                 lines.push(``)
-                lines.push(`## ${t.Name}`)
+                lines.push(`## ${cc(t.Name, 'tc')}`)
                 for (const a of t.Attributes) {
                     const type = getAttrType(a.Type)
 
@@ -548,7 +548,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
                     getAttrType(a.Type)
 
-                    let nameAndType = `${a.Name} as ${type}`
+                    let nameAndType = `${cc(a.Name, 'nc')} as ${type}`
                     if (a.Type === AttrType.REFERENCE && a.RefTo) {
                         if (a.Name === a.RefTo.Name) {
                             nameAndType = `@${a.RefTo.Name}`

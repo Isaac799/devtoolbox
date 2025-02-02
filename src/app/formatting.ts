@@ -115,12 +115,11 @@ export const fixPluralGrammar = (word: string): string => {
     // Return the word as is if it's already correctly plural or singular
     return word
 }
-
 // Helper function to handle shared case conversion logic
-const convertString = (str: string, toCase: 'sk' | 'pl' | 'cm' | 'up'): string => {
-    let result = str
+const convertString = (str: string, toCase: 'sk' | 'pl' | 'cm' | 'up' | 'tc' | 'nc'): string => {
+    const result = str
         // Replace dots and multiple spaces with a single space
-        .replace(/[\s\.]+/g, ' ')
+        .replace(/[\s.]+/g, ' ')
         // Replace underscores with spaces (snake_case)
         .replace(/_/g, ' ')
         // Break PascalCase by adding a space before each uppercase letter (except the first one)
@@ -135,22 +134,17 @@ const convertString = (str: string, toCase: 'sk' | 'pl' | 'cm' | 'up'): string =
     switch (toCase) {
         case 'sk':
             // Convert to snake_case by joining words with underscores
-            return (
-                result
-                    .split(' ')
-                    // .map((word) => (isAcronym(word) ? word.toUpperCase() : word))
-                    .join('_')
-            )
+            return result.split(' ').join('_')
         case 'pl':
             // Convert to PascalCase by capitalizing the first letter of each word
             return result
                 .split(' ')
-                .map((word, index) => {
+                .map(word => {
                     const capitalized = word.charAt(0).toUpperCase() + word.slice(1)
                     return isAcronym(word) ? capitalized.toUpperCase() : capitalized
                 })
                 .join('')
-        case 'cm':
+        case 'cm': {
             // Convert to camelCase: lowercase the first word and capitalize subsequent words
             const words = result.split(' ')
             const camelCased =
@@ -163,19 +157,29 @@ const convertString = (str: string, toCase: 'sk' | 'pl' | 'cm' | 'up'): string =
                     })
                     .join('')
             return camelCased.charAt(0).toLowerCase() + camelCased.slice(1)
+        }
         case 'up':
             // Convert to UPPER_CASE with underscores between words
             return result
                 .split(' ')
                 .map(word => (isAcronym(word) ? word.toUpperCase() : word.toUpperCase()))
                 .join('_')
+        case 'tc':
+            // Convert to Title Case: capitalize the first letter of each word
+            return result
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ')
+        case 'nc':
+            // Convert to No Case: lowercase with spaces between words
+            return result
         default:
             throw new Error('Invalid case type')
     }
 }
 
 // Main function to convert a string to the desired case
-export function cc(str: string, caseType: 'sk' | 'pl' | 'cm' | 'up'): string {
+export function cc(str: string, caseType: 'sk' | 'pl' | 'cm' | 'up' | 'tc' | 'nc'): string {
     return convertString(str, caseType)
 }
 
