@@ -1,129 +1,71 @@
-<div class="container-split">
-    <div class="side">
-        <mat-accordion>
-            <mat-expansion-panel expanded>
-                <mat-expansion-panel-header>
-                    <mat-panel-title> Code </mat-panel-title>
-                    <!-- <mat-panel-description> </mat-panel-description> -->
-                </mat-expansion-panel-header>
-                <div>
-                    <p>
-                        <strong>Disclaimer: </strong> Invalid syntax will be discarded
-                    </p>
-                    <table>
-                        <tr>
-                            <td>
-                                <button
-                                    mat-fab
-                                    extended
-                                    (click)="HardRefresh()"
-                                >
-                                    Format
-                                    <mat-icon>grading</mat-icon>
-                                </button>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </mat-expansion-panel>
-            <mat-expansion-panel>
-                <mat-expansion-panel-header>
-                    <mat-panel-title> Attribute Syntax </mat-panel-title>
-                    <!-- <mat-panel-description> </mat-panel-description> -->
-                </mat-expansion-panel-header>
-                <div>
-                    <p>
-                        <strong>Disclaimer: </strong> Invalid syntax will be discarded. Code will be formatted.
-                    </p>
-                    <table>
-                        <tr>
-                            <td>
-                                <mat-form-field>
-                                    <mat-label>Type</mat-label>
-                                    <mat-select
-                                        [(ngModel)]="dataService.app.textEditorSyntax.attributes"
-                                        (ngModelChange)="HardRefresh()"
-                                    >
-                                        @for (x of textEditorService.textEditorSyntaxAttributeOptions; track $index) {
-                                        <mat-option [value]="x.value">{{ x.name }}</mat-option>
-                                        }
-                                    </mat-select>
-                                    <!-- @if (dataService.app.textEditorSyntax.attributes === "Expanded") {
-                                    <mat-hint align="start"> timestamp, string </mat-hint>
-                                    } @else {
-                                    <mat-hint align="start"> ts, str </mat-hint>
-                                    } -->
-                                </mat-form-field>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <mat-form-field>
-                                    <mat-label>Options</mat-label>
-                                    <mat-select
-                                        [(ngModel)]="dataService.app.textEditorSyntax.options"
-                                        (ngModelChange)="HardRefresh()"
-                                    >
-                                        @for (x of textEditorService.textEditorSyntaxOptionsOptions; track $index) {
-                                        <mat-option [value]="x.value">{{ x.name }}</mat-option>
-                                        }
-                                    </mat-select>
-                                    <!-- @if (dataService.app.textEditorSyntax.options === "Expanded") {
-                                    <mat-hint align="start"> required, unique </mat-hint>
-                                    } @else {
-                                    <mat-hint align="start"> r, u </mat-hint>
-                                    } -->
-                                </mat-form-field>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </mat-expansion-panel>
-        </mat-accordion>
-    </div>
-    <div class="main">
-        <mat-toolbar>
-            <button
-                mat-icon-button
-                aria-label="Undo the last change"
-                (click)="Undo()"
-                [disabled]="textEditorService.textInputUndoStack.length === 0"
-            >
-                <mat-icon>undo</mat-icon>
-            </button>
-            <button
-                mat-icon-button
-                aria-label="Redo the last change"
-                (click)="Redo()"
-                [disabled]="textEditorService.textInputRedoStack.length === 0"
-            >
-                <mat-icon>redo</mat-icon>
-            </button>
-            <span class="toolbar-icon-spacer"></span>
-        </mat-toolbar>
-        <div class="input-container">
-            <div class="render-box">
-                @for (el of renderElements; track $index) {
-                @if (el.innerText === NEWLINE) {
-                <br />
-                } @else if (el.class) {
-                <span [class]="el.class">{{ el.innerText }}</span>
-                } @else {
-                <span>{{ el.innerText }}</span>
-                }
-                }
-            </div>
-            <textarea
-                [(ngModel)]="textEditorService.textInput"
-                (ngModelChange)="Run();"
-                class="input-box"
-            ></textarea>
+<mat-toolbar>
+    <button
+        mat-icon-button
+        aria-label="Undo the last change"
+        (click)="Undo()"
+        [disabled]="textEditorService.textInputUndoStack.length === 0"
+    >
+        <mat-icon>undo</mat-icon>
+    </button>
+    <button
+        mat-icon-button
+        aria-label="Redo the last change"
+        (click)="Redo()"
+        [disabled]="textEditorService.textInputRedoStack.length === 0"
+    >
+        <mat-icon>redo</mat-icon>
+    </button>
+    <span class="toolbar-icon-spacer"></span>
+    <button
+        mat-icon-button
+        aria-label="Change syntax size"
+        (click)="ToggleMode()"
+    >
+        <mat-icon>code</mat-icon>
+    </button>
+    <button
+        mat-icon-button
+        aria-label="Format code"
+        (click)="HardRefresh()"
+    >
+        <mat-icon>dry_cleaning</mat-icon>
+    </button>
+    <button
+        mat-icon-button
+        aria-label="Copy code"
+        (click)="Copy()"
+    >
+        <mat-icon>content_copy</mat-icon>
+    </button>
+</mat-toolbar>
+
+<div class="main">
+    <div class="input-container">
+        <div class="render-box">
+            @for (el of renderElements; track $index) {
+            @if (el.innerText === NEWLINE) {
+            <br />
+            } @else if (el.class) {
+            <span [class]="el.class">{{ el.innerText }}</span>
+            } @else {
+            <span>{{ el.innerText }}</span>
+            }
+            }
         </div>
+
+        <textarea
+            #textEditor
+            (blur)="textEditorService.focused = false"
+            (focus)="textEditorService.focused = true"
+            [(ngModel)]="textEditorService.textInput"
+            (ngModelChange)="Run();"
+            class="input-box"
+        ></textarea>
     </div>
 </div>
 
 
-<div class="copy-button">
+<!-- <div class="copy-button">
     <button
         mat-fab
         aria-label="Copy the generate code"
@@ -131,4 +73,4 @@
     >
         <mat-icon>content_copy</mat-icon>
     </button>
-</div>
+</div> -->

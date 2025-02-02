@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core'
+import {AfterViewChecked, AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild} from '@angular/core'
 import {
     Attribute,
     AttributeConfig,
@@ -38,10 +38,9 @@ interface RenderE {
     templateUrl: './page-text-editor.component.html',
     styleUrl: './page-text-editor.component.scss'
 })
-export class PageTextEditorComponent implements OnInit {
-    ngOnInit(): void {
-        this.RefreshRender()
-    }
+export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
+    @ViewChild('textEditor') textEditor: ElementRef<HTMLTextAreaElement> | null = null
+
     readonly dataService = inject(DataService)
     readonly textEditorService = inject(TextEditorService)
     private readonly appService = inject(AppService)
@@ -66,6 +65,32 @@ export class PageTextEditorComponent implements OnInit {
     // - co author as author
     // `
 
+    ngOnInit(): void {
+        this.RefreshRender()
+    }
+    ngAfterViewInit(): void {
+        this.textEditorService.textEditor = this.textEditor
+    }
+    ngOnDestroy(): void {
+        this.textEditorService.textEditor = null
+    }
+
+    ToggleMode() {
+        const s = this.dataService.app.textEditorSyntax
+
+        if (s.attributes === 'Compact' && s.options === 'Compact') {
+            s.attributes = 'Expanded'
+        } else if (s.attributes === 'Expanded' && s.options === 'Expanded') {
+            s.attributes = 'Compact'
+        } else if (s.attributes === 'Compact' && s.options === 'Expanded') {
+            s.options = 'Compact'
+        } else if (s.attributes === 'Expanded' && s.options === 'Compact') {
+            s.options = 'Expanded'
+        }
+
+        this.HardRefresh()
+    }
+
     Run() {
         const config = PageTextEditorComponent.parse(this.textEditorService.textInput)
         this.appService.ReloadAndSaveFromConfig(config)
@@ -81,14 +106,18 @@ export class PageTextEditorComponent implements OnInit {
 
     Undo() {
         this.textEditorService.Undo()
-        this.appService.ReloadAndSave()
-        this.RefreshRender()
+        setTimeout(() => {
+            this.appService.ReloadAndSave()
+            this.RefreshRender()
+        }, 0)
     }
 
     Redo() {
         this.textEditorService.Redo()
-        this.appService.ReloadAndSave()
-        this.RefreshRender()
+        setTimeout(() => {
+            this.appService.ReloadAndSave()
+            this.RefreshRender()
+        }, 0)
     }
 
     Render(tbInput: string) {

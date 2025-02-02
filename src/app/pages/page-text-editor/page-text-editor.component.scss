@@ -48,18 +48,9 @@
     }
 }
 
-
-.container-split {
-    display: grid;
-    grid-template-columns: 18.65rem auto;
-    height: calc(100vh - 4rem);
-
-    >.side {
-        padding: 1rem 0  1rem  1rem
-    }
-
-    >.main {
-        padding: 1rem;
-        overflow: auto;
-    }
+.main {
+    height: calc(100vh - 8rem);
+    width: 100vw;
+    padding: 0 1rem 1rem 0;
+    overflow: auto;
 }

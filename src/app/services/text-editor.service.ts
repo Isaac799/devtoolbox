@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core'
+import {ElementRef, HostListener, Injectable} from '@angular/core'
 
 @Injectable({
     providedIn: 'root'
@@ -6,9 +6,31 @@ import {Injectable} from '@angular/core'
 export class TextEditorService {
     private readonly rawTextInput = 'devtoolboxRawextInput'
 
-    pastFirstLoad = false
+    focused = false
+    caretPosition: {
+        direction: 'forward' | 'backward' | 'none'
+        start: number
+        end: number
+    } = {
+        direction: 'none',
+        start: 0,
+        end: 0
+    }
+
     fromUndo = false
+    pastFirstLoad = false
     saveUndoValue: string | null = null
+
+    private _textEditor: ElementRef<HTMLTextAreaElement> | null = null
+    public get textEditor(): ElementRef<HTMLTextAreaElement> | null {
+        return this._textEditor
+    }
+    public set textEditor(value: ElementRef<HTMLTextAreaElement> | null) {
+        this._textEditor = value
+        if (value) {
+            this.populateEditor(value.nativeElement)
+        }
+    }
     saveUndoDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
     private _textInput = ''
@@ -32,6 +54,36 @@ export class TextEditorService {
         {name: 'Expanded', value: 'Expanded'},
         {name: 'Compact', value: 'Compact'}
     ]
+
+    private populateEditor(el: HTMLTextAreaElement) {
+        // el.selectionStart = this.caretPosition.start
+        // el.selectionEnd = this.caretPosition.end
+        // el.selectionDirection = this.caretPosition.direction
+
+        el.addEventListener('keydown', (ev: KeyboardEvent) => {
+            // if (this.focused) {
+            //     const isCtrlPressed = ev.ctrlKey || ev.metaKey
+
+            //     if (isCtrlPressed && ev.key === 'z') {
+            //         if (ev.shiftKey) {
+            //             // Ctrl + Shift + Z → Redo
+            //             this.Redo()
+            //         } else {
+            //             // Ctrl + Z → Undo
+            //             this.Undo()
+            //         }
+            //     } else if (ev.key === 'y') {
+            //         // Ctrl + Y → Redo (alternative)
+            //         this.Redo()
+            //     }
+            // }
+
+            if (!(ev.target instanceof HTMLTextAreaElement)) return
+            this.caretPosition.start = ev.target.selectionStart
+            this.caretPosition.end = ev.target.selectionEnd
+            this.caretPosition.direction = ev.target.selectionDirection
+        })
+    }
 
     SaveToUndo(x: string) {
         if (!this.pastFirstLoad) {
