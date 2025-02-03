@@ -53,12 +53,18 @@
     </button>
 </mat-toolbar>
 
-<div class="main">
+<div
+    class="main"
+    #main
+>
     <div
         class="input-container"
         #inputContainer
     >
-        <div class="render-suggestion-box">
+        <div
+            class="render-suggestion-box"
+            #suggestionBox
+        >
             @for (el of renderSuggestionElements; track $index) {
             @if (el.innerText === NEWLINE) {
             <br />
@@ -70,7 +76,10 @@
             }
         </div>
 
-        <div class="render-box">
+        <div
+            class="render-box"
+            #renderBox
+        >
             @for (el of renderElements; track $index) {
             @if (el.innerText === NEWLINE) {
             <br />

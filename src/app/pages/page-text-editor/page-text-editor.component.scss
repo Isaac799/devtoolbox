@@ -1,40 +1,32 @@
 .main {
+    display: inline-block;
     height: 100%;
     width: 100%;
-    overflow: auto;
 }
 
 .input-container {
     position: relative;
-    height: 100%;
-    width: 1fr;
     overflow: auto;
     margin: 0 1rem 0 1rem;
 
-    >.input-box {
         border: 1px solid rgb(0, 0, 0, 0.35);
         border-radius: 0.8rem;
-    }
 
-    >.input-box:focus {
-        transition: ease-in-out 200ms;
-        border: 1px solid #005CBB;
-        border-radius: 0.8rem;
-    }
-
-
-    >div.render-box,
-    >div.render-suggestion-box {
-        border: 0;
-        border-radius: 0;
-    }
+    // :has(.input-box:focus) {
+    //     transition: ease-in-out 200ms;
+    //     border: 1px solid #005CBB;
+    //     border-radius: 0.8rem;
+    // }
 
     >.input-box,
     >div.render-box,
     >div.render-suggestion-box {
         position: absolute;
         inset: 0;
-        overflow: hidden;
+
+        border: 0;
+        border-radius: 0;
+
 
         font-size: 1rem;
         line-height: 1rem;

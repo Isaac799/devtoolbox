@@ -101,7 +101,7 @@ export class SideBarService {
     generatorModeSelectedIndex = [0, 0]
     generatorModeOptions: {title: string; icon?: string; items: {name: string; icon?: string; value: AppGeneratorMode}[]}[] = [
         {
-            title: 'PSQL',
+            title: 'Postgres',
             icon: 'star',
             items: [
                 {
@@ -121,7 +121,7 @@ export class SideBarService {
             ]
         },
         {
-            title: 'T-SQL',
+            title: 'MS SQL',
             items: [
                 {
                     name: 'Tables',

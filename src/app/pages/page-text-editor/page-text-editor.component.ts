@@ -42,6 +42,9 @@ import {MatTooltipModule} from '@angular/material/tooltip'
 export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('textEditor') textEditorEl: ElementRef<HTMLTextAreaElement> | null = null
     @ViewChild('inputContainer') inputContainer: ElementRef<HTMLDivElement> | null = null
+    @ViewChild('main') main: ElementRef<HTMLDivElement> | null = null
+    @ViewChild('suggestionBox') suggestionBoxEl: ElementRef<HTMLDivElement> | null = null
+    @ViewChild('renderBox') renderBoxEl: ElementRef<HTMLDivElement> | null = null
 
     readonly dataService = inject(DataService)
     readonly textEditorService = inject(TextEditorService)
@@ -91,13 +94,36 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     ngAfterViewInit(): void {
-        const lines = this.textEditorService.textInput.split('\n').length
+        const lines = this.textEditorService.textInput.split('\n')
         this.AdjustEditorHeight(lines)
         this.textEditorService.textEditorEl = this.textEditorEl
+        this.syncScroll()
     }
 
     ngOnDestroy(): void {
         this.textEditorService.textEditorEl = null
+    }
+
+    private syncScroll() {
+        if (!this.textEditorEl) {
+            console.warn('missing elements!')
+            return
+        }
+        this.textEditorEl.nativeElement.addEventListener('scroll', ev => {
+            if (!(ev.target instanceof HTMLTextAreaElement)) return
+            if (!(this.suggestionBoxEl?.nativeElement instanceof HTMLDivElement)) return
+            if (!(this.renderBoxEl?.nativeElement instanceof HTMLDivElement)) return
+            const left = ev.target.scrollLeft
+            const top = ev.target.scrollTop
+            this.suggestionBoxEl.nativeElement.scroll({
+                top,
+                left
+            })
+            this.renderBoxEl.nativeElement.scroll({
+                top,
+                left
+            })
+        })
     }
 
     ToggleMode() {
@@ -151,7 +177,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         const lines = textAreaInput.split('\n')
 
-        this.AdjustEditorHeight(lines.length)
+        this.AdjustEditorHeight(lines)
 
         let newLines: RenderE[] = []
 
@@ -186,14 +212,35 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         }, 200)
     }
 
-    private AdjustEditorHeight(lines: number) {
+    private AdjustEditorHeight(lines: string[]) {
+        let rows = lines.length
         if (this.inputContainer) {
-            if (lines < 20) {
-                lines = 20
+            if (rows < 20) {
+                rows = 20
             }
-            lines += 1
-            this.inputContainer.nativeElement.style.height = lines + 'rem'
+            rows += 1
+            this.inputContainer.nativeElement.style.height = rows + 'rem'
+            this.AdjustEditorWidth(lines)
         }
+    }
+
+    private AdjustEditorWidth(lines: string[]) {
+        // function getLongestStringLength(arr: string[]): number {
+        //     if (arr.length === 0) {
+        //         return 0 // or return undefined if you prefer
+        //     }
+        //     // Use reduce to find the longest string and return its length
+        //     return arr.reduce((maxLength, currentString) => {
+        //         return Math.max(maxLength, currentString.length)
+        //     }, 0)
+        // }
+        // let cols = getLongestStringLength(lines)
+        // if (this.inputContainer) {
+        //     if (cols < 20) {
+        //         cols = 20
+        //     }
+        //     this.inputContainer.nativeElement.style.width = cols + 10 + 'rem'
+        // }
     }
 
     private RenderSuggestions(textAreaInput: string, parsed: ParseResult) {
