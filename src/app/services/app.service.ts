@@ -73,8 +73,10 @@ export class AppService {
         this.textEditorService.justCleaned = false
         const r = PageTextEditorComponent.parse(this.textEditorService.textInput)
         if (typeof r === 'string') {
+            this.textEditorService.fromMacro = true;
             this.textEditorService.textInput = r
             this.Run()
+            this.textEditorService.fromMacro = false;
             return
         }
 

@@ -432,11 +432,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
                 const param = b.length >= 2 ? b : ''
 
-                console.log({
-                    macro,
-                    param
-                })
-
                 if (macro === 'attr' && !param) {
                     addSuggestion(`attribute macro...`)
                     continue

@@ -21,6 +21,7 @@ export class TextEditorService {
         end: 0
     }
 
+    fromMacro = false
     fromUndo = false
     pastFirstLoad = false
     saveUndoValue: string | null = null
@@ -46,6 +47,9 @@ export class TextEditorService {
             this.SaveToUndo(this._textInput)
         }
         this._textInput = value
+        if (this.fromMacro && this.textEditorEl) {
+            this._focus(this.textEditorEl.nativeElement)
+        }
     }
     textInputUndoStack: string[] = []
     textInputRedoStack: string[] = []
@@ -65,6 +69,7 @@ export class TextEditorService {
             el.setSelectionRange(this.caretPosition.start, this.caretPosition.end, this.caretPosition.direction)
         }, 0)
     }
+
     private _saveFocus(el: HTMLTextAreaElement) {
         this.caretPosition.start = el.selectionStart
         this.caretPosition.end = el.selectionEnd
