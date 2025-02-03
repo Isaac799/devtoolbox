@@ -218,7 +218,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             if (rows < 20) {
                 rows = 20
             }
-            rows += 1
+            rows += 2
             this.inputContainer.nativeElement.style.height = rows + 'rem'
             this.AdjustEditorWidth(lines)
         }
@@ -314,7 +314,22 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.textEditorService.justCleaned = true
     }
 
-    static parse(input: string): ParseResult {
+    static FindTable(answer: Record<string, SchemaConfig>, term: string) {
+        for (const sk in answer) {
+            const s = answer[sk]
+            for (const tk in s.Tables) {
+                const t = s.Tables[tk]
+                if (cc(tk, 'sk') !== term && cc(`${sk}.${tk}`, 'sk') !== term && cc(`${sk}:${tk}`, 'sk') !== term) {
+                    continue
+                }
+                return t
+            }
+        }
+
+        return null
+    }
+
+    static parse(input: string): ParseResult | string {
         const answer: Record<string, SchemaConfig> = {}
         const suggestions: Suggestions = {}
         const errors: Suggestions = {}
@@ -388,7 +403,79 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             }
             li += 1
 
-            if (line.startsWith('# ')) {
+            if (line.startsWith('!')) {
+                const confirm = '!'
+                let lineCleaned = line.substring(1, line.length).trim()
+
+                if (lineCleaned.endsWith('!')) {
+                    lineCleaned = lineCleaned.substring(0, lineCleaned.length - 1).trim()
+                }
+
+                lineCleaned = cc(lineCleaned, 'sk')
+
+                if (lineCleaned.length < 2) {
+                    addSuggestion(`starting macro...`)
+                    continue
+                }
+
+                const ab = lineCleaned.split(':')
+                if (ab.length !== 2) {
+                    addSuggestion(`first blueprint name`)
+                    continue
+                }
+
+                const a = ab[0].trim()
+                if (!a) {
+                    addSuggestion(`first blueprint name`)
+                    continue
+                }
+                const b = ab[1].trim()
+                if (!b) {
+                    addSuggestion(`second blueprint name`)
+                    continue
+                }
+
+                const aT = PageTextEditorComponent.FindTable(answer, a)
+                if (!aT) {
+                    addSuggestion(`'${a}' does not exist`)
+                    continue
+                }
+                const bT = PageTextEditorComponent.FindTable(answer, b)
+                if (!bT) {
+                    addSuggestion(`'${b}' does not exist`)
+                    continue
+                }
+
+                if (!line.toLowerCase().endsWith(confirm)) {
+                    addSuggestion(`type '${confirm}' to confirm`)
+                    continue
+                }
+
+                const collection: string[] = []
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i]
+                    if (i !== li - 1) {
+                        collection.push(line)
+                        continue
+                    }
+
+                    const aL = a === b ? a + '_a' : a
+                    const bL = a === b ? b + '_b' : b
+
+                    if (a === b) {
+                        collection.push(`## ${cc(a, 'tc')} ${cc(b, 'tc')}`)
+                        collection.push(`- ${cc(aL, 'tc')} as ${cc(a, 'tc')} with required`)
+                        collection.push(`- ${cc(bL, 'tc')} as ${cc(a, 'tc')} with required`)
+                    } else {
+                        collection.push(`## ${cc(a, 'tc')} ${cc(b, 'tc')}`)
+                        collection.push(`- @${cc(aL, 'tc')} with required`)
+                        collection.push(`- @${cc(bL, 'tc')} with required`)
+                    }
+                } 
+                console.log(collection.join('\n'))
+
+                return collection.join('\n')
+            } else if (line.startsWith('# ')) {
                 const name = cc(line.substring(2, line.length).trim(), 'sk')
 
                 const exists = answer[name] !== undefined
@@ -466,11 +553,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 if (!type) {
                     let matchingTblID = ''
 
+                    const pt = cc(potentialType.trim(), 'sk')
                     search: for (const sk in answer) {
                         const s = answer[sk]
                         for (const tk in s.Tables) {
                             const t = s.Tables[tk]
-                            if (cc(tk, 'sk') !== potentialType && cc(`${sk}.${tk}`, 'sk') !== potentialType && cc(`${sk}:${tk}`, 'sk') !== potentialType) {
+                            if (cc(tk, 'sk') !== pt && cc(`${sk}.${tk}`, 'sk') !== pt && cc(`${sk}:${tk}`, 'sk') !== pt) {
                                 continue
                             }
 

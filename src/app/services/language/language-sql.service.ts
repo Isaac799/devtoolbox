@@ -80,8 +80,6 @@ export class LanguageSqlService {
             }
         }
 
-        console.log(JSON.stringify(uniques, null, 4));
-        
         return uniques
     }
 

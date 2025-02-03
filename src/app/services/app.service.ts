@@ -71,7 +71,14 @@ export class AppService {
          *
          */
         this.textEditorService.justCleaned = false
-        this.dataService.previousParse = PageTextEditorComponent.parse(this.textEditorService.textInput)
+        const r = PageTextEditorComponent.parse(this.textEditorService.textInput)
+        if (typeof r === 'string') {
+            this.textEditorService.textInput = r
+            this.Run()
+            return
+        }
+
+        this.dataService.previousParse = r
         this.textEditorService.doRender.next()
 
         if (this.dataService.schemas.length === 0) {
