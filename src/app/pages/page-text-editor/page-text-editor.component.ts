@@ -411,8 +411,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     lineCleaned = lineCleaned.substring(0, lineCleaned.length - 1).trim()
                 }
 
-                if (lineCleaned.length < 2) {
-                    addSuggestion(`starting macro...`)
+                if (lineCleaned.length < 3) {
+                    addSuggestion(`list, attr, or blueprint name...`)
                     continue
                 }
 
@@ -430,12 +430,26 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     macro = cc(a.trim(), 'sk')
                 }
 
-                const param = b.length >= 2 ? b : ''
-
-                if (macro === 'attr' && !param) {
-                    addSuggestion(`attribute macro...`)
+                if (macro && !line.includes(':')) {
+                    addSuggestion(`next is ':'`)
+                    continue
+                } else if (macro && b.length < 3) {
+                    if (aT) {
+                        addSuggestion(`... existing blueprint name`)
+                    } else if (macro === 'attr') {
+                        addSuggestion(`...iat | uat | word`)
+                    } else if (macro === 'list') {
+                        addSuggestion(`... identifier`)
+                    } else {
+                        addSuggestion(`macro '${macro}' does not exist`)
+                    }
+                    continue
+                } else if (macro && b.length >= 3 && !line.endsWith('!')) {
+                    addSuggestion(`end with '!' when ready`)
                     continue
                 }
+
+                const param = b.length >= 2 ? b : ''
 
                 let failed = false
                 doingMacro: if (macro && param && line.endsWith(confirm)) {
@@ -472,6 +486,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     }
                     return collection.join('\n')
                 }
+
                 if (failed) {
                     addSuggestion(`'${macro}' cannot accept '${b}'`)
                     continue
@@ -483,6 +498,15 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     addSuggestion(`'${a}' does not exist`)
                     continue
                 }
+
+                if (!line.includes(':')) {
+                    addSuggestion(`next is ':'`)
+                    continue
+                } else if (b.length < 3) {
+                    addSuggestion(`... existing blueprint name`)
+                    continue
+                }
+
                 if (!bT) {
                     addSuggestion(`'${b}' does not exist`)
                     continue
