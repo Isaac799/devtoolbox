@@ -113,16 +113,45 @@
     <p>
         So you scrolled all the way down here? Check this out!
     </p>
-    <h3>
-        Associative Entities (linked lists)
-    </h3>
     <p>
         Wrapping a new line in <code>!</code> runs a macro. The
-        first one starts it, the second one runs it. Each identifier is a blueprints name.
+        first one starts it, the second one runs it.
     </p>
+    <h3>
+        Associative Entities
+    </h3>
+    <p>A common need is many-many relationships. For example, a student can be enrolled in many courses, and a course
+        can have many students. Use this to relate 2 pre-existing blueprints (each identifier is a blueprint).
+        name.</p>
     <pre>
         ![ identifier ]:[ identifier ]!
     </pre>
+    <h3>
+        List
+    </h3>
+    <p>
+        Another common need is a list of things to choose from, categorical data. For example, dropdown lists in web
+        design. Use this to make a new blueprint with id and name attributes.
+    </p>
+    <pre>
+        !list:[ identifier ]!
+    </pre>
+    <h3>
+        Attributes
+    </h3>
+    <p>
+        Several attributes make re-appearances throughout different blueprints. These can help you from having to write
+        the same thing over and over. Or just copy-paste I guess... you choose.
+    </p>
+    <ul>
+        <li><code>iat</code> inserted at timestamp </li>
+        <li><code>uat</code> updated at timestamp </li>
+        <li><code>word | string | str</code> unique string with upper limit </li>
+    </ul>
+    <pre>
+        !attr:[ prebuilt identifier ]!
+    </pre>
+
 </mat-dialog-content>
 <mat-dialog-actions align="end">
     <button

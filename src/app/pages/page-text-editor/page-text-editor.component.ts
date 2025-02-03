@@ -416,63 +416,113 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     continue
                 }
 
+                let macro = ''
+
                 const ab = lineCleaned.split(':')
-                if (ab.length !== 2) {
-                    addSuggestion(`first blueprint name`)
+
+                const a = cc((ab[0] || '').trim(), 'sk')
+                const b = cc((ab[1] || '').trim(), 'sk')
+
+                const aT = !a ? null : PageTextEditorComponent.FindTable(answer, a)
+                const bT = !b ? null : PageTextEditorComponent.FindTable(answer, b)
+
+                if (!aT && a) {
+                    macro = cc(a.trim(), 'sk')
+                }
+
+                const param = b.length >= 2 ? b : ''
+
+                console.log({
+                    macro,
+                    param
+                })
+
+                if (macro === 'attr' && !param) {
+                    addSuggestion(`attribute macro...`)
                     continue
                 }
 
-                const a = cc(ab[0].trim(), "sk")
-                if (!a) {
-                    addSuggestion(`first blueprint name`)
-                    continue
+                let failed = false
+                doingMacro: if (macro && param && line.endsWith(confirm)) {
+                    let collection: string[] = []
+                    const collectionAddition: string[] = []
+
+                    if (macro === 'attr') {
+                        if (param === 'iat') {
+                            collectionAddition.push(`- inserted at as timestamp with required`)
+                        } else if (param === 'uat') {
+                            collectionAddition.push(`- updated at as timestamp with required`)
+                        } else if (param === 'string' || param === 'str' || param === 'word') {
+                            collectionAddition.push(`- name as str with required, unique, 3..30`)
+                        } else {
+                            failed = true
+                            break doingMacro
+                        }
+                    } else if (macro === 'list') {
+                        collectionAddition.push(`## ${cc(param, 'tc')}`)
+                        collectionAddition.push(`- id as ++`)
+                        collectionAddition.push(`- name as str with required, unique, 3..30`)
+                    } else {
+                        failed = true
+                        break doingMacro
+                    }
+
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i]
+                        if (i !== li - 1) {
+                            collection.push(line)
+                            continue
+                        }
+                        collection = collection.concat(collectionAddition)
+                    }
+                    return collection.join('\n')
                 }
-                const b = cc(ab[1].trim(), "sk")
-                if (!b) {
-                    addSuggestion(`second blueprint name`)
+                if (failed) {
+                    addSuggestion(`'${macro}' cannot accept '${b}'`)
                     continue
                 }
 
-                const aT = PageTextEditorComponent.FindTable(answer, a)
+                macro = 'associative entity'
+
                 if (!aT) {
                     addSuggestion(`'${a}' does not exist`)
                     continue
                 }
-                const bT = PageTextEditorComponent.FindTable(answer, b)
                 if (!bT) {
                     addSuggestion(`'${b}' does not exist`)
                     continue
                 }
 
-                if (!line.toLowerCase().endsWith(confirm)) {
+                if (!line.endsWith(confirm)) {
                     addSuggestion(`type '${confirm}' to confirm`)
                     continue
                 }
 
-                const collection: string[] = []
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i]
-                    if (i !== li - 1) {
-                        collection.push(line)
-                        continue
+                if (macro === 'associative entity') {
+                    const collection: string[] = []
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i]
+                        if (i !== li - 1) {
+                            collection.push(line)
+                            continue
+                        }
+
+                        const aL = a === b ? a + '_a' : a
+                        const bL = a === b ? b + '_b' : b
+
+                        if (a === b) {
+                            collection.push(`## ${cc(a, 'tc')} ${cc(b, 'tc')}`)
+                            collection.push(`- ${cc(aL, 'tc')} as ${cc(a, 'tc')} with required`)
+                            collection.push(`- ${cc(bL, 'tc')} as ${cc(a, 'tc')} with required`)
+                        } else {
+                            collection.push(`## ${cc(a, 'tc')} ${cc(b, 'tc')}`)
+                            collection.push(`- @${cc(aL, 'tc')} with required`)
+                            collection.push(`- @${cc(bL, 'tc')} with required`)
+                        }
                     }
 
-                    const aL = a === b ? a + '_a' : a
-                    const bL = a === b ? b + '_b' : b
-
-                    if (a === b) {
-                        collection.push(`## ${cc(a, 'tc')} ${cc(b, 'tc')}`)
-                        collection.push(`- ${cc(aL, 'tc')} as ${cc(a, 'tc')} with required`)
-                        collection.push(`- ${cc(bL, 'tc')} as ${cc(a, 'tc')} with required`)
-                    } else {
-                        collection.push(`## ${cc(a, 'tc')} ${cc(b, 'tc')}`)
-                        collection.push(`- @${cc(aL, 'tc')} with required`)
-                        collection.push(`- @${cc(bL, 'tc')} with required`)
-                    }
-                } 
-                console.log(collection.join('\n'))
-
-                return collection.join('\n')
+                    return collection.join('\n')
+                }
             } else if (line.startsWith('# ')) {
                 const name = cc(line.substring(2, line.length).trim(), 'sk')
 
