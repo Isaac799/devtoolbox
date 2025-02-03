@@ -411,8 +411,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     lineCleaned = lineCleaned.substring(0, lineCleaned.length - 1).trim()
                 }
 
-                lineCleaned = cc(lineCleaned, 'sk')
-
                 if (lineCleaned.length < 2) {
                     addSuggestion(`starting macro...`)
                     continue
@@ -424,12 +422,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     continue
                 }
 
-                const a = ab[0].trim()
+                const a = cc(ab[0].trim(), "sk")
                 if (!a) {
                     addSuggestion(`first blueprint name`)
                     continue
                 }
-                const b = ab[1].trim()
+                const b = cc(ab[1].trim(), "sk")
                 if (!b) {
                     addSuggestion(`second blueprint name`)
                     continue
