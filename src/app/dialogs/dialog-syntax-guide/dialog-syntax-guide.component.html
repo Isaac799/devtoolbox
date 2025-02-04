@@ -34,7 +34,7 @@
     <code>-  &#64;[ identifier ] with [ options ]</code>
 
     <h3>Options</h3>
-    <p>Note that all options can be truncated</p>
+    <p>Note that all options can be truncated to just their first letter.</p>
     <ul>
         <li>
             <code>[ required ]</code> must have a value, cannot be null
@@ -46,58 +46,97 @@
             <code>[ primary ]</code> this is a primary identifier.
         </li>
         <li>
+            <code>[ default ]</code> this is the default value to set an attribute to. Tooltips will guide the expected
+            format.
+        </li>
+        <li>
             <code>[ system ]</code> excludes it from certain things, like needing passed in on creation.
         </li>
     </ul>
 
     <h3>Types</h3>
-    <ul>
-        <li>
-            <code>[ date ]</code> a calender date, <code>YYYY-MM-DD</code>
-        </li>
-        <li>
-            <code>[ time ]</code> a point in time <code>HH:MM:SS</code>
-        </li>
-        <li>
-            <code>[ timestamp | ts ]</code> includes date and time <code>YYYY-MM-DD HH:MM:SS</code>
-        </li>
-        <li>
-            <code>[ string | str ]</code> a word or phrase
-        </li>
-        <li>
-            <code>[ bit ]</code> 0 or 1
-        </li>
-        <li>
-            <code>[ character | char ]</code> a single character or letter
-        </li>
-        <li>
-            <code>[ decimal | dec ]</code> a decimal point number
-        </li>
-        <li>
-            <code>[ real ]</code> a real number
-        </li>
-        <li>
-            <code>[ float ]</code> a float number
-        </li>
-        <li>
-            <code>[ integer | int ]</code> a signed (+/-) integer
-        </li>
-        <li>
-            <code>[ boolean | bool ]</code> true or false
-        </li>
-        <li>
-            <code>[ money ]</code> a monetary value
-        </li>
-    </ul>
+    <p>All the following types are supported</p>
+    <table [cellSpacing]="6">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Shorthand</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>date</code></td>
+                <td></td>
+                <td>a calendar date <code>YYYY-MM-DD</code></td>
+            </tr>
+            <tr>
+                <td><code>time</code></td>
+                <td></td>
+                <td>a point in time <code>HH:MM:SS</code> with optional utc offset <code>-HH:MM</code></td>
+            </tr>
+            <tr>
+                <td><code>timestamp</code></td>
+                <td><code>ts</code></td>
+                <td>includes date and time <code>YYYY-MM-DD HH:MM:SS</code> with optional utc offset <code>-HH:MM</code>
+                </td>
+            </tr>
+            <tr>
+                <td><code>string</code></td>
+                <td><code>str</code></td>
+                <td>a word or phrase</td>
+            </tr>
+            <tr>
+                <td><code>bit</code></td>
+                <td></td>
+                <td>0 or 1</td>
+            </tr>
+            <tr>
+                <td><code>character</code></td>
+                <td><code>char</code></td>
+                <td>a single character or letter</td>
+            </tr>
+            <tr>
+                <td><code>decimal</code></td>
+                <td><code>dec</code></td>
+                <td>a decimal point number</td>
+            </tr>
+            <tr>
+                <td><code>real</code></td>
+                <td></td>
+                <td>a real number</td>
+            </tr>
+            <tr>
+                <td><code>float</code></td>
+                <td></td>
+                <td>a float number</td>
+            </tr>
+            <tr>
+                <td><code>integer</code></td>
+                <td><code>int</code></td>
+                <td>a signed (+/-) integer</td>
+            </tr>
+            <tr>
+                <td><code>boolean</code></td>
+                <td><code>bool</code></td>
+                <td>true or false</td>
+            </tr>
+            <tr>
+                <td><code>money</code></td>
+                <td></td>
+                <td>a monetary value</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h3>Special Types</h3>
     <ul>
         <li>
             <code>[ auto increment | ++ ]</code> is a unique integer that increments. Automatically gains
-            <code>[ primary & required & unique & system ]</code>
+            <code>[ primary & required & unique & system ] options.</code>
         </li>
         <li>
-            <code>[ reference | ref ]</code> indicating another blueprint
+            <code>[ blueprint name ]</code> indicating another blueprint will reference it. Allowing for aliasing.
         </li>
     </ul>
 
