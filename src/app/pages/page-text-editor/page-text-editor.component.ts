@@ -398,11 +398,11 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     continue
                 } else if (macro && b.length < 3) {
                     if (aT) {
-                        addSuggestion(`... existing blueprint name`)
+                        addSuggestion(`... blueprint name`)
                     } else if (macro === 'attr') {
                         addSuggestion(`...iat | uat | word`)
                     } else if (macro === 'list') {
-                        addSuggestion(`... identifier`)
+                        addSuggestion(`... new blueprint name`)
                     } else {
                         addSuggestion(`macro '${macro}' does not exist`)
                     }
@@ -421,9 +421,9 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
                     if (macro === 'attr') {
                         if (param === 'iat') {
-                            collectionAddition.push(`- inserted at as timestamp with required`)
+                            collectionAddition.push(`- inserted at as timestamp with required, system, default:CURRENT_TIMESTAMP`)
                         } else if (param === 'uat') {
-                            collectionAddition.push(`- updated at as timestamp with required`)
+                            collectionAddition.push(`- updated at as timestamp with required, system, default:CURRENT_TIMESTAMP`)
                         } else if (param === 'string' || param === 'str' || param === 'word') {
                             collectionAddition.push(`- name as str with required, unique, 3..30`)
                         } else {
@@ -835,7 +835,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     options.push('primary')
                 }
             }
-            
+
             if (a.Option?.SystemField && a.Type !== AttrType.SERIAL) {
                 if (optionCompact) {
                     options.push('sys')
