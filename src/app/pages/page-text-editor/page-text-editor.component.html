@@ -62,21 +62,6 @@
         #inputContainer
     >
         <div
-            class="render-suggestion-box"
-            #suggestionBox
-        >
-            @for (el of renderSuggestionElements; track $index) {
-            @if (el.innerText === NEWLINE) {
-            <br />
-            } @else if (el.class) {
-            <span [class]="el.class">{{ el.innerText }}</span>
-            } @else {
-            <span>{{ el.innerText }}</span>
-            }
-            }
-        </div>
-
-        <div
             class="render-box"
             #renderBox
         >

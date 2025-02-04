@@ -43,7 +43,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     @ViewChild('textEditor') textEditorEl: ElementRef<HTMLTextAreaElement> | null = null
     @ViewChild('inputContainer') inputContainer: ElementRef<HTMLDivElement> | null = null
     @ViewChild('main') main: ElementRef<HTMLDivElement> | null = null
-    @ViewChild('suggestionBox') suggestionBoxEl: ElementRef<HTMLDivElement> | null = null
     @ViewChild('renderBox') renderBoxEl: ElementRef<HTMLDivElement> | null = null
 
     readonly dataService = inject(DataService)
@@ -111,14 +110,9 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         }
         this.textEditorEl.nativeElement.addEventListener('scroll', ev => {
             if (!(ev.target instanceof HTMLTextAreaElement)) return
-            if (!(this.suggestionBoxEl?.nativeElement instanceof HTMLDivElement)) return
             if (!(this.renderBoxEl?.nativeElement instanceof HTMLDivElement)) return
             const left = ev.target.scrollLeft
             const top = ev.target.scrollTop
-            this.suggestionBoxEl.nativeElement.scroll({
-                top,
-                left
-            })
             this.renderBoxEl.nativeElement.scroll({
                 top,
                 left
@@ -171,7 +165,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.appService.RefreshOutput()
     }
 
-    Render(textAreaInput: string, previousParse: ParseResult) {
+    Render(textAreaInput: string, parsed: ParseResult) {
         this.renderElements = []
         this.renderSuggestionElements = []
 
@@ -181,7 +175,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         let newLines: RenderE[] = []
 
-        for (const line of lines) {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i]
             const newLine: RenderE[] = []
             const words = this.ExtractLineWords(line)
 
@@ -200,6 +195,22 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 }
                 newLine.push(el)
             }
+
+            const suggestions = (parsed.suggestions || [])[i + 1]
+            const errors = (parsed.errors || [])[i + 1]
+
+            if (suggestions) {
+                const revised: string[] = consolidateSuggestions(suggestions)
+                const tip = {innerText: revised.join(', '), class: 'is-suggestion is-message'}
+                newLine.push(tip)
+            }
+
+            if (errors) {
+                const revised: string[] = consolidateSuggestions(errors)
+                const tip = {innerText: revised.join(', '), class: 'is-error is-message'}
+                newLine.push(tip)
+            }
+
             newLine.push({innerText: this.NEWLINE})
             newLines = newLines.concat(newLine)
         }
@@ -207,9 +218,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.renderElements = newLines
 
         clearTimeout(this.suggestionDebounce)
-        this.suggestionDebounce = setTimeout(() => {
-            this.RenderSuggestions(textAreaInput, previousParse)
-        }, 200)
     }
 
     private AdjustEditorHeight(lines: string[]) {
@@ -220,72 +228,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             }
             rows += 2
             this.inputContainer.nativeElement.style.height = rows + 'rem'
-            this.AdjustEditorWidth(lines)
         }
-    }
-
-    private AdjustEditorWidth(lines: string[]) {
-        // function getLongestStringLength(arr: string[]): number {
-        //     if (arr.length === 0) {
-        //         return 0 // or return undefined if you prefer
-        //     }
-        //     // Use reduce to find the longest string and return its length
-        //     return arr.reduce((maxLength, currentString) => {
-        //         return Math.max(maxLength, currentString.length)
-        //     }, 0)
-        // }
-        // let cols = getLongestStringLength(lines)
-        // if (this.inputContainer) {
-        //     if (cols < 20) {
-        //         cols = 20
-        //     }
-        //     this.inputContainer.nativeElement.style.width = cols + 10 + 'rem'
-        // }
-    }
-
-    private RenderSuggestions(textAreaInput: string, parsed: ParseResult) {
-        if (!parsed) {
-            return
-        }
-
-        this.renderSuggestionElements = []
-
-        const lines = textAreaInput.split('\n')
-        let newLines: RenderE[] = []
-
-        let li = 0
-
-        for (const line of lines) {
-            li += 1
-
-            const suggestions = (parsed.suggestions || [])[li]
-            const errors = (parsed.errors || [])[li]
-
-            const newLine: RenderE[] = []
-            const words = this.ExtractLineWords(line)
-
-            for (const word of words) {
-                const el: RenderE = {innerText: word}
-                newLine.push(el)
-            }
-
-            if (suggestions) {
-                const revised: string[] = consolidateSuggestions(suggestions)
-                const tip = {innerText: revised.join(', '), class: 'is-suggestion'}
-                newLine.push(tip)
-            }
-
-            if (errors) {
-                const revised: string[] = consolidateSuggestions(errors)
-                const tip = {innerText: revised.join(', '), class: 'is-error'}
-                newLine.push(tip)
-            }
-
-            newLine.push({innerText: this.NEWLINE})
-            newLines = newLines.concat(newLine)
-        }
-
-        this.renderSuggestionElements = newLines
     }
 
     private ExtractLineWords(line: string): string[] {
