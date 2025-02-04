@@ -15,6 +15,7 @@
     >.input-box,
     >div.render-box {
         position: absolute;
+        overflow: hidden;
         inset: 0;
 
         border: 0;

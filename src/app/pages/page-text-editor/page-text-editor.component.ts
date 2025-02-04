@@ -42,7 +42,6 @@ import {MatTooltipModule} from '@angular/material/tooltip'
 export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('textEditor') textEditorEl: ElementRef<HTMLTextAreaElement> | null = null
     @ViewChild('inputContainer') inputContainer: ElementRef<HTMLDivElement> | null = null
-    @ViewChild('main') main: ElementRef<HTMLDivElement> | null = null
     @ViewChild('renderBox') renderBoxEl: ElementRef<HTMLDivElement> | null = null
 
     readonly dataService = inject(DataService)
@@ -228,7 +227,26 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             }
             rows += 2
             this.inputContainer.nativeElement.style.height = rows + 'rem'
+            this.AdjustEditorWidth(lines)
         }
+    }
+
+    private AdjustEditorWidth(lines: string[]) {
+        function getLongestStringLength(arr: string[]): number {
+            if (arr.length === 0) {
+                return 0 // or return undefined if you prefer
+            }
+            // Use reduce to find the longest string and return its length
+            return arr.reduce((maxLength, currentString) => {
+                return Math.max(maxLength, currentString.length)
+            }, 0)
+        }
+        const cols = getLongestStringLength(lines)
+
+        // 2 from padding? not sure it looks right tho
+        const newW = cols + 2 + 'rem'
+        this.textEditorEl!.nativeElement.style.width = newW
+        this.renderBoxEl!.nativeElement.style.width = newW
     }
 
     private ExtractLineWords(line: string): string[] {
