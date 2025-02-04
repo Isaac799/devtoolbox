@@ -7,16 +7,10 @@
 .input-container {
     position: relative;
     overflow: auto;
+
     margin: 0 1rem 0 1rem;
-
-        border: 1px solid rgb(0, 0, 0, 0.35);
-        border-radius: 0.8rem;
-
-    // :has(.input-box:focus) {
-    //     transition: ease-in-out 200ms;
-    //     border: 1px solid #005CBB;
-    //     border-radius: 0.8rem;
-    // }
+    padding: 0.35rem 1rem 0.35rem 1rem;
+    border-radius: 0.5rem;
 
     >.input-box,
     >div.render-box,
@@ -26,7 +20,6 @@
 
         border: 0;
         border-radius: 0;
-
 
         font-size: 1rem;
         line-height: 1rem;
@@ -51,7 +44,6 @@
 
     >div.render-suggestion-box {
         color: rgba(0, 0, 0, 0);
-        background-color: var(--mat-sidenav-content-background-color, var(--mat-sys-background));
         // background: #fefefe;
 
         font-size: 0.8rem;

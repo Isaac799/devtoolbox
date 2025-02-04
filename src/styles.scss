@@ -7,6 +7,7 @@ body {
     margin: 0;
     font-size: 16px;
     font-family: Roboto, Verdana, Geneva, Tahoma, sans-serif;
+    background-color: var(--mat-background-color, var(--mat-sys-background));
 }
 
 .p1 {
@@ -19,8 +20,4 @@ body {
 
 .toolbar-icon-spacer {
     flex: 1 1 auto;
-}   
-
-pre, code {
-    color: #545454;
 }

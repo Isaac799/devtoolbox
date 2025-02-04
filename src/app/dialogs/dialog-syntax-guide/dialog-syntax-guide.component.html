@@ -10,9 +10,7 @@
     <p>
         Firstly, create a folder (schema)
     </p>
-    <pre>
-#  [ identifier ] 
-    </pre>
+    <code>#  [ identifier ]</code>
 
     <h2>
         Blueprints
@@ -20,9 +18,7 @@
     <p>
         Secondly, create a blueprint (entity / table)
     </p>
-    <pre>
-##  [ identifier ] 
-    </pre>
+    <code>##  [ identifier ]</code>
 
     <h2>
         Attributes
@@ -30,16 +26,12 @@
     <p>
         Finally, add attribute (properties / columns)
     </p>
-    <pre>
--  [ identifier ] as [ type ] with [ options ]
-    </pre>
+    <code>-  [ identifier ] as [ type ] with [ options ]</code>
 
     <p>
         Shorthand to referencing other blueprints (identifier must already exist)
     </p>
-    <pre>
--  &#64;[ identifier ] with [ options ]
-    </pre>
+    <code>-  &#64;[ identifier ] with [ options ]</code>
 
     <h3>Options</h3>
     <p>Note that all options can be truncated</p>
@@ -121,10 +113,8 @@
         Associative Entities
     </h3>
     <p>A common need is many-many relationships. For example, a student can be enrolled in many courses, and a course
-        can have many students. Use this to relate 2 pre-existing blueprints.</p>
-    <pre>
-![ identifier ]:[ identifier ]!
-    </pre>
+        can have many students. Use this to relate 2 code-existing blueprints.</p>
+    <code>![ identifier ]:[ identifier ]!</code>
     <h3>
         List
     </h3>
@@ -132,9 +122,7 @@
         Another common need is a list of things to choose from, categorical data. For example, dropdown lists in web
         design. Use this to make a new blueprint with id and name attributes.
     </p>
-    <pre>
-!list:[ identifier ]!
-    </pre>
+    <code>!list:[ identifier ]!</code>
     <h3>
         Attributes
     </h3>
@@ -147,9 +135,7 @@
         <li><code>uat</code> updated at timestamp </li>
         <li><code>word | string | str</code> unique string with upper limit </li>
     </ul>
-    <pre>
-!attr:[ prebuilt identifier ]!
-    </pre>
+    <code>!attr:[ codebuilt identifier ]!</code>
 
 </mat-dialog-content>
 <mat-dialog-actions align="end">
