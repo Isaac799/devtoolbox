@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core'
 import {TAB} from '../../../app/constants'
-import {cc, alignKeyword} from '../../../app/formatting'
-import {Table, Schema, AttrType, generateSeedData} from '../../../app/structure'
+import {cc, alignKeyword, alignKeywords} from '../../../app/formatting'
+import {Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue, Attribute} from '../../../app/structure'
 import {LanguageSqlService} from './language-sql.service'
 import {AttributeMap} from '../../varchar'
 
@@ -21,7 +21,7 @@ export class LanguagePsqlService {
             for (const t of s.Tables) {
                 drops.push(`DROP TABLE IF EXISTS ${t.FN};`)
                 createTableLines.push(`CREATE TABLE IF NOT EXISTS ${t.FN} (`)
-                const attrs: string[] = LanguageSqlService.generateAttributesForTable(t)
+                const attrs: string[] = LanguagePsqlService.generateAttributesForTable(t)
 
                 const endThings: string[] = LanguagePsqlService.generateTableEndParts(t)
                 // let indexes: string[] = generateTableIndexes(t);
@@ -274,7 +274,7 @@ export class LanguagePsqlService {
         const whereAND = []
         for (const a of t.Attributes) {
             if (!a.Option?.PrimaryKey || a.Type === AttrType.REFERENCE) continue
-            params.push(`desired_${cc(a.Name, 'sk')} ${a.Type}`)
+            params.push(`desired_${cc(a.Name, 'sk')} ${PG_TO_PG_TYPE[a.Type]}`)
             whereAND.push(`${useI.get(t, null)}.${cc(a.Name, 'sk')} = desired_${cc(a.Name, 'sk')}`)
         }
         const whereStr: string = whereAND.join(' AND ')
@@ -288,14 +288,14 @@ export class LanguagePsqlService {
         for (const a of t.Attributes) {
             if (!a.RefTo) {
                 const n = cc(`${useI.get(t, a)}_${cc(a.Name, 'sk')}`, 'sk')
-                returnTableLines.push(`${n} ${a.Type}`)
+                returnTableLines.push(`${n} ${PG_TO_PG_TYPE[a.Type]}`)
                 selectingLines.push(`${useI.get(t, a)}.${cc(a.Name, 'sk')} AS ${n}`)
                 continue
             }
 
             for (const ra of a.RefTo.Attributes) {
                 const n = cc(`${useI.get(t, a)}_${cc(ra.Name, 'sk')}`, 'sk')
-                returnTableLines.push(`${n} ${ra.Type}`)
+                returnTableLines.push(`${n} ${PG_TO_PG_TYPE[ra.Type]}`)
                 selectingLines.push(`${useI.get(t, a)}.${cc(ra.Name, 'sk')} AS ${n}`)
             }
         }
@@ -327,5 +327,61 @@ $$ LANGUAGE plpgsql;`
         q = q.replaceAll('SERIAL', 'INT')
 
         return q
+    }
+
+    static generateAttributesForTable(t: Table, beingReferences?: Attribute) {
+        let attrs: string[] = []
+        for (const a of t.Attributes) {
+            if (beingReferences) {
+                if (!a.Option?.PrimaryKey) {
+                    continue
+                }
+            }
+            const name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk')
+            let type = ''
+            if ([AttrType.VARCHAR].includes(a.Type)) {
+                let max = 15
+                if (!a.Validation || !a.Validation.Max) {
+                    console.warn(`missing max validation on "${name}"`)
+                } else {
+                    max = a.Validation.Max
+                }
+                type = [a.Type, `(${max || '15'})`].join('')
+            } else if (a.Type === AttrType.REFERENCE) {
+                if (beingReferences) {
+                    // prevents endless recursion
+                    continue
+                }
+                if (!a.RefTo) {
+                    console.warn(`invalid referenced id "${name}"`)
+                    continue
+                }
+                const referencedAttrs = LanguagePsqlService.generateAttributesForTable(a.RefTo, a)
+                attrs = attrs.concat(referencedAttrs)
+                continue
+            } else {
+                type = PG_TO_PG_TYPE[a.Type]
+            }
+
+            if (beingReferences && a.Type === AttrType.SERIAL) {
+                type = 'INT'
+            }
+
+            const attrLine = [`${cc(name, 'sk')} ${type}`]
+
+            if (a.Option?.Default) {
+                const def = GenerateDefaultValue(a, Lang.PGSQL)
+                if (def !== null) {
+                    attrLine.push(`DEFAULT ${def}`)
+                }
+            }
+            if (a.Validation?.Required) {
+                attrLine.push(`NOT NULL`)
+            }
+            attrs.push(attrLine.join(' '))
+        }
+
+        attrs = alignKeywords(attrs, Object.values(AttrType))
+        return attrs
     }
 }

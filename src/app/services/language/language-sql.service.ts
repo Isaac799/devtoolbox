@@ -1,68 +1,12 @@
-import {Injectable} from '@angular/core'
-import {Attribute, AttrType, GenerateDefaultValue, Lang, Table} from '../../structure'
-import {cc, alignKeywords, alignKeyword} from '../../formatting'
-import {TAB} from '../../constants'
+import { Injectable } from '@angular/core'
+import { Attribute, AttrType, Table } from '../../structure'
+import { cc, alignKeyword } from '../../formatting'
+import { TAB } from '../../constants'
 
 @Injectable({
     providedIn: 'root'
 })
 export class LanguageSqlService {
-    static generateAttributesForTable(t: Table, beingReferences?: Attribute) {
-        let attrs: string[] = []
-        for (const a of t.Attributes) {
-            if (beingReferences) {
-                if (!a.Option?.PrimaryKey) {
-                    continue
-                }
-            }
-            const name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk')
-            let type = ''
-            if ([AttrType.VARCHAR].includes(a.Type)) {
-                let max = 15
-                if (!a.Validation || !a.Validation.Max) {
-                    console.warn(`missing max validation on "${name}"`)
-                } else {
-                    max = a.Validation.Max
-                }
-                type = [a.Type, `(${max || '15'})`].join('')
-            } else if (a.Type === AttrType.REFERENCE) {
-                if (beingReferences) {
-                    // prevents endless recursion
-                    continue
-                }
-                if (!a.RefTo) {
-                    console.warn(`invalid referenced id "${name}"`)
-                    continue
-                }
-                const referencedAttrs = LanguageSqlService.generateAttributesForTable(a.RefTo, a)
-                attrs = attrs.concat(referencedAttrs)
-                continue
-            } else {
-                type = a.Type
-            }
-
-            if (beingReferences && a.Type === AttrType.SERIAL) {
-                type = 'INT'
-            }
-
-            const attrLine = [`${cc(name, 'sk')} ${type}`]
-
-            if (a.Option?.Default) {
-                const def = GenerateDefaultValue(a, Lang.PGSQL)
-                if (def !== null) {
-                    attrLine.push(`DEFAULT ${def}`)
-                }
-            }
-            if (a.Validation?.Required) {
-                attrLine.push(`NOT NULL`)
-            }
-            attrs.push(attrLine.join(' '))
-        }
-
-        attrs = alignKeywords(attrs, Object.values(AttrType))
-        return attrs
-    }
-
     static GenerateUniqueAttributes(t: Table): Record<string, string[]> {
         const uniques: Record<string, string[]> = {}
         for (const a of t.Attributes) {

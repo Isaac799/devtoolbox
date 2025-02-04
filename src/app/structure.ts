@@ -23,12 +23,11 @@ export enum Lang {
     CS = 1 << 13
 }
 
-export  interface ParseResult {
+export interface ParseResult {
     data: Record<string, SchemaConfig>
     suggestions?: Suggestions
     errors?: Suggestions
 }
-
 
 export interface RenderE {
     innerText: string
@@ -36,8 +35,6 @@ export interface RenderE {
 }
 
 export type Suggestions = Record<number, string[]>
-
-
 
 export class FuncIn {
     label: string
@@ -453,7 +450,7 @@ export class Table {
     ID
     Parent: Schema
     RefBy?: {
-        tlb: Table,
+        tlb: Table
         attr: Attribute
     }[]
     Name: string
@@ -863,6 +860,23 @@ export const SQL_TO_GO_TYPE: Record<AttrType, string> = {
     [AttrType.VARCHAR]: 'string',
     [AttrType.MONEY]: 'float64',
     [AttrType.REFERENCE]: ''
+}
+
+export const PG_TO_PG_TYPE: Record<AttrType, string> = {
+    [AttrType.BIT]: AttrType.BIT,
+    [AttrType.DATE]: AttrType.DATE,
+    [AttrType.CHAR]: AttrType.CHAR,
+    [AttrType.TIME]: 'TIMETZ',
+    [AttrType.TIMESTAMP]: 'TIMESTAMPTZ',
+    [AttrType.SERIAL]: AttrType.SERIAL,
+    [AttrType.DECIMAL]: AttrType.DECIMAL,
+    [AttrType.FLOAT]: AttrType.FLOAT,
+    [AttrType.REAL]: AttrType.REAL,
+    [AttrType.INT]: AttrType.INT,
+    [AttrType.BOOLEAN]: AttrType.BOOLEAN,
+    [AttrType.VARCHAR]: AttrType.VARCHAR,
+    [AttrType.MONEY]: AttrType.MONEY,
+    [AttrType.REFERENCE]: AttrType.REFERENCE
 }
 
 export const SQL_TO_GO_DEFAULT_VALUE: Record<AttrType, string> = {
@@ -1565,20 +1579,34 @@ export const GenerateDefaultValue = (attr: Attribute, lang: Lang): string | null
         return null
     }
 
-    if (d.trim().toUpperCase() === 'NOW()') {
-        d = 'NOW()'
+    if (attr.Type === AttrType.DATE && d.trim().toUpperCase() === 'NOW') {
+        if (lang === Lang.PGSQL) {
+            d = 'CURRENT_DATE'
+        } else if (lang === Lang.TSQL) {
+            d = 'GETDATE()'
+        } else if (lang === Lang.SQLite) {
+            d = 'CURRENT_DATE'
+        }
     }
 
-    if (d.trim().toUpperCase() === 'CURRENT_DATE') {
-        d = 'CURRENT_DATE'
+    if (attr.Type === AttrType.TIME && d.trim().toUpperCase() === 'NOW') {
+        if (lang === Lang.PGSQL) {
+            d = `CURRENT_TIME AT TIME ZONE 'UTC'`
+        } else if (lang === Lang.TSQL) {
+            d = 'CAST(SYSDATETIMEOFFSET() AS TIME)'
+        } else if (lang === Lang.SQLite) {
+            d = 'CURRENT_TIME'
+        }
     }
 
-    if (d.trim().toUpperCase() === 'CURRENT_TIME') {
-        d = 'CURRENT_TIME'
-    }
-
-    if (d.trim().toUpperCase() === 'CURRENT_TIMESTAMP') {
-        d = 'CURRENT_TIMESTAMP'
+    if (attr.Type === AttrType.TIMESTAMP && d.trim().toUpperCase() === 'NOW') {
+        if (lang === Lang.PGSQL) {
+            d = `CURRENT_TIMESTAMP AT TIME ZONE 'UTC'`
+        } else if (lang === Lang.TSQL) {
+            d = 'SYSDATETIMEOFFSET()'
+        } else if (lang === Lang.SQLite) {
+            d = 'CURRENT_TIMESTAMP'
+        }
     }
 
     if ([Lang.Rust].includes(lang)) {
@@ -1977,8 +2005,8 @@ export const GenerateDefaultValue = (attr: Attribute, lang: Lang): string | null
 export const validationMap = new Map<AttrType, (x: string) => boolean>()
 const validationMapPatterns = {
     date: /^\d{4}-\d{2}-\d{2}$/,
-    time: /^([01]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/,
-    timestamp: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
+    time: /^([0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}|[0-9]{2}:[0-9]{2}:[0-9]{2})$/,
+    timestamp: /^([0-9]{1,4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}|[0-9]{1,4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})$/,
     decimal: /^-?\d+(\.\d+)?$/,
     real: /^-?\d+(\.\d+)?$/,
     float: /^-?\d+(\.\d+)?$/,
@@ -2001,11 +2029,17 @@ const matchesRegex = (x: string, regex: RegExp): boolean => {
 const getSpecialValues = (attrType: AttrType): string[] => {
     switch (attrType) {
         case AttrType.DATE:
-            return ['CURRENT_DATE', 'NOW()']
+            return ['NOW']
         case AttrType.TIME:
-            return ['CURRENT_TIME', 'NOW()']
+            return ['NOW']
         case AttrType.TIMESTAMP:
-            return ['CURRENT_TIMESTAMP', 'NOW()']
+            return ['NOW']
+        // case AttrType.DATE:
+        //     return ['NOW', 'NOW()']
+        // case AttrType.TIME:
+        //     return ['CURRENT_TIME', 'NOW()']
+        // case AttrType.TIMESTAMP:
+        //     return ['CURRENT_TIMESTAMP', 'NOW()']
         default:
             return []
     }
@@ -2041,10 +2075,12 @@ validationMap.set(AttrType.MONEY, (x: string) => matchesRegex(x, validationMapPa
 
 export const defaultValueValidatorHintMap = new Map<AttrType, string>()
 defaultValueValidatorHintMap.set(AttrType.BIT, "'0' or '1'")
-defaultValueValidatorHintMap.set(AttrType.DATE, "YYYY-MM-DD, 'CURRENT_DATE', or 'NOW()'")
-defaultValueValidatorHintMap.set(AttrType.CHAR, 'A fixed length string (e.g., 1 character)')
-defaultValueValidatorHintMap.set(AttrType.TIME, "HH:MM:SS, 'CURRENT_TIME', or 'NOW()'")
-defaultValueValidatorHintMap.set(AttrType.TIMESTAMP, "YYYY-MM-DD HH:MM:SS, 'CURRENT_TIMESTAMP', or 'NOW()'")
+defaultValueValidatorHintMap.set(AttrType.CHAR, '1 character')
+defaultValueValidatorHintMap.set(AttrType.DATE, 'YYYY-MM-DD, or now')
+// defaultValueValidatorHintMap.set(AttrType.TIME, 'HH:MM:SS with optional utc offset -HH:MM, or NOW')
+// defaultValueValidatorHintMap.set(AttrType.TIMESTAMP, 'YYYY-MM-DD HH:MM:SS with optional utc offset -HH:MM, or NOW')
+defaultValueValidatorHintMap.set(AttrType.TIME, 'HH:MM:SS or now')
+defaultValueValidatorHintMap.set(AttrType.TIMESTAMP, 'YYYY-MM-DD HH:MM:SS or now')
 defaultValueValidatorHintMap.set(AttrType.DECIMAL, 'A decimal point (e.g., 123.45, -12.3)')
 defaultValueValidatorHintMap.set(AttrType.REAL, 'A real number (e.g., 123.45, -12.3)')
 defaultValueValidatorHintMap.set(AttrType.FLOAT, 'A floating-point number (e.g., 123.45, -12.3)')
