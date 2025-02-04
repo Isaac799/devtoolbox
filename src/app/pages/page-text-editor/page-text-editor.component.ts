@@ -13,7 +13,8 @@ import {
     SchemaConfig,
     Suggestions,
     TableConfig,
-    Validation
+    Validation,
+    validationMap
 } from '../../structure'
 import {v4 as uuidv4} from 'uuid'
 import {CommonModule} from '@angular/common'
@@ -32,6 +33,7 @@ import {BitwiseOperations} from '../../constants'
 import {MatDialog} from '@angular/material/dialog'
 import {DialogSyntaxGuideComponent} from '../../dialogs/dialog-syntax-guide/dialog-syntax-guide.component'
 import {MatTooltipModule} from '@angular/material/tooltip'
+import {DefaultValueHintPipe} from '../../pipes/default-value-hint.pipe'
 
 @Component({
     selector: 'app-page-text-editor',
@@ -630,6 +632,42 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                         if (!attrOptions.Unique.includes(label)) {
                             attrOptions.Unique.push(label)
                         }
+                    } else if (option.startsWith('d')) {
+                        const indexOfColon = option.indexOf(':')
+                        if (indexOfColon === -1) {
+                            addError('unacceptable default')
+                            continue
+                        }
+
+                        const firstPart = option.substring(0, indexOfColon)
+                        const secondPart = option.substring(indexOfColon + 1)
+                        const uSplit = [firstPart, secondPart]
+
+                        const def = (uSplit[1] || '').trim()
+                        const hintPipe = new DefaultValueHintPipe()
+
+                        const validatorFn = validationMap.get(type)
+
+                        if (!validatorFn) {
+                            console.error(`missing valid default fn for type ${type}`)
+                            continue
+                        }
+
+                        const hint = hintPipe.transform(type)
+
+                        if (!def) {
+                            addSuggestion(hint || 'unacceptable default')
+                            continue
+                        }
+
+                        const isValid = validatorFn(def || '')
+
+                        if (!isValid) {
+                            addError(hint || 'unacceptable default')
+                            continue
+                        }
+
+                        attrOptions.Default = def.trim()
                     } else {
                         const range = option.split('..')
                         if (range.length !== 2) {
@@ -782,6 +820,14 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
             const optionCompact = BitwiseOperations.isBitSet(textEditorState, TextEditorService.AttributeOptionCompact)
 
+            if (a.Validation?.Required && a.Type !== AttrType.SERIAL) {
+                if (optionCompact) {
+                    options.push('r')
+                } else {
+                    options.push('required')
+                }
+            }
+
             if (a.Option?.PrimaryKey && a.Type !== AttrType.SERIAL) {
                 if (optionCompact) {
                     options.push('p')
@@ -789,6 +835,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     options.push('primary')
                 }
             }
+            
             if (a.Option?.SystemField && a.Type !== AttrType.SERIAL) {
                 if (optionCompact) {
                     options.push('sys')
@@ -796,6 +843,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     options.push('system')
                 }
             }
+            const min = a.Validation?.Min
+            const max = a.Validation?.Max
+            if (min || max) {
+                options.push(`${min || ''}..${max || ''}`)
+            }
+
             if (a.Option?.Unique && a.Type !== AttrType.SERIAL) {
                 for (const u of a.Option.Unique) {
                     if (optionCompact) {
@@ -813,25 +866,13 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     }
                 }
             }
-            if (a.Option?.Default) {
-                if (optionCompact) {
-                    options.push('d')
-                } else {
-                    options.push('default')
-                }
-            }
-            if (a.Validation?.Required && a.Type !== AttrType.SERIAL) {
-                if (optionCompact) {
-                    options.push('r')
-                } else {
-                    options.push('required')
-                }
-            }
 
-            const min = a.Validation?.Min
-            const max = a.Validation?.Max
-            if (min || max) {
-                options.push(`${min || ''}..${max || ''}`)
+            if (a.Option?.Default !== undefined) {
+                if (optionCompact) {
+                    options.push(`d:${a.Option.Default}`)
+                } else {
+                    options.push(`default:${a.Option.Default}`)
+                }
             }
             return options
         }
