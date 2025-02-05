@@ -425,7 +425,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                         } else if (param === 'uat') {
                             collectionAddition.push(`- updated at as timestamp with required, system, default:now`)
                         } else if (param === 'string' || param === 'str' || param === 'word') {
-                            collectionAddition.push(`- name as str with required, unique, 3..30`)
+                            collectionAddition.push(`- title as str with required, unique, 3..30`)
                         } else {
                             failed = true
                             break doingMacro
