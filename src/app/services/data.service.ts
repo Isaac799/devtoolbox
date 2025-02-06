@@ -78,6 +78,9 @@ export class DataService {
                         a2.RefTo = r2
                     }
                     if (a.Option) {
+                        if ((a.Option.Unique as any) === true) {
+                            a.Option.Unique = ['a']
+                        }
                         a2.Option = a.Option
                     }
                     if (a.Validation) {

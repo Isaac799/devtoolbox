@@ -60,7 +60,8 @@ export class AppService {
                     const parsed = JSON.parse(oldConfig)
                     const schemas = DataService.ParseSchemaConfig(parsed)
                     this.textEditorService.textInput = PageTextEditorComponent.reverseParse(schemas, this.app.textEditorState)
-                } catch {
+                } catch (error) {
+                    console.error(error)
                     if (!this.dataService.schemas.length && !this.textEditorService.textInput) {
                         this.textEditorService.textInput = this.defaultConfig
                     } else if (!this.textEditorService.textInput) {
@@ -69,7 +70,7 @@ export class AppService {
                 }
                 localStorage.removeItem('devtoolboxState')
             }
-            
+
             if (!this.dataService.schemas.length && !this.textEditorService.textInput) {
                 this.textEditorService.textInput = this.defaultConfig
             } else if (!this.textEditorService.textInput) {
