@@ -2,7 +2,7 @@ import {EventEmitter, inject, Injectable} from '@angular/core'
 import {DataService} from './data.service'
 import {TextEditorService} from './text-editor.service'
 import {PageTextEditorComponent} from '../pages/page-text-editor/page-text-editor.component'
-import {App, AppMode, AppGeneratorMode, AppComplexityMode, Schema} from '../structure'
+import {App, AppGeneratorMode, AppComplexityMode, Schema} from '../structure'
 
 @Injectable({
     providedIn: 'root'
@@ -16,7 +16,11 @@ export class AppService {
 
     app: App = {
         seedLimit: 4,
-        mode: AppMode.YAML,
+        canvasSize: {
+            name: 'small',
+            x: 1920,
+            y: 1080
+        },
         textEditorState: 1,
         generatorMode: AppGeneratorMode.Postgres,
         complexity: AppComplexityMode.Advanced
@@ -146,8 +150,12 @@ export class AppService {
             if (!parsed['seedLimit']) {
                 parsed['seedLimit'] = 4
             }
-            if (!parsed['mode']) {
-                parsed['mode'] = AppMode.YAML
+            if (!parsed['canvasSize']) {
+                parsed['canvasSize'] = {
+                    name: 'small',
+                    x: 1920,
+                    y: 1080
+                }
             }
             if (!parsed['generatorMode']) {
                 parsed['generatorMode'] = AppGeneratorMode.Postgres

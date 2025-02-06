@@ -520,11 +520,6 @@ function createAbbreviation(input: string): string {
     return filtered.toLowerCase() // Convert the result to lowercase
 }
 
-export enum AppMode {
-    JSON,
-    YAML
-}
-
 export interface TextEditorSyntax {
     attributes: 'Compact' | 'Expanded'
     options: 'Compact' | 'Expanded'
@@ -673,10 +668,16 @@ export const attrTypeMapExpanded: Record<AttrType, string> = {
     [AttrType.REFERENCE]: 'reference'
 }
 
+export interface CanvasSize {
+    name: string;
+    x: number;
+    y: number;
+} 
+
 export interface App {
     seedLimit: number
-    mode: AppMode
     textEditorState: number
+    canvasSize: CanvasSize
     generatorMode: AppGeneratorMode
     complexity: AppComplexityMode
 }

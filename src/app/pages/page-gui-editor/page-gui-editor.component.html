@@ -2,62 +2,67 @@
     <div class="side">
         <app-side-bar-editor></app-side-bar-editor>
     </div>
-    <div
-        class="main table-boundary"
-        id="root-editor"
-        #rootEditor
-    >
-        <canvas
-            class="canvas"
-            #canvas
-        ></canvas>
-
-        @for (s of dataService.schemas; track $index) {
-        @for (t of s.Tables; track $index; let ti = $index) {
-        <mat-card
-            appearance="outlined"
-            [id]="'table:' + t.ID"
-            class="table"
-            cdkDrag
-            cdkDragBoundary=".table-boundary"
-            [cdkDragFreeDragPosition]="t.dragPosition"
-            (cdkDragEnded)="doneDrag(t, $event)"
+    <div class="main">
+        <div
+            class=" table-boundary"
+            id="root-editor"
+            #rootEditor
+            [ngStyle]="{
+                'height': appService.app.canvasSize.y + 'px',
+                'width': appService.app.canvasSize.x + 'px',
+            }"
         >
-            <mat-card-header>
-                <mat-card-title (dblclick)="sideBarService.doShowModalTable(t)">
-                    {{ t.Name | titlecase }}
-                </mat-card-title>
-                <mat-card-subtitle>
-                    {{ s.Name | titlecase }}
-                </mat-card-subtitle>
-            </mat-card-header>
+            <canvas
+                class="canvas"
+                #canvas
+            ></canvas>
 
-            <mat-list>
-                @for (a of t.Attributes; track $index; let ai = $index) {
-                <!-- Attribute -->
+            @for (s of dataService.schemas; track $index) {
+            @for (t of s.Tables; track $index; let ti = $index) {
+            <mat-card
+                appearance="outlined"
+                [id]="'table:' + t.ID"
+                class="table"
+                cdkDrag
+                cdkDragBoundary=".table-boundary"
+                [cdkDragFreeDragPosition]="t.dragPosition"
+                (cdkDragEnded)="doneDrag(t, $event)"
+            >
+                <mat-card-header>
+                    <mat-card-title (dblclick)="sideBarService.doShowModalTable(t)">
+                        {{ t.Name | titlecase }}
+                    </mat-card-title>
+                    <mat-card-subtitle>
+                        {{ s.Name | titlecase }}
+                    </mat-card-subtitle>
+                </mat-card-header>
 
-                <mat-list-item>
+                <mat-list>
+                    @for (a of t.Attributes; track $index; let ai = $index) {
+                    <!-- Attribute -->
 
-                    <mat-icon matListItemIcon>
-                        @if (a.Option?.PrimaryKey) {
-                        key
-                        } @else if (a.RefTo) {
-                        quick_reference_all
-                        }@else {
-                        radio_button_unchecked
-                        }
-                    </mat-icon>
-                    <div matListItemTitle>{{ a.Name | titlecase }} ({{a | prettyType}})</div>
-                    <div matListItemLine>{{ a.Description }}</div>
+                    <mat-list-item>
 
-                    <div
-                        class="attribute"
-                        (dblclick)="doShowModalAttribute(s, t, a)"
-                        [id]="'attribute:' + a.ID"
-                    >
+                        <mat-icon matListItemIcon>
+                            @if (a.Option?.PrimaryKey) {
+                            key
+                            } @else if (a.RefTo) {
+                            quick_reference_all
+                            }@else {
+                            radio_button_unchecked
+                            }
+                        </mat-icon>
+                        <div matListItemTitle>{{ a.Name | titlecase }} ({{a | prettyType}})</div>
+                        <div matListItemLine>{{ a.Description }}</div>
+
+                        <div
+                            class="attribute"
+                            (dblclick)="doShowModalAttribute(s, t, a)"
+                            [id]="'attribute:' + a.ID"
+                        >
 
 
-                        <!--                       
+                            <!--                       
                         <mat-chip-set aria-label="Attribute properties">
                             @if(a.Option?.PrimaryKey) {
                             <mat-chip> PK </mat-chip>
@@ -73,37 +78,38 @@
                             }
                         </mat-chip-set> -->
 
-                        <!-- <span>
+                            <!-- <span>
                             {{a.Description}}
                         </span> -->
+                        </div>
+
+
+                    </mat-list-item>
+
+                    @if (a.warnings.length > 0) {
+                    <div class="fc align-center justify-center">
+                        @for (w of a.warnings; track $index) {
+                        <span class="error">
+                            {{ w }}
+                        </span>
+                        }
                     </div>
-
-
-                </mat-list-item>
-
-                @if (a.warnings.length > 0) {
-                <div class="fc align-center justify-center">
-                    @for (w of a.warnings; track $index) {
-                    <span class="error">
-                        {{ w }}
-                    </span>
                     }
-                </div>
-                }
-                }
-            </mat-list>
+                    }
+                </mat-list>
 
-            <mat-card-actions>
-                <button
-                    mat-icon-button
-                    (click)="doShowModalAttribute(s, t)"
-                    aria-label="Add attribute to table"
-                >
-                    <mat-icon>add</mat-icon>
-                </button>
-            </mat-card-actions>
-        </mat-card>
-        }
-        }
+                <mat-card-actions>
+                    <button
+                        mat-icon-button
+                        (click)="doShowModalAttribute(s, t)"
+                        aria-label="Add attribute to table"
+                    >
+                        <mat-icon>add</mat-icon>
+                    </button>
+                </mat-card-actions>
+            </mat-card>
+            }
+            }
+        </div>
     </div>
 </div>

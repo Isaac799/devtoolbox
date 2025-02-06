@@ -10,6 +10,12 @@
     >.main {
         padding: 1rem;
         overflow: auto;
+        // background-color: blue;
+    }
+
+    .table-boundary {
+        position: relative;
+        // background-color: red;
     }
 }
 
@@ -23,7 +29,7 @@
 }
 
 .canvas {
-    position: fixed;
+    position: absolute;
 }
 
 #root-editor {
@@ -33,7 +39,7 @@
 }
 
 .table {
-    position: fixed;
+    position: absolute;
     width: auto;
     max-width: 25rem;
     min-width: 10rem;

@@ -2,26 +2,17 @@
     <tr>
         <td>
             <mat-form-field>
-                <mat-label>Config File</mat-label>
+                <mat-label>Canvas Size</mat-label>
                 <mat-select
-                    [(ngModel)]="appService.app.mode"
+                    [(ngModel)]="appService.app.canvasSize"
                     (ngModelChange)="appService.RefreshOutput()"
                 >
-                    @for (x of sideBarService. modeOptions; track $index) {
-                    <mat-option [value]="x.value">{{ x.name }}</mat-option>
+                    @for (x of sideBarService. canvasSizeOptions; track $index) {
+                    <mat-option [value]="x">{{ x.name }}</mat-option>
                     }
                 </mat-select>
-                <mat-hint align="start"> Save for later </mat-hint>
+                <mat-hint align="start"> For Drag-Drop </mat-hint>
             </mat-form-field>
-        </td>
-        <td>
-            <button
-                mat-icon-button
-                aria-label="Copy config file"
-                (mouseup)="sideBarService.copyConfig()"
-            >
-                <mat-icon>content_copy</mat-icon>
-            </button>
         </td>
     </tr>
     <tr>

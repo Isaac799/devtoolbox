@@ -38,7 +38,7 @@ import { PrettyTypePipe } from "../../pipes/pretty-type.pipe";
 export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy {
     private matDialog = inject(MatDialog)
     readonly sideBarService = inject(SideBarService)
-    private readonly appService = inject(AppService)
+    readonly appService = inject(AppService)
     readonly dataService = inject(DataService)
     private readonly renderer = inject(Renderer2)
 
@@ -50,34 +50,34 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
 
     ngOnInit(): void {
         // Resize the canvas when the component is initialized
-        this.resizeCanvas()
+        // this.resizeCanvas()
 
-        // Listen to the window resize event
-        this.renderer.listen('window', 'resize', () => {
-            this.resizeCanvas()
-        })
+        // // Listen to the window resize event
+        // this.renderer.listen('window', 'resize', () => {
+        //     this.resizeCanvas()
+        // })
     }
 
     ngOnDestroy(): void {
         // this.renderer.listen('window', 'resize', () => {}).remove()
     }
 
-    resizeCanvas(): void {
-        clearTimeout(this.resizeDebounce)
-        this.resizeDebounce = setTimeout(() => {
-            if (!this.canvasRef) {
-                return
-            }
-            if (!this.rootEditor) {
-                return
-            }
+    // resizeCanvas(): void {
+    //     clearTimeout(this.resizeDebounce)
+    //     this.resizeDebounce = setTimeout(() => {
+    //         if (!this.canvasRef) {
+    //             return
+    //         }
+    //         if (!this.rootEditor) {
+    //             return
+    //         }
 
-            const rootSize = this.rootEditor.nativeElement.getBoundingClientRect()
-            this.canvasRef.nativeElement.width = rootSize.width
-            this.canvasRef.nativeElement.height = rootSize.height
-            this.redraw()
-        }, 300)
-    }
+    //         const rootSize = this.rootEditor.nativeElement.getBoundingClientRect()
+    //         this.canvasRef.nativeElement.width = rootSize.width
+    //         this.canvasRef.nativeElement.height = rootSize.height
+    //         this.redraw()
+    //     }, 300)
+    // }
 
     ngAfterViewInit() {
         setTimeout(() => {

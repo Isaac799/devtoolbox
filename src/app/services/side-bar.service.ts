@@ -1,5 +1,4 @@
-import {AppGeneratorMode, AppMode, Schema, Table} from '../structure'
-import YAML from 'yaml'
+import {AppGeneratorMode, CanvasSize, Schema, Table} from '../structure'
 import {DataService} from '../services/data.service'
 import {DialogSchemaComponent} from '../dialogs/dialog-schema/dialog-schema.component'
 import {DialogTableComponent} from '../dialogs/dialog-table/dialog-table.component'
@@ -18,14 +17,32 @@ export class SideBarService {
     private readonly appService = inject(AppService)
 
     debounce: ReturnType<typeof setTimeout> | undefined = undefined
-    modeOptions = [
+    
+    canvasSizeOptions: CanvasSize[] = [
         {
-            name: 'JSON',
-            value: AppMode.JSON
+            name: 'small',
+            x: 1920,
+            y: 1080
         },
         {
-            name: 'YAML',
-            value: AppMode.YAML
+            name: 'medium',
+            x: 2560,
+            y: 1440
+        },
+        {
+            name: 'large',
+            x: 3840,
+            y: 2160
+        },
+        {
+            name: 'a4',
+            x: 2480,
+            y: 3508
+        },
+        {
+            name: 'a11',
+            x: 2550,
+            y: 3300
         }
     ]
 
@@ -52,22 +69,6 @@ export class SideBarService {
         }
         this.appService.app.generatorMode = c.value
         this.appService.RefreshOutput()
-    }
-
-    copyConfig() {
-        let str = ''
-        if (!this.data.previousParse) {
-            return
-        }
-        if (this.appService.app.mode === AppMode.JSON) {
-            str = JSON.stringify(this.data.previousParse.data, null, 4)
-        } else if (this.appService.app.mode === AppMode.YAML) {
-            str = YAML.stringify(this.data.previousParse.data)
-        }
-        navigator.clipboard.writeText(str)
-        this.snackBar.open('Copied to clipboard', '', {
-            duration: 2500
-        })
     }
 
     doShowModalTable(t?: Table) {
@@ -124,7 +125,7 @@ export class SideBarService {
                 {
                     name: 'Tables',
                     value: AppGeneratorMode.TSQLTables
-                },
+                }
                 // {
                 //     name: 'Procedures',
                 //     value: AppGeneratorMode.TSQLStoredProcedures
@@ -137,7 +138,7 @@ export class SideBarService {
                 {
                     name: 'Tables',
                     value: AppGeneratorMode.SQLiteTables
-                },
+                }
                 // {
                 //     name: 'Queries',
                 //     value: AppGeneratorMode.SQLiteJoinQuery
