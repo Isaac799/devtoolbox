@@ -49,10 +49,27 @@ export class AppService {
         if (this.initialized) {
             return
         }
+
         this.loadPreferences()
         this.textEditorService.LoadLastTextEdit()
 
         setTimeout(() => {
+            const oldConfig = localStorage.getItem('devtoolboxState')
+            if (oldConfig) {
+                try {
+                    const parsed = JSON.parse(oldConfig)
+                    const schemas = DataService.ParseSchemaConfig(parsed)
+                    this.textEditorService.textInput = PageTextEditorComponent.reverseParse(schemas, this.app.textEditorState)
+                } catch {
+                    if (!this.dataService.schemas.length && !this.textEditorService.textInput) {
+                        this.textEditorService.textInput = this.defaultConfig
+                    } else if (!this.textEditorService.textInput) {
+                        this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.app.textEditorState)
+                    }
+                }
+                localStorage.removeItem('devtoolboxState')
+            }
+            
             if (!this.dataService.schemas.length && !this.textEditorService.textInput) {
                 this.textEditorService.textInput = this.defaultConfig
             } else if (!this.textEditorService.textInput) {
@@ -73,10 +90,10 @@ export class AppService {
         this.textEditorService.justCleaned = false
         const r = PageTextEditorComponent.parse(this.textEditorService.textInput)
         if (typeof r === 'string') {
-            this.textEditorService.fromMacro = true;
+            this.textEditorService.fromMacro = true
             this.textEditorService.textInput = r
             this.Run()
-            this.textEditorService.fromMacro = false;
+            this.textEditorService.fromMacro = false
             return
         }
 
