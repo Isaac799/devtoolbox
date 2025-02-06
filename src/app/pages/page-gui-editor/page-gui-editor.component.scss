@@ -8,14 +8,15 @@
     }
 
     >.main {
-        padding: 1rem;
         overflow: auto;
         // background-color: blue;
     }
 
     .table-boundary {
         position: relative;
-        // background-color: red;
+        // background-color: red;        
+        background-size: 3.5rem 3.5rem;
+        background-image: radial-gradient(circle, #000000 1px, rgba(0, 0, 0, 0) 1px);
     }
 }
 

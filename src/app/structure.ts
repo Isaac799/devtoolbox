@@ -473,9 +473,9 @@ export class Table {
     Name: string
     // Options: TableOptions;
     Attributes: Attribute[]
-    dragPosition
+    dragPosition = {x: 0, y: 0}
 
-    constructor(ID: string, Name: string, Parent: Schema, dragPosition = {x: 0, y: 0}) {
+    constructor(ID: string, Name: string, Parent: Schema, dragPosition: {x: number; y: number}) {
         this.ID = ID
         this.Name = Name
         this.Parent = Parent
@@ -669,10 +669,10 @@ export const attrTypeMapExpanded: Record<AttrType, string> = {
 }
 
 export interface CanvasSize {
-    name: string;
-    x: number;
-    y: number;
-} 
+    name: string
+    x: number
+    y: number
+}
 
 export interface App {
     seedLimit: number

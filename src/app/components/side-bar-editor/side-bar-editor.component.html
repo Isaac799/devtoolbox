@@ -5,10 +5,11 @@
                 <mat-label>Canvas Size</mat-label>
                 <mat-select
                     [(ngModel)]="appService.app.canvasSize"
-                    (ngModelChange)="appService.RefreshOutput()"
+                    (ngModelChange)="appService.Save()"
+                    [compareWith]="compareWithCanvasSize"
                 >
                     @for (x of sideBarService. canvasSizeOptions; track $index) {
-                    <mat-option [value]="x">{{ x.name }}</mat-option>
+                    <mat-option  [value]="x">{{ x.name }}</mat-option>
                     }
                 </mat-select>
                 <mat-hint align="start"> For Drag-Drop </mat-hint>

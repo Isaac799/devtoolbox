@@ -8,6 +8,7 @@ import {MatSelectModule} from '@angular/material/select'
 import {MatSliderModule} from '@angular/material/slider'
 import {SideBarService} from '../../services/side-bar.service'
 import { AppService } from '../../services/app.service'
+import { CanvasSize } from '../../structure'
 
 @Component({
     standalone: true,
@@ -19,4 +20,8 @@ import { AppService } from '../../services/app.service'
 export class SideBarEditorComponent {
     readonly appService = inject(AppService)
     readonly sideBarService = inject(SideBarService)
+
+    compareWithCanvasSize(a: CanvasSize, b: CanvasSize): boolean {
+        return a.name === b.name
+    }
 }
