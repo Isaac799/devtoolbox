@@ -12,7 +12,7 @@
             #canvas
         ></canvas>
 
-        @for (s of data.schemas; track $index) {
+        @for (s of dataService.schemas; track $index) {
         @for (t of s.Tables; track $index; let ti = $index) {
         <mat-card
             appearance="outlined"
@@ -37,6 +37,19 @@
                 <!-- Attribute -->
 
                 <mat-list-item>
+
+                    <mat-icon matListItemIcon>
+                        @if (a.Option?.PrimaryKey) {
+                        key
+                        } @else if (a.RefTo) {
+                        quick_reference_all
+                        }@else {
+                        radio_button_unchecked
+                        }
+                    </mat-icon>
+                    <div matListItemTitle>{{ a.Name | titlecase }} ({{a | prettyType}})</div>
+                    <div matListItemLine>{{ a.Description }}</div>
+
                     <div
                         class="attribute"
                         (dblclick)="doShowModalAttribute(s, t, a)"
@@ -44,20 +57,7 @@
                     >
 
 
-                        <span [ngClass]="
-                        {
-                            'attr-is-primary': !sideBarService.showMoreDetails && a.Option?.PrimaryKey,
-                            'attr-is-unique': !sideBarService.showMoreDetails && a.Option?.Unique,
-                            'attr-is-required': !sideBarService.showMoreDetails && a.Validation?.Required,
-                            'attr-is-reference': !sideBarService.showMoreDetails && a.Type === 'REF',
-                        }">
-                            {{ a.Name | titlecase }}
-                            @if (sideBarService.showMoreDetails) {
-                            ({{ a.Type | lowercase }})
-                            }
-                        </span>
-
-                        @if (sideBarService.showMoreDetails) {
+                        <!--                       
                         <mat-chip-set aria-label="Attribute properties">
                             @if(a.Option?.PrimaryKey) {
                             <mat-chip> PK </mat-chip>
@@ -71,8 +71,7 @@
                             @if(a.Validation?.Required) {
                             <mat-chip> Required </mat-chip>
                             }
-                        </mat-chip-set>
-                        }
+                        </mat-chip-set> -->
 
                         <!-- <span>
                             {{a.Description}}

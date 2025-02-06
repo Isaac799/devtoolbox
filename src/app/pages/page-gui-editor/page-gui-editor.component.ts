@@ -1,35 +1,37 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, inject, OnInit, OnDestroy, Renderer2 } from '@angular/core'
-import { DataService } from '../../services/data.service'
-import { Schema, Table, Attribute } from '../../structure'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { CommonModule } from '@angular/common'
-import { CdkDrag, CdkDragEnd, DragDropModule } from '@angular/cdk/drag-drop'
-import { MatDialog } from '@angular/material/dialog'
-import { DialogAttributeComponent } from '../../dialogs/dialog-attribute/dialog-attribute.component'
-import { MatButtonModule } from '@angular/material/button'
-import { MatIconModule } from '@angular/material/icon'
-import { MatCardModule } from '@angular/material/card'
-import { SideBarEditorComponent } from '../../components/side-bar-editor/side-bar-editor.component'
-import { MatChipsModule } from '@angular/material/chips'
-import { SideBarService } from '../../services/side-bar.service'
-import { MatListModule } from '@angular/material/list'
-import { AppService } from '../../services/app.service'
+import {Component, ElementRef, ViewChild, AfterViewInit, inject, OnInit, OnDestroy, Renderer2} from '@angular/core'
+import {DataService} from '../../services/data.service'
+import {Schema, Table, Attribute} from '../../structure'
+import {FormsModule, ReactiveFormsModule} from '@angular/forms'
+import {CommonModule} from '@angular/common'
+import {CdkDrag, CdkDragEnd, DragDropModule} from '@angular/cdk/drag-drop'
+import {MatDialog} from '@angular/material/dialog'
+import {DialogAttributeComponent} from '../../dialogs/dialog-attribute/dialog-attribute.component'
+import {MatButtonModule} from '@angular/material/button'
+import {MatIconModule} from '@angular/material/icon'
+import {MatCardModule} from '@angular/material/card'
+import {SideBarEditorComponent} from '../../components/side-bar-editor/side-bar-editor.component'
+import {MatChipsModule} from '@angular/material/chips'
+import {SideBarService} from '../../services/side-bar.service'
+import {MatListModule} from '@angular/material/list'
+import {AppService} from '../../services/app.service'
+import { PrettyTypePipe } from "../../pipes/pretty-type.pipe";
 
 @Component({
     selector: 'app-page-gui-editor',
     imports: [
-        FormsModule,
-        CommonModule,
-        ReactiveFormsModule,
-        MatCardModule,
-        DragDropModule,
-        CdkDrag,
-        MatButtonModule,
-        MatIconModule,
-        SideBarEditorComponent,
-        MatChipsModule,
-        MatListModule
-    ],
+    FormsModule,
+    CommonModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    DragDropModule,
+    CdkDrag,
+    MatButtonModule,
+    MatIconModule,
+    SideBarEditorComponent,
+    MatChipsModule,
+    MatListModule,
+    PrettyTypePipe
+],
     templateUrl: './page-gui-editor.component.html',
     styleUrl: './page-gui-editor.component.scss'
 })
@@ -37,6 +39,8 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
     private matDialog = inject(MatDialog)
     readonly sideBarService = inject(SideBarService)
     private readonly appService = inject(AppService)
+    readonly dataService = inject(DataService)
+    private readonly renderer = inject(Renderer2)
 
     bend = false
     resizeDebounce: ReturnType<typeof setTimeout> | undefined = undefined
@@ -44,7 +48,6 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
     @ViewChild('canvas') canvasRef: ElementRef<HTMLCanvasElement> | undefined = undefined
     @ViewChild('rootEditor') rootEditor: ElementRef<HTMLDivElement> | undefined = undefined
 
-    constructor(public data: DataService, private renderer: Renderer2) {}
     ngOnInit(): void {
         // Resize the canvas when the component is initialized
         this.resizeCanvas()
@@ -108,7 +111,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         let offset = 0
         const offsetGrow = 12
 
-        for (const s of this.data.schemas) {
+        for (const s of this.dataService.schemas) {
             for (const t of s.Tables) {
                 for (const a of t.Attributes) {
                     if (!a.RefTo) {
@@ -291,7 +294,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         }
 
         this.redraw()
-        this.data.saveSchemasConfig()
+        this.appService.Save()
     }
 
     doShowModalAttribute(s: Schema, t: Table, a?: Attribute) {
@@ -300,7 +303,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
                 a,
                 t,
                 s,
-                ss: this.data.schemas
+                ss: this.dataService.schemas
             }
         })
 

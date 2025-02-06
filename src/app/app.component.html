@@ -26,6 +26,15 @@
             >
                 Manage
             </a>
+            @if (showSplitPage) {
+            <a
+                mat-button
+                matTooltip="Wide screens only"
+                routerLink="manage-blueprints-gui"
+            >
+                Manage (Graphical)
+            </a>
+            }
             <a
                 mat-button
                 routerLink="explore-results"

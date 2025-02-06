@@ -17,8 +17,6 @@ export class SideBarService {
     private readonly snackBar = inject(MatSnackBar)
     private readonly appService = inject(AppService)
 
-    showMoreDetails = false
-
     debounce: ReturnType<typeof setTimeout> | undefined = undefined
     modeOptions = [
         {

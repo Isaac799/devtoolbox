@@ -65,7 +65,7 @@ export class DialogAttributeComponent implements OnInit {
         PrimaryKey: new FormControl(false, []),
         Readonly: new FormControl(false, []),
         // Unique: new FormControl<string[]>([], [Validators.required]),
-        Unique: new FormControl(false, []),
+        Unique: new FormControl<string[]>([], []),
         Default: new FormControl('', []),
         SystemField: new FormControl(false, []),
         Required: new FormControl(true, []),
@@ -104,7 +104,7 @@ export class DialogAttributeComponent implements OnInit {
             Name: 'word',
             Type: AttrType.VARCHAR,
             Option: {
-                Unique: true
+                Unique: ['a']
             },
             Validation: {
                 Required: true,
@@ -252,7 +252,7 @@ export class DialogAttributeComponent implements OnInit {
             if (x === AttrType.SERIAL) {
                 this.attributeForm.controls.PrimaryKey.setValue(true)
                 this.RequirePrimaryKey()
-            } else if (x && [AttrType.INT, AttrType.SERIAL, AttrType.VARCHAR].includes(x) || x === AttrType.REFERENCE) {
+            } else if ((x && [AttrType.INT, AttrType.SERIAL, AttrType.VARCHAR].includes(x)) || x === AttrType.REFERENCE) {
                 this.AllowPrimaryKey()
             } else {
                 this.DenyPrimaryKey()
@@ -308,11 +308,11 @@ export class DialogAttributeComponent implements OnInit {
             this.attributeForm.controls.SystemField.disable()
 
             this.attributeForm.controls.Required.setValue(true)
-            this.attributeForm.controls.Unique.setValue(true)
+            this.attributeForm.controls.Unique.setValue(['primary'])
             this.attributeForm.controls.SystemField.setValue(true)
         } else {
             this.attributeForm.controls.Required.setValue(false)
-            this.attributeForm.controls.Unique.setValue(false)
+            this.attributeForm.controls.Unique.setValue([])
             this.attributeForm.controls.SystemField.setValue(false)
 
             this.attributeForm.controls.Required.enable()

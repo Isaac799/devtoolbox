@@ -359,16 +359,33 @@ export class Attribute {
     get Description(): string {
         const items: string[] = []
         if (this.Option?.PrimaryKey) {
-            items.push('P')
+            items.push('primary')
         }
+
+        if (this.Type === AttrType.SERIAL) {
+            items.push('required')
+            items.push('unique')
+            items.push('system')
+            return items.join(', ')
+        }
+
         if (this.Type === 'REF') {
-            items.push('F')
-        }
-        if (this.Option?.Unique) {
-            items.push('U')
+            items.push('reference')
         }
         if (this.Validation?.Required) {
-            items.push('R')
+            items.push('required')
+        }
+        if (this.Option?.Unique) {
+            for (const u of this.Option.Unique) {
+                if (u === 'unlabeled') {
+                    items.push(`unique`)
+                } else {
+                    items.push(`unique: "${u}"`)
+                }
+            }
+        }
+        if (this.Option?.SystemField) {
+            items.push('system')
         }
         return items.join(', ')
     }
