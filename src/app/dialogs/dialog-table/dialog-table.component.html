@@ -18,7 +18,6 @@
                     <mat-form-field>
                         <mat-label>Folder</mat-label>
                         <mat-select formControlName="Schema">
-                            <mat-option>None</mat-option>
                             @for (s of data.ss; track s.ID) {
                             <mat-option [value]="s">{{s.Name}}</mat-option>
                             }

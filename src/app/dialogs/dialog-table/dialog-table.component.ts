@@ -79,8 +79,20 @@ export class DialogTableComponent implements OnInit {
         }
         if (!this.tableForm.valid) return
         const c = this.tableForm.controls
-        if (this.data.t) {
-            this.data.t.Name = c.Name.value!.trim()
+
+        const t = this.data.t
+        if (t) {
+            t.Name = c.Name.value!.trim()
+            if (!t) {
+                return
+            }
+            const i = t.Parent.Tables.findIndex(e => e.ID === t.ID)
+            if (i === -1) {
+                return
+            }
+            const pulled = t.Parent.Tables.splice(i, 1)
+            t.Parent = this.tableForm.controls.Schema.value!
+            t.Parent.Tables.push(pulled[0])
         } else {
             const newTbl = new Table(uuidv4(), c.Name.value!, s, {x: 0, y: 0})
             s.Tables.push(newTbl)
