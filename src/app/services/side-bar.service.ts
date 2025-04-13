@@ -1,11 +1,11 @@
-import { AppGeneratorMode, CanvasSize, Schema, Table } from '../structure'
-import { DataService } from '../services/data.service'
-import { DialogSchemaComponent } from '../dialogs/dialog-schema/dialog-schema.component'
-import { DialogTableComponent } from '../dialogs/dialog-table/dialog-table.component'
-import { MatDialog } from '@angular/material/dialog'
-import { inject, Injectable } from '@angular/core'
-import { MatSnackBar } from '@angular/material/snack-bar'
-import { AppService } from './app.service'
+import {AppGeneratorMode, CanvasSize, Schema, Table} from '../structure'
+import {DataService} from '../services/data.service'
+import {DialogSchemaComponent} from '../dialogs/dialog-schema/dialog-schema.component'
+import {DialogTableComponent} from '../dialogs/dialog-table/dialog-table.component'
+import {MatDialog} from '@angular/material/dialog'
+import {inject, Injectable} from '@angular/core'
+import {MatSnackBar} from '@angular/material/snack-bar'
+import {AppService} from './app.service'
 
 @Injectable({
     providedIn: 'root'
@@ -71,11 +71,12 @@ export class SideBarService {
         this.appService.RefreshOutput()
     }
 
-    doShowModalTable(t?: Table) {
+    doShowModalTable(t?: Table, i = -1) {
         const dialogRef = this.matDialog.open(DialogTableComponent, {
             data: {
                 t,
-                ss: this.data.schemas
+                ss: this.data.schemas,
+                si: i
             }
         })
 

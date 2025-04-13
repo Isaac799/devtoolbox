@@ -29,7 +29,7 @@
                 (cdkDragEnded)="doneDrag(t, $event)"
             >
                 <mat-card-header>
-                    <mat-card-title (dblclick)="sideBarService.doShowModalTable(t)">
+                    <mat-card-title (dblclick)="sideBarService.doShowModalTable(t, ti)">
                         {{ t.Name | titlecase }}
                     </mat-card-title>
                     <mat-card-subtitle>

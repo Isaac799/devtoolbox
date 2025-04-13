@@ -8,8 +8,8 @@
                     (ngModelChange)="appService.Save()"
                     [compareWith]="compareWithCanvasSize"
                 >
-                    @for (x of sideBarService. canvasSizeOptions; track $index) {
-                    <mat-option  [value]="x">{{ x.name }}</mat-option>
+                    @for (x of sideBarService.canvasSizeOptions; track $index) {
+                    <mat-option [value]="x">{{ x.name }}</mat-option>
                     }
                 </mat-select>
                 <mat-hint align="start"> For Drag-Drop </mat-hint>
@@ -21,7 +21,7 @@
             <button
                 mat-fab
                 extended
-                (click)="sideBarService. doShowModalSchema()"
+                (click)="sideBarService.doShowModalSchema()"
             >
                 Folder
                 <mat-icon>add</mat-icon>
@@ -33,7 +33,7 @@
             <button
                 mat-fab
                 extended
-                (click)="sideBarService. doShowModalTable()"
+                (click)="sideBarService.doShowModalTable()"
             >
                 Blueprint
                 <mat-icon>add</mat-icon>

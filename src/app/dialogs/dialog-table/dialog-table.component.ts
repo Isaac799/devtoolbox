@@ -29,6 +29,7 @@ export class DialogTableComponent implements OnInit {
     data: {
         t: Table | undefined
         ss: Schema[]
+        si: number
     } = inject(MAT_DIALOG_DATA)
 
     private cdr = inject(ChangeDetectorRef)
@@ -48,20 +49,24 @@ export class DialogTableComponent implements OnInit {
     private setTableForm(t: Table) {
         this.tableForm.reset()
         this.tableForm.controls.Name.setValue(t.Name)
+        this.tableForm.controls.Schema.setValue(this.data.ss[this.data.si])
         this.cdr.detectChanges()
     }
 
     clickDelTable() {
         const s = this.tableForm.controls.Schema.value
         if (!s) {
+            console.log('"1" :>> ', '1')
             return
         }
         const t = this.data.t
         if (!t) {
+            console.log('"2" :>> ', '1')
             return
         }
         const i = s.Tables.findIndex(e => e.ID === t.ID)
         if (i === -1) {
+            console.log('"3" :>> ', '1')
             return
         }
         s.Tables.splice(i, 1)
