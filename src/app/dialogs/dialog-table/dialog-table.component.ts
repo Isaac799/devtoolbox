@@ -71,12 +71,9 @@ export class DialogTableComponent implements OnInit {
     clickSaveTable() {
         const s = this.tableForm.controls.Schema.value
         if (!s) {
-            console.log(1)
             return
         }
-        console.log(2)
         if (!this.tableForm.valid) return
-        console.log(3)
         const c = this.tableForm.controls
         if (this.data.t) {
             this.data.t.Name = c.Name.value!.trim()

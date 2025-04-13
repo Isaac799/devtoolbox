@@ -167,13 +167,9 @@ export class AppService {
 
             const tablePos = JSON.parse(tblPosStr)
 
-            console.log('tablePos :>> ', JSON.stringify(tablePos))
-
             for (const s of this.dataService.schemas) {
-                console.log('s :>> ', s)
                 for (const t of s.Tables) {
                     const search = t.FN
-                    console.log('t :>> ', t)
                     const pos = tablePos.find((e: any) => {
                         return e?.id === search
                     })
@@ -181,7 +177,6 @@ export class AppService {
                         console.warn('missing table for saved position, skipped')
                         continue
                     }
-                    console.log('pos :>> ', pos.x, pos.y)
                     t.dragPosition.x = pos.x
                     t.dragPosition.y = pos.y
                 }
@@ -206,7 +201,6 @@ export class AppService {
 
         const s2 = JSON.stringify(this.tablePositions)
         localStorage.setItem(this.tablePositionKey, s2)
-        console.log('s2 :>> ', s2)
     }
 
     RefreshOutput() {
