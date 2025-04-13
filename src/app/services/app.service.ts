@@ -286,6 +286,7 @@ export class AppService {
     }
 
     CompareWithID<T extends {ID: string}>(a: T, b: T) {
+        if (!a || !b) return false
         return a.ID === b.ID
     }
 }
