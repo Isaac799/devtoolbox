@@ -11,24 +11,12 @@ import {AppService} from '../../services/app.service'
 import {CanvasSize, Schema} from '../../structure'
 import {MatListModule} from '@angular/material/list'
 import {DataService} from '../../services/data.service'
-import {CdkDragDrop, CdkDrag, CdkDropList, CdkDropListGroup, moveItemInArray} from '@angular/cdk/drag-drop'
+import {CdkDragDrop, CdkDrag, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop'
 
 @Component({
     standalone: true,
     selector: 'app-side-bar-editor',
-    imports: [
-        CommonModule,
-        FormsModule,
-        MatButtonModule,
-        MatIconModule,
-        MatSelectModule,
-        MatSliderModule,
-        MatChipsModule,
-        MatListModule,
-        CdkDropListGroup,
-        CdkDropList,
-        CdkDrag
-    ],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSelectModule, MatSliderModule, MatChipsModule, MatListModule, CdkDropList, CdkDrag],
     templateUrl: './side-bar-editor.component.html',
     styleUrl: './side-bar-editor.component.scss'
 })
