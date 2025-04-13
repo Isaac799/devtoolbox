@@ -165,7 +165,7 @@ export class LanguagePsqlService {
 
                         // for (let j = 0; j < 4; j++) {
 
-                        if (!u) {
+                        if (!a.isUnique()) {
                             let v = ''
                             if (a.Type === AttrType.REFERENCE && a.RefTo) {
                                 v = LanguagePsqlService.genRandomRef(tblRows[a.RefTo.FN]) + ''
@@ -173,30 +173,29 @@ export class LanguagePsqlService {
                                 v = `${generateSeedData(a, map)}`
                             }
                             v2.push(v)
+                            continue
                         }
-                        if (u) {
-                            let v = ''
 
-                            if (!usedMap[a.FN]) {
-                                usedMap[a.FN] = []
+                        let v = ''
+                        if (!usedMap[a.FN]) {
+                            usedMap[a.FN] = []
+                        }
+                        let escape = 0
+                        do {
+                            if (escape > 100) {
+                                console.warn('break unique: ', t.Name)
+                                break adding
                             }
-                            let escape = 0
-                            do {
-                                if (escape > 100) {
-                                    // console.warn('break unique: ', t.Name)
-                                    break adding
-                                }
-                                escape += 1
-                                if (a.Type === AttrType.REFERENCE && a.RefTo) {
-                                    v = LanguagePsqlService.genRandomRef(tblRows[a.RefTo.FN]) + ''
-                                } else {
-                                    v = `${generateSeedData(a, map)}`
-                                }
-                            } while (usedMap[a.FN].includes(v))
+                            escape += 1
+                            if (a.Type === AttrType.REFERENCE && a.RefTo) {
+                                v = LanguagePsqlService.genRandomRef(tblRows[a.RefTo.FN]) + ''
+                            } else {
+                                v = `${generateSeedData(a, map)}`
+                            }
+                        } while (usedMap[a.FN].includes(v) && v !== 'DEFAULT')
 
-                            v2.push(v)
-                            usedMap[a.FN].push(v)
-                        }
+                        v2.push(v)
+                        usedMap[a.FN].push(v)
                     }
                     const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
 

@@ -425,6 +425,10 @@ export class Attribute {
         return isNullable
     }
 
+    isUnique() {
+        return this.Option?.Unique || this.Option?.PrimaryKey
+    }
+
     toInsert() {
         return !((!this.Option?.SystemField && this.Option?.Default) || (this.Option?.PrimaryKey && this.Type === AttrType.SERIAL))
     }
