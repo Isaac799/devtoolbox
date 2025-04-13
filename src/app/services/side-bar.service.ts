@@ -1,11 +1,11 @@
-import {AppGeneratorMode, CanvasSize, Schema, Table} from '../structure'
-import {DataService} from '../services/data.service'
-import {DialogSchemaComponent} from '../dialogs/dialog-schema/dialog-schema.component'
-import {DialogTableComponent} from '../dialogs/dialog-table/dialog-table.component'
-import {MatDialog} from '@angular/material/dialog'
-import {inject, Injectable} from '@angular/core'
-import {MatSnackBar} from '@angular/material/snack-bar'
-import {AppService} from './app.service'
+import { AppGeneratorMode, CanvasSize, Schema, Table } from '../structure'
+import { DataService } from '../services/data.service'
+import { DialogSchemaComponent } from '../dialogs/dialog-schema/dialog-schema.component'
+import { DialogTableComponent } from '../dialogs/dialog-table/dialog-table.component'
+import { MatDialog } from '@angular/material/dialog'
+import { inject, Injectable } from '@angular/core'
+import { MatSnackBar } from '@angular/material/snack-bar'
+import { AppService } from './app.service'
 
 @Injectable({
     providedIn: 'root'
@@ -17,7 +17,7 @@ export class SideBarService {
     private readonly appService = inject(AppService)
 
     debounce: ReturnType<typeof setTimeout> | undefined = undefined
-    
+
     canvasSizeOptions: CanvasSize[] = [
         {
             name: 'small',

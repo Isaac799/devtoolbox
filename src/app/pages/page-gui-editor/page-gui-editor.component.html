@@ -31,7 +31,6 @@
                 <mat-card-header>
                     <mat-card-title (dblclick)="sideBarService.doShowModalTable(t)">
                         {{ t.Name | titlecase }}
-                        {{ t.dragPosition | json}}
                     </mat-card-title>
                     <mat-card-subtitle>
                         {{ s.Name | titlecase }}
@@ -42,7 +41,7 @@
                     @for (a of t.Attributes; track $index; let ai = $index) {
                     <!-- Attribute -->
 
-                    <mat-list-item>
+                    <mat-list-item (dblclick)="doShowModalAttribute(s,t,a)">
 
                         <mat-icon matListItemIcon>
                             @if (a.Option?.PrimaryKey) {
