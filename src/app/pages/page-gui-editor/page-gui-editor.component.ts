@@ -15,27 +15,27 @@ import {SideBarService} from '../../services/side-bar.service'
 import {MatListModule} from '@angular/material/list'
 import {AppService} from '../../services/app.service'
 import {PrettyTypePipe} from '../../pipes/pretty-type.pipe'
-import { TrueTitlePipe } from "../../pipes/true-title.pipe";
+import {TrueTitlePipe} from '../../pipes/true-title.pipe'
 import {AttrIconPipe} from '../../pipes/attr-icon.pipe'
 
 @Component({
     selector: 'app-page-gui-editor',
     imports: [
-    FormsModule,
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    DragDropModule,
-    CdkDrag,
-    MatButtonModule,
-    MatIconModule,
-    SideBarEditorComponent,
-    MatChipsModule,
-    MatListModule,
-    PrettyTypePipe,
-    TrueTitlePipe,
-    AttrIconPipe
-],
+        FormsModule,
+        CommonModule,
+        ReactiveFormsModule,
+        MatCardModule,
+        DragDropModule,
+        CdkDrag,
+        MatButtonModule,
+        MatIconModule,
+        SideBarEditorComponent,
+        MatChipsModule,
+        MatListModule,
+        PrettyTypePipe,
+        TrueTitlePipe,
+        AttrIconPipe
+    ],
     templateUrl: './page-gui-editor.component.html',
     styleUrl: './page-gui-editor.component.scss'
 })
@@ -59,6 +59,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         // this.renderer.listen('window', 'resize', () => {
         //     this.resizeCanvas()
         // })
+        this.appService.RestoreGuiMeta()
     }
 
     ngOnDestroy(): void {
@@ -86,7 +87,6 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         setTimeout(() => {
             this.redraw()
         }, 300)
-        this.appService.RestoreGuiMeta()
     }
 
     redraw() {
