@@ -128,6 +128,10 @@ export class AppService {
         }
 
         clearTimeout(this.runDebounce)
+
+        const str = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.app.textEditorState)
+        this.textEditorService.textInput = str
+
         this.runDebounce = setTimeout(() => {
             this._run()
         }, 300)
@@ -186,6 +190,7 @@ export class AppService {
             localStorage.removeItem(this.tablePositionKey)
         }
     }
+
     SaveDragPos() {
         if (!this.initialized) return
 
