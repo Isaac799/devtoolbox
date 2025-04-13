@@ -14,6 +14,7 @@ import {MatChipsModule} from '@angular/material/chips'
 import {MatCheckboxModule} from '@angular/material/checkbox'
 import {MatDividerModule} from '@angular/material/divider'
 import {AppService} from '../../services/app.service'
+import {cc} from '../../formatting'
 
 @Component({
     standalone: true,
@@ -244,6 +245,10 @@ export class DialogAttributeComponent implements OnInit {
          */
         this.attributeForm.controls.Type.valueChanges.subscribe(x => {
             this.attributeForm.controls.Default.setValue(this.attributeForm.controls.Default.value)
+
+            const titleCaseRef = cc(this.data.a?.Name || '', 'tc')
+            this.attributeForm.controls.Name.setValue(titleCaseRef)
+            
             if (x === AttrType.REFERENCE) {
                 // this.attributeForm.controls.Name.disable()
             } else {
@@ -274,7 +279,8 @@ export class DialogAttributeComponent implements OnInit {
                 return
             }
             if (x) {
-                this.attributeForm.controls.Name.setValue(x?.Name || '')
+                const titleCaseRef = cc(x?.Name || '', 'tc')
+                this.attributeForm.controls.Name.setValue(titleCaseRef)
                 this.cdr.detectChanges()
             }
         })
