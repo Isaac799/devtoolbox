@@ -13,10 +13,15 @@ export enum Cardinality {
     Self = 1 << 6
 }
 
-export interface TablePosition {
+export interface TableGuiMeta {
     id: string
     x: number
     y: number
+}
+
+export interface SchemaGuiMeta {
+    id: string
+    Color: string
 }
 
 export enum Lang {

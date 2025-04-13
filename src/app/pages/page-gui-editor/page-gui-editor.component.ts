@@ -82,7 +82,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         setTimeout(() => {
             this.redraw()
         }, 300)
-        this.appService.RestoreDragPos()
+        this.appService.RestoreGuiMeta()
     }
 
     redraw() {

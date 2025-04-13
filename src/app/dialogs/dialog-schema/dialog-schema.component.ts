@@ -9,6 +9,7 @@ import {MatInputModule} from '@angular/material/input'
 import {MatSelectModule} from '@angular/material/select'
 import {ColorPickerModule} from 'ngx-color-picker'
 import {MatChipsModule} from '@angular/material/chips'
+import {AppService} from '../../services/app.service'
 
 @Component({
     standalone: true,
@@ -31,13 +32,13 @@ import {MatChipsModule} from '@angular/material/chips'
     styleUrl: './dialog-schema.component.scss'
 })
 export class DialogSchemaComponent implements OnInit, AfterViewInit {
-    [x: string]: any
     data: {
         s: Schema | undefined
         ss: Schema[]
     } = inject(MAT_DIALOG_DATA)
 
     private cdr = inject(ChangeDetectorRef)
+    private appService = inject(AppService)
     private dialogRef = inject(MatDialogRef<DialogSchemaComponent>)
     @ViewChild('schemaName') schemaNameRef: ElementRef<HTMLInputElement> | null = null
 
@@ -74,7 +75,7 @@ export class DialogSchemaComponent implements OnInit, AfterViewInit {
             return
         }
         this.data.ss.splice(i, 1)
-        this.dialogRef.close()
+        this.finish()
     }
 
     clickSaveSchema() {
@@ -82,9 +83,16 @@ export class DialogSchemaComponent implements OnInit, AfterViewInit {
         const c = this.schemaForm.controls
         if (this.data.s) {
             this.data.s.Name = c.Name.value!.trim()
+            this.data.s.Color = c.Color.value!.trim()
         } else {
             this.data.ss.push(new Schema(uuidv4(), c.Name.value!, c.Color.value!))
         }
+        this.finish()
+    }
+
+    private finish() {
+        this.appService.Run('gui')
+        this.appService.Save()
         this.dialogRef.close()
     }
 

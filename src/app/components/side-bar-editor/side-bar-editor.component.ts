@@ -7,18 +7,21 @@ import {MatIconModule} from '@angular/material/icon'
 import {MatSelectModule} from '@angular/material/select'
 import {MatSliderModule} from '@angular/material/slider'
 import {SideBarService} from '../../services/side-bar.service'
-import { AppService } from '../../services/app.service'
-import { CanvasSize } from '../../structure'
+import {AppService} from '../../services/app.service'
+import {CanvasSize} from '../../structure'
+import {MatListModule} from '@angular/material/list'
+import { DataService } from '../../services/data.service'
 
 @Component({
     standalone: true,
     selector: 'app-side-bar-editor',
-    imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSelectModule, MatSliderModule, MatChipsModule],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatSelectModule, MatSliderModule, MatChipsModule, MatListModule],
     templateUrl: './side-bar-editor.component.html',
     styleUrl: './side-bar-editor.component.scss'
 })
 export class SideBarEditorComponent {
     readonly appService = inject(AppService)
+    readonly dataService = inject(DataService)
     readonly sideBarService = inject(SideBarService)
 
     compareWithCanvasSize(a: CanvasSize, b: CanvasSize): boolean {

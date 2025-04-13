@@ -13,6 +13,7 @@ import {MatSelectModule} from '@angular/material/select'
 import {MatChipsModule} from '@angular/material/chips'
 import {MatCheckboxModule} from '@angular/material/checkbox'
 import {MatDividerModule} from '@angular/material/divider'
+import {AppService} from '../../services/app.service'
 
 @Component({
     standalone: true,
@@ -51,6 +52,7 @@ export class DialogAttributeComponent implements OnInit {
     } = inject(MAT_DIALOG_DATA)
 
     private cdr = inject(ChangeDetectorRef)
+    private appService = inject(AppService)
     private dialogRef = inject(MatDialogRef<DialogAttributeComponent>)
 
     private readonly idSuggestionName = 'unique identifier'
@@ -359,6 +361,12 @@ export class DialogAttributeComponent implements OnInit {
         this.cdr.detectChanges()
     }
 
+    private finish() {
+        this.appService.Run('gui')
+        this.appService.Save()
+        this.dialogRef.close()
+    }
+
     clickDelAttribute() {
         if (!this.data.a) {
             return
@@ -369,8 +377,7 @@ export class DialogAttributeComponent implements OnInit {
             return
         }
         this.data.t.Attributes.splice(i, 1)
-
-        this.dialogRef.close()
+        this.finish()
     }
 
     clickSaveAttribute() {
@@ -454,8 +461,7 @@ export class DialogAttributeComponent implements OnInit {
         } else {
             this.data.a.Validation.Required = undefined
         }
-
-        this.dialogRef.close()
+        this.finish()
     }
 
     clickSmartSuggestion(x: AttributeSuggestion) {

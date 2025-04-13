@@ -33,7 +33,9 @@
                         {{ t.Name | titlecase }}
                     </mat-card-title>
                     <mat-card-subtitle>
-                        {{ s.Name | titlecase }}
+                        <span [style]="'color: ' + s.Color || 'black'">
+                            {{ s.Name | titlecase }}
+                        </span>
                     </mat-card-subtitle>
                 </mat-card-header>
 

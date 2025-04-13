@@ -2,7 +2,7 @@ import {EventEmitter, inject, Injectable} from '@angular/core'
 import {DataService} from './data.service'
 import {TextEditorService} from './text-editor.service'
 import {PageTextEditorComponent} from '../pages/page-text-editor/page-text-editor.component'
-import {App, AppGeneratorMode, AppComplexityMode, Schema, TablePosition} from '../structure'
+import {App, AppGeneratorMode, AppComplexityMode, Schema, TableGuiMeta, SchemaGuiMeta} from '../structure'
 
 @Injectable({
     providedIn: 'root'
@@ -14,8 +14,11 @@ export class AppService {
 
     private readonly preferencesKey = 'devtoolboxAppConfig'
     private readonly stateKey = 'state'
-    private readonly tablePositionKey = 'tablePosition'
-    tablePositions: TablePosition[] = []
+    private readonly tableGuiMetaKey = 'tableGuiMeta'
+    private readonly schemaGuiMetaKey = 'schemaGuiMeta'
+
+    private tableGuiMeta: TableGuiMeta[] = []
+    private schemaGuiMeta: SchemaGuiMeta[] = []
 
     app: App = {
         seedLimit: 4,
@@ -78,7 +81,7 @@ export class AppService {
             }
 
             this.Run('txt')
-            this.RestoreDragPos()
+            this.RestoreGuiMeta()
             this.initialized = true
         }, 0)
     }
@@ -136,7 +139,7 @@ export class AppService {
             this._run()
         }, 300)
 
-        this.SaveDragPos()
+        this.SaveGuiMeta()
     }
 
     private _run() {
@@ -164,19 +167,17 @@ export class AppService {
         localStorage.setItem(this.stateKey, s)
     }
 
-    RestoreDragPos() {
-        settingHuiPos: try {
-            const tblPosStr = localStorage.getItem(this.tablePositionKey)
-            if (!tblPosStr) break settingHuiPos
+    RestoreGuiMeta() {
+        settingTableMeta: try {
+            const str = localStorage.getItem(this.tableGuiMetaKey)
+            if (!str) break settingTableMeta
 
-            const tablePos = JSON.parse(tblPosStr)
+            const parsed = JSON.parse(str)
 
             for (const s of this.dataService.schemas) {
                 for (const t of s.Tables) {
                     const search = t.FN
-                    const pos = tablePos.find((e: any) => {
-                        return e?.id === search
-                    })
+                    const pos = parsed.find((e: any) => e?.id === search)
                     if (!pos) {
                         console.warn('missing table for saved position, skipped')
                         continue
@@ -187,25 +188,50 @@ export class AppService {
             }
         } catch (err) {
             console.error(err)
-            localStorage.removeItem(this.tablePositionKey)
+            localStorage.removeItem(this.tableGuiMetaKey)
+        }
+
+        settingSchemaMeta: try {
+            const str = localStorage.getItem(this.schemaGuiMetaKey)
+            if (!str) break settingSchemaMeta
+
+            const parsed = JSON.parse(str)
+
+            for (const s of this.dataService.schemas) {
+                const pp = parsed.find((e: any) => e?.id === s.Name)
+                if (pp) {
+                    s.Color = pp.Color
+                }
+            }
+        } catch (err) {
+            console.error(err)
+            localStorage.removeItem(this.schemaGuiMetaKey)
         }
     }
 
-    SaveDragPos() {
+    SaveGuiMeta() {
         if (!this.initialized) return
 
-        this.tablePositions = []
+        this.tableGuiMeta = []
+        this.schemaGuiMeta = []
         for (const s of this.dataService.schemas) {
+            this.schemaGuiMeta.push({
+                id: s.Name,
+                Color: s.Color
+            })
             for (const t of s.Tables) {
-                this.tablePositions.push({
+                this.tableGuiMeta.push({
                     id: t.FN,
                     ...t.dragPosition
                 })
             }
         }
 
-        const s2 = JSON.stringify(this.tablePositions)
-        localStorage.setItem(this.tablePositionKey, s2)
+        const s2 = JSON.stringify(this.tableGuiMeta)
+        localStorage.setItem(this.tableGuiMetaKey, s2)
+
+        const s3 = JSON.stringify(this.schemaGuiMeta)
+        localStorage.setItem(this.schemaGuiMetaKey, s3)
     }
 
     RefreshOutput() {
