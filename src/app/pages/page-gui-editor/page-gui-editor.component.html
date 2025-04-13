@@ -30,11 +30,11 @@
             >
                 <mat-card-header (dblclick)="sideBarService.doShowModalTable(t)">
                     <mat-card-title>
-                        {{ t.Name | titlecase }}
+                        {{ t.Name | trueTitle }}
                     </mat-card-title>
                     <mat-card-subtitle>
                         <span [style]="'color: ' + s.Color || 'black'">
-                            {{ s.Name | titlecase }}
+                            {{ s.Name | trueTitle }}
                         </span>
                     </mat-card-subtitle>
                 </mat-card-header>
@@ -54,7 +54,7 @@
                             radio_button_unchecked
                             }
                         </mat-icon>
-                        <div matListItemTitle>{{ a.Name | titlecase }} ({{a | prettyType}})</div>
+                        <div matListItemTitle>{{ a.Name | trueTitle }} ({{a | prettyType}})</div>
                         <div matListItemLine>{{ a.Description }}</div>
 
                         <div

@@ -15,23 +15,25 @@ import {SideBarService} from '../../services/side-bar.service'
 import {MatListModule} from '@angular/material/list'
 import {AppService} from '../../services/app.service'
 import {PrettyTypePipe} from '../../pipes/pretty-type.pipe'
+import { TrueTitlePipe } from "../../pipes/true-title.pipe";
 
 @Component({
     selector: 'app-page-gui-editor',
     imports: [
-        FormsModule,
-        CommonModule,
-        ReactiveFormsModule,
-        MatCardModule,
-        DragDropModule,
-        CdkDrag,
-        MatButtonModule,
-        MatIconModule,
-        SideBarEditorComponent,
-        MatChipsModule,
-        MatListModule,
-        PrettyTypePipe
-    ],
+    FormsModule,
+    CommonModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    DragDropModule,
+    CdkDrag,
+    MatButtonModule,
+    MatIconModule,
+    SideBarEditorComponent,
+    MatChipsModule,
+    MatListModule,
+    PrettyTypePipe,
+    TrueTitlePipe
+],
     templateUrl: './page-gui-editor.component.html',
     styleUrl: './page-gui-editor.component.scss'
 })
