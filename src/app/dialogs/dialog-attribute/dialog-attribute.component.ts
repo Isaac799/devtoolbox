@@ -248,7 +248,7 @@ export class DialogAttributeComponent implements OnInit {
 
             const titleCaseRef = cc(this.data.a?.Name || '', 'tc')
             this.attributeForm.controls.Name.setValue(titleCaseRef)
-            
+
             if (x === AttrType.REFERENCE) {
                 // this.attributeForm.controls.Name.disable()
             } else {

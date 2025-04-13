@@ -44,7 +44,7 @@ export class DialogSchemaComponent implements OnInit, AfterViewInit {
 
     schemaForm = new FormGroup({
         Name: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(128)]),
-        Color: new FormControl('#FFFFFF', [Validators.required, Validators.minLength(7), Validators.maxLength(7)])
+        Color: new FormControl('#0000FF', [Validators.required, Validators.minLength(7), Validators.maxLength(7)])
     })
 
     ngOnInit(): void {

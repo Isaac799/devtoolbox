@@ -448,7 +448,7 @@ export class Schema {
     constructor(ID: string, Name: string, Color: string) {
         this.ID = ID
         this.Name = Name
-        this.Color = Color || '#FFFFFF'
+        this.Color = Color || '#0000FF'
 
         this.Tables = []
     }
