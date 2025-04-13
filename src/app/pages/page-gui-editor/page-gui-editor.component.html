@@ -46,15 +46,9 @@
                     <mat-list-item (dblclick)="doShowModalAttribute(s,t,a)">
 
                         <mat-icon matListItemIcon>
-                            @if (a.Option?.PrimaryKey) {
-                            key
-                            } @else if (a.RefTo) {
-                            quick_reference_all
-                            }@else {
-                            radio_button_unchecked
-                            }
+                            {{ a | attrIcon }}
                         </mat-icon>
-                        <div matListItemTitle>{{ a.Name | trueTitle }} ({{a | prettyType}})</div>
+                        <div matListItemTitle>{{ a.Name | trueTitle }} {{a | prettyType}}</div>
                         <div matListItemLine>{{ a.Description }}</div>
 
                         <div
@@ -89,7 +83,7 @@
                     </mat-list-item>
 
                     @if (a.warnings.length > 0) {
-                    <div class="fc align-center justify-center">
+                    <div class="p2 fc align-center justify-center">
                         @for (w of a.warnings; track $index) {
                         <span class="error">
                             {{ w }}

@@ -1,7 +1,7 @@
 import {Pipe, PipeTransform} from '@angular/core'
 import {AttrType} from '../structure'
 
-const NUMERICS = [
+export const NUMERICS = [
     AttrType.DECIMAL,
     AttrType.REAL,
     AttrType.FLOAT,

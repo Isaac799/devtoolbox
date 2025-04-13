@@ -23,23 +23,28 @@ const AttrTypeMap: Record<AttrType, string> = {
 })
 export class PrettyTypePipe implements PipeTransform {
     transform(value: Attribute): string {
-        const parts: string[] = [AttrTypeMap[value.Type]]
+        const parts: string[] = []
+        // parts.push(AttrTypeMap[value.Type]) // show with icon now
 
         const min = value.Validation?.Min
         const max = value.Validation?.Max
 
-        const sym = value.Type === AttrType.VARCHAR ? 'length ' : ''
+        const sym = value.Type === AttrType.VARCHAR ? ' characters' : ''
 
-        if (min !== undefined && max !== undefined) {
-            parts.push(`${sym}between ${min} and ${max}`)
+        if (min && max) {
+            parts.push(`${min} to ${max} ${sym}`)
         } else {
             if (min !== undefined) {
-                parts.push(`${sym}at least ${min}`)
+                parts.push(`at least ${min}${sym}`)
             } else if (max !== undefined) {
-                parts.push(`${sym}up to ${max}`)
+                parts.push(`up to ${max} ${sym}`)
             }
         }
 
-        return parts.join(', ')
+        if (parts.length === 0) {
+            return ''
+        }
+
+        return `(${parts.join(', ')})`
     }
 }

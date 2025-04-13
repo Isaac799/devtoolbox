@@ -16,6 +16,7 @@ import {MatListModule} from '@angular/material/list'
 import {AppService} from '../../services/app.service'
 import {PrettyTypePipe} from '../../pipes/pretty-type.pipe'
 import { TrueTitlePipe } from "../../pipes/true-title.pipe";
+import {AttrIconPipe} from '../../pipes/attr-icon.pipe'
 
 @Component({
     selector: 'app-page-gui-editor',
@@ -32,7 +33,8 @@ import { TrueTitlePipe } from "../../pipes/true-title.pipe";
     MatChipsModule,
     MatListModule,
     PrettyTypePipe,
-    TrueTitlePipe
+    TrueTitlePipe,
+    AttrIconPipe
 ],
     templateUrl: './page-gui-editor.component.html',
     styleUrl: './page-gui-editor.component.scss'

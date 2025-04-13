@@ -245,7 +245,7 @@ export class DialogAttributeComponent implements OnInit {
         this.attributeForm.controls.Type.valueChanges.subscribe(x => {
             this.attributeForm.controls.Default.setValue(this.attributeForm.controls.Default.value)
             if (x === AttrType.REFERENCE) {
-                this.attributeForm.controls.Name.disable()
+                // this.attributeForm.controls.Name.disable()
             } else {
                 this.attributeForm.controls.ReferenceTo.setValue(null)
                 this.attributeForm.controls.Name.enable()
@@ -270,6 +270,9 @@ export class DialogAttributeComponent implements OnInit {
         })
 
         this.attributeForm.controls.ReferenceTo.valueChanges.subscribe(x => {
+            if (this.data.a) {
+                return
+            }
             if (x) {
                 this.attributeForm.controls.Name.setValue(x?.Name || '')
                 this.cdr.detectChanges()
