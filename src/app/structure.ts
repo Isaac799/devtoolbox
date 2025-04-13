@@ -517,6 +517,23 @@ export class Table {
         return cc([cc(createAbbreviation(this.Name), 'sk')].join('_'), 'pl')
         // return cc([cc(this.Name, 'sk')].join('_'), 'pl')
     }
+
+    AllAttributes(src = 'self'): Record<string, Attribute> {
+        let answer: Record<string, Attribute> = {}
+        for (const a of this.Attributes) {
+            const key = `${src}:${a.FN}`
+            if (a.RefTo) {
+                const refAttrs = a.RefTo.AllAttributes(key)
+                answer = {
+                    ...answer,
+                    ...refAttrs
+                }
+                continue
+            }
+            answer[key] = a
+        }
+        return answer
+    }
 }
 
 function createAbbreviation(input: string): string {
