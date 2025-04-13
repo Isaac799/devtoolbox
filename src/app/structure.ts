@@ -13,6 +13,12 @@ export enum Cardinality {
     Self = 1 << 6
 }
 
+export interface TablePosition {
+    id: string
+    x: number
+    y: number
+}
+
 export enum Lang {
     PGSQL = 1 << 7,
     TSQL = 1 << 8,

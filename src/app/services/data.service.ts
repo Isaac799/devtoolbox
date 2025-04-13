@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core'
-import {Schema, Table, Attribute, ParseResult, AttributeConfig, AttrType, SchemaConfig} from '../structure'
+import {Schema, Table, Attribute, ParseResult, AttributeConfig, AttrType, SchemaConfig, TableConfig} from '../structure'
 
 @Injectable({
     providedIn: 'root'
@@ -22,6 +22,37 @@ export class DataService {
 
     getPrimaryKeys(table: Table): Attribute[] {
         return table.Attributes.filter(e => e.Option?.PrimaryKey)
+    }
+
+    static parseSchemasConfig(schemas: Schema[]) {
+        const schemasConfig: Record<string, SchemaConfig> = {}
+        for (const s of schemas) {
+            const s2: SchemaConfig = {
+                ID: s.ID,
+                Color: s.Color,
+                Tables: {}
+            }
+            for (const t of s.Tables) {
+                const t2: TableConfig = {
+                    ID: t.ID,
+                    Attributes: {},
+                    dragPosition: t.dragPosition
+                }
+                for (const a of t.Attributes) {
+                    const a2: AttributeConfig = {
+                        ID: a.ID,
+                        RefToID: a.RefTo?.ID,
+                        Type: a.Type,
+                        Option: a.Option,
+                        Validation: a.Validation
+                    }
+                    t2.Attributes[a.Name] = a2
+                }
+                s2.Tables[t.Name] = t2
+            }
+            schemasConfig[s.Name] = s2
+        }
+        return schemasConfig
     }
 
     static ParseSchemaConfig(schemasConfig: Record<string, SchemaConfig>) {

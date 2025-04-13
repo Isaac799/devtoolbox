@@ -142,7 +142,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     Run() {
-        this.appService.Run()
+        this.appService.Run('txt')
     }
 
     OpenSyntaxGuide() {
@@ -273,7 +273,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     HardRefresh() {
         this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.appService.app.textEditorState)
-        this.appService.Run()
+        this.appService.Run('txt')
         this.textEditorService.justCleaned = true
     }
 

@@ -14,24 +14,24 @@ import {MatChipsModule} from '@angular/material/chips'
 import {SideBarService} from '../../services/side-bar.service'
 import {MatListModule} from '@angular/material/list'
 import {AppService} from '../../services/app.service'
-import { PrettyTypePipe } from "../../pipes/pretty-type.pipe";
+import {PrettyTypePipe} from '../../pipes/pretty-type.pipe'
 
 @Component({
     selector: 'app-page-gui-editor',
     imports: [
-    FormsModule,
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    DragDropModule,
-    CdkDrag,
-    MatButtonModule,
-    MatIconModule,
-    SideBarEditorComponent,
-    MatChipsModule,
-    MatListModule,
-    PrettyTypePipe
-],
+        FormsModule,
+        CommonModule,
+        ReactiveFormsModule,
+        MatCardModule,
+        DragDropModule,
+        CdkDrag,
+        MatButtonModule,
+        MatIconModule,
+        SideBarEditorComponent,
+        MatChipsModule,
+        MatListModule,
+        PrettyTypePipe
+    ],
     templateUrl: './page-gui-editor.component.html',
     styleUrl: './page-gui-editor.component.scss'
 })
@@ -51,7 +51,6 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
     ngOnInit(): void {
         // Resize the canvas when the component is initialized
         // this.resizeCanvas()
-
         // // Listen to the window resize event
         // this.renderer.listen('window', 'resize', () => {
         //     this.resizeCanvas()
@@ -83,6 +82,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         setTimeout(() => {
             this.redraw()
         }, 300)
+        this.appService.RestoreDragPos()
     }
 
     redraw() {
@@ -294,7 +294,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         }
 
         this.redraw()
-        this.appService.Save()
+        this.appService.Run('gui')
     }
 
     doShowModalAttribute(s: Schema, t: Table, a?: Attribute) {
