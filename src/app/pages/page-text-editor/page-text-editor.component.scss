@@ -40,9 +40,12 @@
         caret-color: black;
         resize: none;
         outline: none;
+        min-width: 30rem;
     }
 
     >div.render-box {
+        min-width: 30rem;
+
         color: #545454;
 
         background-color: rgb(0, 0, 0, 0);
