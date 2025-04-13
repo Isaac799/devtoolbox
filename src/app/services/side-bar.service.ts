@@ -71,12 +71,11 @@ export class SideBarService {
         this.appService.RefreshOutput()
     }
 
-    doShowModalTable(t?: Table, i = -1) {
+    doShowModalTable(t?: Table) {
         const dialogRef = this.matDialog.open(DialogTableComponent, {
             data: {
                 t,
                 ss: this.data.schemas,
-                si: i
             }
         })
 

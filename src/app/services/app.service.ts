@@ -284,4 +284,8 @@ export class AppService {
             localStorage.setItem(this.preferencesKey, s)
         }
     }
+
+    CompareWithID<T extends {ID: string}>(a: T, b: T) {
+        return a.ID === b.ID
+    }
 }

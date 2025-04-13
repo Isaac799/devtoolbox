@@ -17,9 +17,14 @@
                 <td>
                     <mat-form-field>
                         <mat-label>Folder</mat-label>
-                        <mat-select formControlName="Schema">
+                        <mat-select
+                            formControlName="Schema"
+                            [compareWith]="appService.CompareWithID"
+                        >
                             @for (s of data.ss; track s.ID) {
-                            <mat-option [value]="s">{{s.Name}}</mat-option>
+                            <mat-option [value]="s">
+                                {{s.Name}}
+                            </mat-option>
                             }
                         </mat-select>
                         <mat-hint align="start"> Give it a home </mat-hint>
@@ -45,7 +50,7 @@
     </button>
     }
     <button
-    [disabled]="tableForm.invalid"
+        [disabled]="tableForm.invalid"
         mat-button
         (click)="clickSaveTable()"
     >

@@ -30,11 +30,10 @@ export class DialogTableComponent implements OnInit {
     data: {
         t: Table | undefined
         ss: Schema[]
-        si: number
     } = inject(MAT_DIALOG_DATA)
 
     private cdr = inject(ChangeDetectorRef)
-    private appService = inject(AppService)
+    appService = inject(AppService)
     private dialogRef = inject(MatDialogRef<DialogTableComponent>)
 
     tableForm = new FormGroup({
@@ -51,7 +50,9 @@ export class DialogTableComponent implements OnInit {
     private setTableForm(t: Table) {
         this.tableForm.reset()
         this.tableForm.controls.Name.setValue(t.Name)
-        this.tableForm.controls.Schema.setValue(this.data.ss[this.data.si])
+        if (this.data.t) {
+            this.tableForm.controls.Schema.setValue(this.data.t.Parent)
+        }
         this.cdr.detectChanges()
     }
 
