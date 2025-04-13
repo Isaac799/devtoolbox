@@ -32,14 +32,13 @@
     <tr>
         <mat-list
             cdkDropList
-            class="example-list"
             [cdkDropListData]="dataService.schemas"
             (cdkDropListDropped)="drop($event)"
         >
             @for (s of dataService.schemas; track $index; let si = $index) {
             <mat-list-item
-                (dblclick)=" sideBarService.doShowModalSchema(s)"
                 cdkDrag
+                (dblclick)="sideBarService.doShowModalSchema(s)"
             >
                 <mat-icon
                     matListItemIcon
@@ -50,19 +49,20 @@
                 {{ s.Name }}
             </mat-list-item>
 
-            }
-        </mat-list>
-
-        <!-- <mat-list>
             @for (t of s.Tables; track $index; let ti = $index) {
-            <mat-list-item (dblclick)=" sideBarService.doShowModalTable(t)">
+            <mat-list-item
+                (dblclick)=" sideBarService.doShowModalTable(t)"
+                class="tabbed"
+            >
                 <mat-icon matListItemIcon>
-                    table
+                    description
                 </mat-icon>
                 {{ t.Name }}
             </mat-list-item>
             }
-        </mat-list> -->
+            }
+        </mat-list>
+
         <button
             mat-icon-button
             (click)="sideBarService.doShowModalSchema()"
