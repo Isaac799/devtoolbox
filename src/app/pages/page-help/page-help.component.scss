@@ -1,0 +1,23 @@
+li {
+    padding-bottom: 0.5rem;
+}
+
+pre,
+code {
+    color: #545454;
+    padding: 0 0.5rem 0 0.5rem;
+    border-radius: 0.25rem;
+    overflow: auto;
+    outline: 1px solid lightgray;
+}
+
+h2 {
+    border-top: 1px solid gray;
+    padding-top: 1rem;
+}
+
+h3 {
+    border-top: 1px solid lightgray;
+    max-width: 20rem;
+    padding-top: 0.5rem;
+}

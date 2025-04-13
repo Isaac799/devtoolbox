@@ -1,0 +1,268 @@
+<div class="p1">
+    <h1>Help</h1>
+
+    <p>
+        This tool is a higher level approach to problem solving CRUD needs. My goal is to
+        provide code that can get you 80% of the way there, and the last 20% is project specific. Not shying away from
+        writing code. Too often I find myself limiting the features of an app to what a library gives me, or worst yet
+        a library I use becomes obsolete or pay walled. This tool aims to encourage writing code while
+        speed running the tedium. Once ideas on on the page, we can start tweaking and finding patterns to
+        refine.
+    </p>
+
+    <p>
+        There is a graphical editor available for larger screens, but I highly recommend using the text editor. It
+        provides shortcuts and tooltips.
+    </p>
+
+    <p>
+        To achieve the "higher lever" approach I landed on 2 things.
+    </p>
+
+    <ol>
+        <li><strong>Folders</strong> are a way of categorizing ideas. Eventually turned into schemas.</li>
+        <li><strong>Blueprints</strong> are a way of defining a specific thing. Eventually turned into tables and
+            structs.</li>
+    </ol>
+
+    <p>
+        With this approach I feel that I can tackle several needs:
+    </p>
+    <ul>
+        <li><strong>Source controllable</strong> allows me to save the concepts and see them change over time. Also its
+            helpful when working across multiple projects at work, documenting each applications data structure.</li>
+        <li><strong>Plain text</strong> formatted as valid markdown makes the configuration readable without having to
+            use an app. Its not JSON or YML, just human readable syntax</li>
+        <li>
+            <strong>Technical</strong>. The simple yet powerful concept of a blueprint and its ability to be relational
+            lets me use my head to problem solve and hash out ideas while normalizing the solution along the way.
+        </li>
+        <!-- <li>
+            <strong>ERD Generation</strong> is huge for me. I love ERDs but never liked that there was not a good way to
+            make them on the computer. In school we hand-wrote them and sent pictures to the professor. When I got to
+            the workforce I tried a few solutions like Visio and LibreOffice draw. Neither one really felt like the
+            right tool. Using the GUI we can work in an ERD inspired flow.
+        </li>
+
+        <li>
+            <strong>Printable</strong> the graphical interface is printable, giving a conceptual breakdown of the
+            technicality. Useful for meetings with the boss or analysts.
+        </li> -->
+
+    </ul>
+
+    <h2>Text Editor Specifics</h2>
+
+    <h3>
+        Folders
+    </h3>
+    <p>
+        Firstly, create a folder (schema)
+    </p>
+    <code>#  [ identifier ]</code>
+
+    <h3>
+        Blueprints
+    </h3>
+    <p>
+        Secondly, create a blueprint (entity / table)
+    </p>
+    <code>##  [ identifier ]</code>
+
+    <h3>
+        Attributes
+    </h3>
+    <p>
+        Finally, add attribute (properties / columns)
+    </p>
+    <code>-  [ identifier ] as [ type ] with [ options ]</code>
+
+    <p>
+        Shorthand to referencing other blueprints (identifier must already exist)
+    </p>
+    <code>-  &#64;[ identifier ] with [ options ]</code>
+
+    <h3>Options</h3>
+    <p>Note that all options can be truncated to just their first letter.</p>
+    <ul>
+        <li>
+            <code>[ required ]</code> must have a value, cannot be null
+        </li>
+        <li>
+            <code>[ unique ]:[ identifier ]</code> must be unique for matching identifier(s) (identifier is optional)
+        </li>
+        <li>
+            <code>[ primary ]</code> this is a primary identifier.
+        </li>
+        <li>
+            <code>[ default ]</code> this is the default value to set an attribute to. Tooltips will guide the expected
+            format.
+        </li>
+        <li>
+            <code>[ system ]</code> excludes it from certain things, like needing passed in on creation.
+        </li>
+    </ul>
+
+    <h3>Types</h3>
+    <p>All the following types are supported</p>
+    <table [cellSpacing]="6">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Shorthand</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>date</code></td>
+                <td></td>
+                <td>a calendar date <code>YYYY-MM-DD</code></td>
+            </tr>
+            <tr>
+                <td><code>time</code></td>
+                <td></td>
+                <td>a point in time <code>HH:MM:SS</code> with optional utc offset <code>-HH:MM</code></td>
+            </tr>
+            <tr>
+                <td><code>timestamp</code></td>
+                <td><code>ts</code></td>
+                <td>includes date and time <code>YYYY-MM-DD HH:MM:SS</code> with optional utc offset <code>-HH:MM</code>
+                </td>
+            </tr>
+            <tr>
+                <td><code>string</code></td>
+                <td><code>str</code></td>
+                <td>a word or phrase</td>
+            </tr>
+            <tr>
+                <td><code>bit</code></td>
+                <td></td>
+                <td>0 or 1</td>
+            </tr>
+            <tr>
+                <td><code>character</code></td>
+                <td><code>char</code></td>
+                <td>a single character or letter</td>
+            </tr>
+            <tr>
+                <td><code>decimal</code></td>
+                <td><code>dec</code></td>
+                <td>a decimal point number</td>
+            </tr>
+            <tr>
+                <td><code>real</code></td>
+                <td></td>
+                <td>a real number</td>
+            </tr>
+            <tr>
+                <td><code>float</code></td>
+                <td></td>
+                <td>a float number</td>
+            </tr>
+            <tr>
+                <td><code>integer</code></td>
+                <td><code>int</code></td>
+                <td>a signed (+/-) integer</td>
+            </tr>
+            <tr>
+                <td><code>boolean</code></td>
+                <td><code>bool</code></td>
+                <td>true or false</td>
+            </tr>
+            <tr>
+                <td><code>money</code></td>
+                <td></td>
+                <td>a monetary value</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Special Types</h3>
+    <ul>
+        <li>
+            <code>[ auto increment | ++ ]</code> is a unique integer that increments. Automatically gains
+            <code>[ primary & required & unique & system ] options.</code>
+        </li>
+        <li>
+            <code>[ blueprint name ]</code> indicating another blueprint will reference it. Allowing for aliasing.
+        </li>
+    </ul>
+
+    <h3>Macros</h3>
+    <p>
+        To help rapidly prototype ideas, use macros.
+    </p>
+    <p>
+        Wrapping a new line in <code>!</code> runs a macro. The
+        first one starts it, the second one runs it.
+    </p>
+
+    <table [cellSpacing]="6">
+        <tbody>
+            <tr>
+                <th>What</th>
+                <th>Macro</th>
+                <th>Description</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Associative Entities</strong>
+                </td>
+                <td>
+                    <code>![ identifier ]:[ identifier ]!</code>
+                </td>
+                <td>
+                    A common need is many-many relationships. Use this to relate 2 code-existing blueprints.
+
+                </td>
+                <td>
+                    <code>!book:author!</code> will give us a blueprint that references a book and its author. Allowing
+                    for a book to have multiple authors.
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Lists</strong>
+                </td>
+                <td>
+                    <code>!list:[ identifier ]!</code>
+                </td>
+                <td>
+                    Another common need is a list of things to choose from, categorical data. For example, dropdown
+                    lists in web
+                    design. Use this to make a new blueprint with id and name attributes.
+                </td>
+                <td>
+                    <code>!list:day of the week!</code> will give us a blueprint where we can store Monday
+                    - Sunday.
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Attributes</strong>
+                </td>
+                <td>
+                    <code>!attr:[ keyword ]!</code>
+                </td>
+                <td>
+                    <p>
+                        Several attributes make re-appearances throughout different blueprints. These can help you from
+                        having to write
+                        the same thing over and over.
+                    </p>
+                    <ul>
+                        <li><code>iat</code> inserted at timestamp </li>
+                        <li><code>uat</code> updated at timestamp </li>
+                        <li><code>word | string | str</code> unique string with upper limit </li>
+                    </ul>
+
+                </td>
+                <td>
+                    <code>!attr:iat!</code> will give us a attribute of the inserted at timestamp with a default value.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

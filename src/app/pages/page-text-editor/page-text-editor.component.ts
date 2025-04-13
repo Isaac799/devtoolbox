@@ -31,7 +31,6 @@ import {TextEditorService} from '../../services/text-editor.service'
 import {AppService} from '../../services/app.service'
 import {BitwiseOperations} from '../../constants'
 import {MatDialog} from '@angular/material/dialog'
-import {DialogSyntaxGuideComponent} from '../../dialogs/dialog-syntax-guide/dialog-syntax-guide.component'
 import {MatTooltipModule} from '@angular/material/tooltip'
 import {DefaultValueHintPipe} from '../../pipes/default-value-hint.pipe'
 
@@ -143,10 +142,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     Run() {
         this.appService.Run('txt')
-    }
-
-    OpenSyntaxGuide() {
-        this.matDialog.open(DialogSyntaxGuideComponent)
     }
 
     Copy() {

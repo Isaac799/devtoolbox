@@ -1,8 +1,9 @@
 import {PageCodeOutputComponent} from './pages/page-code-output/page-code-output.component'
 import {Routes} from '@angular/router'
-import { PageTextEditorComponent } from './pages/page-text-editor/page-text-editor.component'
-import { PageSplitViewComponent } from './pages/page-split-view/page-split-view.component'
-import { PageGuiEditorComponent } from './pages/page-gui-editor/page-gui-editor.component'
+import {PageTextEditorComponent} from './pages/page-text-editor/page-text-editor.component'
+import {PageSplitViewComponent} from './pages/page-split-view/page-split-view.component'
+import {PageGuiEditorComponent} from './pages/page-gui-editor/page-gui-editor.component'
+import {PageHelpComponent} from './pages/page-help/page-help.component'
 
 const routeConfig: Routes = [
     {
@@ -24,6 +25,11 @@ const routeConfig: Routes = [
         path: 'manage-and-explore',
         component: PageSplitViewComponent,
         title: 'Manage & Explore'
+    },
+    {
+        path: 'help',
+        component: PageHelpComponent,
+        title: 'Help'
     },
     {
         path: '**',

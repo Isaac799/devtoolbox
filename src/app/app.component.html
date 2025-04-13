@@ -25,6 +25,7 @@
                 routerLink="manage-blueprints"
             >
                 Manage
+                @if (showSplitPage) { (text) }
             </a>
             @if (showSplitPage) {
             <a
@@ -32,7 +33,7 @@
                 matTooltip="Wide screens only"
                 routerLink="manage-blueprints-gui"
             >
-                Manage (Graphical)
+                Manage (graphical)
             </a>
             }
             <a
@@ -47,9 +48,15 @@
                 matTooltip="Wide screens only"
                 routerLink="manage-and-explore"
             >
-                Manage & Explore
+                Split View
             </a>
             }
+            <a
+                mat-button
+                routerLink="help"
+            >
+                Help
+            </a>
         </div>
     </mat-toolbar>
 
