@@ -328,15 +328,21 @@ $$ LANGUAGE plpgsql;`
         return q
     }
 
-    static generateAttributesForTable(t: Table, beingReferences?: Attribute) {
+    static generateAttributesForTable(t: Table) {
         let attrs: string[] = []
-        for (const a of t.Attributes) {
-            if (beingReferences) {
-                if (!a.Option?.PrimaryKey) {
-                    continue
-                }
+
+        const allAttrs = t.AllAttributes()
+
+        for (const key in allAttrs) {
+            if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
+                continue
             }
-            const name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk')
+            const a = allAttrs[key]
+            let kr = key.replaceAll(':', '_').replaceAll('.', '_')
+            if (kr[0] === '_') {
+                kr = kr.substring(1, kr.length)
+            }
+            const name = cc(kr, 'sk')
             let type = ''
             if ([AttrType.VARCHAR].includes(a.Type)) {
                 let max = 15
@@ -346,23 +352,11 @@ $$ LANGUAGE plpgsql;`
                     max = a.Validation.Max
                 }
                 type = [a.Type, `(${max || '15'})`].join('')
-            } else if (a.Type === AttrType.REFERENCE) {
-                if (beingReferences) {
-                    // prevents endless recursion
-                    continue
-                }
-                if (!a.RefTo) {
-                    console.warn(`invalid referenced id "${name}"`)
-                    continue
-                }
-                const referencedAttrs = LanguagePsqlService.generateAttributesForTable(a.RefTo, a)
-                attrs = attrs.concat(referencedAttrs)
-                continue
             } else {
                 type = PG_TO_PG_TYPE[a.Type]
             }
 
-            if (beingReferences && a.Type === AttrType.SERIAL) {
+            if (a.Type === AttrType.SERIAL) {
                 type = 'INT'
             }
 

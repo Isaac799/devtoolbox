@@ -101,7 +101,7 @@ export class LanguageSqliteService {
         return endThings
     }
 
-    private static generateAttributesForTable(t: Table, beingReferences?: Attribute) {
+    private static generateAttributesForTable(t: Table, beingReferences?: Attribute, depth = 0) {
         let attrs: string[] = []
         for (const a of t.Attributes) {
             if (beingReferences) {
@@ -112,7 +112,7 @@ export class LanguageSqliteService {
             const name = beingReferences ? `${cc(beingReferences.Name, 'sk')}_${cc(a.Name, 'sk')}` : cc(a.Name, 'sk')
             let type = ''
             if (a.Type === AttrType.REFERENCE) {
-                if (beingReferences) {
+                if (beingReferences?.ID === a.ID && depth < 1) {
                     // prevents endless recursion
                     continue
                 }
@@ -120,7 +120,7 @@ export class LanguageSqliteService {
                     console.warn(`invalid referenced id "${name}"`)
                     continue
                 }
-                const referencedAttrs = LanguageSqliteService.generateAttributesForTable(a.RefTo, a)
+                const referencedAttrs = LanguageSqliteService.generateAttributesForTable(a.RefTo, a, depth + 1)
                 attrs = attrs.concat(referencedAttrs)
                 continue
             } else {

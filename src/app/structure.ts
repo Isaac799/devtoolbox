@@ -518,19 +518,58 @@ export class Table {
         // return cc([cc(this.Name, 'sk')].join('_'), 'pl')
     }
 
-    AllAttributes(src = 'self'): Record<string, Attribute> {
+    AllAttributes(
+        src = 'self',
+        depth = 0,
+        selfDepth = 0,
+        options = {
+            foreignKeysOnly: true,
+            includeSelf: true,
+            foreignAttrs: false,
+            maxDepth: 10
+        }
+    ): Record<string, Attribute> {
+        if (depth > options.maxDepth) {
+            return {}
+        }
+        if (selfDepth > 1) {
+            return {}
+        }
         let answer: Record<string, Attribute> = {}
         for (const a of this.Attributes) {
-            const key = `${src}:${a.FN}`
-            if (a.RefTo) {
-                const refAttrs = a.RefTo.AllAttributes(key)
+            const key = depth === 0 ? cc(a.Name, 'sk') : `${src}:${cc(a.Name, 'sk')}`
+
+            if (a.RefTo && options.foreignKeysOnly && a.Option?.PrimaryKey) {
+                const refAttrs = a.RefTo.AllAttributes(key, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options})
+                answer = {
+                    ...answer,
+                    ...refAttrs
+                }
+                continue
+            } else if (a.RefTo) {
+                // if (a.RefTo.ID !== this.ID) {
+                //     continue
+                // }
+                console.log(depth, a.FN)
+                const refAttrs = a.RefTo.AllAttributes(key, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options})
                 answer = {
                     ...answer,
                     ...refAttrs
                 }
                 continue
             }
-            answer[key] = a
+            if (depth === 0 && options.includeSelf) {
+                answer[key] = a
+            } else {
+                // foreign
+                if (options.foreignKeysOnly && a.Option?.PrimaryKey) {
+                    answer[key] = a
+                } else {
+                    if (options.foreignAttrs) {
+                        answer[key] = a
+                    }
+                }
+            }
         }
         return answer
     }

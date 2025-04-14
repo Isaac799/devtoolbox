@@ -183,7 +183,7 @@ GO;`
         return endThings
     }
 
-    private static generateAttributesForTable(t: Table, beingReferences?: Attribute) {
+    private static generateAttributesForTable(t: Table, beingReferences?: Attribute, depth = 0) {
         let attrs: string[] = []
         for (const a of t.Attributes) {
             if (beingReferences) {
@@ -202,7 +202,7 @@ GO;`
                 }
                 type = [SQL_TO_TSQL_TYPE[a.Type], `(${max || '15'})`].join('')
             } else if (a.Type === AttrType.REFERENCE) {
-                if (beingReferences) {
+                if (beingReferences?.ID === a.ID && depth < 1) {
                     // prevents endless recursion
                     continue
                 }
@@ -210,7 +210,7 @@ GO;`
                     console.warn(`invalid referenced id "${name}"`)
                     continue
                 }
-                const referencedAttrs = LanguageTsqlService.generateAttributesForTable(a.RefTo, a)
+                const referencedAttrs = LanguageTsqlService.generateAttributesForTable(a.RefTo, a, depth + 1)
                 attrs = attrs.concat(referencedAttrs)
                 continue
             } else {

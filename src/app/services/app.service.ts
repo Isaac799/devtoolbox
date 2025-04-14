@@ -83,14 +83,6 @@ export class AppService {
             this.Run('txt')
             this.RestoreGuiMeta()
             this.initialized = true
-
-            for (const s of this.dataService.schemas) {
-                for (const t of s.Tables) {
-                    console.log('------')
-                    console.log(t.FN)
-                    console.log(t.AllAttributes())
-                }
-            }
         }, 0)
     }
 

@@ -9,6 +9,9 @@ import { TAB } from '../../constants'
 export class LanguageSqlService {
     static GenerateUniqueAttributes(t: Table): Record<string, string[]> {
         const uniques: Record<string, string[]> = {}
+
+        // const allAttrs = t.AllAttributes()
+
         for (const a of t.Attributes) {
             if (a.Option?.PrimaryKey) continue
 
