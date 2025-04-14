@@ -119,41 +119,41 @@ export class SideBarService {
                 }
             ]
         },
-        {
-            title: 'MS SQL',
-            items: [
-                {
-                    name: 'Tables',
-                    value: AppGeneratorMode.TSQLTables
-                }
-                // {
-                //     name: 'Procedures',
-                //     value: AppGeneratorMode.TSQLStoredProcedures
-                // }
-            ]
-        },
-        {
-            title: 'SQLite',
-            items: [
-                {
-                    name: 'Tables',
-                    value: AppGeneratorMode.SQLiteTables
-                }
-                // {
-                //     name: 'Queries',
-                //     value: AppGeneratorMode.SQLiteJoinQuery
-                // }
-            ]
-        },
-        {
-            title: 'JS',
-            items: [
-                {
-                    name: 'Classes',
-                    value: AppGeneratorMode.JSClasses
-                }
-            ]
-        },
+        // {
+        //     title: 'MS SQL',
+        //     items: [
+        //         {
+        //             name: 'Tables',
+        //             value: AppGeneratorMode.TSQLTables
+        //         }
+        //         // {
+        //         //     name: 'Procedures',
+        //         //     value: AppGeneratorMode.TSQLStoredProcedures
+        //         // }
+        //     ]
+        // },
+        // {
+        //     title: 'SQLite',
+        //     items: [
+        //         {
+        //             name: 'Tables',
+        //             value: AppGeneratorMode.SQLiteTables
+        //         }
+        //         // {
+        //         //     name: 'Queries',
+        //         //     value: AppGeneratorMode.SQLiteJoinQuery
+        //         // }
+        //     ]
+        // },
+        // {
+        //     title: 'JS',
+        //     items: [
+        //         {
+        //             name: 'Classes',
+        //             value: AppGeneratorMode.JSClasses
+        //         }
+        //     ]
+        // },
         {
             title: 'TS',
             items: [
@@ -171,15 +171,15 @@ export class SideBarService {
                 }
             ]
         },
-        {
-            title: 'C#',
-            items: [
-                {
-                    name: 'Classes',
-                    value: AppGeneratorMode.CSClasses
-                }
-            ]
-        },
+        // {
+        //     title: 'C#',
+        //     items: [
+        //         {
+        //             name: 'Classes',
+        //             value: AppGeneratorMode.CSClasses
+        //         }
+        //     ]
+        // },
         {
             title: 'Go',
             items: [
@@ -195,14 +195,14 @@ export class SideBarService {
                 }
             ]
         },
-        {
-            title: 'Rust',
-            items: [
-                {
-                    name: 'Structs & impl functions',
-                    value: AppGeneratorMode.RustStructAndImpl
-                }
-            ]
-        }
+        // {
+        //     title: 'Rust',
+        //     items: [
+        //         {
+        //             name: 'Structs & impl functions',
+        //             value: AppGeneratorMode.RustStructAndImpl
+        //         }
+        //     ]
+        // }
     ]
 }
