@@ -1,9 +1,9 @@
-import {Injectable} from '@angular/core'
-import {TAB} from '../../../app/constants'
-import {cc, alignKeyword, alignKeywords} from '../../../app/formatting'
-import {Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue, Attribute} from '../../../app/structure'
-import {LanguageSqlService} from './language-sql.service'
-import {AttributeMap} from '../../varchar'
+import { Injectable } from '@angular/core'
+import { TAB } from '../../../app/constants'
+import { cc, alignKeyword, alignKeywords } from '../../../app/formatting'
+import { Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue } from '../../../app/structure'
+import { LanguageSqlService } from './language-sql.service'
+import { AttributeMap } from '../../varchar'
 
 @Injectable({
     providedIn: 'root'
@@ -47,10 +47,15 @@ export class LanguagePsqlService {
 
         const pks: string[] = []
 
-        for (const a of t.Attributes) {
+        const allAttrs = t.AllAttributes()
+        for (const key in allAttrs) {
+            if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
+                continue
+            }
+            const [_, a] = allAttrs[key]
             if (!a.Option?.PrimaryKey) continue
             if (!a.RefTo) {
-                pks.push(cc(a.Name, 'sk'))
+                pks.push(key)
                 continue
             }
 
@@ -73,16 +78,16 @@ export class LanguagePsqlService {
             endThings.push(uniquesStr)
         }
 
-        const refs = t.Attributes.filter(e => e.RefTo)
-        if (refs.length > 0) {
-            for (const e of refs) {
-                const r = e.RefTo!
-                const rPks = r.Attributes.filter(e => e.Option?.PrimaryKey)
-                for (const rPk of rPks) {
-                    const rStr = `FOREIGN KEY ( ${cc(e.Name, 'sk')}_${cc(rPk.Name, 'sk')} ) REFERENCES ${r.FN} ( ${cc(rPk.Name, 'sk')} ) ON DELETE CASCADE`
-                    endThings.push(rStr)
-                }
+        for (const key in allAttrs) {
+            if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
+                continue
             }
+            const [isSelf, a] = allAttrs[key]
+            if (isSelf) {
+                continue
+            }
+            const rStr = `FOREIGN KEY ( ${key} ) REFERENCES ${a.Parent.Name} ( ${cc(a.Name, 'sk')} ) ON DELETE CASCADE`
+            endThings.push(rStr)
         }
 
         endThings = alignKeyword(endThings, '(')
@@ -337,7 +342,7 @@ $$ LANGUAGE plpgsql;`
             if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
                 continue
             }
-            const a = allAttrs[key]
+            const [_, a] = allAttrs[key]
             const name = cc(key, 'sk')
             let type = ''
             if ([AttrType.VARCHAR].includes(a.Type)) {

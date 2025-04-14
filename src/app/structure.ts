@@ -527,15 +527,16 @@ export class Table {
             includeSelf: true,
             foreignAttrs: false,
             maxDepth: 10
-        }
-    ): Record<string, Attribute> {
+        },
+        calledFrom?: Attribute
+    ): Record<string, [boolean, Attribute]> {
         if (depth > options.maxDepth) {
             return {}
         }
         if (selfDepth > 1) {
             return {}
         }
-        let answer: Record<string, Attribute> = {}
+        let answer: Record<string, [boolean, Attribute]> = {}
         for (const a of this.Attributes) {
             let key = depth === 0 ? cc(a.Name, 'sk') : `${src}:${cc(a.Name, 'sk')}`
 
@@ -549,7 +550,7 @@ export class Table {
             }
 
             if (a.RefTo && options.foreignKeysOnly && a.Option?.PrimaryKey) {
-                const refAttrs = a.RefTo.AllAttributes(key, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options})
+                const refAttrs = a.RefTo.AllAttributes(key, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a)
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -560,7 +561,7 @@ export class Table {
                 //     continue
                 // }
                 // console.log(depth, a.FN)
-                const refAttrs = a.RefTo.AllAttributes(key, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options})
+                const refAttrs = a.RefTo.AllAttributes(key, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a)
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -568,14 +569,19 @@ export class Table {
                 continue
             }
             if (depth === 0 && options.includeSelf) {
-                answer[key] = a
+                answer[key] = [true, a]
             } else {
+                if (!calledFrom) {
+                    console.error('missing called from on depth > 0')
+                    continue
+                }
+
                 // foreign
                 if (options.foreignKeysOnly && a.Option?.PrimaryKey) {
-                    answer[key] = a
+                    answer[key] = [false, a]
                 } else {
                     if (options.foreignAttrs) {
-                        answer[key] = a
+                        answer[key] = [false, a]
                     }
                 }
             }
