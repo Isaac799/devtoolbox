@@ -338,11 +338,7 @@ $$ LANGUAGE plpgsql;`
                 continue
             }
             const a = allAttrs[key]
-            let kr = key.replaceAll(':', '_').replaceAll('.', '_')
-            if (kr[0] === '_') {
-                kr = kr.substring(1, kr.length)
-            }
-            const name = cc(kr, 'sk')
+            const name = cc(key, 'sk')
             let type = ''
             if ([AttrType.VARCHAR].includes(a.Type)) {
                 let max = 15

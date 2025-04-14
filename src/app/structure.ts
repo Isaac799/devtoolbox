@@ -537,7 +537,16 @@ export class Table {
         }
         let answer: Record<string, Attribute> = {}
         for (const a of this.Attributes) {
-            const key = depth === 0 ? cc(a.Name, 'sk') : `${src}:${cc(a.Name, 'sk')}`
+            let key = depth === 0 ? cc(a.Name, 'sk') : `${src}:${cc(a.Name, 'sk')}`
+
+            {
+                // not sure where I want this rn... I know its backwards
+                let kr = key.replaceAll(':', '_').replaceAll('.', '_')
+                if (kr[0] === '_') {
+                    kr = kr.substring(1, kr.length)
+                }
+                key = kr
+            }
 
             if (a.RefTo && options.foreignKeysOnly && a.Option?.PrimaryKey) {
                 const refAttrs = a.RefTo.AllAttributes(key, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options})
@@ -550,7 +559,7 @@ export class Table {
                 // if (a.RefTo.ID !== this.ID) {
                 //     continue
                 // }
-                console.log(depth, a.FN)
+                // console.log(depth, a.FN)
                 const refAttrs = a.RefTo.AllAttributes(key, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options})
                 answer = {
                     ...answer,
@@ -571,6 +580,7 @@ export class Table {
                 }
             }
         }
+
         return answer
     }
 }
