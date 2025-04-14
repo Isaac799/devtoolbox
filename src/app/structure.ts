@@ -420,14 +420,14 @@ export class Table {
             maxDepth: 10
         },
         calledFrom?: Attribute
-    ): Record<string, [boolean, Attribute]> {
+    ): Record<string, [Attribute | null, Attribute]> {
         if (depth > options.maxDepth) {
             return {}
         }
         if (selfDepth > 1) {
             return {}
         }
-        let answer: Record<string, [boolean, Attribute]> = {}
+        let answer: Record<string, [Attribute | null, Attribute]> = {}
         for (const a of this.Attributes) {
             let determinedKey = depth === 0 ? cc(a.Name, 'sk') : `${src}:${cc(a.Name, 'sk')}`
 
@@ -460,7 +460,7 @@ export class Table {
                 continue
             }
             if (depth === 0 && options.includeSelf) {
-                answer[determinedKey] = [true, a]
+                answer[determinedKey] = [null, a]
             } else {
                 if (!calledFrom) {
                     console.error('missing called from on depth > 0')
@@ -469,10 +469,10 @@ export class Table {
 
                 // foreign
                 if (options.foreignKeysOnly && a.Option?.PrimaryKey) {
-                    answer[determinedKey] = [false, a]
+                    answer[determinedKey] = [calledFrom, a]
                 } else {
                     if (options.foreignAttrs) {
-                        answer[determinedKey] = [false, a]
+                        answer[determinedKey] = [calledFrom, a]
                     }
                 }
             }

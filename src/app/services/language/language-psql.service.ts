@@ -52,17 +52,11 @@ export class LanguagePsqlService {
             if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
                 continue
             }
-            const [_, a] = allAttrs[determinedKey]
-            if (!a.Option?.PrimaryKey) continue
-            if (!a.RefTo) {
-                pks.push(determinedKey)
-                continue
-            }
-
-            for (const ra of a.RefTo.Attributes) {
-                if (!ra.Option?.PrimaryKey) continue
-                pks.push(cc(`${a.Name}_${ra.Name}`, 'sk'))
-            }
+            const [srcA, a] = allAttrs[determinedKey]
+            if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== t.ID) continue
+            if (srcA && !srcA.Option?.PrimaryKey) continue
+            
+            pks.push(determinedKey)
         }
 
         if (pks.length > 0) {
