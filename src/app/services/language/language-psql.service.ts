@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core'
-import { TAB } from '../../../app/constants'
-import { cc, alignKeyword, alignKeywords } from '../../../app/formatting'
-import { Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue } from '../../../app/structure'
-import { LanguageSqlService } from './language-sql.service'
-import { AttributeMap } from '../../varchar'
+import {Injectable} from '@angular/core'
+import {TAB} from '../../../app/constants'
+import {cc, alignKeyword, alignKeywords} from '../../../app/formatting'
+import {Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue} from '../../../app/structure'
+import {LanguageSqlService} from './language-sql.service'
+import {AttributeMap} from '../../varchar'
 
 @Injectable({
     providedIn: 'root'
@@ -48,14 +48,14 @@ export class LanguagePsqlService {
         const pks: string[] = []
 
         const allAttrs = t.AllAttributes()
-        for (const key in allAttrs) {
-            if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
+        for (const determinedKey in allAttrs) {
+            if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
                 continue
             }
-            const [_, a] = allAttrs[key]
+            const [_, a] = allAttrs[determinedKey]
             if (!a.Option?.PrimaryKey) continue
             if (!a.RefTo) {
-                pks.push(key)
+                pks.push(determinedKey)
                 continue
             }
 
@@ -338,12 +338,12 @@ $$ LANGUAGE plpgsql;`
 
         const allAttrs = t.AllAttributes()
 
-        for (const key in allAttrs) {
-            if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
+        for (const determinedKey in allAttrs) {
+            if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
                 continue
             }
-            const [_, a] = allAttrs[key]
-            const name = cc(key, 'sk')
+            const [_, a] = allAttrs[determinedKey]
+            const name = cc(determinedKey, 'sk')
             let type = ''
             if ([AttrType.VARCHAR].includes(a.Type)) {
                 let max = 15

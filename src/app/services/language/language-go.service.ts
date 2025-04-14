@@ -31,8 +31,8 @@ export class LanguageGoService {
             let funcAttrs: string[] = LanguageGoService.generateFuncReturnStruct(f)
             const {title, params} = LanguageGoService.generateTitleAndParams(f)
 
-            lines.push(`func ${title} (${params}) *${f.title} {`)
-            lines.push(`${TAB}return &${f.title} {`)
+            lines.push(`func ${title} (${params}) ${f.title} {`)
+            lines.push(`${TAB}return ${f.title} {`)
 
             funcAttrs = alignKeyword(funcAttrs, ' :')
             lines = lines.concat(funcAttrs)
