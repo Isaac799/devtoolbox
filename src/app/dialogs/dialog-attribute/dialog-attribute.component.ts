@@ -290,6 +290,14 @@ export class DialogAttributeComponent implements OnInit {
         this.attributeForm.controls.ReferenceTo.addValidators(this.validReference())
         this.attributeForm.controls.Default.addValidators(this.validDefault())
 
+        this.attributeForm.controls.Default.valueChanges.subscribe(() => {
+            setTimeout(() => {
+                this.EnsureValidSystemField()
+            }, 0)
+        })
+
+        this.EnsureValidSystemField()
+
         this.existingNames = this.data.t.Attributes.map(e => e.Name)
 
         if (!this.data.a) {
@@ -298,6 +306,15 @@ export class DialogAttributeComponent implements OnInit {
         }
 
         this.setAttributeForm(this.data.a)
+    }
+
+    private EnsureValidSystemField() {
+        if (!this.attributeForm.controls.Default.value || !this.attributeForm.controls.Default.valid) {
+            this.attributeForm.controls.SystemField.disable()
+            this.attributeForm.controls.SystemField.setValue(null)
+            return
+        }
+        this.attributeForm.controls.SystemField.enable()
     }
 
     private RequirePrimaryKey() {
