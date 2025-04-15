@@ -889,12 +889,13 @@ function getBestMatch(input: string, map: AttributeMap): string | null {
             return key
         }
 
-        const categoryScore = fuzzyMatch(key, entity) * 0.8
+        // Good score, if change, then check metadata.source matching too
+        const categoryScore = fuzzyMatch(key, entity) * 0.65
 
         let attrModifier = 1
         const lessSignificantModifiers = ['name', 'title', 'label']
         if (lessSignificantModifiers.includes(attr)) {
-            attrModifier = 0.4
+            attrModifier = 0.325
         }
         const attrScore = fuzzyMatch(key, attr) * attrModifier
 
