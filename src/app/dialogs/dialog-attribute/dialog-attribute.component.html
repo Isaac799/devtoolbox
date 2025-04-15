@@ -104,18 +104,30 @@
             }
             <tr>
                 <td>
-                    <mat-checkbox formControlName="PrimaryKey">
+                    <mat-checkbox
+                        formControlName="PrimaryKey"
+                        matTooltip="a unique identifier for an instance of this blueprint"
+                    >
                         Primary Key
                     </mat-checkbox>
-                    <mat-checkbox formControlName="Required">
+                    <mat-checkbox
+                        formControlName="Required"
+                        matTooltip="validation of nullability / treated as a reference"
+                    >
                         Required
                     </mat-checkbox>
                 </td>
                 <td>
-                    <mat-checkbox formControlName="Unique">
+                    <mat-checkbox
+                        formControlName="Unique"
+                        matTooltip="identify fields that are unique"
+                    >
                         Unique
                     </mat-checkbox>
-                    <mat-checkbox formControlName="SystemField">
+                    <mat-checkbox
+                        formControlName="SystemField"
+                        matTooltip="pre-defined on creation. e.g. 'inserted at' with default 'now'"
+                    >
                         System Field
                     </mat-checkbox>
                 </td>

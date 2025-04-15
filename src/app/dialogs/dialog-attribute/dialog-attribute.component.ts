@@ -15,6 +15,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox'
 import {MatDividerModule} from '@angular/material/divider'
 import {AppService} from '../../services/app.service'
 import {cc} from '../../formatting'
+import { MatTooltipModule } from '@angular/material/tooltip'
 
 @Component({
     standalone: true,
@@ -36,7 +37,8 @@ import {cc} from '../../formatting'
         MatInputModule,
         MatChipsModule,
         MatCheckboxModule,
-        MatDividerModule
+        MatDividerModule,
+        MatTooltipModule
     ],
     templateUrl: './dialog-attribute.component.html',
     styleUrl: './dialog-attribute.component.scss'
