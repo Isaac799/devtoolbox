@@ -493,8 +493,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                             collection.push(`- ${cc(bL, 'tc')} as ${cc(a, 'tc')} with required`)
                         } else {
                             collection.push(`## ${cc(a, 'tc')} ${cc(b, 'tc')}`)
-                            collection.push(`- @${cc(aL, 'tc')} with required`)
-                            collection.push(`- @${cc(bL, 'tc')} with required`)
+                            collection.push(`- @${cc(aL, 'tc')} with required, primary`)
+                            collection.push(`- @${cc(bL, 'tc')} with required, primary`)
                         }
                     }
 
