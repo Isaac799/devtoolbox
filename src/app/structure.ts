@@ -104,7 +104,8 @@ export class Func {
             if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
                 continue
             }
-            const [_, a] = allAttrs[determinedKey]
+            
+            const [srcA, a] = allAttrs[determinedKey]
 
             if (a.Option?.SystemField || a.Option?.Default) {
                 continue
@@ -127,7 +128,10 @@ export class Func {
             if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
                 continue
             }
-            const [_, a] = allAttrs[determinedKey]
+            const [srcA, a] = allAttrs[determinedKey]
+
+            if (srcA && srcA?.Parent.ID !== this.table.ID) continue
+
             let goFnStructAttributes: FuncOut[]
 
             if (a.Option?.SystemField || a.Option?.Default) {
