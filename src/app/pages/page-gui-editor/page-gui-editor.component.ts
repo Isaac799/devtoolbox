@@ -54,11 +54,11 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
 
     ngOnInit(): void {
         // Resize the canvas when the component is initialized
-        // this.resizeCanvas()
-        // // Listen to the window resize event
-        // this.renderer.listen('window', 'resize', () => {
-        //     this.resizeCanvas()
-        // })
+        this.resizeCanvas()
+        // Listen to the window resize event
+        this.renderer.listen('window', 'resize', () => {
+            this.resizeCanvas()
+        })
         this.appService.RestoreGuiMeta()
     }
 
@@ -66,22 +66,22 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         // this.renderer.listen('window', 'resize', () => {}).remove()
     }
 
-    // resizeCanvas(): void {
-    //     clearTimeout(this.resizeDebounce)
-    //     this.resizeDebounce = setTimeout(() => {
-    //         if (!this.canvasRef) {
-    //             return
-    //         }
-    //         if (!this.rootEditor) {
-    //             return
-    //         }
+    resizeCanvas(): void {
+        clearTimeout(this.resizeDebounce)
+        this.resizeDebounce = setTimeout(() => {
+            if (!this.canvasRef) {
+                return
+            }
+            if (!this.rootEditor) {
+                return
+            }
 
-    //         const rootSize = this.rootEditor.nativeElement.getBoundingClientRect()
-    //         this.canvasRef.nativeElement.width = rootSize.width
-    //         this.canvasRef.nativeElement.height = rootSize.height
-    //         this.redraw()
-    //     }, 300)
-    // }
+            const rootSize = this.rootEditor.nativeElement.getBoundingClientRect()
+            this.canvasRef.nativeElement.width = rootSize.width
+            this.canvasRef.nativeElement.height = rootSize.height
+            this.redraw()
+        }, 300)
+    }
 
     ngAfterViewInit() {
         setTimeout(() => {
@@ -144,8 +144,8 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         const REM = 16
 
         const attrSrc = {
-            x: attrElRect.left - rootElRect.left - REM * 1.2,
-            y: attrElRect.top - rootElRect.top - REM / 5
+            x: attrElRect.left - rootElRect.left - REM,
+            y: attrElRect.top - rootElRect.top - REM * 2
         }
         const targetTableSrc = {
             x: targetTableRect.left - rootElRect.left,
@@ -282,7 +282,7 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         }
 
         // Draw cardinality label in the middle of the line
-        ctx.fillText('1-N', (sourceX + targetX) / 2, (sourceY + targetY) / 2 - 10)
+        // ctx.fillText('1-N', (sourceX + targetX) / 2, (sourceY + targetY) / 2 - 10)
     }
 
     doneDrag(table: Table, event: CdkDragEnd) {
