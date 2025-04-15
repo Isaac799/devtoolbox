@@ -79,11 +79,14 @@ export class LanguagePsqlService {
             const [srcA, a] = allAttrs[key]
             if (!srcA || (srcA && srcA?.Parent.ID !== t.ID)) continue
 
-            const rStr = `FOREIGN KEY ( ${key} ) REFERENCES ${a.Parent.Name} ( ${cc(a.Name, 'sk')} ) ON DELETE CASCADE`
+            // const sameSchema = srcA.Parent.Parent.ID === a.Parent.Parent.ID
+            // const parentTbl = sameSchema ? a.Parent.Name : a.Parent.FN
+            const rStr = `FOREIGN KEY ( ${key} ) REFERENCES ${a.Parent.FN} ( ${cc(a.Name, 'sk')} ) ON DELETE CASCADE`
             endThings.push(rStr)
         }
-
         endThings = alignKeyword(endThings, '(')
+        endThings = alignKeyword(endThings, 'REFERENCES')
+        endThings = alignKeyword(endThings, 'ON DELETE CASCADE')
         return endThings
     }
 
