@@ -55,7 +55,7 @@ export class LanguagePsqlService {
             const [srcA, a] = allAttrs[determinedKey]
             if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== t.ID) continue
             if (srcA && !srcA.Option?.PrimaryKey) continue
-            
+
             pks.push(determinedKey)
         }
 
@@ -76,10 +76,9 @@ export class LanguagePsqlService {
             if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
                 continue
             }
-            const [isSelf, a] = allAttrs[key]
-            if (isSelf) {
-                continue
-            }
+            const [srcA, a] = allAttrs[key]
+            if (!srcA || (srcA && srcA?.Parent.ID !== t.ID)) continue
+
             const rStr = `FOREIGN KEY ( ${key} ) REFERENCES ${a.Parent.Name} ( ${cc(a.Name, 'sk')} ) ON DELETE CASCADE`
             endThings.push(rStr)
         }
@@ -336,7 +335,10 @@ $$ LANGUAGE plpgsql;`
             if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
                 continue
             }
-            const [_, a] = allAttrs[determinedKey]
+            const [srcA, a] = allAttrs[determinedKey]
+
+            if (srcA && srcA?.Parent.ID !== t.ID) continue
+
             const name = cc(determinedKey, 'sk')
             let type = ''
             if ([AttrType.VARCHAR].includes(a.Type)) {
