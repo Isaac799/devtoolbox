@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core'
 import {TAB} from '../../../app/constants'
 import {cc, alignKeyword, alignKeywords} from '../../../app/formatting'
-import {Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue} from '../../../app/structure'
+import {Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue, Attribute} from '../../../app/structure'
 import {LanguageSqlService} from './language-sql.service'
 import {AttributeMap} from '../../varchar'
 
@@ -9,7 +9,7 @@ import {AttributeMap} from '../../varchar'
     providedIn: 'root'
 })
 export class LanguagePsqlService {
-    static ToTables(schemas: Schema[]): string {
+    static ToTables(schemas: Schema[], creationsOnly = false): string {
         let drops: string[] = []
         const createTableLines: string[] = []
 
@@ -37,7 +37,10 @@ export class LanguagePsqlService {
             }
         }
         drops = drops.reverse()
-        const all = ['BEGIN;', '', '-- Drop Everything', '', ...drops, '', '-- Create Everything', ...createTableLines, '', 'COMMIT;']
+        if (creationsOnly) {
+            drops = []
+        }
+        const all = ['', ...drops, '', ...createTableLines, '']
         const str = all.join('\n')
         return str
     }
@@ -232,8 +235,7 @@ export class LanguagePsqlService {
                 lines.push('')
             }
         }
-        const all = ['BEGIN;', '', ...lines, '', 'COMMIT;']
-        const str = all.join('\n').replaceAll('VALUES~~,', 'VALUES')
+        const str = lines.join('\n').replaceAll('VALUES~~,', 'VALUES')
 
         return str
     }
@@ -342,39 +344,38 @@ $$ LANGUAGE plpgsql;`
 
             if (srcA && srcA?.Parent.ID !== t.ID) continue
 
-            const name = cc(determinedKey, 'sk')
-            let type = ''
-            if ([AttrType.VARCHAR].includes(a.Type)) {
-                let max = 15
-                if (!a.Validation || !a.Validation.Max) {
-                    console.warn(`missing max validation on "${name}"`)
-                } else {
-                    max = a.Validation.Max
-                }
-                type = [a.Type, `(${max || '15'})`].join('')
-            } else {
-                type = PG_TO_PG_TYPE[a.Type]
-            }
-
-            if (a.Type === AttrType.SERIAL) {
-                type = 'INT'
-            }
-
-            const attrLine = [`${cc(name, 'sk')} ${type}`]
-
-            if (a.Option?.Default) {
-                const def = GenerateDefaultValue(a, Lang.PGSQL)
-                if (def !== null) {
-                    attrLine.push(`DEFAULT ${def}`)
-                }
-            }
-            if (a.Validation?.Required) {
-                attrLine.push(`NOT NULL`)
-            }
-            attrs.push(attrLine.join(' '))
+            const attrLine = LanguagePsqlService.generateAttrLine(determinedKey, a)
+            attrs.push(attrLine)
         }
 
         attrs = alignKeywords(attrs, Object.values(AttrType))
         return attrs
+    }
+
+    static generateAttrLine(determinedKey: string, a: Attribute) {
+        const name = cc(determinedKey, 'sk')
+        let type = ''
+        if ([AttrType.VARCHAR].includes(a.Type)) {
+            type = a.VarcharType()
+        } else {
+            type = PG_TO_PG_TYPE[a.Type]
+        }
+
+        if (a.Type === AttrType.SERIAL) {
+            type = 'INT'
+        }
+
+        const attrLine = [`${cc(name, 'sk')} ${type}`]
+
+        if (a.Option?.Default) {
+            const def = GenerateDefaultValue(a, Lang.PGSQL)
+            if (def !== null) {
+                attrLine.push(`DEFAULT ${def}`)
+            }
+        }
+        if (a.Validation?.Required) {
+            attrLine.push(`NOT NULL`)
+        }
+        return attrLine.join(' ')
     }
 }

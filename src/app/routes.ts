@@ -4,36 +4,42 @@ import {PageTextEditorComponent} from './pages/page-text-editor/page-text-editor
 import {PageSplitViewComponent} from './pages/page-split-view/page-split-view.component'
 import {PageGuiEditorComponent} from './pages/page-gui-editor/page-gui-editor.component'
 import {PageHelpComponent} from './pages/page-help/page-help.component'
+import {PageMigrationComponent} from './pages/page-migration/page-migration.component'
 
 const routeConfig: Routes = [
     {
-        path: 'manage-blueprints',
+        path: 'tui',
         component: PageTextEditorComponent,
-        title: 'Manage Blueprints'
+        title: 'Manage (TUI)'
     },
     {
-        path: 'manage-blueprints-gui',
+        path: 'gui',
         component: PageGuiEditorComponent,
-        title: 'Manage Blueprints'
+        title: 'Manage (GUI)'
     },
     {
-        path: 'explore-results',
+        path: 'boilerplate',
         component: PageCodeOutputComponent,
-        title: 'Explore Results'
+        title: 'Boilerplate'
     },
     {
-        path: 'manage-and-explore',
+        path: 'tui-boil',
         component: PageSplitViewComponent,
-        title: 'Manage & Explore'
+        title: 'Split'
     },
     {
-        path: 'help',
+        path: 'migration',
+        component: PageMigrationComponent,
+        title: 'Migration'
+    },
+    {
+        path: 'about',
         component: PageHelpComponent,
-        title: 'Help'
+        title: 'About'
     },
     {
         path: '**',
-        redirectTo: 'manage-blueprints'
+        redirectTo: 'boilerplate'
     }
 ]
 

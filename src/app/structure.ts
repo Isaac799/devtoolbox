@@ -1,5 +1,6 @@
 import {cc, fixPluralGrammar} from './formatting'
 import {AttributeMap, randAttrVarchar} from './varchar'
+import {v4 as uuidv4} from 'uuid'
 
 export enum Cardinality {
     One = 1 << 4,
@@ -104,7 +105,7 @@ export class Func {
             if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
                 continue
             }
-            
+
             const [srcA, a] = allAttrs[determinedKey]
 
             if (a.Option?.SystemField || a.Option?.Default) {
@@ -143,6 +144,37 @@ export class Func {
 
             outputs = outputs.concat(goFnStructAttributes)
         }
+
+        /**
+         *
+         * TODO want to re-add
+         *
+         * GO not support cyclical references
+         *
+         */
+        /**
+         *
+         * For the TS, and GO we do look at what refed by
+         * otherwise we only take it at face value
+         *
+         */
+        // if (this.table.RefBy && ![Lang.TSQL, Lang.PGSQL].includes(this.lang)) {
+        //     if (this.table.RefBy) {
+        //         for (const tbl of this.table.RefBy) {
+        //             const allAttrs = tbl.tlb.AllAttributes()
+        //             for (const determinedKey in allAttrs) {
+        //                 if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
+        //                     continue
+        //                 }
+        //                 const [srcA, a] = allAttrs[determinedKey]
+        //                 if (!srcA) continue
+        //                 const card = a.isUnique() ? Cardinality.One : Cardinality.Many
+        //                 const {label, type, defaultValue, parseStr} = genLabelType('out', a, a, this.lang, card, a.Parent.Name, determinedKey)
+        //                 outputs.push(new FuncOut(label, type, null, defaultValue, false, false, parseStr))
+        //             }
+        //         }
+        //     }
+        // }
 
         return outputs
     }
@@ -296,6 +328,16 @@ export class Attribute {
         return items.join(', ')
     }
 
+    Constraint(what: 'Foreign Key' | 'Unique' | 'Check' | 'Exclude') {
+        const map = {
+            'Foreign Key': `${cc(this.Parent.Name, 'sk')}_${cc(this.Name, 'sk')}_fkey`,
+            Unique: `${cc(this.Parent.Name, 'sk')}_${cc(this.Name, 'sk')}_key`,
+            Check: `${cc(this.Parent.Name, 'sk')}_${cc(this.Name, 'sk')}_check`,
+            Exclude: `${cc(this.Parent.Name, 'sk')}_${cc(this.Name, 'sk')}_excl`
+        }
+        return map[what]
+    }
+
     isNumerical(): boolean {
         return [
             AttrType.DECIMAL,
@@ -306,6 +348,24 @@ export class Attribute {
             // AttrType.VARCHAR,
             AttrType.MONEY
         ].includes(this.Type)
+    }
+
+    isStr(): boolean {
+        return [AttrType.VARCHAR, AttrType.CHAR].includes(this.Type)
+    }
+
+    VarcharType() {
+        // may not want if doing non PG
+        let max = 15
+        if (!this.isStr()) {
+            console.warn('Fetching varchar type for non varchar!')
+        }
+        if (!this.Validation || !this.Validation.Max) {
+            console.warn(`missing max validation on "${this.Name}"`)
+        } else {
+            max = this.Validation.Max
+        }
+        return ['VARCHAR', `(${max || '15'})`].join('')
     }
 
     isNullable() {
@@ -411,6 +471,13 @@ export class Table {
     get SimpleInitials(): string {
         return cc([cc(createAbbreviation(this.Name), 'sk')].join('_'), 'pl')
         // return cc([cc(this.Name, 'sk')].join('_'), 'pl')
+    }
+
+    Constraint(what: 'Primary Key') {
+        const map = {
+            'Primary Key': `${cc(this.Name, 'sk')}_pkey`
+        }
+        return map[what]
     }
 
     AllAttributes(

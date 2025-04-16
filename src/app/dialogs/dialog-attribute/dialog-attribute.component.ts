@@ -69,7 +69,6 @@ export class DialogAttributeComponent implements OnInit {
         Type: new FormControl<AttrType | null>(AttrType.VARCHAR, [Validators.required]),
         PrimaryKey: new FormControl(false, []),
         Readonly: new FormControl(false, []),
-        // Unique: new FormControl<string[]>([], [Validators.required]),
         Unique: new FormControl<string[]>([], []),
         Default: new FormControl('', []),
         SystemField: new FormControl(false, []),

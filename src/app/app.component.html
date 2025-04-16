@@ -24,40 +24,44 @@
         <div class="flex-row">
             <a
                 mat-button
-                routerLink="manage-blueprints"
+                routerLink="tui"
             >
                 Manage
-                @if (showSplitPage) { (text) }
+                @if (showSplitPage) { (TUI) }
             </a>
             @if (showSplitPage) {
             <a
                 mat-button
-                matTooltip="Wide screens only"
-                routerLink="manage-blueprints-gui"
+                routerLink="gui"
             >
-                Manage (graphical)
+                Manage (GUI)
+            </a>
+            <a
+                mat-button
+                routerLink="migration"
+            >
+                Migration
             </a>
             }
             <a
                 mat-button
-                routerLink="explore-results"
+                routerLink="boilerplate"
             >
-                Explore
+                Boilerplate
             </a>
             @if (showSplitPage) {
             <a
                 mat-button
-                matTooltip="Wide screens only"
-                routerLink="manage-and-explore"
+                routerLink="tui-boil"
             >
-                Split View
+                TUI & Boil (Split)
             </a>
             }
             <a
                 mat-button
-                routerLink="help"
+                routerLink="about"
             >
-                Help
+                About
             </a>
         </div>
     </mat-toolbar>

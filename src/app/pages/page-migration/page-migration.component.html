@@ -1,0 +1,52 @@
+<div class="p2">
+    <p>
+        <strong>
+            This page is a work in progress.
+        </strong>
+        This page is standalone, and not designed to be the smart editor.l
+    </p>
+    <em>How do I use it?</em>
+    <p>
+        Paste a before and after TUI configuration and I will attempt to generate a SQL script to make the changes
+        needed to get from point A to point B.
+    </p>
+    <table
+        [cellPadding]="6"
+        [cellSpacing]="0"
+    >
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Migration Script</th>
+        </tr>
+        <tr>
+            <td>
+                <textarea
+                    [(ngModel)]="from.raw"
+                    (ngModelChange)="Run()"
+                    #fromEl
+                    name="from"
+                    id="from"
+                    cols="30"
+                    rows="30"
+                ></textarea>
+            </td>
+            <td>
+                <textarea
+                    [(ngModel)]="to.raw"
+                    (ngModelChange)="Run()"
+                    #toEl
+                    name="to"
+                    id="to"
+                    cols="30"
+                    rows="30"
+                ></textarea>
+            </td>
+            <td>
+                <pre id="output">
+{{ output }}
+                </pre>
+            </td>
+        </tr>
+    </table>
+</div>
