@@ -41,16 +41,21 @@ export class PageMigrationComponent implements AfterViewInit {
         raw: `# Metadata
 
 ## Category
-- id as ++
-- name as str with required, unique, 3..30
+- identifier as ++
+- title as str with required, unique, 3..30
 
 # Shop
 
 ## Product
 - id as ++
 - name as str with required, unique, 3..40, d:hi2
-- desc as str with required, unique, 3..30
-- @category`
+- desc as str with required, unique, 4..50
+- @category
+
+## Log
+- badge as ++
+- called as str with required, unique, 6..60, d:hi2
+`
     }
 
     ngAfterViewInit(): void {
@@ -131,7 +136,6 @@ export class PageMigrationComponent implements AfterViewInit {
 
                                 // Options
                                 if (a1.Option?.Default !== a2.Option?.Default) {
-                                    console.log('a2.Option?.Default :>> ', a2.Option?.Default)
                                     if (!a1.Option?.Default && a2.Option?.Default !== undefined) {
                                         // add
                                         let s = ''
@@ -241,26 +245,58 @@ export class PageMigrationComponent implements AfterViewInit {
             script.push(s)
         }
 
-        script.push('')
+        script.push('\n--\n')
 
-        // Only New
+        // Only New Schemas
         for (const s2 of afterParsed) {
             let foundSchema = false
             for (const s1 of beforeParsed) {
-                if (s1.Name !== s2.Name) continue
+                if (s1.Name === s2.Name) continue
                 foundSchema = true
+            }
+            if (!foundSchema) continue
+            console.log(s2.Name)
+            const s = LanguagePsqlService.ToTables([s2], true)
+            script.push(s.trim())
+        }
+
+        script.push('\n--\n')
+
+        // Only New Tables
+        for (const s2 of afterParsed) {
+            for (const s1 of beforeParsed) {
+                if (s1.Name !== s2.Name) continue
                 //
                 for (const t2 of s2.Tables) {
                     let foundTable = false
                     for (const t1 of s1.Tables) {
-                        if (t1.Name !== t2.Name) continue
+                        if (t1.Name === t2.Name) continue
                         foundTable = true
-                        const alterT = `ALTER TABLE ${t1.FN}`
+                    }
+                    if (!foundTable) continue
+                    console.log(t2.FN)
+                    const s = `CREATE TABLE ${t2.FN};`
+                    script.push(s)
+                }
+            }
+        }
+
+        script.push('\n--\n')
+
+        // Only New Attributes
+        for (const s2 of afterParsed) {
+            for (const s1 of beforeParsed) {
+                if (s1.Name !== s2.Name) continue
+                //
+                for (const t2 of s2.Tables) {
+                    for (const t1 of s1.Tables) {
+                        if (t1.Name !== t2.Name) continue
+                        const alterT = `ALTER TABLE ${t2.FN}`
                         //
                         for (const a2 of t2.Attributes) {
                             let foundAttribute = false
                             for (const a1 of t1.Attributes) {
-                                if (a1.Name !== a2.Name) continue
+                                if (a1.Name === a2.Name) continue
                                 foundAttribute = true
                                 // const alterA = `ALTER TABLE ${t1.FN} ALTER COLUMN ${cc(a1.Name, 'sk')}`
                             }
@@ -269,16 +305,8 @@ export class PageMigrationComponent implements AfterViewInit {
                             script.push(s)
                         }
                     }
-                    if (!foundTable) continue
-                    console.log(t2.FN)
-                    const s = `CREATE TABLE ${t2.FN};`
-                    script.push(s)
                 }
             }
-            if (!foundSchema) continue
-            console.log(s2.Name)
-            const s = LanguagePsqlService.ToTables([s2], true)
-            script.push(s.trim())
         }
 
         return script.join('\n').trim()
