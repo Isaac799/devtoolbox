@@ -7,6 +7,7 @@ import {LanguagePsqlService} from '../../services/language/language-psql.service
 import {DataService} from '../../services/data.service'
 import {cc} from '../../formatting'
 import hljs from 'highlight.js'
+import {LanguageSqlService} from '../../services/language/language-sql.service'
 
 @Component({
     standalone: true,
@@ -66,7 +67,7 @@ export class PageMigrationComponent implements AfterViewInit {
 ## Employee
 - id as ++
 - first name as str with required, ..30, unique:first last
-- last name as str with required, ..30, unique:first last
+- last name as str with required, ..30, unique:first last, unique:last only
 
 # Record
 
@@ -202,6 +203,8 @@ export class PageMigrationComponent implements AfterViewInit {
                                 }
                                 if (a1.Option?.Unique !== a2.Option?.Unique) {
                                     // compare array
+                                    const s = `-- TODO unique constraint changes`
+                                    script.push(s)
                                 }
                                 // Validation
                                 if (a1.Validation?.Required !== a2.Validation?.Required) {
@@ -311,6 +314,9 @@ export class PageMigrationComponent implements AfterViewInit {
                 if (s1.Name !== s2.Name) continue
                 //
                 for (const t2 of s2.Tables) {
+                    let addedCol = false
+                    const alterT = `ALTER TABLE ${t2.FN}`
+
                     for (const t1 of s1.Tables) {
                         if (t1.Name !== t2.Name) continue
                         const alterT = `ALTER TABLE ${t2.FN}`
@@ -341,7 +347,16 @@ export class PageMigrationComponent implements AfterViewInit {
                                 const s = `${alterT} ADD COLUMN ${LanguagePsqlService.generateAttrLine(cc(a2.Name, 'sk'), a2)};`
                                 script.push(s)
                             }
+                            addedCol = true
                         }
+                    }
+                    if (!addedCol) continue
+                    const uniques = LanguageSqlService.GenerateUniqueAttributes(t2)
+                    for (const label in uniques) {
+                        const attrNames = uniques[label].map(e => cc(e, 'sk')).join(', ')
+                        const uniquesStr = `UNIQUE ( ${attrNames} )`
+                        const s = `${alterT} ADD CONSTRAINT unique_${cc(label, 'sk')} ${uniquesStr} `
+                        script.push(s)
                     }
                 }
             }
