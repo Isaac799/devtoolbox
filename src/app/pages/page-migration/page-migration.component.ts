@@ -54,7 +54,7 @@ export class PageMigrationComponent implements AfterViewInit {
 
 ## Log
 - badge as ++
-- called as str with required, unique, 6..60, d:hi2
+- called as str with required, unique, 6..60, d:hi3
 `
     }
 
@@ -300,8 +300,24 @@ export class PageMigrationComponent implements AfterViewInit {
                                 // const alterA = `ALTER TABLE ${t1.FN} ALTER COLUMN ${cc(a1.Name, 'sk')}`
                             }
                             if (foundAttribute) continue
-                            const s = `${alterT} ADD COLUMN ${LanguagePsqlService.generateAttrLine(cc(a2.Name, 'sk'), a2)};`
-                            script.push(s)
+                            if (a2.RefTo) {
+                                const allAttrs = t2.AllAttributes()
+                                for (const key in allAttrs) {
+                                    if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
+                                        continue
+                                    }
+                                    const [srcA, a] = allAttrs[key]
+                                    if (!srcA || (srcA && srcA?.Parent.ID !== t2.ID)) continue
+
+                                    // const sameSchema = srcA.Parent.Parent.ID === a.Parent.Parent.ID
+                                    // const parentTbl = sameSchema ? a.Parent.Name : a.Parent.FN
+                                    const rStr = `${alterT} ADD COLUMN ${key} REFERENCES ${a.Parent.FN} ( ${cc(a.Name, 'sk')} );`
+                                    script.push(rStr)
+                                }
+                            } else {
+                                const s = `${alterT} ADD COLUMN ${LanguagePsqlService.generateAttrLine(cc(a2.Name, 'sk'), a2)};`
+                                script.push(s)
+                            }
                         }
                     }
                 }
