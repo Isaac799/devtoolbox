@@ -268,6 +268,31 @@ export class AttributeSuggestion {
         this.Type = Type
     }
 }
+
+export function NewTableConstraint(what: 'Primary Key', t: Table) {
+    const map = {
+        'Primary Key': `${cc(t.Name, 'sk')}_pkey`
+    }
+    return map[what]
+}
+
+export function NewAttrConstraint(what: 'Foreign Key' | 'Unique' | 'Check' | 'Exclude', a: Attribute | Attribute[]) {
+    if (Array.isArray(a)) {
+        if (what !== 'Unique' || a.length <= 0) {
+            console.error('misuse of new attr constraint, arrays only supported for unique')
+        }
+        const names = a.map(e => cc(e.Name, 'sk')).join('_')
+        return `${cc(a[0].Parent.Name, 'sk')}_${names}_key`
+    }
+    const map = {
+        'Foreign Key': `${cc(a.Parent.Name, 'sk')}_${cc(a.Name, 'sk')}_fkey`,
+        Unique: `${cc(a.Parent.Name, 'sk')}_${cc(a.Name, 'sk')}_key`,
+        Check: `${cc(a.Parent.Name, 'sk')}_${cc(a.Name, 'sk')}_check`,
+        Exclude: `${cc(a.Parent.Name, 'sk')}_${cc(a.Name, 'sk')}_excl`
+    }
+    return map[what]
+}
+
 // Attribute represents an individual attribute of a table
 export class Attribute {
     ID: string

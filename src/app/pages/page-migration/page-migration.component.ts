@@ -2,7 +2,7 @@ import {CommonModule} from '@angular/common'
 import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core'
 import {FormsModule} from '@angular/forms'
 import {PageTextEditorComponent} from '../page-text-editor/page-text-editor.component'
-import {PG_TO_PG_TYPE, SchemaConfig} from '../../structure'
+import {Attribute, NewAttrConstraint, NewTableConstraint, PG_TO_PG_TYPE, SchemaConfig} from '../../structure'
 import {LanguagePsqlService} from '../../services/language/language-psql.service'
 import {DataService} from '../../services/data.service'
 import {cc} from '../../formatting'
@@ -53,9 +53,10 @@ export class PageMigrationComponent implements AfterViewInit {
 - name as str with required, ..30, unique
 
 ## Product
-- id as ++
+- material as str with primary, ..10
+- lot as str with primary, ..8
 - name as str with required, ..50, unique
-- description as str with required, ..100, unique
+- description as str with required, ..100
 - price as money with required, ..999
 
 ## Product Category
@@ -306,7 +307,7 @@ export class PageMigrationComponent implements AfterViewInit {
             }
         }
 
-        script.push('\n-- create attributes in existing tables\n')
+        script.push('\n-- handle attributes and constraints in existing tables\n')
 
         // Only New Attributes
         for (const s2 of afterParsed) {
@@ -320,6 +321,7 @@ export class PageMigrationComponent implements AfterViewInit {
                     for (const t1 of s1.Tables) {
                         if (t1.Name !== t2.Name) continue
                         const alterT = `ALTER TABLE ${t2.FN}`
+
                         //
                         for (const a2 of t2.Attributes) {
                             let foundAttribute = false
@@ -329,6 +331,9 @@ export class PageMigrationComponent implements AfterViewInit {
                                 // const alterA = `ALTER TABLE ${t1.FN} ALTER COLUMN ${cc(a1.Name, 'sk')}`
                             }
                             if (foundAttribute) continue
+
+                            const alterA = `ALTER TABLE ${t1.FN} ALTER COLUMN ${cc(a2.Name, 'sk')}`
+
                             if (a2.RefTo) {
                                 const allAttrs = t2.AllAttributes()
                                 for (const key in allAttrs) {
@@ -338,10 +343,23 @@ export class PageMigrationComponent implements AfterViewInit {
                                     const [srcA, a] = allAttrs[key]
                                     if (!srcA || (srcA && srcA?.Parent.ID !== t2.ID)) continue
 
-                                    // const sameSchema = srcA.Parent.Parent.ID === a.Parent.Parent.ID
-                                    // const parentTbl = sameSchema ? a.Parent.Name : a.Parent.FN
-                                    const rStr = `${alterT} ADD COLUMN ${key} REFERENCES ${a.Parent.FN} ( ${cc(a.Name, 'sk')} );`
-                                    script.push(rStr)
+                                    const parts = [`${alterT} ADD COLUMN ${key} REFERENCES ${a.Parent.FN} ( ${cc(a.Name, 'sk')} )`]
+
+                                    if (a2.Validation?.Required) {
+                                        parts.push('NOT NULL')
+                                    }
+                                    if (a2.Option?.Default) {
+                                        let s = ''
+                                        if (a2.isStr()) {
+                                            s = `${alterA} SET DEFAULT '${a2.Option?.Default}';`
+                                        } else {
+                                            s = `${alterA} SET DEFAULT ${a2.Option?.Default};`
+                                        }
+                                        parts.push(s)
+                                    }
+
+                                    const s = parts.join(' ') + ';'
+                                    script.push(s)
                                 }
                             } else {
                                 const s = `${alterT} ADD COLUMN ${LanguagePsqlService.generateAttrLine(cc(a2.Name, 'sk'), a2)};`
@@ -349,13 +367,63 @@ export class PageMigrationComponent implements AfterViewInit {
                             }
                             addedCol = true
                         }
+
+                        const beforePks: Attribute[] = []
+                        const beforeAllAttrs = t1.AllAttributes()
+                        for (const key in beforeAllAttrs) {
+                            if (!Object.prototype.hasOwnProperty.call(beforeAllAttrs, key)) {
+                                continue
+                            }
+                            const [srcA, a] = beforeAllAttrs[key]
+                            if (!a.Option?.PrimaryKey) continue
+                            beforePks.push(a)
+                        }
+                        const afterPks: Attribute[] = []
+                        const afterPksLabels: string[] = []
+                        const afterAllAttrs = t2.AllAttributes()
+                        for (const key in afterAllAttrs) {
+                            if (!Object.prototype.hasOwnProperty.call(afterAllAttrs, key)) {
+                                continue
+                            }
+                            const [srcA, a] = afterAllAttrs[key]
+                            if (!a.Option?.PrimaryKey) continue
+                            afterPks.push(a)
+                            afterPksLabels.push(key)
+                        }
+
+                        let pkChanged = false
+                        const aArr = beforePks.map(e => e.FN)
+                        for (const e of afterPks) {
+                            if (aArr.includes(e.FN)) continue
+                            pkChanged = true
+                        }
+                        const bArr = afterPks.map(e => e.FN)
+                        for (const e of beforePks) {
+                            if (bArr.includes(e.FN)) continue
+                            pkChanged = true
+                        }
+
+                        if (pkChanged) {
+                            {
+                                const constraint = t1.Constraint('Primary Key')
+                                const s = `${alterT} DROP CONSTRAINT ${constraint};`
+                                script.push(s)
+                            }
+
+                            if (afterPksLabels.length > 0) {
+                                // const newPK = NewTableConstraint('Primary Key', t2)
+                                const newPkLabels = afterPksLabels.join(', ')
+                                const s = `${alterT} ADD PRIMARY KEY ( ${newPkLabels} );`
+                                script.push(s)
+                            }
+                        }
                     }
                     if (!addedCol) continue
-                    const uniques = LanguageSqlService.GenerateUniqueAttributes(t2)
-                    for (const label in uniques) {
-                        const attrNames = uniques[label].map(e => cc(e, 'sk')).join(', ')
+                    const uniques = LanguageSqlService.DiscoverUniqueAttributes(t2)
+                    for (const [label, attrs] of Object.entries(uniques)) {
+                        const attrNames = uniques[label].map(e => cc(e.Name, 'sk')).join(', ')
                         const uniquesStr = `UNIQUE ( ${attrNames} )`
-                        const s = `${alterT} ADD CONSTRAINT unique_${cc(label, 'sk')} ${uniquesStr} `
+                        const s = `${alterT} ADD CONSTRAINT ${NewAttrConstraint('Unique', attrs)} ${uniquesStr};`
                         script.push(s)
                     }
                 }

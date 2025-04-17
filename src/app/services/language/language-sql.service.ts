@@ -30,6 +30,29 @@ export class LanguageSqlService {
         return uniques
     }
 
+    static DiscoverUniqueAttributes(t: Table): Record<string, Attribute[]> {
+        const uniques: Record<string, Attribute[]> = {}
+
+        // const allAttrs = t.AllAttributes()
+
+        for (const a of t.Attributes) {
+            if (a.Option?.PrimaryKey) continue
+
+            if (!a.Option?.Unique) {
+                continue
+            }
+
+            for (const u of a.Option.Unique) {
+                if (!uniques[u]) {
+                    uniques[u] = []
+                }
+                uniques[u].push(a)
+            }
+        }
+
+        return uniques
+    }
+
     static GenerateJoinLines(t: Table, returnTableLines: string[], selectingLines: string[], useI: UseI, noSchemaMode = false) {
         const joinLines: string[] = []
 
