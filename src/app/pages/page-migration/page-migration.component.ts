@@ -36,7 +36,10 @@ export class PageMigrationComponent implements AfterViewInit {
 
 ## Employee
 - id as ++
-- name as str with required, 3..30, unique
+- name as str with required, 3..30, unique:a
+- favorite color as str with required, ..8, unique:b
+- position as char with required, unique:b
+- department as char with required
 
 `
     }
@@ -67,6 +70,9 @@ export class PageMigrationComponent implements AfterViewInit {
 
 ## Employee
 - id as ++
+- favorite color as str with ..8
+- position as char with required, unique:dep pos
+- department as char with required, unique:dep pos
 - first name as str with required, ..30, unique:first last
 - last name as str with required, ..30, unique:first last, unique:last only
 
@@ -140,6 +146,8 @@ export class PageMigrationComponent implements AfterViewInit {
                         foundTable = true
                         const alterT = `ALTER TABLE ${t1.FN}`
                         //
+                        const handledBeforeUniqueLabels: string[] = []
+
                         for (const a1 of t1.Attributes) {
                             let foundAttribute = false
                             for (const a2 of t2.Attributes) {
@@ -202,10 +210,65 @@ export class PageMigrationComponent implements AfterViewInit {
                                         // remove
                                     }
                                 }
-                                if (a1.Option?.Unique !== a2.Option?.Unique) {
+                                if (JSON.stringify(a1.Option?.Unique) !== JSON.stringify(a2.Option?.Unique)) {
                                     // compare array
-                                    const s = `-- TODO unique constraint changes`
-                                    script.push(s)
+
+                                    const beforeUniques = LanguageSqlService.DiscoverUniqueAttributes(t1)
+                                    const afterUniques = LanguageSqlService.DiscoverUniqueAttributes(t2)
+
+                                    for (const [beforeLabel, beforeAttrs] of Object.entries(beforeUniques)) {
+                                        let found = false
+                                        for (const [afterLabel, afterAttrs] of Object.entries(afterUniques)) {
+                                            if (beforeLabel !== afterLabel) continue
+                                            // same label
+                                            found = true
+
+                                            // TODO test more
+
+                                            // check same content
+                                            // same: skip || diff: drop before, add after
+
+                                            const beforeContent = JSON.stringify(beforeAttrs.map(e => e.FN))
+                                            const afterContent = JSON.stringify(afterAttrs.map(e => e.FN))
+
+                                            if (beforeContent === afterContent) continue
+                                            if (handledBeforeUniqueLabels.includes(beforeLabel)) continue
+
+                                            {
+                                                const s = `${alterT} DROP CONSTRAINT ${NewAttrConstraint('Unique', beforeAttrs)};`
+                                                script.push(s)
+                                            }
+                                            {
+                                                const attrNames = afterAttrs.map(e => cc(e.Name, 'sk')).join(', ')
+                                                const uniquesStr = `UNIQUE ( ${attrNames} )`
+                                                const s = `${alterT} ADD CONSTRAINT ${NewAttrConstraint('Unique', afterAttrs)} ${uniquesStr};`
+                                                script.push(s)
+                                            }
+                                            handledBeforeUniqueLabels.push(beforeLabel)
+                                        }
+                                        if (found) continue
+                                        if (handledBeforeUniqueLabels.includes(beforeLabel)) continue
+                                        console.log('finishedLabels :>> ', handledBeforeUniqueLabels)
+                                        // drop before, not found in after
+                                        const s = `${alterT} DROP CONSTRAINT ${NewAttrConstraint('Unique', beforeAttrs)};`
+                                        script.push(s)
+                                        handledBeforeUniqueLabels.push(beforeLabel)
+                                    }
+
+                                    for (const [afterLabel, afterAttrs] of Object.entries(afterUniques)) {
+                                        let found = false
+                                        for (const [beforeLabel, beforeAttrs] of Object.entries(beforeUniques)) {
+                                            if (beforeLabel !== afterLabel) continue
+                                            // same label
+                                            found = true
+                                        }
+                                        if (!found) continue
+                                        // add after, not found in before
+                                        const attrNames = afterAttrs.map(e => cc(e.Name, 'sk')).join(', ')
+                                        const uniquesStr = `UNIQUE ( ${attrNames} )`
+                                        const s = `${alterT} ADD CONSTRAINT ${NewAttrConstraint('Unique', afterAttrs)} ${uniquesStr};`
+                                        script.push(s)
+                                    }
                                 }
                                 // Validation
                                 if (a1.Validation?.Required !== a2.Validation?.Required) {
@@ -357,6 +420,19 @@ export class PageMigrationComponent implements AfterViewInit {
                                         }
                                         parts.push(s)
                                     }
+
+                                    // TODO something like this
+                                    // if (a2.Option?.Default) {
+                                    //     const afterUniques = LanguageSqlService.DiscoverUniqueAttributes(t1)
+                                    //     for (const [afterLabel, afterAttrs] of Object.entries(afterUniques)) {
+                                    //         {
+                                    //             const attrNames = afterAttrs.map(e => cc(e.Name, 'sk')).join(', ')
+                                    //             const uniquesStr = `UNIQUE ( ${attrNames} )`
+                                    //             const s = `${alterT} ADD CONSTRAINT ${NewAttrConstraint('Unique', afterAttrs)} ${uniquesStr};`
+                                    //             script.push(s)
+                                    //         }
+                                    //     }
+                                    // }
 
                                     const s = parts.join(' ') + ';'
                                     script.push(s)
