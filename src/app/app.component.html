@@ -36,12 +36,6 @@
             >
                 Manage (GUI)
             </a>
-            <a
-                mat-button
-                routerLink="migration"
-            >
-                Migration
-            </a>
             }
             <a
                 mat-button
@@ -54,7 +48,15 @@
                 mat-button
                 routerLink="tui-boil"
             >
-                TUI & Boil (Split)
+                TUI & Boilerplate (Split)
+            </a>
+            }
+            @if (showSplitPage) {
+            <a
+                mat-button
+                routerLink="migration"
+            >
+                Migration (Standalone, TUI)
             </a>
             }
             <a

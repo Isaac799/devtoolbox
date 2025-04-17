@@ -29,8 +29,15 @@ export class PageMigrationComponent implements AfterViewInit {
 
 ## Product
 - id as ++
-- name as str with unique, 3..30, d:hi
-- age as int with unique`
+- name as str with required, 3..30, unique
+
+# Human Resources
+
+## Employee
+- id as ++
+- name as str with required, 3..30, unique
+
+`
     }
 
     to: {
@@ -38,23 +45,36 @@ export class PageMigrationComponent implements AfterViewInit {
         raw: string
     } = {
         parsed: {},
-        raw: `# Metadata
+        raw: `# Shop
 
 ## Category
-- identifier as ++
-- title as str with required, unique, 3..30
-
-# Shop
+- id as ++
+- name as str with required, ..30, unique
 
 ## Product
 - id as ++
-- name as str with required, unique, 3..40, d:hi2
-- desc as str with required, unique, 4..50
-- @category
+- name as str with required, ..50, unique
+- description as str with required, ..100, unique
+- price as money with required, ..999
 
-## Log
-- badge as ++
-- called as str with required, unique, 6..60, d:hi3
+## Product Category
+- @product with required, primary
+- @category with required, primary
+
+# Human Resources
+
+## Employee
+- id as ++
+- first name as str with required, ..30, unique:first last
+- last name as str with required, ..30, unique:first last
+
+# Record
+
+## Sale
+- id as ++
+- @product with required
+- @employee with required
+- inserted at as ts with required, system, default:now
 `
     }
 
@@ -101,6 +121,8 @@ export class PageMigrationComponent implements AfterViewInit {
         const renamed: string[] = []
 
         // ALTER TABLE table_name RENAME COLUMN old_name TO new_name;
+
+        script.push('-- alter and drop existing attributes\n')
 
         // Only Updated and Deleted
         for (const s1 of beforeParsed) {
@@ -245,22 +267,22 @@ export class PageMigrationComponent implements AfterViewInit {
             script.push(s)
         }
 
-        script.push('\n--\n')
+        script.push('\n-- create schemas\n')
 
         // Only New Schemas
         for (const s2 of afterParsed) {
             let foundSchema = false
             for (const s1 of beforeParsed) {
-                if (s1.Name === s2.Name) continue
+                if (s1.Name !== s2.Name) continue
                 foundSchema = true
             }
-            if (!foundSchema) continue
+            if (foundSchema) continue
             console.log(s2.Name)
             const s = LanguagePsqlService.ToTables([s2], true)
             script.push(s.trim())
         }
 
-        script.push('\n--\n')
+        script.push('\n-- create tables in existing schemas\n')
 
         // Only New Tables
         for (const s2 of afterParsed) {
@@ -270,17 +292,18 @@ export class PageMigrationComponent implements AfterViewInit {
                 for (const t2 of s2.Tables) {
                     let foundTable = false
                     for (const t1 of s1.Tables) {
-                        if (t1.Name === t2.Name) continue
+                        if (t1.Name !== t2.Name) continue
                         foundTable = true
+                        break
                     }
-                    if (!foundTable) continue
+                    if (foundTable) continue
                     const newTblLines = LanguagePsqlService.GenerateTable(false, t2)
                     script = script.concat(newTblLines)
                 }
             }
         }
 
-        script.push('\n--\n')
+        script.push('\n-- create attributes in existing tables\n')
 
         // Only New Attributes
         for (const s2 of afterParsed) {
