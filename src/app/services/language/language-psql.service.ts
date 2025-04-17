@@ -9,18 +9,18 @@ import {AttributeMap} from '../../varchar'
     providedIn: 'root'
 })
 export class LanguagePsqlService {
-    static ToTables(schemas: Schema[], creationsOnly = false): string {
+    static ToTables(schemas: Schema[], creationsOnly = false, ifExists = false): string {
         let drops: string[] = []
         const createTableLines: string[] = []
 
         for (const s of schemas) {
-            drops.push(`DROP SCHEMA IF EXISTS ${cc(s.Name, 'sk')};`)
+            drops.push(`DROP SCHEMA ${ifExists ? 'IF EXISTS ' : ''}${cc(s.Name, 'sk')};`)
             createTableLines.push('')
-            createTableLines.push(`CREATE SCHEMA IF NOT EXISTS ${cc(s.Name, 'sk')};`)
+            createTableLines.push(`CREATE SCHEMA ${ifExists ? 'IF NOT EXISTS ' : ''}${cc(s.Name, 'sk')};`)
             createTableLines.push('')
             for (const t of s.Tables) {
-                drops.push(`DROP TABLE IF EXISTS ${t.FN};`)
-                createTableLines.push(`CREATE TABLE IF NOT EXISTS ${t.FN} (`)
+                drops.push(`DROP TABLE ${ifExists ? 'IF EXISTS ' : ''}${t.FN};`)
+                createTableLines.push(`CREATE TABLE ${ifExists ? 'IF NOT EXISTS ' : ''}${t.FN} (`)
                 const attrs: string[] = LanguagePsqlService.generateAttributesForTable(t)
 
                 const endThings: string[] = LanguagePsqlService.generateTableEndParts(t)

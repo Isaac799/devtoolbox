@@ -1,12 +1,12 @@
 import {CommonModule} from '@angular/common'
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core'
+import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core'
 import {FormsModule} from '@angular/forms'
 import {PageTextEditorComponent} from '../page-text-editor/page-text-editor.component'
-import {Attribute, AttrType, PG_TO_PG_TYPE, Schema, SchemaConfig, Table} from '../../structure'
+import {PG_TO_PG_TYPE, SchemaConfig} from '../../structure'
 import {LanguagePsqlService} from '../../services/language/language-psql.service'
 import {DataService} from '../../services/data.service'
 import {cc} from '../../formatting'
-import {LanguageSqlService} from '../../services/language/language-sql.service'
+import hljs from 'highlight.js'
 
 @Component({
     standalone: true,
@@ -15,9 +15,10 @@ import {LanguageSqlService} from '../../services/language/language-sql.service'
     templateUrl: './page-migration.component.html',
     styleUrl: './page-migration.component.scss'
 })
-export class PageMigrationComponent implements OnInit {
+export class PageMigrationComponent implements AfterViewInit {
     @ViewChild('fromEl') fromEl?: ElementRef<HTMLTextAreaElement>
     @ViewChild('toEl') toEl?: ElementRef<HTMLTextAreaElement>
+    @ViewChild('outputEl') outputEl?: ElementRef<HTMLTextAreaElement>
 
     from: {
         parsed: Record<string, SchemaConfig>
@@ -52,15 +53,21 @@ export class PageMigrationComponent implements OnInit {
 - @category`
     }
 
-    output = ''
-
-    ngOnInit(): void {
-        this.Run()
+    ngAfterViewInit(): void {
+        setTimeout(() => {
+            this.Run()
+        }, 0)
     }
 
     Run() {
         this.parse()
-        this.output = PageMigrationComponent.compare(this.from.parsed, this.to.parsed)
+        const output = PageMigrationComponent.compare(this.from.parsed, this.to.parsed)
+        const code = hljs.highlight(output, {language: 'sql'}).value
+        if (!this.outputEl) {
+            console.error('missing output element')
+            return
+        }
+        this.outputEl.nativeElement.innerHTML = code
     }
 
     private parse() {
@@ -234,6 +241,8 @@ export class PageMigrationComponent implements OnInit {
             script.push(s)
         }
 
+        script.push('')
+
         // Only New
         for (const s2 of afterParsed) {
             let foundSchema = false
@@ -261,19 +270,21 @@ export class PageMigrationComponent implements OnInit {
                         }
                     }
                     if (!foundTable) continue
+                    console.log(t2.FN)
                     const s = `CREATE TABLE ${t2.FN};`
                     script.push(s)
                 }
             }
             if (!foundSchema) continue
+            console.log(s2.Name)
             const s = LanguagePsqlService.ToTables([s2], true)
-            script.push(s)
+            script.push(s.trim())
         }
 
         return script.join('\n').trim()
     }
 
     cannotIncludeMacros() {
-        this.output = 'to-from cannot include macros'
+        // this.output = 'to-from cannot include macros'
     }
 }
