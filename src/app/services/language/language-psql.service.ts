@@ -11,7 +11,7 @@ import {AttributeMap} from '../../varchar'
 export class LanguagePsqlService {
     static ToTables(schemas: Schema[], creationsOnly = false, ifExists = false): string {
         let drops: string[] = []
-        const createTableLines: string[] = []
+        let createTableLines: string[] = []
 
         for (const s of schemas) {
             drops.push(`DROP SCHEMA ${ifExists ? 'IF EXISTS ' : ''}${cc(s.Name, 'sk')};`)
@@ -20,20 +20,9 @@ export class LanguagePsqlService {
             createTableLines.push('')
             for (const t of s.Tables) {
                 drops.push(`DROP TABLE ${ifExists ? 'IF EXISTS ' : ''}${t.FN};`)
-                createTableLines.push(`CREATE TABLE ${ifExists ? 'IF NOT EXISTS ' : ''}${t.FN} (`)
-                const attrs: string[] = LanguagePsqlService.generateAttributesForTable(t)
-
-                const endThings: string[] = LanguagePsqlService.generateTableEndParts(t)
-                // let indexes: string[] = generateTableIndexes(t);
-
-                if (attrs.length >= 1) {
-                    attrs[0] = `${TAB}${attrs[0]}`
-                }
-                createTableLines.push([...attrs, ...endThings].join(`,\n${TAB}`))
-
-                createTableLines.push(');')
-
-                // createTableLines = createTableLines.concat(indexes);
+                const lines = LanguagePsqlService.GenerateTable(ifExists, t)
+                createTableLines = createTableLines.concat(lines)
+                // createTable  Lines = createTableLines.concat(indexes);
             }
         }
         drops = drops.reverse()
@@ -43,6 +32,24 @@ export class LanguagePsqlService {
         const all = ['', ...drops, '', ...createTableLines, '']
         const str = all.join('\n')
         return str
+    }
+
+    static GenerateTable(ifExists: boolean, t: Table) {
+        const createTableLines: string[] = []
+
+        createTableLines.push(`CREATE TABLE ${ifExists ? 'IF NOT EXISTS ' : ''}${t.FN} (`)
+        const attrs: string[] = LanguagePsqlService.generateAttributesForTable(t)
+
+        const endThings: string[] = LanguagePsqlService.generateTableEndParts(t)
+        // let indexes: string[] = generateTableIndexes(t);
+        if (attrs.length >= 1) {
+            attrs[0] = `${TAB}${attrs[0]}`
+        }
+        createTableLines.push([...attrs, ...endThings].join(`,\n${TAB}`))
+
+        createTableLines.push(');')
+
+        return createTableLines
     }
 
     private static generateTableEndParts(t: Table) {

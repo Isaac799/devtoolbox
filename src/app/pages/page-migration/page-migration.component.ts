@@ -93,7 +93,7 @@ export class PageMigrationComponent implements AfterViewInit {
     }
 
     static compare(before: Record<string, SchemaConfig>, after: Record<string, SchemaConfig>): string {
-        const script: string[] = []
+        let script: string[] = []
 
         const beforeParsed = DataService.ParseSchemaConfig(before)
         const afterParsed = DataService.ParseSchemaConfig(after)
@@ -274,9 +274,8 @@ export class PageMigrationComponent implements AfterViewInit {
                         foundTable = true
                     }
                     if (!foundTable) continue
-                    console.log(t2.FN)
-                    const s = `CREATE TABLE ${t2.FN};`
-                    script.push(s)
+                    const newTblLines = LanguagePsqlService.GenerateTable(false, t2)
+                    script = script.concat(newTblLines)
                 }
             }
         }
@@ -296,11 +295,11 @@ export class PageMigrationComponent implements AfterViewInit {
                         for (const a2 of t2.Attributes) {
                             let foundAttribute = false
                             for (const a1 of t1.Attributes) {
-                                if (a1.Name === a2.Name) continue
+                                if (a1.Name !== a2.Name) continue
                                 foundAttribute = true
                                 // const alterA = `ALTER TABLE ${t1.FN} ALTER COLUMN ${cc(a1.Name, 'sk')}`
                             }
-                            if (!foundAttribute) continue
+                            if (foundAttribute) continue
                             const s = `${alterT} ADD COLUMN ${LanguagePsqlService.generateAttrLine(cc(a2.Name, 'sk'), a2)};`
                             script.push(s)
                         }
