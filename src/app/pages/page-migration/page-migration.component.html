@@ -36,10 +36,10 @@
 
         <span class="toolbar-icon-spacer"></span>
 
-        <mat-chip-set aria-label="Fish selection">
+        <mat-chip-set aria-label="Example selection">
             @for (example of examples; track $index) {
             <mat-chip
-                [matTooltip]="'Use example ' + example.title"
+                [matTooltip]="example.desc"
                 (click)="UseExample(example)"
             >
                 {{ example.title }}

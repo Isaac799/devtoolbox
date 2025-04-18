@@ -2,7 +2,7 @@ import {CommonModule} from '@angular/common'
 import {AfterViewInit, Component, ElementRef, inject, ViewChild} from '@angular/core'
 import {FormsModule} from '@angular/forms'
 import {PageTextEditorComponent} from '../page-text-editor/page-text-editor.component'
-import {Attribute, NewAttrConstraint, PG_TO_PG_TYPE, SchemaConfig} from '../../structure'
+import {NewAttrConstraint, PG_TO_PG_TYPE, SchemaConfig} from '../../structure'
 import {LanguagePsqlService} from '../../services/language/language-psql.service'
 import {DataService} from '../../services/data.service'
 import {alignKeyword, cc} from '../../formatting'
@@ -13,12 +13,13 @@ import {MatButtonModule} from '@angular/material/button'
 import {MatIconModule} from '@angular/material/icon'
 import {MatSnackBar} from '@angular/material/snack-bar'
 import {MatDialog} from '@angular/material/dialog'
-import {DialogConfirmComponent} from '../../dialogs/dialog-confirm/dialog-confirm.component'
 import {MatTooltipModule} from '@angular/material/tooltip'
 import {MatChipsModule} from '@angular/material/chips'
+import { DialogConfirmComponent } from '../../dialogs/dialog-confirm/dialog-confirm.component'
 
 interface Example {
     title: string
+    desc: string
     to: string
     from: string
 }
@@ -42,6 +43,7 @@ export class PageMigrationComponent implements AfterViewInit {
     examples: Example[] = [
         {
             title: `S T A`,
+            desc: 'Demonstrates creating a schema, table, and attribute',
             from: `# Bar
 
 ## Product
@@ -66,6 +68,7 @@ export class PageMigrationComponent implements AfterViewInit {
         },
         {
             title: `PK`,
+            desc: 'Highlights primary key changes',
             from: `# Bar
 
 ## Product
@@ -78,6 +81,7 @@ export class PageMigrationComponent implements AfterViewInit {
         },
         {
             title: `FK`,
+            desc: 'Highlights foreign key changes',
             from: `# Foo
 
 ## Category
@@ -105,6 +109,7 @@ export class PageMigrationComponent implements AfterViewInit {
         },
         {
             title: `Unique`,
+            desc: 'Highlights unique constraint changes',
             from: `# Foo
 
 ## Person
@@ -120,6 +125,7 @@ export class PageMigrationComponent implements AfterViewInit {
         },
         {
             title: `Type`,
+            desc: 'Highlights attribute type changes',
             from: `# Foo
 
 ## Person
@@ -133,6 +139,7 @@ export class PageMigrationComponent implements AfterViewInit {
         },
         {
             title: `Null`,
+            desc: 'Highlights nullability constraint changes',
             from: `# Foo
 
 ## Person
@@ -141,12 +148,12 @@ export class PageMigrationComponent implements AfterViewInit {
 
 ## Person
 - age as int`
-        },
-        {
-            title: ``,
-            from: ``,
-            to: ``
         }
+        // {
+        //     title: ``,
+        //     from: ``,
+        //     to: ``
+        // }
     ]
 
     from: {
@@ -172,16 +179,19 @@ export class PageMigrationComponent implements AfterViewInit {
     }
 
     UseExample(e: Example) {
-        this.dialog.open(DialogConfirmComponent, {
-            data: {
-                message: 'Using an example will replace the existing code, this cannot be undone. Are you sure?',
-                accept: () => {
-                    this.from.raw = e.from
-                    this.to.raw = e.to
-                    this.Run()
-                }
-            }
-        })
+        // this.dialog.open(DialogConfirmComponent, {
+        //     data: {
+        //         message: 'Using an example will replace the existing code, this cannot be undone. Are you sure?',
+        //         accept: () => {
+        // this.from.raw = e.from
+        // this.to.raw = e.to
+        // this.Run()
+        //         }
+        //     }
+        // })
+        this.from.raw = e.from
+        this.to.raw = e.to
+        this.Run()
     }
 
     Swap() {
@@ -545,12 +555,12 @@ export class PageMigrationComponent implements AfterViewInit {
                                 script.push(s)
                             }
                         }
-                    if (!addedCol) continue
+                        if (!addedCol) continue
 
                         //#region uniques
                         const beforeUniques = LanguageSqlService.DiscoverUniqueAttributes(t1)
                         const afterUniques = LanguageSqlService.DiscoverUniqueAttributes(t2)
-                        
+
                         for (const [afterLabel, afterAttrs] of Object.entries(afterUniques)) {
                             let found = false
                             for (const [beforeLabel, beforeAttrs] of Object.entries(beforeUniques)) {
@@ -561,9 +571,9 @@ export class PageMigrationComponent implements AfterViewInit {
                             if (found) continue
                             {
                                 const attrNames = afterAttrs.map(e => cc(e.Name, 'sk')).join(', ')
-                        const uniquesStr = `UNIQUE ( ${attrNames} )`
+                                const uniquesStr = `UNIQUE ( ${attrNames} )`
                                 const s = `${alterT} ${replaceAlign}ADD  CONSTRAINT${replaceAlign2} ${NewAttrConstraint('Unique', afterAttrs)} ${uniquesStr};`
-                        script.push(s)
+                                script.push(s)
                             }
                         }
                         //#endregion
