@@ -255,7 +255,7 @@ export class PageMigrationComponent implements AfterViewInit {
 
         // ALTER TABLE table_name RENAME COLUMN old_name TO new_name;
 
-        script.push('-- modify existing: alter and drop attributes\n')
+        script.push('-- alter and drop attributes\n')
 
         // Only Updated and Deleted
         for (const s1 of beforeParsed) {
@@ -443,6 +443,8 @@ export class PageMigrationComponent implements AfterViewInit {
             script.push(s)
         }
 
+        script = PageMigrationComponent.cleanScript(script)
+
         script.push('\n-- create new schemas \n')
 
         // Only New Schemas
@@ -456,6 +458,8 @@ export class PageMigrationComponent implements AfterViewInit {
             const s = LanguagePsqlService.ToTables([s2], true)
             script.push(s.trim())
         }
+
+        script = PageMigrationComponent.cleanScript(script)
 
         script.push('\n-- create tables in existing schemas\n')
 
@@ -478,7 +482,9 @@ export class PageMigrationComponent implements AfterViewInit {
             }
         }
 
-        script.push('\n-- alter and add attributes to (now) existing tables\n')
+        script = PageMigrationComponent.cleanScript(script)
+
+        script.push('\n-- alter and add attributes\n')
 
         // Only New Attributes
         for (const s2 of afterParsed) {
@@ -586,11 +592,21 @@ export class PageMigrationComponent implements AfterViewInit {
             }
         }
 
+        script = PageMigrationComponent.cleanScript(script)
+
         script = alignKeyword(script, replaceAlign)
         script = script.map(e => e.replace(replaceAlign, ''))
         script = alignKeyword(script, replaceAlign2)
         script = script.map(e => e.replace(replaceAlign2, ''))
         return script.join('\n').trim()
+    }
+
+    private static cleanScript(script: string[]) {
+        const temp = [...script].filter(e => e.trim().length > 0)
+        if (temp.length > 0 && temp[temp.length - 1].trim().startsWith('--')) {
+            temp.pop()
+        }
+        return temp
     }
 
     cannotIncludeMacros() {
