@@ -42,18 +42,18 @@ export class PageMigrationComponent implements AfterViewInit {
     examples: Example[] = [
         {
             title: `S T A`,
-            from: `# Shop
+            from: `# Bar
 
 ## Product
 - id as auto increment
 - name as string with ..10`,
-            to: `# Organization
+            to: `# Foo
 
 ## Category
 - id as auto increment
 - name as string with ..10
 
-# Shop
+# Bar
 
 ## Product
 - id as auto increment
@@ -66,25 +66,52 @@ export class PageMigrationComponent implements AfterViewInit {
         },
         {
             title: `PK`,
-            from: `# Shop
+            from: `# Bar
 
 ## Product
 - material as int with primary`,
-            to: `# Shop
+            to: `# Bar
 
 ## Product
 - material as int with primary
 - lot as int with primary`
         },
         {
+            title: `FK`,
+            from: `# Foo
+
+## Category
+- id as auto increment
+
+# Bar
+
+## Product
+- id as auto increment
+- @category`,
+            to: `# Foo
+
+## Category
+- id as auto increment
+
+# Bar
+
+## Product
+- id as auto increment
+- predecessor as product
+
+## Category Product
+- @category with primary
+- @product with primary`
+        },
+        {
             title: `Unique`,
-            from: `# Employee
+            from: `# Foo
 
 ## Person
 - first name as string with ..15, unique:a
 - last name as string with ..15, unique:b
 - birthday as date`,
-            to: `# Employee
+            to: `# Foo
 
 ## Person
 - first name as string with ..15, unique:a
@@ -93,12 +120,12 @@ export class PageMigrationComponent implements AfterViewInit {
         },
         {
             title: `Type`,
-            from: `# Employee
+            from: `# Foo
 
 ## Person
 - name as string with ..15
 - active as boolean`,
-            to: `# Employee
+            to: `# Foo
 
 ## Person
 - name as string with ..30
@@ -106,11 +133,11 @@ export class PageMigrationComponent implements AfterViewInit {
         },
         {
             title: `Null`,
-            from: `# Employee
+            from: `# Foo
 
 ## Person
 - age as int with required`,
-            to: `# Employee
+            to: `# Foo
 
 ## Person
 - age as int`
