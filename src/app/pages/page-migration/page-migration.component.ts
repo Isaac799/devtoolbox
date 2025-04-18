@@ -46,37 +46,35 @@ export class PageMigrationComponent implements AfterViewInit {
 
 ## Product
 - id as auto increment
-- name as string with required, 3..30, unique`,
+- name as string with ..10`,
             to: `# Organization
 
 ## Category
-- id as ++
-- name as str with required, unique, 3..30
-
+- id as auto increment
+- name as string with ..10
 
 # Shop
 
 ## Product
 - id as auto increment
-- name as string with required, 3..30, unique
+- name as string with ..10
 - price as money with required, ..99
 
-
 ## Category Product
-- @Category with required, primary
-- @Product with required, primary`
+- @category with primary
+- @product with primary`
         },
         {
             title: `PK`,
             from: `# Shop
 
 ## Product
-- material as string with primary, ..15`,
+- material as int with primary`,
             to: `# Shop
 
 ## Product
-- material as string with primary, ..15
-- lot as string with primary, ..15`
+- material as int with primary
+- lot as int with primary`
         },
         {
             title: `Unique`,
