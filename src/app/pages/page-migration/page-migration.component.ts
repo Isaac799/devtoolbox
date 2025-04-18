@@ -1,47 +1,133 @@
-import { CommonModule } from '@angular/common'
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core'
-import { FormsModule } from '@angular/forms'
-import { PageTextEditorComponent } from '../page-text-editor/page-text-editor.component'
-import { Attribute, NewAttrConstraint, PG_TO_PG_TYPE, SchemaConfig } from '../../structure'
-import { LanguagePsqlService } from '../../services/language/language-psql.service'
-import { DataService } from '../../services/data.service'
-import { alignKeyword, cc } from '../../formatting'
+import {CommonModule} from '@angular/common'
+import {AfterViewInit, Component, ElementRef, inject, ViewChild} from '@angular/core'
+import {FormsModule} from '@angular/forms'
+import {PageTextEditorComponent} from '../page-text-editor/page-text-editor.component'
+import {Attribute, NewAttrConstraint, PG_TO_PG_TYPE, SchemaConfig} from '../../structure'
+import {LanguagePsqlService} from '../../services/language/language-psql.service'
+import {DataService} from '../../services/data.service'
+import {alignKeyword, cc} from '../../formatting'
 import hljs from 'highlight.js'
-import { LanguageSqlService } from '../../services/language/language-sql.service'
+import {LanguageSqlService} from '../../services/language/language-sql.service'
+import {MatToolbarModule} from '@angular/material/toolbar'
+import {MatButtonModule} from '@angular/material/button'
+import {MatIconModule} from '@angular/material/icon'
+import {MatSnackBar} from '@angular/material/snack-bar'
+import {MatDialog} from '@angular/material/dialog'
+import {DialogConfirmComponent} from '../../dialogs/dialog-confirm/dialog-confirm.component'
+import {MatTooltipModule} from '@angular/material/tooltip'
+import {MatChipsModule} from '@angular/material/chips'
+
+interface Example {
+    title: string
+    to: string
+    from: string
+}
 
 @Component({
     standalone: true,
     selector: 'app-page-migration',
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule, MatChipsModule],
     templateUrl: './page-migration.component.html',
     styleUrl: './page-migration.component.scss'
 })
 export class PageMigrationComponent implements AfterViewInit {
+    private readonly snackBar = inject(MatSnackBar)
+    readonly dialog = inject(MatDialog)
+    private output = ''
+
     @ViewChild('fromEl') fromEl?: ElementRef<HTMLTextAreaElement>
     @ViewChild('toEl') toEl?: ElementRef<HTMLTextAreaElement>
     @ViewChild('outputEl') outputEl?: ElementRef<HTMLTextAreaElement>
+
+    examples: Example[] = [
+        {
+            title: `S T A`,
+            from: `# Shop
+
+## Product
+- id as auto increment
+- name as string with required, 3..30, unique`,
+            to: `# Organization
+
+## Category
+- id as ++
+- name as str with required, unique, 3..30
+
+
+# Shop
+
+## Product
+- id as auto increment
+- name as string with required, 3..30, unique
+- price as money with required, ..99
+
+
+## Category Product
+- @Category with required, primary
+- @Product with required, primary`
+        },
+        {
+            title: `PK`,
+            from: `# Shop
+
+## Product
+- material as string with primary, ..15`,
+            to: `# Shop
+
+## Product
+- material as string with primary, ..15
+- lot as string with primary, ..15`
+        },
+        {
+            title: `Unique`,
+            from: `# Employee
+
+## Person
+- first name as string with unique:a, ..15
+- last name as string with unique:b, ..15`,
+            to: `# Employee
+
+## Person
+- first name as string with unique:a, ..15
+- last name as string with unique:a, ..15`
+        },
+        {
+            title: `Type`,
+            from: `# Employee
+
+## Person
+- name as string with ..15
+- active as boolean`,
+            to: `# Employee
+
+## Person
+- name as string with ..30
+- active as char`
+        },
+        {
+            title: `Null`,
+            from: `# Employee
+
+## Person
+- age as int with required`,
+            to: `# Employee
+
+## Person
+- age as int`
+        },
+        {
+            title: ``,
+            from: ``,
+            to: ``
+        }
+    ]
 
     from: {
         parsed: Record<string, SchemaConfig>
         raw: string
     } = {
         parsed: {},
-        raw: `# Shop
-
-## Product
-- id as ++
-- name as str with required, 3..30, unique
-
-# Human Resources
-
-## Employee
-- id as ++
-- name as str with required, 3..30, unique:a
-- favorite color as str with required, ..8, unique:b
-- position as char with required, unique:b
-- department as char with required
-
-`
+        raw: ``
     }
 
     to: {
@@ -49,41 +135,7 @@ export class PageMigrationComponent implements AfterViewInit {
         raw: string
     } = {
         parsed: {},
-        raw: `# Shop
-
-## Category
-- id as ++
-- name as str with required, ..30, unique
-
-## Product
-- material as str with primary, ..10
-- lot as str with primary, ..8
-- name as str with required, ..50, unique
-- description as str with required, ..100
-- price as money with required, ..999
-
-## Product Category
-- @product with required, primary
-- @category with required, primary
-
-# Human Resources
-
-## Employee
-- id as ++
-- favorite color as str with ..8
-- position as char with required, unique:dep pos
-- department as char with required, unique:dep pos
-- first name as str with required, ..30, unique:first last
-- last name as str with required, ..30, unique:first last, unique:last only
-
-# Record
-
-## Sale
-- id as ++
-- @product with required
-- @employee with required
-- inserted at as ts with required, system, default:now
-`
+        raw: ``
     }
 
     ngAfterViewInit(): void {
@@ -92,10 +144,38 @@ export class PageMigrationComponent implements AfterViewInit {
         }, 0)
     }
 
+    UseExample(e: Example) {
+        this.dialog.open(DialogConfirmComponent, {
+            data: {
+                message: 'Using an example will replace the existing code, this cannot be undone. Are you sure?',
+                accept: () => {
+                    this.from.raw = e.from
+                    this.to.raw = e.to
+                    this.Run()
+                }
+            }
+        })
+    }
+
+    Swap() {
+        const a = this.from.raw
+        const b = this.to.raw
+        this.from.raw = b
+        this.to.raw = a
+        this.Run()
+    }
+
+    Copy() {
+        navigator.clipboard.writeText(this.output)
+        this.snackBar.open('Copied to clipboard', '', {
+            duration: 2500
+        })
+    }
+
     Run() {
         this.parse()
-        const output = PageMigrationComponent.compare(this.from.parsed, this.to.parsed)
-        const code = hljs.highlight(output, {language: 'sql'}).value
+        this.output = PageMigrationComponent.compare(this.from.parsed, this.to.parsed)
+        const code = hljs.highlight(this.output, {language: 'sql'}).value
         if (!this.outputEl) {
             console.error('missing output element')
             return

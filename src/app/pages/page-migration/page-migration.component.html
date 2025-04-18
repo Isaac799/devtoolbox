@@ -6,6 +6,9 @@
         </strong>
 
     </p>
+
+    <p>The order of the output may need re-arranged to run.</p>
+
     <em>How do I use it?</em>
     <p>
         Paste a before and after TUI configuration and I will attempt to generate a SQL script to make the changes
@@ -18,7 +21,33 @@
         This page is standalone from the rest of the app. Changes are not saved for now. A hard coded example is given.
     </p>
 
-    <h2>Inputs</h2>
+
+    <mat-toolbar>
+        <span>Input</span>
+
+        <button
+            matTooltip="Swap to-from"
+            mat-icon-button
+            aria-label="Swap to-from"
+            (click)="Swap()"
+        >
+            <mat-icon>swap_horiz</mat-icon>
+        </button>
+
+        <span class="toolbar-icon-spacer"></span>
+
+        <mat-chip-set aria-label="Fish selection">
+            @for (example of examples; track $index) {
+            <mat-chip
+                [matTooltip]="'Use example ' + example.title"
+                (click)="UseExample(example)"
+            >
+                {{ example.title }}
+            </mat-chip>
+            }
+        </mat-chip-set>
+
+    </mat-toolbar>
 
     <table
         [cellPadding]="6"
@@ -54,9 +83,22 @@
         </tr>
     </table>
 
-    <h2>Output</h2>
+    <mat-toolbar>
+        <span>Output</span>
 
-    <p>Note the order of the output may need re-arranged to run.</p>
+        <!-- <span class="toolbar-icon-spacer"></span> -->
+
+        <button
+            matTooltip="Copy"
+            mat-icon-button
+            aria-label="Copy code"
+            (click)="Copy()"
+        >
+            <mat-icon>content_copy</mat-icon>
+        </button>
+    </mat-toolbar>
+
+
 
     <pre
         #outputEl
