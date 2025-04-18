@@ -1,107 +1,83 @@
 <div class="p2">
-    <h1>Migration Tool</h1>
-    <p>
-        <strong>
-            This page is a work in progress.
-        </strong>
+    <div class="fc g2">
+        <div>
+            Examples: <mat-chip-set aria-label="Example selection">
+                @for (example of examples; track $index) {
+                <mat-chip
+                    [matTooltip]="example.desc"
+                    (click)="UseExample(example)"
+                >
+                    {{ example.title }}
+                </mat-chip>
+                }
+            </mat-chip-set>
+        </div>
 
-    </p>
+        <div class="fr fw g1">
+            <div class="fc">
+                <mat-toolbar>
+                    <span>Before</span>
+                </mat-toolbar>
+                <div class="box">
+                    <textarea
+                        [(ngModel)]="from.raw"
+                        (ngModelChange)="Run()"
+                        #fromEl
+                        name="from"
+                        id="from"
+                    ></textarea>
+                </div>
+            </div>
+            <div class="fc center">
+                <button
+                    matTooltip="Swap to-from"
+                    mat-icon-button
+                    aria-label="Swap to-from"
+                    (click)="Swap()"
+                >
+                    <mat-icon>swap_horiz</mat-icon>
+                </button>
+            </div>
+            <div class="fc">
+                <mat-toolbar>
+                    <span>After</span>
+                </mat-toolbar>
+                <div class="box">
+                    <textarea
+                        [(ngModel)]="to.raw"
+                        (ngModelChange)="Run()"
+                        #toEl
+                        name="to"
+                        id="to"
+                    ></textarea>
+                </div>
 
-    <p>The order of the output may need re-arranged to run.</p>
-
-    <em>How do I use it?</em>
-    <p>
-        Paste a before and after TUI configuration and I will attempt to generate a SQL script to make the changes
-        needed to get from point A to point B.
-    </p>
-
-    <em>How does it work with the rest of the app?</em>
-
-    <p>
-        This page is standalone from the rest of the app. Changes are not saved for now. A hard coded example is given.
-    </p>
-
-
-    <mat-toolbar>
-        <span>Input</span>
-
-        <button
-            matTooltip="Swap to-from"
-            mat-icon-button
-            aria-label="Swap to-from"
-            (click)="Swap()"
-        >
-            <mat-icon>swap_horiz</mat-icon>
-        </button>
-
-        <span class="toolbar-icon-spacer"></span>
-
-        <mat-chip-set aria-label="Example selection">
-            @for (example of examples; track $index) {
-            <mat-chip
-                [matTooltip]="example.desc"
-                (click)="UseExample(example)"
-            >
-                {{ example.title }}
-            </mat-chip>
-            }
-        </mat-chip-set>
-
-    </mat-toolbar>
-
-    <table
-        [cellPadding]="6"
-        [cellSpacing]="0"
-    >
-        <tr>
-            <th>From</th>
-            <th>To</th>
-        </tr>
-        <tr>
-            <td>
-                <textarea
-                    [(ngModel)]="from.raw"
-                    (ngModelChange)="Run()"
-                    #fromEl
-                    name="from"
-                    id="from"
-                    cols="60"
-                    rows="30"
-                ></textarea>
-            </td>
-            <td>
-                <textarea
-                    [(ngModel)]="to.raw"
-                    (ngModelChange)="Run()"
-                    #toEl
-                    name="to"
-                    id="to"
-                    cols="60"
-                    rows="30"
-                ></textarea>
-            </td>
-        </tr>
-    </table>
-
-    <mat-toolbar>
-        <span>Output</span>
-
-        <!-- <span class="toolbar-icon-spacer"></span> -->
-
-        <button
-            matTooltip="Copy"
-            mat-icon-button
-            aria-label="Copy code"
-            (click)="Copy()"
-        >
-            <mat-icon>content_copy</mat-icon>
-        </button>
-    </mat-toolbar>
+            </div>
 
 
+        </div>
+        <div class="fc">
+            <mat-toolbar>
+                <span>Output</span>
 
-    <pre
-        #outputEl
-        id="output"
-    ></pre>
+                <!-- <span class="toolbar-icon-spacer"></span> -->
+
+                <button
+                    matTooltip="Copy"
+                    mat-icon-button
+                    aria-label="Copy code"
+                    (click)="Copy()"
+                >
+                    <mat-icon>content_copy</mat-icon>
+                </button>
+            </mat-toolbar>
+
+            <div class="box">
+                <pre
+                    #outputEl
+                    id="output"
+                ></pre>
+            </div>
+        </div>
+    </div>
 </div>

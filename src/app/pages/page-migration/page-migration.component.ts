@@ -15,7 +15,7 @@ import {MatSnackBar} from '@angular/material/snack-bar'
 import {MatDialog} from '@angular/material/dialog'
 import {MatTooltipModule} from '@angular/material/tooltip'
 import {MatChipsModule} from '@angular/material/chips'
-import { DialogConfirmComponent } from '../../dialogs/dialog-confirm/dialog-confirm.component'
+import {DialogConfirmComponent} from '../../dialogs/dialog-confirm/dialog-confirm.component'
 
 interface Example {
     title: string
@@ -42,7 +42,7 @@ export class PageMigrationComponent implements AfterViewInit {
 
     examples: Example[] = [
         {
-            title: `S T A`,
+            title: `Schema, Table, Attr`,
             desc: 'Demonstrates creating a schema, table, and attribute',
             from: `# Bar
 
@@ -67,7 +67,7 @@ export class PageMigrationComponent implements AfterViewInit {
 - @product with primary`
         },
         {
-            title: `PK`,
+            title: `Primary Key`,
             desc: 'Highlights primary key changes',
             from: `# Bar
 
@@ -80,7 +80,7 @@ export class PageMigrationComponent implements AfterViewInit {
 - lot as int with primary`
         },
         {
-            title: `FK`,
+            title: `Foreign Key`,
             desc: 'Highlights foreign key changes',
             from: `# Foo
 
@@ -138,7 +138,7 @@ export class PageMigrationComponent implements AfterViewInit {
 - active as char`
         },
         {
-            title: `Null`,
+            title: `Nullability`,
             desc: 'Highlights nullability constraint changes',
             from: `# Foo
 
@@ -176,6 +176,11 @@ export class PageMigrationComponent implements AfterViewInit {
         setTimeout(() => {
             this.Run()
         }, 0)
+
+        const to = this.toEl
+        const from = this.fromEl
+
+        if (!to || !from) return
     }
 
     UseExample(e: Example) {

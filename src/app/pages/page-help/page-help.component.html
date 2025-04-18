@@ -7,46 +7,41 @@
         A higher level approach to helping common CRUD needs.
     </p>
 
-
     <em>
-        Why not use an ORM?
+        Is it ready to use?
     </em>
+
     <p>
-        Too often I find myself limiting the features of an app to what a library gives me, or worst
-        yet a library I use becomes obsolete or pay walled. This tool aims to encourage writing code while
-        speed running the tedium. Once ideas on on the page, we can start tweaking and finding patterns to
-        refine.
+        Not really. It mostly works, but is just a side project. I like the syntax I made, but its subject to change
+        depending on peer feedback. Features are mostly tested, but all testing is manual and by eye/hand.
     </p>
 
     <em>
         Why not just use a LLM?
     </em>
-    <p> For me, I have to maintain my work, because no one else will. Plus I have to
-        maintain others peoples work, because I was the chump that stuck around. This tool enables me to hash out my
-        ideas in a <strong>reproducible</strong> and documented manor.</p>
-
-
     <p>
-        To achieve the "higher lever" approach I landed on 2 things.
+        This is not supposed to compete with or replace other tooling. This fills a void in my workflow, <em>for
+            me</em>. My responsibilities are to develop new projects and maintain old ones. Often written by someone
+        not around anymore. Documentation is great, but always falls short. What do I write? Who maintains the
+        documents? Why maintain documentation if I am the only one who uses this and am already a week past due?
+        If I am going to document something, <em>what</em> I write must have significance. That is where this tool comes
+        in. (see bullet points below)
     </p>
 
-    <ol>
-        <li><strong>Folders</strong> are a way of categorizing ideas. Eventually turned into schemas.</li>
-        <li><strong>Blueprints</strong> are a way of defining a specific thing. Eventually turned into tables and
-            structs.</li>
-    </ol>
+    <em>Why use this tool?</em>
 
-    <p>
-        With this approach I feel that I can tackle several needs:
-    </p>
     <ul>
-        <li><strong>Source controllable</strong> allows me to save the concepts and see them change over time. Also its
-            helpful when working across multiple projects at work, documenting each applications data structure.</li>
-        <li><strong>Plain text</strong> formatted as valid markdown makes the configuration readable without having to
-            use an app. Its not JSON or YML, just human readable syntax</li>
         <li>
-            <strong>Technical</strong>. The simple yet powerful concept of a blueprint and its ability to be relational
-            lets me use my head to problem solve and hash out ideas while normalizing the solution along the way.
+            <strong>Practical.</strong> I am developing this tool for real needs that I have. Features are purposeful
+            and powerful, not pomps.
+        </li>
+        <li><strong>Source controllable</strong>. The plain text markdown enables simple documentation of data
+            structure. Especially helpful when working across multiple projects.
+        </li>
+        <li>
+            <strong>Continuous Development</strong>. With the migration tool I am free to develop complex ideas and
+            change them over time. This can also help find a path of least resistance when planning for the future, or
+            quickly redefine previous solutions.
         </li>
         <!-- <li>
             <strong>ERD Generation</strong> is huge for me. I love ERDs but never liked that there was not a good way to
@@ -59,18 +54,42 @@
             <strong>Printable</strong> the graphical interface is printable, giving a conceptual breakdown of the
             technicality. Useful for meetings with the boss or analysts.
         </li> -->
-
     </ul>
+
+    <em>
+        Why not use an ORM?
+    </em>
+    <p>
+        This is not competing with an ORM - despite a lot of the generated code is CRUD orientated. Plus, as a general
+        rule I have been trying to move away from libraries. When using a library I find myself limiting the features of
+        an app to what a library gives me. More recently though, a core library for me became pay walled, leaving
+        several applications I maintain without access to the documentation they where written with. This tool aims to
+        encourage writing code and database migrations.
+    </p>
+
+
+    <em>What are the key concepts?</em>
+
+    <p>
+        I wanted a higher level approach, but keeping technical enough for my needs. To achieve this approach I landed
+        on 2 things.
+    </p>
+
+    <ol>
+        <li><strong>Folders</strong> are a way of categorizing ideas. Eventually turned into schemas.</li>
+        <li><strong>Blueprints</strong> are a way of defining a specific thing. Eventually turned into tables and
+            structs.</li>
+    </ol>
 
     <em>Whats the difference in the GUI and the TUI?</em>
 
     <p>
-        The Graphical User Interface (GUI) is pretty cool. It shows the relevant fields to fill out dynamically.
-        However, it is limited in some ways (due to me not getting to it yet...). For example, the unique is just a
+        The Graphical User Interface (GUI) is pretty cool. It shows the relevant options and validation to fill out
+        dynamically. However, it is not my focus, and as such is limited. For example, the unique is just a
         checkbox in the GUI, whereas in the TUI you can label unique constraints, creating groupings of unique fields.
-        The GUI one is more of a WIP, with the goal of a more fleshed out ERD-like solution down the road. Another perk
-        of the TUI is that I can make other features I wanted to easier. For example, the a migration feature I am
-        working on that can take in 2 TUI configurations and generate the SQL needed to get from one to the other.
+        Plus a TUI approach is much more in line with what I need, more practical. Having plain text enables easier
+        approach to adding new features, e.g. the migration page. Overall, the GUI one is more of a WIP, with the goal
+        of a more fleshed out ERD-like solution down the road.
     </p>
 
     <h2>Syntax Guide</h2>
