@@ -526,40 +526,34 @@ export class PageMigrationComponent implements AfterViewInit {
                             addedCol = true
                         }
 
-                        const beforePks: Attribute[] = []
-                        const beforeAllAttrs = t1.AllAttributes()
-                        for (const key in beforeAllAttrs) {
-                            if (!Object.prototype.hasOwnProperty.call(beforeAllAttrs, key)) {
+                        const beforePks: string[] = []
+                        const allBeforeAttrs = t1.AllAttributes()
+                        for (const determinedKey in allBeforeAttrs) {
+                            if (!Object.prototype.hasOwnProperty.call(allBeforeAttrs, determinedKey)) {
                                 continue
                             }
-                            const [srcA, a] = beforeAllAttrs[key]
-                            if (!a.Option?.PrimaryKey) continue
-                            beforePks.push(a)
-                        }
-                        const afterPks: Attribute[] = []
-                        const afterPksLabels: string[] = []
-                        const afterAllAttrs = t2.AllAttributes()
-                        for (const key in afterAllAttrs) {
-                            if (!Object.prototype.hasOwnProperty.call(afterAllAttrs, key)) {
-                                continue
-                            }
-                            const [srcA, a] = afterAllAttrs[key]
-                            if (!a.Option?.PrimaryKey) continue
-                            afterPks.push(a)
-                            afterPksLabels.push(key)
+                            const [srcA, a] = allBeforeAttrs[determinedKey]
+                            if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== t1.ID) continue
+                            if (srcA && !srcA.Option?.PrimaryKey) continue
+
+                            beforePks.push(determinedKey)
                         }
 
-                        let pkChanged = false
-                        const aArr = beforePks.map(e => e.FN)
-                        for (const e of afterPks) {
-                            if (aArr.includes(e.FN)) continue
-                            pkChanged = true
+                        const afterPks: string[] = []
+
+                        const allAfterPks = t2.AllAttributes()
+                        for (const determinedKey in allAfterPks) {
+                            if (!Object.prototype.hasOwnProperty.call(allAfterPks, determinedKey)) {
+                                continue
+                            }
+                            const [srcA, a] = allAfterPks[determinedKey]
+                            if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== t2.ID) continue
+                            if (srcA && !srcA.Option?.PrimaryKey) continue
+
+                            afterPks.push(determinedKey)
                         }
-                        const bArr = afterPks.map(e => e.FN)
-                        for (const e of beforePks) {
-                            if (bArr.includes(e.FN)) continue
-                            pkChanged = true
-                        }
+
+                        const pkChanged = JSON.stringify(beforePks) !== JSON.stringify(afterPks)
 
                         if (pkChanged) {
                             {
@@ -568,9 +562,9 @@ export class PageMigrationComponent implements AfterViewInit {
                                 script.push(s)
                             }
 
-                            if (afterPksLabels.length > 0) {
+                            if (afterPks.length > 0) {
                                 // const newPK = NewTableConstraint('Primary Key', t2)
-                                const newPkLabels = afterPksLabels.join(', ')
+                                const newPkLabels = afterPks.join(', ')
                                 const s = `${alterT} ${replaceAlign}ADD PRIMARY KEY${replaceAlign2} ( ${newPkLabels} );`
                                 script.push(s)
                             }
