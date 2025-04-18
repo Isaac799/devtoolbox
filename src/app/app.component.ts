@@ -9,6 +9,8 @@ import {RouterModule} from '@angular/router'
 import {AppService} from './services/app.service'
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout'
 import {MatTooltipModule} from '@angular/material/tooltip'
+import {MatDialog} from '@angular/material/dialog'
+import {DialogSettingsComponent} from './dialogs/dialog-settings/dialog-settings.component'
 
 @Component({
     selector: 'app-root',
@@ -30,6 +32,7 @@ export class AppComponent implements OnInit {
     readonly title = 'devtoolbox'
     private readonly appService = inject(AppService)
     private readonly breakpointObserver = inject(BreakpointObserver)
+    private readonly matDialog = inject(MatDialog)
 
     showSplitPage = false
     showTitle = true
@@ -47,5 +50,9 @@ export class AppComponent implements OnInit {
         if (this.breakpointObserver.isMatched(Breakpoints.HandsetPortrait)) {
             this.showTitle = false
         }
+    }
+
+    showSettings() {
+        this.matDialog.open(DialogSettingsComponent)
     }
 }

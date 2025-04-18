@@ -767,6 +767,10 @@ export interface CanvasSize {
 export interface App {
     seedLimit: number
     textEditorState: number
+    editor: {
+        gui: boolean
+        splitTui: boolean
+    }
     canvasSize: CanvasSize
     generatorMode: AppGeneratorMode
     complexity: AppComplexityMode

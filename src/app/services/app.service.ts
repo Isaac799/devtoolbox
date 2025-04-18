@@ -27,9 +27,14 @@ export class AppService {
             x: 1920,
             y: 1080
         },
+
         textEditorState: 1,
         generatorMode: AppGeneratorMode.Postgres,
-        complexity: AppComplexityMode.Advanced
+        complexity: AppComplexityMode.Advanced,
+        editor: {
+            gui: false,
+            splitTui: true
+        }
     }
     private _initialized = false
     public get initialized() {
@@ -272,6 +277,12 @@ export class AppService {
             }
 
             this.app = parsed
+            if (!this.app.editor) {
+                this.app.editor = {
+                    gui: false,
+                    splitTui: true
+                }
+            }
         } catch (err) {
             console.error(err)
             localStorage.removeItem(this.preferencesKey)

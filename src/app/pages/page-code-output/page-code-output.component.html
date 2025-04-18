@@ -1,7 +1,7 @@
 <div class="top">
     <mat-tab-group
         [selectedIndex]="sideBarService.generatorModeSelectedIndex[0]"
-        (selectedIndexChange)="selectedTabChanged($event); ClearOutput()"
+        (selectedIndexChange)="selectedTabChanged($event); ClearOutput(); appService.Save()"
     >
         @for (mode of sideBarService.generatorModeOptions; track $index; let i = $index) {
         <mat-tab [label]="mode.title"></mat-tab>
@@ -16,7 +16,7 @@
     <mat-chip-set class="chips">
         @for (x of mode.items; track $index; let k = $index) {
         <mat-chip-option
-            (mouseup)="sideBarService.generatorModeSelectedIndex = [i, k]; sideBarService.setGenMode(); ClearOutput()"
+            (mouseup)="sideBarService.generatorModeSelectedIndex = [i, k]; sideBarService.setGenMode(); ClearOutput(); appService.Save()"
             [selected]="sideBarService.generatorModeSelectedIndex[0] === i && sideBarService.generatorModeSelectedIndex[1] === k"
         >
             {{x.name}}
@@ -41,7 +41,7 @@
         mat-icon-button
         aria-label="Regenerate"
         [matTooltip]="'Regenerate ' + appService.app.seedLimit  + ' records'"
-        (click)="appService.RefreshOutput()"
+        (click)="appService.RefreshOutput(); appService.Save()"
     >
 
         <mat-icon>refresh</mat-icon>
@@ -55,7 +55,7 @@
             [matTooltip]="'Amount records: ' + appService.app.seedLimit "
             matSliderThumb
             [(ngModel)]="appService.app.seedLimit"
-            (ngModelChange)="appService.RefreshOutput()"
+            (ngModelChange)="appService.RefreshOutput(); appService.Save()"
             type="range"
         >
     </mat-slider>
@@ -70,7 +70,6 @@
         <mat-icon>content_copy</mat-icon>
     </button>
 </mat-toolbar>
-
 
 <div class="main">
     <pre

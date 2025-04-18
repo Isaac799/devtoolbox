@@ -24,41 +24,19 @@
         <div class="flex-row">
             <a
                 mat-button
-                routerLink="tui"
+                routerLink="editor"
             >
-                Manage
-                @if (showSplitPage) { (TUI) }
+                Editor
             </a>
-            @if (showSplitPage) {
-            <a
-                mat-button
-                routerLink="gui"
-            >
-                Manage (GUI)
-            </a>
-            }
-            <a
-                mat-button
-                routerLink="boilerplate"
-            >
-                Boilerplate
-            </a>
-            @if (showSplitPage) {
-            <a
-                mat-button
-                routerLink="tui-boil"
-            >
-                TUI & Boilerplate (Split)
-            </a>
-            }
-            @if (showSplitPage) {
+
             <a
                 mat-button
                 routerLink="migration"
             >
-                Migration (Standalone, TUI)
+                Migration
             </a>
-            }
+
+
             <a
                 mat-button
                 routerLink="about"
@@ -66,6 +44,17 @@
                 About
             </a>
         </div>
+
+        <span class="toolbar-icon-spacer"></span>
+
+        <button
+            matTooltip="Settings"
+            mat-icon-button
+            aria-label="Settings"
+            (click)="showSettings()"
+        >
+            <mat-icon>settings</mat-icon>
+        </button>
     </mat-toolbar>
 
     <div class="max-size">
