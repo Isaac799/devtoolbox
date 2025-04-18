@@ -55,20 +55,7 @@ export class LanguagePsqlService {
     private static generateTableEndParts(t: Table) {
         let endThings: string[] = []
 
-        const pks: string[] = []
-
-        const allAttrs = t.AllAttributes()
-        for (const determinedKey in allAttrs) {
-            if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
-                continue
-            }
-            const [srcA, a] = allAttrs[determinedKey]
-            if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== t.ID) continue
-            if (srcA && !srcA.Option?.PrimaryKey) continue
-
-            pks.push(determinedKey)
-        }
-
+        const pks: string[] = t.AllPrimaryDeterminedIdentifiers()
         if (pks.length > 0) {
             const pksJoined = pks.join(', ')
             const pksStr = `PRIMARY KEY ( ${pksJoined} )`
@@ -81,6 +68,8 @@ export class LanguagePsqlService {
             const uniquesStr = `UNIQUE ( ${attrNames} )`
             endThings.push(uniquesStr)
         }
+
+        const allAttrs = t.AllAttributes()
 
         for (const key in allAttrs) {
             if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {

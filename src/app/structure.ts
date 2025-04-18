@@ -505,6 +505,22 @@ export class Table {
         return map[what]
     }
 
+    AllPrimaryDeterminedIdentifiers(): string[] {
+        const pks: string[] = []
+        const attrs = this.AllAttributes()
+        for (const determinedKey in attrs) {
+            if (!Object.prototype.hasOwnProperty.call(attrs, determinedKey)) {
+                continue
+            }
+            const [srcA, a] = attrs[determinedKey]
+            if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== this.ID) continue
+            if (srcA && !srcA.Option?.PrimaryKey) continue
+
+            pks.push(determinedKey)
+        }
+        return pks
+    }
+
     AllAttributes(
         src = 'self',
         depth = 0,

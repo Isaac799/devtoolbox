@@ -526,32 +526,8 @@ export class PageMigrationComponent implements AfterViewInit {
                             addedCol = true
                         }
 
-                        const beforePks: string[] = []
-                        const allBeforeAttrs = t1.AllAttributes()
-                        for (const determinedKey in allBeforeAttrs) {
-                            if (!Object.prototype.hasOwnProperty.call(allBeforeAttrs, determinedKey)) {
-                                continue
-                            }
-                            const [srcA, a] = allBeforeAttrs[determinedKey]
-                            if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== t1.ID) continue
-                            if (srcA && !srcA.Option?.PrimaryKey) continue
-
-                            beforePks.push(determinedKey)
-                        }
-
-                        const afterPks: string[] = []
-
-                        const allAfterPks = t2.AllAttributes()
-                        for (const determinedKey in allAfterPks) {
-                            if (!Object.prototype.hasOwnProperty.call(allAfterPks, determinedKey)) {
-                                continue
-                            }
-                            const [srcA, a] = allAfterPks[determinedKey]
-                            if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== t2.ID) continue
-                            if (srcA && !srcA.Option?.PrimaryKey) continue
-
-                            afterPks.push(determinedKey)
-                        }
+                        const beforePks = t1.AllPrimaryDeterminedIdentifiers()
+                        const afterPks = t2.AllPrimaryDeterminedIdentifiers()
 
                         const pkChanged = JSON.stringify(beforePks) !== JSON.stringify(afterPks)
 
