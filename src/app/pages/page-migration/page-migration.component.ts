@@ -448,7 +448,6 @@ export class PageMigrationComponent implements AfterViewInit {
                 foundSchema = true
             }
             if (foundSchema) continue
-            console.log(s2.Name)
             const s = LanguagePsqlService.ToTables([s2], true)
             script.push(s.trim())
         }
