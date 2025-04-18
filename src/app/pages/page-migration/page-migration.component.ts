@@ -81,13 +81,15 @@ export class PageMigrationComponent implements AfterViewInit {
             from: `# Employee
 
 ## Person
-- first name as string with unique:a, ..15
-- last name as string with unique:b, ..15`,
+- first name as string with ..15, unique:a
+- last name as string with ..15, unique:b
+- birthday as date`,
             to: `# Employee
 
 ## Person
-- first name as string with unique:a, ..15
-- last name as string with unique:a, ..15`
+- first name as string with ..15, unique:a
+- last name as string with ..15, unique:a
+- birthday as date with unique:b`
         },
         {
             title: `Type`,
@@ -236,7 +238,7 @@ export class PageMigrationComponent implements AfterViewInit {
                                 // Type
                                 const typeChanged = a1.Type !== a2.Type
                                 if (typeChanged) {
-                                    if (a1.isStr()) {
+                                    if (a2.isStr()) {
                                         const s = `${alterA} TYPE ${a2.VarcharType()};`
                                         script.push(s)
                                     } else {
@@ -344,8 +346,12 @@ export class PageMigrationComponent implements AfterViewInit {
                         const beforeUniques = LanguageSqlService.DiscoverUniqueAttributes(t1)
                         const afterUniques = LanguageSqlService.DiscoverUniqueAttributes(t2)
 
+                        const uniqueDrops = []
+                        const uniqueAdds = []
+
                         for (const [beforeLabel, beforeAttrs] of Object.entries(beforeUniques)) {
                             let found = false
+                            let contentSame = false
                             for (const [afterLabel, afterAttrs] of Object.entries(afterUniques)) {
                                 if (beforeLabel !== afterLabel) continue
                                 // same label
@@ -359,12 +365,8 @@ export class PageMigrationComponent implements AfterViewInit {
                                 const beforeContent = JSON.stringify(beforeAttrs.map(e => e.FN))
                                 const afterContent = JSON.stringify(afterAttrs.map(e => e.FN))
 
-                                if (beforeContent === afterContent) continue
-
-                                {
-                                    const s = `${alterT} ${replaceAlign}DROP CONSTRAINT${replaceAlign2} ${NewAttrConstraint('Unique', beforeAttrs)};`
-                                    script.push(s)
-                                }
+                                contentSame = beforeContent === afterContent
+                                if (contentSame) continue
                                 {
                                     const attrNames = afterAttrs.map(e => cc(e.Name, 'sk')).join(', ')
                                     const uniquesStr = `UNIQUE ( ${attrNames} )`
@@ -372,14 +374,17 @@ export class PageMigrationComponent implements AfterViewInit {
                                         'Unique',
                                         afterAttrs
                                     )} ${uniquesStr};`
-                                    script.push(s)
+                                    uniqueAdds.push(s)
                                 }
                             }
-                            if (found) continue
+                            if (found && contentSame) continue
                             // drop before, not found in after
                             const s = `${alterT} ${replaceAlign}DROP CONSTRAINT${replaceAlign2} ${NewAttrConstraint('Unique', beforeAttrs)};`
-                            script.push(s)
+                            uniqueDrops.push(s)
                         }
+
+                        script = script.concat(uniqueDrops)
+                        script = script.concat(uniqueAdds)
                         //#endregion
                     }
                     if (foundTable) {
@@ -445,26 +450,6 @@ export class PageMigrationComponent implements AfterViewInit {
 
                     for (const t1 of s1.Tables) {
                         if (t1.Name !== t2.Name) continue
-
-                        //#region uniques
-                        const beforeUniques = LanguageSqlService.DiscoverUniqueAttributes(t1)
-                        const afterUniques = LanguageSqlService.DiscoverUniqueAttributes(t2)
-
-                        for (const [afterLabel, afterAttrs] of Object.entries(afterUniques)) {
-                            let found = false
-                            for (const [beforeLabel, beforeAttrs] of Object.entries(beforeUniques)) {
-                                if (beforeLabel !== afterLabel) continue
-                                // same label
-                                found = true
-                            }
-                            if (!found) continue
-                            // add after, not found in before
-                            const attrNames = afterAttrs.map(e => cc(e.Name, 'sk')).join(', ')
-                            const uniquesStr = `UNIQUE ( ${attrNames} )`
-                            const s = `${alterT} ${replaceAlign}ADD CONSTRAINT${replaceAlign2} ${NewAttrConstraint('Unique', afterAttrs)} ${uniquesStr};`
-                            script.push(s)
-                        }
-                        //#endregion
 
                         //
                         for (const a2 of t2.Attributes) {
@@ -563,14 +548,28 @@ export class PageMigrationComponent implements AfterViewInit {
                                 script.push(s)
                             }
                         }
-                    }
                     if (!addedCol) continue
-                    const uniques = LanguageSqlService.DiscoverUniqueAttributes(t2)
-                    for (const [label, attrs] of Object.entries(uniques)) {
-                        const attrNames = uniques[label].map(e => cc(e.Name, 'sk')).join(', ')
+
+                        //#region uniques
+                        const beforeUniques = LanguageSqlService.DiscoverUniqueAttributes(t1)
+                        const afterUniques = LanguageSqlService.DiscoverUniqueAttributes(t2)
+                        
+                        for (const [afterLabel, afterAttrs] of Object.entries(afterUniques)) {
+                            let found = false
+                            for (const [beforeLabel, beforeAttrs] of Object.entries(beforeUniques)) {
+                                if (beforeLabel !== afterLabel) continue
+                                // same label
+                                found = true
+                            }
+                            if (found) continue
+                            {
+                                const attrNames = afterAttrs.map(e => cc(e.Name, 'sk')).join(', ')
                         const uniquesStr = `UNIQUE ( ${attrNames} )`
-                        const s = `${alterT} ${replaceAlign}ADD CONSTRAINT${replaceAlign2} ${NewAttrConstraint('Unique', attrs)} ${uniquesStr};`
+                                const s = `${alterT} ${replaceAlign}ADD  CONSTRAINT${replaceAlign2} ${NewAttrConstraint('Unique', afterAttrs)} ${uniquesStr};`
                         script.push(s)
+                            }
+                        }
+                        //#endregion
                     }
                 }
             }
