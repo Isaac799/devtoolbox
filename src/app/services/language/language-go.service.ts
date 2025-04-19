@@ -150,29 +150,6 @@ export class LanguageGoService {
             return f.outputs.filter(e => e.primary).map(e => cc(e.label, 'cm'))
         }
 
-        const paginationFn = `func GetPagination(r *http.Request, defaultLimit, defaultPage int) (offset, limit, page int) {
-    limit = defaultLimit
-    page = defaultPage
-
-    limitStr := r.URL.Query().Get("limit")
-    if limitStr != "" {
-        if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 {
-            limit = parsedLimit
-        }
-    }
-
-    pageStr := r.URL.Query().Get("page")
-    if pageStr != "" {
-        if parsedPage, err := strconv.Atoi(pageStr); err == nil && parsedPage > 0 {
-            page = parsedPage
-        }
-    }
-
-    offset = (page - 1) * limit
-    return offset, limit, page
-}`
-
-        lines.push(paginationFn)
         lines.push('')
 
         for (const [funcGo, table] of funcs) {
@@ -267,7 +244,7 @@ export class LanguageGoService {
                 const page = `LIMIT $1 OFFSET $2`
                 const query = [sel, orderBy, page].filter(e => e.trim().length > 0).join(' ')
 
-                l.push(`offset, limit, page := services.GetPagination(r, 10, 1)`)
+                l.push(`offset, limit, page := GetPagination(r, 10, 1)`)
 
                 l.push(`rows, err := db.Query("${query}", limit, offset)`)
                 l.push(`if err != nil {`)
@@ -654,6 +631,30 @@ export class LanguageGoService {
                 lines.push(`}\n`)
             }
         }
+
+        const paginationFn = `func GetPagination(r *http.Request, defaultLimit, defaultPage int) (offset, limit, page int) {
+    limit = defaultLimit
+    page = defaultPage
+
+    limitStr := r.URL.Query().Get("limit")
+    if limitStr != "" {
+        if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 {
+            limit = parsedLimit
+        }
+    }
+
+    pageStr := r.URL.Query().Get("page")
+    if pageStr != "" {
+        if parsedPage, err := strconv.Atoi(pageStr); err == nil && parsedPage > 0 {
+            page = parsedPage
+        }
+    }
+
+    offset = (page - 1) * limit
+    return offset, limit, page
+}`
+
+        lines.push(paginationFn)
 
         const str = lines.join('\n')
         return str
