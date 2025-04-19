@@ -125,6 +125,18 @@ export class Func {
         this.outputs = this.genFnOutputs(this.inputs)
     }
 
+    hasValidation() {
+        let hasValidation = false
+        for (const o of this.outputs) {
+            const v = o.raw.attribute.Validation
+            if (!v) continue
+            if (v.Min === undefined && v.Max === undefined) continue
+            hasValidation = true
+            break
+        }
+        return hasValidation
+    }
+
     genFnInputs(): FuncIn[] {
         const inputs: FuncIn[] = []
 
@@ -673,7 +685,7 @@ export enum AppGeneratorMode {
     HTMLRawBulma01,
     HTMLGoTemplate,
     HTMLGoTemplateBulma01,
-    HTMLAngularReactive,
+    HTMLAngularReactive
 }
 
 export enum AppComplexityMode {

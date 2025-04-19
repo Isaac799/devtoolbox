@@ -26,6 +26,10 @@ export class LanguageGoService {
             lines = lines.concat(attrs)
             lines.push(`}\n`)
 
+            const validateFn: string[] = LanguageGoService.generateValidateFn(f)
+            lines = lines.concat(validateFn)
+            lines.push(``)
+
             // Func
 
             let funcAttrs: string[] = LanguageGoService.generateFuncReturnStruct(f)
@@ -73,6 +77,51 @@ export class LanguageGoService {
         }
 
         return funcAttrs
+    }
+
+    private static generateValidateFn(f: Func) {
+        let lines: string[] = []
+        if (!f.hasValidation()) {
+            return []
+        }
+
+        const fl = f.title.substring(0, 1).toLowerCase()
+        lines.push(`func (${fl} ${f.title}) Validate () error {`)
+        for (const o of f.outputs) {
+            if (!o.raw.attribute.Validation) continue
+            const v = o.raw.attribute.Validation
+            const l: string[] = []
+            if (o.raw.attribute.isStr()) {
+                if (v.Min !== undefined) {
+                    l.push(`if len(${fl}.${o.label}) < ${v.Min} {`)
+                    l.push(`${TAB}return errors.New("'${cc(o.label, 'nc')}' must be at least ${v.Min} characters")`)
+                    l.push(`}`)
+                }
+                if (v.Max !== undefined) {
+                    l.push(`if len(${fl}.${o.label}) > ${v.Max} {`)
+                    l.push(`${TAB}return errors.New("'${cc(o.label, 'nc')}' must be at most ${v.Max} characters")`)
+                    l.push(`}`)
+                }
+            } else {
+                if (v.Min !== undefined) {
+                    l.push(`if ${fl}.${o.label} < ${v.Min} {`)
+                    l.push(`${TAB}return errors.New("'${cc(o.label, 'nc')}' must be at least ${v.Min}")`)
+                    l.push(`}`)
+                }
+                if (v.Max !== undefined) {
+                    l.push(`if ${fl}.${o.label} > ${v.Max} {`)
+                    l.push(`${TAB}return errors.New("'${cc(o.label, 'nc')}' must be at most ${v.Max}")`)
+                    l.push(`}`)
+                }
+            }
+            lines.push(`${TAB}` + l.join(`\n${TAB}`))
+        }
+        lines.push(`${TAB}return nil`)
+        lines.push(`}`)
+
+        lines = lines.filter(e => e.trim().length > 0)
+
+        return lines
     }
 
     private static generateStructAttributes(f: Func) {
@@ -448,6 +497,14 @@ export class LanguageGoService {
                 l.push(`}`)
                 l.push(``)
 
+                if (funcGo.hasValidation()) {
+                    l.push(`if err := ${item}.Validate(); err != nil {`)
+                    l.push(`${TAB}http.Error(w, err.Error(), http.StatusBadRequest)`)
+                    l.push(`${TAB}return`)
+                    l.push(`}`)
+                    l.push(``)
+                }
+
                 const cols = table.Attributes.filter(e => e.toInsert())
 
                 const aEqB: string[] = cols.map((e, i) => `${cc(e.Name, 'sk')} = $${selectWhereLen + i + 1}`)
@@ -510,6 +567,14 @@ export class LanguageGoService {
                 l.push(`${TAB}return`)
                 l.push(`}`)
                 l.push(``)
+
+                if (funcGo.hasValidation()) {
+                    l.push(`if err := ${item}.Validate(); err != nil {`)
+                    l.push(`${TAB}http.Error(w, err.Error(), http.StatusBadRequest)`)
+                    l.push(`${TAB}return`)
+                    l.push(`}`)
+                    l.push(``)
+                }
 
                 const cols = table.Attributes.filter(e => e.toInsert()).map(e => cc(e.Name, 'sk'))
 
