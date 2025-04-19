@@ -31,6 +31,9 @@ export class LanguageTsService {
 ${TAB}${TAB}${params}
     ) {`)
 
+            const validationThrow = LanguageTsService.generateValidateThrow(f)
+            lines = lines.concat(validationThrow)
+
             funcAttrs = alignKeyword(funcAttrs, ' :')
             lines = lines.concat(funcAttrs)
 
@@ -71,6 +74,92 @@ ${TAB}${TAB}${params}
         return attrs
     }
 
+    private static generateValidateThrow(f: Func) {
+        let lines: string[] = []
+        if (!f.hasValidation()) {
+            return []
+        }
+
+        for (const o of f.inputs) {
+            if (!o.raw.attribute.Validation) continue
+            const v = o.raw.attribute.Validation
+            const l: string[] = []
+            if (o.raw.attribute.isStr()) {
+                if (v.Min !== undefined) {
+                    l.push(`if ${o.label}.length < ${v.Min} {`)
+                    l.push(`${TAB}throw new Error("'${cc(o.label, 'nc')}' must be at least ${v.Min} characters")`)
+                    l.push(`}`)
+                }
+                if (v.Max !== undefined) {
+                    l.push(`if ${o.label}.length > ${v.Max} {`)
+                    l.push(`${TAB}throw new Error("'${cc(o.label, 'nc')}' must be at most ${v.Max} characters")`)
+                    l.push(`}`)
+                }
+            } else {
+                if (v.Min !== undefined) {
+                    l.push(`if ${o.label} < ${v.Min} {`)
+                    l.push(`${TAB}throw new Error("'${cc(o.label, 'nc')}' must be at least ${v.Min}")`)
+                    l.push(`}`)
+                }
+                if (v.Max !== undefined) {
+                    l.push(`if ${o.label} > ${v.Max} {`)
+                    l.push(`${TAB}throw new Error("'${cc(o.label, 'nc')}' must be at most ${v.Max}")`)
+                    l.push(`}`)
+                }
+            }
+            lines.push(`${TAB}${TAB}` + l.join(`\n${TAB}${TAB}`))
+        }
+
+        lines = lines.filter(e => e.trim().length > 0)
+
+        return lines
+    }
+
+    private static generateValidateFn(f: Func) {
+        let lines: string[] = []
+        if (!f.hasValidation()) {
+            return []
+        }
+
+        const fl = cc(f.title, 'cm')
+        lines.push(`function Validate${f.title} (${fl}: ${f.title}): Error | null {`)
+        for (const o of f.outputs) {
+            if (!o.raw.attribute.Validation) continue
+            const v = o.raw.attribute.Validation
+            const l: string[] = []
+            if (o.raw.attribute.isStr()) {
+                if (v.Min !== undefined) {
+                    l.push(`if ${fl}.${o.label}.length < ${v.Min} {`)
+                    l.push(`${TAB}return new Error("'${cc(o.label, 'nc')}' must be at least ${v.Min} characters")`)
+                    l.push(`}`)
+                }
+                if (v.Max !== undefined) {
+                    l.push(`if ${fl}.${o.label}.length > ${v.Max} {`)
+                    l.push(`${TAB}return new Error("'${cc(o.label, 'nc')}' must be at most ${v.Max} characters")`)
+                    l.push(`}`)
+                }
+            } else {
+                if (v.Min !== undefined) {
+                    l.push(`if ${fl}.${o.label} < ${v.Min} {`)
+                    l.push(`${TAB}return new Error("'${cc(o.label, 'nc')}' must be at least ${v.Min}")`)
+                    l.push(`}`)
+                }
+                if (v.Max !== undefined) {
+                    l.push(`if ${fl}.${o.label} > ${v.Max} {`)
+                    l.push(`${TAB}return new Error("'${cc(o.label, 'nc')}' must be at most ${v.Max}")`)
+                    l.push(`}`)
+                }
+            }
+            lines.push(`${TAB}` + l.join(`\n${TAB}`))
+        }
+        lines.push(`${TAB}return null`)
+        lines.push(`}`)
+
+        lines = lines.filter(e => e.trim().length > 0)
+
+        return lines
+    }
+
     static ToFunctions(schemas: Schema[]): string {
         const funcs: Func[] = []
         for (const s of schemas) {
@@ -105,6 +194,10 @@ ${TAB}${TAB}${params}
 
             lines.push(`${TAB}}`)
             lines.push(`}\n`)
+
+            const validateFn: string[] = LanguageTsService.generateValidateFn(f)
+            lines = lines.concat(validateFn)
+            lines.push(``)
         }
 
         const str = lines.join('\n')
