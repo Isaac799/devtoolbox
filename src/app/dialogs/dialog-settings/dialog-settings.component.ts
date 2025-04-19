@@ -25,6 +25,7 @@ export class DialogSettingsComponent {
             gui: false,
             splitTui: true
         }
+        this.appService.Save()
         this.snackBar.open('Using Recommended Settings', '', {
             duration: 2500
         })
