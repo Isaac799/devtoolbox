@@ -7,7 +7,7 @@ import {AppGeneratorMode} from '../structure'
 })
 export class AppModeIsHtmlPipe implements PipeTransform {
     transform(value: AppGeneratorMode): boolean {
-        const HTMLmodes = [AppGeneratorMode.RawHTML, AppGeneratorMode.GoTemplateHTML, AppGeneratorMode.RawBulma01HTML, AppGeneratorMode.GoTemplateBulma01HTML]
+        const HTMLmodes = [AppGeneratorMode.HTMLRaw, AppGeneratorMode.HTMLGoTemplate, AppGeneratorMode.HTMLRawBulma01, AppGeneratorMode.HTMLGoTemplateBulma01]
         return HTMLmodes.includes(value)
     }
 }

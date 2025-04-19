@@ -5,10 +5,10 @@ import {Schema, Func, AppGeneratorMode, Attribute, AttrType, Validation, SQL_TO_
 // eec9e0030dc8f4f059b094b1e4323f37e3882b58
 
 export type HtmlGenerator =
-    | AppGeneratorMode.RawHTML
-    | AppGeneratorMode.RawBulma01HTML
-    | AppGeneratorMode.GoTemplateHTML
-    | AppGeneratorMode.GoTemplateBulma01HTML
+    | AppGeneratorMode.HTMLRaw
+    | AppGeneratorMode.HTMLRawBulma01
+    | AppGeneratorMode.HTMLGoTemplate
+    | AppGeneratorMode.HTMLGoTemplateBulma01
 
 export type CssClasses = 'none' | 'bulma01'
 export type SSR = 'none' | 'go template'
@@ -37,7 +37,7 @@ with other blueprints.
 `
         lines.push(elNameDiscalimer)
 
-        if (mode === AppGeneratorMode.GoTemplateHTML || mode === AppGeneratorMode.GoTemplateBulma01HTML) {
+        if (mode === AppGeneratorMode.HTMLGoTemplate || mode === AppGeneratorMode.HTMLGoTemplateBulma01) {
             const disclaimer = `<!--
 
 This demo template takes in 'Data', like so
@@ -59,14 +59,14 @@ parts of the page, without the form data
 
         for (const f of funcs) {
             // Struct
-            if (mode === AppGeneratorMode.RawHTML) {
+            if (mode === AppGeneratorMode.HTMLRaw) {
                 lines = LanguageHtmlService.ToRawForm(lines, f, 'none', 'none')
-            } else if (mode === AppGeneratorMode.RawBulma01HTML) {
+            } else if (mode === AppGeneratorMode.HTMLRawBulma01) {
                 lines = LanguageHtmlService.ToRawForm(lines, f, 'bulma01', 'none')
-            } else if (mode === AppGeneratorMode.GoTemplateHTML || mode === AppGeneratorMode.GoTemplateBulma01HTML) {
-                if (mode === AppGeneratorMode.GoTemplateBulma01HTML) {
+            } else if (mode === AppGeneratorMode.HTMLGoTemplate || mode === AppGeneratorMode.HTMLGoTemplateBulma01) {
+                if (mode === AppGeneratorMode.HTMLGoTemplateBulma01) {
                     lines = LanguageHtmlService.ToRawForm(lines, f, 'bulma01', 'go template')
-                } else if (mode === AppGeneratorMode.GoTemplateHTML) {
+                } else if (mode === AppGeneratorMode.HTMLGoTemplate) {
                     lines = LanguageHtmlService.ToRawForm(lines, f, 'none', 'go template')
                 }
             }

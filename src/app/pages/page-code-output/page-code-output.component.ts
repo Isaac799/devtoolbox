@@ -75,7 +75,7 @@ export class PageCodeOutputComponent implements AfterViewInit {
             return
         }
 
-        const includeBulma = [AppGeneratorMode.RawBulma01HTML, AppGeneratorMode.GoTemplateBulma01HTML].includes(this.appService.app.generatorMode)
+        const includeBulma = [AppGeneratorMode.HTMLRawBulma01, AppGeneratorMode.HTMLGoTemplateBulma01].includes(this.appService.app.generatorMode)
 
         const defaultStyle = `html,
 body {

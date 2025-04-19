@@ -669,10 +669,10 @@ export enum AppGeneratorMode {
     RustStructAndImpl,
     PostgresSeed,
     APIGoPostgres,
-    RawHTML,
-    RawBulma01HTML,
-    GoTemplateHTML,
-    GoTemplateBulma01HTML
+    HTMLRaw,
+    HTMLRawBulma01,
+    HTMLGoTemplate,
+    HTMLGoTemplateBulma01,
 }
 
 export enum AppComplexityMode {

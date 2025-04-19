@@ -112,20 +112,20 @@ export class LanguageService {
                 output = LanguagePsqlService.ToSeed(schemas, this.varcharMap, seedLimit)
                 ext = 'SQL'
                 break
-            case AppGeneratorMode.RawHTML:
-                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.RawHTML)
+            case AppGeneratorMode.HTMLRaw:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.HTMLRaw)
                 ext = 'HTML'
                 break
-            case AppGeneratorMode.GoTemplateHTML:
-                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.GoTemplateHTML)
+            case AppGeneratorMode.HTMLGoTemplate:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.HTMLGoTemplate)
                 ext = 'HTML'
                 break
-            case AppGeneratorMode.RawBulma01HTML:
-                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.RawBulma01HTML)
+            case AppGeneratorMode.HTMLRawBulma01:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.HTMLRawBulma01)
                 ext = 'HTML'
                 break
-            case AppGeneratorMode.GoTemplateBulma01HTML:
-                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.GoTemplateBulma01HTML)
+            case AppGeneratorMode.HTMLGoTemplateBulma01:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.HTMLGoTemplateBulma01)
                 ext = 'HTML'
                 break
         }
