@@ -101,6 +101,31 @@ export class LanguageGoService {
             return f.outputs.filter(e => e.primary).map(e => cc(e.label, 'cm'))
         }
 
+        const paginationFn = `func GetPagination(r *http.Request, defaultLimit, defaultPage int) (offset, limit, page int) {
+    limit = defaultLimit
+    page = defaultPage
+
+    limitStr := r.URL.Query().Get("limit")
+    if limitStr != "" {
+        if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 {
+            limit = parsedLimit
+        }
+    }
+
+    pageStr := r.URL.Query().Get("page")
+    if pageStr != "" {
+        if parsedPage, err := strconv.Atoi(pageStr); err == nil && parsedPage > 0 {
+            page = parsedPage
+        }
+    }
+
+    offset = (page - 1) * limit
+    return offset, limit, page
+}`
+
+        lines.push(paginationFn)
+        lines.push('')
+
         for (const [funcGo, table] of funcs) {
             const items = cc(fixPluralGrammar(funcGo.title + 's'), 'sk')
             const item = cc(funcGo.title, 'sk')
@@ -182,9 +207,11 @@ export class LanguageGoService {
                 lines.push(`func GetMany${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
 
                 const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(', ')
-                const query = `SELECT ${selecting} FROM ${table.FN}`
+                const query = `SELECT ${selecting} FROM ${table.FN} LIMIT $1 OFFSET $2`
 
-                l.push(`rows, err := db.Query("${query}")`)
+                l.push(`offset, limit, page := services.GetPagination(r, 10, 1)`)
+
+                l.push(`rows, err := db.Query("${query}", limit, offset)`)
                 l.push(`if err != nil {`)
                 l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
                 l.push(`${TAB}return`)
