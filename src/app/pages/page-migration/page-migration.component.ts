@@ -315,17 +315,6 @@ export class PageMigrationComponent implements AfterViewInit {
                                         script.push(s)
                                     }
                                 }
-                                if (a1.Option?.PrimaryKey !== a2.Option?.PrimaryKey) {
-                                    if (!a1.Option?.PrimaryKey) {
-                                        // add
-                                        const s = `${alterT} ${replaceAlign}ADD PRIMARY KEY${replaceAlign2} ${cc(a2.Name, 'sk')};`
-                                        script.push(s)
-                                    } else {
-                                        // remove
-                                        const s = `${alterT} ${replaceAlign}DROP CONSTRAINT${replaceAlign2} ${t2.Constraint('Primary Key')};`
-                                        script.push(s)
-                                    }
-                                }
                                 if (a1.Option?.SystemField !== a2.Option?.SystemField) {
                                     if (!a1.Option?.PrimaryKey) {
                                         // add
