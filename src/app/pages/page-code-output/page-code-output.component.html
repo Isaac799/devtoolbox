@@ -61,6 +61,19 @@
     </mat-slider>
     }
 
+    @if (appService.app.generatorMode | appModeCanPreview) {
+    <button
+        matTooltip="See a HTML Preview"
+        mat-icon-button
+        aria-label="Preview HTML"
+        (click)="OpenPreviewWindow()"
+    >
+        <mat-icon>
+            preview
+        </mat-icon>
+    </button>
+    }
+
     <button
         matTooltip="Copy"
         mat-icon-button

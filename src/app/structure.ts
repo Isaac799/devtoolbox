@@ -48,12 +48,24 @@ export class FuncIn {
     type: string
     validation?: Validation
     isNumerical: boolean
+    raw: {
+        attribute: Attribute
+    }
 
-    constructor(l: string, t: string, validation: Validation | undefined, isNumerical: boolean) {
+    constructor(
+        l: string,
+        t: string,
+        validation: Validation | undefined,
+        isNumerical: boolean,
+        raw: {
+            attribute: Attribute
+        }
+    ) {
         this.label = l
         this.type = t
         this.validation = validation
         this.isNumerical = isNumerical
+        this.raw = raw
     }
 }
 
@@ -129,7 +141,10 @@ export class Func {
             }
 
             const {label, type} = genLabelType('in', a, a, this.lang, Cardinality.Self, undefined, determinedKey)
-            inputs.push(new FuncIn(label, type, a.Validation, a.isNumerical()))
+            const fnIn = new FuncIn(label, type, a.Validation, a.isNumerical(), {
+                attribute: a
+            })
+            inputs.push(fnIn)
         }
 
         return inputs

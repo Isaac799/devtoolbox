@@ -30,9 +30,8 @@ export class LanguageHtmlService {
 
         const elNameDiscalimer = `<!--
 
-This demo template is more specific with its 'name' attribute on elements
-in order to prevent overlap. You pay prefer to remove some of the specificity 
-to modify the form submission data structure
+This demo template may have an overlapping 'name' attribute on elements
+with other blueprints.
 
 -->
 `
@@ -78,17 +77,52 @@ parts of the page, without the form data
     }
 
     private static ToRawForm(lines: string[], f: Func, css: CssClasses, ssr: SSR) {
-        lines.push(`<h2>${cc(f.title, 'tc')}<h2/>\n`)
-        const attrs: string[] = f.outputs.map(e => {
-            if (e.raw.attribute.isBool()) {
-                return boolRadioHtmlInput(e.raw.attribute, e.label, css, ssr)
-            } else {
-                return genericHtmlInput(e.raw.attribute, e.label, css, ssr)
-            }
-        })
-        lines = lines.concat(attrs)
+        let classHeader = ''
+        if (css === 'bulma01') {
+            classHeader = ` class="title is-3"`
+        }
 
-        lines.push(`\n<hr />\n`)
+        lines.push(`<h3${classHeader}>${cc(f.title, 'tc')}</h3>\n`)
+        if (css === 'bulma01') {
+            lines.push(`<div class="grid">`)
+        }
+
+        let attrs: string[] = f.outputs.map(e => {
+            let s = ''
+            if (e.raw.attribute.isBool()) {
+                s = boolRadioHtmlInput(e.raw.attribute, e.label, css, ssr)
+            } else {
+                s = genericHtmlInput(e.raw.attribute, e.label, css, ssr)
+            }
+
+            if (css === 'bulma01') {
+                s = s
+                    .split('\n')
+                    .map(e => `  ${e}`)
+                    .join('\n')
+                s = `<div class="cell">
+${s}
+</div>`
+            }
+
+            return s
+        })
+
+        if (css === 'bulma01') {
+            attrs = attrs.map(e => {
+                return e
+                    .split('\n')
+                    .map(e => `  ${e}`)
+                    .join('\n')
+            })
+
+            lines = lines.concat(attrs)
+
+            lines.push(`</div>`)
+        } else {
+            lines = lines.concat(attrs)
+        }
+
         return lines
     }
 }
@@ -119,12 +153,12 @@ function boolRadioHtmlInput(x: Attribute, setValueToThisAttribute: string, cssCl
     }
 
     return `<fieldset${classFieldSet}>
-    <legend><strong>${cc(x.Name, 'tc')}:</strong></legend>
+    <legend><strong>${cc(setValueToThisAttribute, 'tc')}:</strong></legend>
     <label${classLabel}>
         <input
             type="radio" 
             value="true"
-            name="${cc(x.PFN, 'sk')}"${x.isNullable() ? '' : '\n                    required'}${ssrInputT}
+            name="${cc(setValueToThisAttribute, 'sk')}"${x.isNullable() ? '' : '\n                    required'}${ssrInputT}
         >
         True
     </label>
@@ -132,7 +166,7 @@ function boolRadioHtmlInput(x: Attribute, setValueToThisAttribute: string, cssCl
         <input 
             type="radio" 
             value="false"
-            name="${cc(x.PFN, 'sk')}"${ssrInputF}
+            name="${cc(setValueToThisAttribute, 'sk')}"${ssrInputF}
         >
         False
     </label>
@@ -168,12 +202,12 @@ function genericHtmlInput(x: Attribute, setValueToThisAttribute: string, cssClas
 
     const rangePhrase = generateRangePhrase(x.Validation, x.Type)
     return `<div${classDivContainer}>
-  <label${classLabel} for="${cc(x.PFN, 'sk')}">${cc(x.Name, 'tc')}</label>
+  <label${classLabel} for="${cc(setValueToThisAttribute, 'sk')}">${cc(setValueToThisAttribute, 'tc')}</label>
   <div${classDiv}>
       <input${classInput}
           type="${SQL_TO_HTML_INPUT_TYPE[x.Type]}"
-          id="${cc(x.PFN, 'sk')}"
-          name="${cc(x.PFN, 'sk')}"
+          id="${cc(setValueToThisAttribute, 'sk')}"
+          name="${cc(setValueToThisAttribute, 'sk')}"
           ${x.isNullable() ? '' : 'required'}
           ${rangePhrase}${ssrInput}
       />

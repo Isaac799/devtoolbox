@@ -199,21 +199,21 @@ export class SideBarService {
             title: 'HTML',
             items: [
                 {
-                    name: 'Plain',
+                    name: 'Fields',
                     value: AppGeneratorMode.RawHTML
                 },
                 {
-                    name: 'Plain (Bulma v1)',
+                    name: 'Fields (Bulma v1)',
                     value: AppGeneratorMode.RawBulma01HTML
-                },
-                {
-                    name: 'Go Template',
-                    value: AppGeneratorMode.GoTemplateHTML
-                },
-                {
-                    name: 'Go Template (Bulma v1)',
-                    value: AppGeneratorMode.GoTemplateBulma01HTML
                 }
+                // {
+                //     name: 'Go Template',
+                //     value: AppGeneratorMode.GoTemplateHTML
+                // },
+                // {
+                //     name: 'Go Template (Bulma v1)',
+                //     value: AppGeneratorMode.GoTemplateBulma01HTML
+                // }
             ]
         }
         // {

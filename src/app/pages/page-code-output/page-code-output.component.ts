@@ -14,6 +14,8 @@ import {AppService} from '../../services/app.service'
 import {LanguageService} from '../../services/language.service'
 import {MatToolbarModule} from '@angular/material/toolbar'
 import {MatTooltipModule} from '@angular/material/tooltip'
+import {AppModeCanPreviewPipe} from '../../pipes/app-mode-can-preview.pipe'
+import {AppGeneratorMode} from '../../structure'
 
 @Component({
     selector: 'app-page-code-output',
@@ -27,14 +29,15 @@ import {MatTooltipModule} from '@angular/material/tooltip'
         IsSeedModePipe,
         MatSliderModule,
         MatToolbarModule,
-        MatTooltipModule
+        MatTooltipModule,
+        AppModeCanPreviewPipe
     ],
     templateUrl: './page-code-output.component.html',
     styleUrl: './page-code-output.component.scss'
 })
 export class PageCodeOutputComponent implements AfterViewInit {
     output = ''
-    @ViewChild('codeOutput') codeOutput?: ElementRef<HTMLPreElement>
+    @ViewChild('codeOutput') codeOutputEl?: ElementRef<HTMLPreElement>
 
     readonly dataService = inject(DataService)
     readonly sideBarService = inject(SideBarService)
@@ -53,11 +56,70 @@ export class PageCodeOutputComponent implements AfterViewInit {
     private _render() {
         const generation = this.languageService.GenerateCode(this.dataService.schemas, this.appService.app.generatorMode, this.appService.app.seedLimit)
         this.output = generation.code
-        if (!this.codeOutput?.nativeElement) {
+        if (!this.codeOutputEl?.nativeElement) {
             console.error('Missing this.codeGeneratorViewHtml')
             return
         }
-        this.codeOutput.nativeElement.innerHTML = generation.html
+
+        this.codeOutputEl.nativeElement.innerHTML = generation.html
+    }
+
+    OpenPreviewWindow() {
+        const generation = this.languageService.GenerateCode(this.dataService.schemas, this.appService.app.generatorMode, this.appService.app.seedLimit)
+        const newWin = window.open('', '_blank', 'width=600,height=400')
+
+        if (!newWin) {
+            this.snackBar.open('Failed to Open Preview Window', '', {
+                duration: 2500
+            })
+            return
+        }
+
+        const includeBulma = [AppGeneratorMode.RawBulma01HTML, AppGeneratorMode.GoTemplateBulma01HTML].includes(this.appService.app.generatorMode)
+
+        const defaultStyle = `html,
+body {
+    padding: 0;
+    margin: 0;
+    font-size: 16px;
+    background-color: white;
+    color: black;
+}
+    
+.some-padding {
+ padding: 1rem 
+ }`
+
+        let style = `<style>${defaultStyle}</style>`
+        if (includeBulma) {
+            const bulmaHelper = `<style>
+.some-padding {
+ padding: 1rem 
+ }</style>`
+            style = `${bulmaHelper} <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">`
+        }
+
+        const content = `
+    <html>
+      <head>
+        <title>Preview</title>
+        ${style}
+        
+      </head>
+      <body>
+      <div class="some-padding"> 
+      ${generation.code}
+      </div> 
+      </body>
+    </html>
+  `
+
+        this.snackBar.open('Opened in Preview Window', '', {
+            duration: 2500
+        })
+
+        newWin.document.body.innerHTML = content
+        newWin.document.close()
     }
 
     Copy() {
@@ -73,10 +135,10 @@ export class PageCodeOutputComponent implements AfterViewInit {
     }
 
     ClearOutput() {
-        if (!this.codeOutput?.nativeElement) {
+        if (!this.codeOutputEl?.nativeElement) {
             console.error('Missing this.codeGeneratorViewHtml')
             return
         }
-        this.codeOutput.nativeElement.innerHTML = ''
+        this.codeOutputEl.nativeElement.innerHTML = ''
     }
 }
