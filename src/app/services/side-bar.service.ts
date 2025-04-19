@@ -75,7 +75,7 @@ export class SideBarService {
         const dialogRef = this.matDialog.open(DialogTableComponent, {
             data: {
                 t,
-                ss: this.data.schemas,
+                ss: this.data.schemas
             }
         })
 
@@ -195,6 +195,27 @@ export class SideBarService {
                 }
             ]
         },
+        {
+            title: 'HTML',
+            items: [
+                {
+                    name: 'Plain',
+                    value: AppGeneratorMode.RawHTML
+                },
+                {
+                    name: 'Plain (Bulma v1)',
+                    value: AppGeneratorMode.RawBulma01HTML
+                },
+                {
+                    name: 'Go Template',
+                    value: AppGeneratorMode.GoTemplateHTML
+                },
+                {
+                    name: 'Go Template (Bulma v1)',
+                    value: AppGeneratorMode.GoTemplateBulma01HTML
+                }
+            ]
+        }
         // {
         //     title: 'Rust',
         //     items: [

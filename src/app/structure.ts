@@ -26,7 +26,8 @@ export enum Lang {
     TS = 1 << 10,
     SQLite = 1 << 11,
     Rust = 1 << 12,
-    CS = 1 << 13
+    CS = 1 << 13,
+    HTML = 1 << 13
 }
 
 export interface ParseResult {
@@ -65,8 +66,22 @@ export class FuncOut {
     self: boolean
     primary: boolean
     needsParsed: boolean
+    raw: {
+        attribute: Attribute
+    }
 
-    constructor(l: string, t: string, relatedInput: FuncIn | null, newValueFallback: string, self: boolean, primary: boolean, parseFn: (x: string) => string) {
+    constructor(
+        l: string,
+        t: string,
+        relatedInput: FuncIn | null,
+        newValueFallback: string,
+        self: boolean,
+        primary: boolean,
+        parseFn: (x: string) => string,
+        raw: {
+            attribute: Attribute
+        }
+    ) {
         this.label = l
         this.type = t
         this.relatedInput = relatedInput
@@ -75,6 +90,7 @@ export class FuncOut {
         this.primary = primary
         this.parseFn = parseFn
         this.needsParsed = parseFn('TEST') !== 'TEST'
+        this.raw = raw
     }
 }
 
@@ -182,7 +198,10 @@ export class Func {
     genFnOutput(determinedKey: string, a: Attribute, recursive: Attribute | null, relatedInput: FuncIn | null): FuncOut[] {
         const answer: FuncOut[] = []
         const {label, type, defaultValue, parseStr} = genLabelType('out', a, a, this.lang, Cardinality.Self, undefined, determinedKey)
-        answer.push(new FuncOut(label, type, relatedInput, defaultValue, true, a.Option?.PrimaryKey === true, parseStr))
+        const outFn = new FuncOut(label, type, relatedInput, defaultValue, true, a.Option?.PrimaryKey === true, parseStr, {
+            attribute: a
+        })
+        answer.push(outFn)
         return answer
     }
 
@@ -377,6 +396,10 @@ export class Attribute {
 
     isStr(): boolean {
         return [AttrType.VARCHAR, AttrType.CHAR].includes(this.Type)
+    }
+
+    isBool(): boolean {
+        return [AttrType.BIT, AttrType.BOOLEAN].includes(this.Type)
     }
 
     VarcharType() {
@@ -630,7 +653,11 @@ export enum AppGeneratorMode {
     SQLiteJoinQuery,
     RustStructAndImpl,
     PostgresSeed,
-    APIGoPostgres
+    APIGoPostgres,
+    RawHTML,
+    RawBulma01HTML,
+    GoTemplateHTML,
+    GoTemplateBulma01HTML
 }
 
 export enum AppComplexityMode {
@@ -940,6 +967,23 @@ export const SQL_TO_RUST_TYPE: Record<AttrType, string> = {
     [AttrType.REFERENCE]: 'i32'
 }
 
+export const GO_TO_PACKAGE: Record<AttrType, string> = {
+    [AttrType.BIT]: `strconv`,
+    [AttrType.DATE]: `time`,
+    [AttrType.CHAR]: `strconv`,
+    [AttrType.TIME]: `time`,
+    [AttrType.TIMESTAMP]: `time`,
+    [AttrType.SERIAL]: `strconv`,
+    [AttrType.DECIMAL]: `strconv`,
+    [AttrType.FLOAT]: `strconv`,
+    [AttrType.REAL]: `strconv`,
+    [AttrType.INT]: `strconv`,
+    [AttrType.BOOLEAN]: `strconv`,
+    [AttrType.VARCHAR]: `strconv`,
+    [AttrType.MONEY]: `strconv`,
+    [AttrType.REFERENCE]: `???`
+}
+
 export const GO_TO_STR_PARSE: Record<AttrType, (x: string) => string> = {
     [AttrType.BIT]: x => `strconv.ParseBool(${x})`,
     [AttrType.DATE]: x => `time.Parse("2006-01-02", ${x})`,
@@ -1093,6 +1137,40 @@ export const SQL_TO_CS_DEFAULT_VALUE: Record<AttrType, string> = {
     [AttrType.REFERENCE]: ''
 }
 
+export const SQL_TO_HTML_INPUT_TYPE: Record<AttrType, string> = {
+    [AttrType.BIT]: '', // NOT NEEDED
+    [AttrType.DATE]: 'date',
+    [AttrType.CHAR]: 'text',
+    [AttrType.TIME]: 'time',
+    [AttrType.TIMESTAMP]: 'datetime-local',
+    [AttrType.SERIAL]: 'number',
+    [AttrType.DECIMAL]: 'number',
+    [AttrType.FLOAT]: 'number',
+    [AttrType.REAL]: 'number',
+    [AttrType.INT]: 'number',
+    [AttrType.BOOLEAN]: '', // NOT NEEDED
+    [AttrType.VARCHAR]: 'text',
+    [AttrType.MONEY]: 'number',
+    [AttrType.REFERENCE]: '???'
+}
+
+export const SQL_TO_HTML_BULMA_CLASS: Record<AttrType, string> = {
+    [AttrType.BIT]: '', // NOT NEEDED
+    [AttrType.DATE]: 'input',
+    [AttrType.CHAR]: 'input',
+    [AttrType.TIME]: 'input',
+    [AttrType.TIMESTAMP]: 'input',
+    [AttrType.SERIAL]: 'input',
+    [AttrType.DECIMAL]: 'input',
+    [AttrType.FLOAT]: 'input',
+    [AttrType.REAL]: 'input',
+    [AttrType.INT]: 'input',
+    [AttrType.BOOLEAN]: '', // NOT NEEDED
+    [AttrType.VARCHAR]: 'input',
+    [AttrType.MONEY]: 'number',
+    [AttrType.REFERENCE]: '???'
+}
+
 function genLabelType(
     io: 'in' | 'out',
     aL: Attribute,
@@ -1232,6 +1310,45 @@ function genLabelType(
     map.set(Lang.TSQL | Cardinality.Many, {
         label: fixPluralGrammar(cc(determinedKey, tsqlCase) + 's'),
         type: tsqlType,
+        defaultValue: '',
+        parseStr: () => ''
+    })
+    //#endregion
+
+    //#region TSQL
+
+    const htmlCase = io === 'in' ? 'sk' : 'sk'
+    let htmlType = ''
+
+    if (!htmlType) {
+        htmlType = SQL_TO_HTML_INPUT_TYPE[aL.Type]
+    }
+
+    if (htmlType === SQL_TO_HTML_INPUT_TYPE[AttrType.SERIAL]) {
+        htmlType = 'number'
+    }
+
+    map.set(Lang.HTML | Cardinality.Self, {
+        label: cc(determinedKey, htmlCase),
+        type: htmlType,
+        defaultValue: '',
+        parseStr: () => ''
+    })
+
+    //    -    -
+
+    map.set(Lang.HTML | Cardinality.One, {
+        label: cc(determinedKey, htmlCase),
+        type: htmlType,
+        defaultValue: '',
+        parseStr: () => ''
+    })
+
+    //    -    -
+
+    map.set(Lang.HTML | Cardinality.Many, {
+        label: fixPluralGrammar(cc(determinedKey, htmlCase) + 's'),
+        type: htmlType,
         defaultValue: '',
         parseStr: () => ''
     })

@@ -12,6 +12,7 @@ import hljs from 'highlight.js'
 import {AttributeMap} from '../varchar'
 import {generateAttributeMap, VarcharJSONData} from '../varchar'
 import varcharJSON from '../../../public/varchar.json'
+import {LanguageHtmlService} from './language/language-html.service'
 
 @Injectable({
     providedIn: 'root'
@@ -110,6 +111,22 @@ export class LanguageService {
             case AppGeneratorMode.PostgresSeed:
                 output = LanguagePsqlService.ToSeed(schemas, this.varcharMap, seedLimit)
                 ext = 'SQL'
+                break
+            case AppGeneratorMode.RawHTML:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.RawHTML)
+                ext = 'HTML'
+                break
+            case AppGeneratorMode.GoTemplateHTML:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.GoTemplateHTML)
+                ext = 'HTML'
+                break
+            case AppGeneratorMode.RawBulma01HTML:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.RawBulma01HTML)
+                ext = 'HTML'
+                break
+            case AppGeneratorMode.GoTemplateBulma01HTML:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.GoTemplateBulma01HTML)
+                ext = 'HTML'
                 break
         }
 
