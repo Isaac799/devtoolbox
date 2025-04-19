@@ -207,7 +207,16 @@ export class LanguageGoService {
                 lines.push(`func GetMany${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
 
                 const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(', ')
-                const query = `SELECT ${selecting} FROM ${table.FN} LIMIT $1 OFFSET $2`
+
+                let orderBy = ''
+                const pks = funcGo.table.AllPrimaryDeterminedIdentifiers()
+                if (pks.length > 0) {
+                    orderBy = 'ORDER BY ' + pks.map(e => `${e} ASC`).join(', ')
+                }
+
+                const sel = `SELECT ${selecting} FROM ${table.FN}`
+                const page = `LIMIT $1 OFFSET $2`
+                const query = [sel, orderBy, page].filter(e => e.trim().length > 0).join(' ')
 
                 l.push(`offset, limit, page := services.GetPagination(r, 10, 1)`)
 
