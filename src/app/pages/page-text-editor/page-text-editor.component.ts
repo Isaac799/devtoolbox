@@ -393,7 +393,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     continue
                 } else if (macro && b.length < 3) {
                     if (aT) {
-                        addSuggestion(`... blueprint name`)
+                        addSuggestion(`... existing blueprint name`)
                     } else if (macro === 'attr') {
                         addSuggestion(`...iat | uat | word`)
                     } else if (macro === 'list') {

@@ -89,29 +89,6 @@ export class LanguagePsqlService {
         return endThings
     }
 
-    // function generateTableIndexes(t: Table) {
-    //   let endThings: string[] = [];
-
-    //   let refs = t.Attributes.filter((e) => e.RefTo);
-    //   if (refs.length > 0) {
-    //     for (const e of refs) {
-    //       let r = e.RefTo!;
-    //       let rPks = r.Attributes.filter((e) => e.Option?.PrimaryKey);
-    //       for (const rPk of rPks) {
-    //         if (rPk.Option?.PrimaryKey) continue;
-    //         let rStr = `CREATE INDEX  ${convertCase(
-    //           `idx_${AttributeNameWithSchemaAndTable(rPk)}`,
-    //           'snake'
-    //         )} ON ${TableFullName(r)} ( ${convertCase(rPk.Name, 'snake')} );`;
-    //         endThings.push(rStr);
-    //       }
-    //     }
-    //   }
-
-    //   endThings = alignKeyword(endThings, 'ON');
-    //   return endThings;
-    // }
-
     private static genRandomRef(max: number): number {
         return Math.floor(Math.random() * max) + 1
     }
