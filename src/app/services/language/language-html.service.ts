@@ -98,7 +98,7 @@ parts of the page, without the form data
             if (css === 'bulma01') {
                 s = s
                     .split('\n')
-                    .map(e => `  ${e}`)
+                    .map(e => `    ${e}`)
                     .join('\n')
                 s = `<div class="cell">
 ${s}
@@ -112,7 +112,7 @@ ${s}
             attrs = attrs.map(e => {
                 return e
                     .split('\n')
-                    .map(e => `  ${e}`)
+                    .map(e => `    ${e}`)
                     .join('\n')
             })
 
@@ -130,7 +130,7 @@ ${s}
 function boolRadioHtmlInput(x: Attribute, setValueToThisAttribute: string, cssClass: CssClasses, ssr: SSR) {
     let classFieldSet = ''
     if (cssClass === 'bulma01') {
-        classFieldSet = `  class="control"`
+        classFieldSet = ` class="control"`
     }
     let classLabel = ''
     if (cssClass === 'bulma01') {
@@ -139,34 +139,30 @@ function boolRadioHtmlInput(x: Attribute, setValueToThisAttribute: string, cssCl
 
     let ssrInputT = ''
     if (ssr === 'go template') {
-        ssrInputT = `
-            {{ if .Data }}
-                {{if .Data.Record.${setValueToThisAttribute}}}checked{{end}}
-            {{ else }}{{ end }}    `
+        ssrInputT = `{{ if .Data }} {{if .Data.Record.${setValueToThisAttribute}}} checked {{ end }} {{ end }}`
     }
     let ssrInputF = ''
     if (ssr === 'go template') {
-        ssrInputF = `
-            {{ if .Data }}
-                {{if not .Data.Record.${setValueToThisAttribute}}}checked{{end}}
-            {{ else }}{{ end }}    `
+        ssrInputF = `{{ if .Data }} {{ if not .Data.Record.${setValueToThisAttribute} }} checked {{end}} {{ end }}`
     }
+
+    const attrsT = [`type="radio" `, `value="true"`, `name="${cc(setValueToThisAttribute, 'sk')}"`, x.isNullable() ? '' : 'required', ssrInputT]
+    const attrTStr = attrsT.filter(e => e.trim().length > 0).join('\n            ')
+
+    const attrsF = [`type="radio" `, `value="true"`, `name="${cc(setValueToThisAttribute, 'sk')}"`, x.isNullable() ? '' : 'required', ssrInputF]
+    const attrFStr = attrsF.filter(e => e.trim().length > 0).join('\n            ')
 
     return `<fieldset${classFieldSet}>
     <legend><strong>${cc(setValueToThisAttribute, 'tc')}:</strong></legend>
     <label${classLabel}>
         <input
-            type="radio" 
-            value="true"
-            name="${cc(setValueToThisAttribute, 'sk')}"${x.isNullable() ? '' : '\n                    required'}${ssrInputT}
+            ${attrTStr}
         >
         True
     </label>
     <label${classLabel}>
-        <input 
-            type="radio" 
-            value="false"
-            name="${cc(setValueToThisAttribute, 'sk')}"${ssrInputF}
+        <input
+            ${attrFStr}
         >
         False
     </label>
@@ -180,12 +176,12 @@ function genericHtmlInput(x: Attribute, setValueToThisAttribute: string, cssClas
     }
     let classDiv = ''
     if (cssClass === 'bulma01') {
-        classDiv = `  class="control"`
+        classDiv = ` class="control"`
     }
     let classInput = ''
     if (cssClass === 'bulma01') {
         classInput = `
-        class="${SQL_TO_HTML_BULMA_CLASS[x.Type]}"`
+          class="${SQL_TO_HTML_BULMA_CLASS[x.Type]}"`
     }
     let classLabel = ''
     if (cssClass === 'bulma01') {
@@ -194,22 +190,27 @@ function genericHtmlInput(x: Attribute, setValueToThisAttribute: string, cssClas
 
     let ssrInput = ''
     if (ssr === 'go template') {
-        ssrInput = `
-        {{ if .Data }}
-        ${setValueToThisAttribute ? `value="{{ .Data.Record.${setValueToThisAttribute} }}"` : ''}
-        {{ else }}{{ end }}  `
+        ssrInput = `{{ if .Data }} ${setValueToThisAttribute ? `value="{{ .Data.Record.${setValueToThisAttribute} }}"` : ''} {{ end }}  `
     }
 
     const rangePhrase = generateRangePhrase(x.Validation, x.Type)
+
+    const attrs = [
+        `type="${SQL_TO_HTML_INPUT_TYPE[x.Type]}"`,
+        `id="${cc(setValueToThisAttribute, 'sk')}"`,
+        `name="${cc(setValueToThisAttribute, 'sk')}"`,
+        x.isNullable() ? '' : 'required',
+        rangePhrase,
+        ssrInput
+    ]
+
+    const attrStr = attrs.filter(e => e.trim().length > 0).join('\n          ')
+
     return `<div${classDivContainer}>
   <label${classLabel} for="${cc(setValueToThisAttribute, 'sk')}">${cc(setValueToThisAttribute, 'tc')}</label>
   <div${classDiv}>
       <input${classInput}
-          type="${SQL_TO_HTML_INPUT_TYPE[x.Type]}"
-          id="${cc(setValueToThisAttribute, 'sk')}"
-          name="${cc(setValueToThisAttribute, 'sk')}"
-          ${x.isNullable() ? '' : 'required'}
-          ${rangePhrase}${ssrInput}
+          ${attrStr}
       />
   </div>
 </div>`

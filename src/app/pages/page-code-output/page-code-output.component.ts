@@ -94,7 +94,7 @@ body {
         if (includeBulma) {
             const bulmaHelper = `<style>
 .some-padding {
- padding: 1rem 
+ padding: 1rem
  }</style>`
             style = `${bulmaHelper} <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">`
         }
@@ -103,6 +103,7 @@ body {
     <html>
       <head>
         <title>Preview</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         ${style}
         
       </head>
