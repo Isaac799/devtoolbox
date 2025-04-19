@@ -174,14 +174,29 @@ export class Func {
             }
             const [srcA, a] = allAttrs[determinedKey]
 
-            if (srcA && srcA?.Parent.ID !== this.table.ID) continue
+            const fromAnotherTable = srcA && srcA.Parent.ID !== this.table.ID
+            if (fromAnotherTable) continue
 
             let goFnStructAttributes: FuncOut[]
 
+            // console.log('a.FN :>> ', srcA?.FN, ' -> ', a.FN)
+
+            let isPrimary = false
+
+            // has src attr, so from another table
+            if (!!srcA && srcA.Option?.PrimaryKey) {
+                isPrimary = true
+            }
+
+            // no source attr, so is form self
+            if (!srcA && a.Option?.PrimaryKey) {
+                isPrimary = true
+            }
+
             if (a.Option?.SystemField || a.Option?.Default) {
-                goFnStructAttributes = this.genFnOutput(determinedKey, a, null, null)
+                goFnStructAttributes = this.genFnOutput(determinedKey, a, null, isPrimary)
             } else {
-                goFnStructAttributes = this.genFnOutput(determinedKey, a, null, inputs[inputIndex] || null)
+                goFnStructAttributes = this.genFnOutput(determinedKey, a, inputs[inputIndex] || null, isPrimary)
                 inputIndex += 1
             }
 
@@ -222,10 +237,10 @@ export class Func {
         return outputs
     }
 
-    genFnOutput(determinedKey: string, a: Attribute, recursive: Attribute | null, relatedInput: FuncIn | null): FuncOut[] {
+    genFnOutput(determinedKey: string, a: Attribute, relatedInput: FuncIn | null, primary: boolean): FuncOut[] {
         const answer: FuncOut[] = []
         const {label, type, defaultValue, parseStr} = genLabelType('out', a, a, this.lang, Cardinality.Self, undefined, determinedKey)
-        const outFn = new FuncOut(label, type, relatedInput, defaultValue, true, a.Option?.PrimaryKey === true, parseStr, {
+        const outFn = new FuncOut(label, type, relatedInput, defaultValue, true, primary, parseStr, {
             attribute: a
         })
         answer.push(outFn)
@@ -582,14 +597,14 @@ export class Table {
             maxDepth: 10
         },
         calledFrom?: Attribute
-    ): Record<string, [Attribute | null, Attribute]> {
+    ): Record<string, [Attribute | undefined, Attribute]> {
         if (depth > options.maxDepth) {
             return {}
         }
         if (selfDepth > 1) {
             return {}
         }
-        let answer: Record<string, [Attribute | null, Attribute]> = {}
+        let answer: Record<string, [Attribute | undefined, Attribute]> = {}
         for (const a of this.Attributes) {
             let determinedKey = depth === 0 ? cc(a.Name, 'sk') : `${src}:${cc(a.Name, 'sk')}`
 
@@ -622,7 +637,7 @@ export class Table {
                 continue
             }
             if (depth === 0 && options.includeSelf) {
-                answer[determinedKey] = [null, a]
+                answer[determinedKey] = [undefined, a]
             } else {
                 if (!calledFrom) {
                     console.error('missing called from on depth > 0')
