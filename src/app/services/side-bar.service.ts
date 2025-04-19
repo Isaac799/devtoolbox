@@ -205,7 +205,11 @@ export class SideBarService {
                 {
                     name: 'Fields (Bulma v1)',
                     value: AppGeneratorMode.HTMLRawBulma01
-                },
+                }
+                // {
+                //     name: 'Angular reactive form',
+                //     value: AppGeneratorMode.HTMLAngularReactive
+                // },
                 // {
                 //     name: 'Go Template',
                 //     value: AppGeneratorMode.GoTemplateHTML

@@ -673,6 +673,7 @@ export enum AppGeneratorMode {
     HTMLRawBulma01,
     HTMLGoTemplate,
     HTMLGoTemplateBulma01,
+    HTMLAngularReactive,
 }
 
 export enum AppComplexityMode {

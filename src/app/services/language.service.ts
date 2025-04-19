@@ -128,6 +128,10 @@ export class LanguageService {
                 output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.HTMLGoTemplateBulma01)
                 ext = 'HTML'
                 break
+            case AppGeneratorMode.HTMLAngularReactive:
+                output = LanguageHtmlService.ToForms(schemas, AppGeneratorMode.HTMLAngularReactive)
+                ext = 'HTML'
+                break
         }
 
         const code = hljs.highlight(output, {language: ext}).value

@@ -9,9 +9,10 @@ export type HtmlGenerator =
     | AppGeneratorMode.HTMLRawBulma01
     | AppGeneratorMode.HTMLGoTemplate
     | AppGeneratorMode.HTMLGoTemplateBulma01
+    | AppGeneratorMode.HTMLAngularReactive
 
 export type CssClasses = 'none' | 'bulma01'
-export type SSR = 'none' | 'go template'
+export type SSR = 'none' | 'go template' | 'angular reactive'
 
 @Injectable({
     providedIn: 'root'
@@ -69,6 +70,10 @@ parts of the page, without the form data
                 } else if (mode === AppGeneratorMode.HTMLGoTemplate) {
                     lines = LanguageHtmlService.ToRawForm(lines, f, 'none', 'go template')
                 }
+            } else if (mode === AppGeneratorMode.HTMLAngularReactive) {
+                lines = LanguageHtmlService.ToRawForm(lines, f, 'none', 'angular reactive')
+            } else {
+                console.error('unhandled app gen mode for HTML:', mode)
             }
         }
 
@@ -140,10 +145,15 @@ function boolRadioHtmlInput(x: Attribute, setValueToThisAttribute: string, cssCl
     let ssrInputT = ''
     if (ssr === 'go template') {
         ssrInputT = `{{ if .Data }} {{if .Data.Record.${setValueToThisAttribute}}} checked {{ end }} {{ end }}`
+    } else if (ssr === 'angular reactive') {
+        ssrInputT = `formControlName="${cc(setValueToThisAttribute, 'cm')}"`
     }
+
     let ssrInputF = ''
     if (ssr === 'go template') {
         ssrInputF = `{{ if .Data }} {{ if not .Data.Record.${setValueToThisAttribute} }} checked {{end}} {{ end }}`
+    } else if (ssr === 'angular reactive') {
+        ssrInputF = `formControlName="${cc(setValueToThisAttribute, 'cm')}"`
     }
 
     const attrsT = [`type="radio" `, `value="true"`, `name="${cc(setValueToThisAttribute, 'sk')}"`, x.isNullable() ? '' : 'required', ssrInputT]
@@ -191,6 +201,8 @@ function genericHtmlInput(x: Attribute, setValueToThisAttribute: string, cssClas
     let ssrInput = ''
     if (ssr === 'go template') {
         ssrInput = `{{ if .Data }} ${setValueToThisAttribute ? `value="{{ .Data.Record.${setValueToThisAttribute} }}"` : ''} {{ end }}  `
+    } else if (ssr === 'angular reactive') {
+        ssrInput = `formControlName="${cc(setValueToThisAttribute, 'cm')}"`
     }
 
     const rangePhrase = generateRangePhrase(x.Validation, x.Type)
