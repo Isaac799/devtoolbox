@@ -153,8 +153,8 @@ export class LanguageGoService {
         lines.push('')
 
         for (const [funcGo, table] of funcs) {
-            const items = cc(fixPluralGrammar(funcGo.title + 's'), 'sk')
-            const item = cc(funcGo.title, 'sk')
+            const items = cc(fixPluralGrammar(funcGo.title + 's'), 'cm')
+            const item = cc(funcGo.title, 'cm')
 
             const queryIn: string[] = pkVars(funcGo)
             const getParams: FuncOut[] = []
@@ -162,6 +162,7 @@ export class LanguageGoService {
             const pks = funcGo.outputs.filter(e => e.primary)
 
             const w: string[] = []
+            const contextGatheredTheseIDs: string[] = []
 
             let i = 0
             const allAttrs = table.AllAttributes()
@@ -179,7 +180,8 @@ export class LanguageGoService {
                 }
                 if (!isPrimary) continue
                 i += 1
-                w.push(`${cc(determinedAttr, 'sk')} = $${i}`)
+                w.push(`${cc(determinedAttr, 'cm')} = $${i}`)
+                contextGatheredTheseIDs.push(`${cc(determinedAttr, 'cm')}`)
             }
 
             const selectWhereLen = w.length
@@ -499,17 +501,17 @@ export class LanguageGoService {
                     l.push(``)
                 }
 
-                const cols = table.Attributes.filter(e => e.toInsert())
+                const cols: string[] = []
+                const allAttrs = table.AllAttributes()
+                for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
+                    if (!a.toInsert()) continue
+                    cols.push(`${item}.${cc(determinedAttr, 'pl')}`)
+                }
 
-                const aEqB: string[] = cols.map((e, i) => `${cc(e.Name, 'sk')} = $${selectWhereLen + i + 1}`)
-                const colsSnake = cols.map(e => cc(e.Name, 'sk'))
-
-                const fieldsB = funcGo.outputs.filter(e => colsSnake.includes(cc(e.label, 'sk'))).map(e => `${item}.${e.label}`)
-
-                const fields = [...queryIn, ...fieldsB]
+                const aEqB: string[] = cols.map((e, i) => `${e} = $${selectWhereLen + i + 1}`)
 
                 const aEqBStr: string = aEqB.join(', ')
-                const fieldsStr: string = fields.join(', ')
+                const fieldsStr: string = [...contextGatheredTheseIDs, ...cols].join(', ')
 
                 const query = `UPDATE ${table.FN} SET ${aEqBStr} WHERE ${selectWhere}`
                 l.push(`res, err = db.Exec("${query}", ${fieldsStr})`)
