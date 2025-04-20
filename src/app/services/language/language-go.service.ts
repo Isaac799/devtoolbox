@@ -302,12 +302,12 @@ export class LanguageGoService {
                         const parseStr = pk.parseFn(`${vn}Str`)
                         l.push(`${vn}, err := ${parseStr}; `)
                         l.push(`if err != nil {`)
-                        l.push(`${TAB}return ${getParamsStrDefaultValues}, errors.New("invalid ${vn}")`)
+                        l.push(`${TAB}return ${getParamsStrDefaultValues}, errors.New("invalid '${cc(vn, 'nc')}'")`)
                         l.push(`}`)
                     } else {
                         l.push(`${vn} := r.URL.Query().Get("${s}")`)
                         l.push(`if ${vn} == "" {`)
-                        l.push(`${TAB}return ${getParamsStrDefaultValues}, errors.New("invalid ${vn}")`)
+                        l.push(`${TAB}return ${getParamsStrDefaultValues}, errors.New("invalid '${cc(vn, 'nc')}'")`)
                         l.push(`}`)
                     }
                     l.push('')
