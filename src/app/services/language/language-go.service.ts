@@ -480,7 +480,7 @@ export class LanguageGoService {
                     l.push(``)
                 }
 
-                const cols: string[] = funcGo.outputs.filter(e => e.raw.attribute.toInsert()).map(e => `${item}.${cc(e.label, 'sk')}`)
+                const cols: string[] = funcGo.outputs.filter(e => e.raw.attribute.toInsert()).map(e => `${cc(e.label, 'sk')}`)
                 const aEqB: string[] = cols.map((e, i) => `${e} = $${selectWhereLen + i + 1}`)
 
                 const aEqBStr: string = aEqB.join(', ')
