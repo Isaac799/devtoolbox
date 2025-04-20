@@ -164,18 +164,22 @@ export class LanguageGoService {
             const w: string[] = []
 
             let i = 0
-            for (const e of table.Attributes) {
-                if (!e.Option?.PrimaryKey) continue
-                if (!e.RefTo) {
-                    i += 1
-                    w.push(`${cc(e.Name, 'sk')} = $${i}`)
-                    continue
+            const allAttrs = table.AllAttributes()
+            for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
+                let isPrimary = false
+
+                // has src attr, so from another table
+                if (!!srcA && srcA.Option?.PrimaryKey) {
+                    isPrimary = true
                 }
-                for (const r of e.RefTo.Attributes) {
-                    if (!r.Option?.PrimaryKey) continue
-                    i += 1
-                    w.push(`${cc(e.Name, 'sk')}.${cc(r.Name, 'sk')} = $${i}`)
+
+                // no source attr, so is form self
+                if (!srcA && a.Option?.PrimaryKey) {
+                    isPrimary = true
                 }
+                if (!isPrimary) continue
+                i += 1
+                w.push(`${cc(determinedAttr, 'sk')} = $${i}`)
             }
 
             const selectWhereLen = w.length
