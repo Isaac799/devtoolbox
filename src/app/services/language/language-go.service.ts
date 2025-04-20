@@ -578,11 +578,27 @@ export class LanguageGoService {
                 const scansStr = scans.join(', ')
                 const colsStr = cols.join(', ')
 
-                const returning: string = table.Attributes.filter(e => e.Option?.PrimaryKey)
-                    .map(e => cc(e.Name, 'sk'))
-                    .join(', ')
+                const returning: string[] = []
+                const allAttrs = table.AllAttributes()
+                for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
+                    let isPrimary = false
 
-                const query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuesStr}) RETURNING ${returning}`
+                    // has src attr, so from another table
+                    if (!!srcA && srcA.Option?.PrimaryKey) {
+                        isPrimary = true
+                    }
+
+                    // no source attr, so is form self
+                    if (!srcA && a.Option?.PrimaryKey) {
+                        isPrimary = true
+                    }
+                    if (!isPrimary) continue
+                    returning.push(`${cc(determinedAttr, 'sk')}`)
+                }
+
+                const returningStr = returning.join(', ')
+
+                const query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuesStr}) RETURNING ${returningStr}`
 
                 l.push(`err := db.QueryRow("${query}", ${valuesAttrsStr}).Scan(${scansStr})`)
                 l.push(`if err != nil {`)
