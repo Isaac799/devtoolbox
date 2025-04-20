@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core'
-import {Attribute, AttrType, Table} from '../../structure'
+import {Attribute, AttrType, DeterminedAttrDetails, DeterminedAttrDetailsWithLabel, Table} from '../../structure'
 import {cc, alignKeyword} from '../../formatting'
 import {TAB} from '../../constants'
 
@@ -7,54 +7,6 @@ import {TAB} from '../../constants'
     providedIn: 'root'
 })
 export class LanguageSqlService {
-    static GenerateUniqueAttributes(t: Table): Record<string, string[]> {
-        const uniques: Record<string, string[]> = {}
-
-        // const allAttrs = t.AllAttributes()
-        // TODO
-
-        for (const a of t.Attributes) {
-            if (a.Option?.PrimaryKey) continue
-
-            if (!a.Option?.Unique) {
-                continue
-            }
-
-            for (const u of a.Option.Unique) {
-                if (!uniques[u]) {
-                    uniques[u] = []
-                }
-                uniques[u].push(a.Name)
-            }
-        }
-
-        return uniques
-    }
-
-    static DiscoverUniqueAttributes(t: Table): Record<string, Attribute[]> {
-        const uniques: Record<string, Attribute[]> = {}
-
-        // const allAttrs = t.AllAttributes()
-        // TODO
-
-        for (const a of t.Attributes) {
-            if (a.Option?.PrimaryKey) continue
-
-            if (!a.Option?.Unique) {
-                continue
-            }
-
-            for (const u of a.Option.Unique) {
-                if (!uniques[u]) {
-                    uniques[u] = []
-                }
-                uniques[u].push(a)
-            }
-        }
-
-        return uniques
-    }
-
     static GenerateJoinLines(t: Table, returnTableLines: string[], selectingLines: string[], useI: UseI, noSchemaMode = false) {
         const joinLines: string[] = []
 

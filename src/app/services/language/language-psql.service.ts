@@ -62,9 +62,10 @@ export class LanguagePsqlService {
             endThings.push(pksStr)
         }
 
-        const uniques = LanguageSqlService.GenerateUniqueAttributes(t)
-        for (const label in uniques) {
-            const attrNames = uniques[label].map(e => cc(e, 'sk')).join(', ')
+        const uniques = t.DetermineUniqueAttributes()
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const [uniqueLabel, attrs] of Object.entries(uniques)) {
+            const attrNames = attrs.map(e => e[0]).join(', ')
             const uniquesStr = `UNIQUE ( ${attrNames} )`
             endThings.push(uniquesStr)
         }

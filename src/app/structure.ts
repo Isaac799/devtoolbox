@@ -141,6 +141,7 @@ export class Func {
         const inputs: FuncIn[] = []
 
         const allAttrs = this.table.AllAttributes()
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
             if (a.Option?.SystemField || a.Option?.Default) {
                 continue
@@ -162,6 +163,7 @@ export class Func {
         let inputIndex = 0
 
         const allAttrs = this.table.AllAttributes()
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
             const fromAnotherTable = srcA && srcA.Parent.ID !== this.table.ID
             if (fromAnotherTable) continue
@@ -488,6 +490,7 @@ export class Attribute {
  *
  */
 export type DeterminedAttrDetails = [Attribute | undefined, Attribute, boolean, boolean, Validation | null, AttributeOptions | null]
+export type DeterminedAttrDetailsWithLabel = [string, DeterminedAttrDetails]
 
 // Schema represents the entire schema containing multiple tables
 export interface SchemaConfig {
@@ -583,11 +586,47 @@ export class Table {
     AllPrimaryDeterminedIdentifiers(): string[] {
         const pks: string[] = []
         const attrs = this.AllAttributes()
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(attrs)) {
             if (!isPk) continue
             pks.push(determinedKey)
         }
         return pks
+    }
+
+    DetermineUniqueAttributes(
+        optionParam = {
+            includePk: false
+        }
+    ): Record<string, DeterminedAttrDetailsWithLabel[]> {
+        const uniques: Record<string, DeterminedAttrDetailsWithLabel[]> = {}
+
+        const allAttrs = this.AllAttributes()
+
+        const tableUC = NewTableConstraint('Primary Key', this)
+
+        for (const x of Object.entries(allAttrs)) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const [determinedKey, [srcA, a, isPk, isFk, validation, options]] = x
+
+            let uniqueLabels: string[] = []
+
+            if (options?.Unique !== undefined && options.Unique.length > 0) {
+                uniqueLabels = uniqueLabels.concat(options.Unique)
+            }
+            if (optionParam.includePk) {
+                uniqueLabels.push(tableUC)
+            }
+
+            for (const label of uniqueLabels) {
+                if (!uniques[label]) {
+                    uniques[label] = []
+                }
+                uniques[label].push(x)
+            }
+        }
+
+        return uniques
     }
 
     AllAttributes(

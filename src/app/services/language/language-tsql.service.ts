@@ -159,13 +159,13 @@ GO;`
             endThings.push(pksStr)
         }
 
-        const uniques = LanguageSqlService.GenerateUniqueAttributes(t)
+        // const uniques = LanguageSqlService.GenerateUniqueAttributes(t)
 
-        for (const label in uniques) {
-            const attrNames = uniques[label].map(e => cc(e, 'sk')).join(', ')
-            const uniquesStr = `UNIQUE ( ${attrNames} )`
-            endThings.push(uniquesStr)
-        }
+        // for (const label in uniques) {
+        //     const attrNames = uniques[label].map(e => cc(e, 'sk')).join(', ')
+        //     const uniquesStr = `UNIQUE ( ${attrNames} )`
+        //     endThings.push(uniquesStr)
+        // }
 
         const refs = t.Attributes.filter(e => e.RefTo)
         if (refs.length > 0) {
