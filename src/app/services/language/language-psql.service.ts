@@ -70,6 +70,7 @@ export class LanguagePsqlService {
         }
 
         const allAttrs = t.AllAttributes()
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
             if (!srcA) continue
 
@@ -87,8 +88,10 @@ export class LanguagePsqlService {
         return endThings
     }
 
-    private static genRandomRef(max: number): number {
-        return Math.floor(Math.random() * max) + 1
+    private static genRandomRef(options: string[]): string {
+        const max = options.length
+        const index = Math.floor(Math.random() * max)
+        return options[index]
     }
 
     static ToSeed(schemas: Schema[], map: AttributeMap, limit: number): string {
@@ -96,7 +99,8 @@ export class LanguagePsqlService {
 
         const tGenCount: Record<string, number> = {}
 
-        const usedMap: Record<string, string[]> = {}
+        const attrExisting: Record<string, string[]> = {}
+        const uniqueLabelsMap: Record<string, string[]> = {}
 
         const tblRows: Record<string, number> = {}
 
@@ -106,14 +110,17 @@ export class LanguagePsqlService {
                 if (!t.Attributes.length) {
                     continue
                 }
+                const allAttrs = t.AllAttributes()
+
                 let values: string[] = []
                 const alignmentKeyword = `~|~|~`
 
                 let v2: string[] = []
                 let v3: string[] = []
-                for (const a of t.Attributes) {
-                    v2.push(cc(a.Name, 'sk'))
-                    v3.push('-'.repeat(cc(a.Name, 'sk').length))
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+                    v2.push(determinedKey)
+                    v3.push('-'.repeat(determinedKey.length))
                 }
 
                 const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} ) VALUES~~`
@@ -128,22 +135,15 @@ export class LanguagePsqlService {
                     tblRows[t.FN] = 0
                 }
 
-                let u = false
-
                 adding: for (let index = 0; index < limit; index++) {
-                    for (const a of t.Attributes) {
-                        // u = a.Option?.Unique || a.Option?.PrimaryKey || false
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+                        const isUnique = options?.Unique || options?.PrimaryKey
 
-                        if (a.Type === AttrType.SERIAL) {
-                            u = false
-                        }
-
-                        // for (let j = 0; j < 4; j++) {
-
-                        if (!a.isUnique()) {
+                        if (!isUnique) {
                             let v = ''
-                            if (a.Type === AttrType.REFERENCE && a.RefTo) {
-                                v = LanguagePsqlService.genRandomRef(tblRows[a.RefTo.FN]) + ''
+                            if (srcA && srcA.Type === AttrType.REFERENCE) {
+                                v = LanguagePsqlService.genRandomRef(attrExisting[a.ID]) + ''
                             } else {
                                 v = `${generateSeedData(a, map)}`
                             }
@@ -152,32 +152,48 @@ export class LanguagePsqlService {
                         }
 
                         let v = ''
-                        if (!usedMap[a.FN]) {
-                            usedMap[a.FN] = []
+                        if (!attrExisting[a.ID]) {
+                            attrExisting[a.ID] = []
                         }
-                        let escape = 0
-                        do {
-                            if (escape > 100) {
-                                console.warn('break unique: ', t.Name)
-                                break adding
+
+                        let uniqueLabels: string[] = []
+                        if (options.Unique !== undefined && options.Unique.length > 0) {
+                            uniqueLabels = uniqueLabels.concat(options.Unique)
+                        }
+                        if (uniqueLabels.length === 0) {
+                            uniqueLabels.push('pk')
+                        }
+
+                        for (const label of uniqueLabels) {
+                            if (!uniqueLabelsMap[label]) {
+                                uniqueLabelsMap[label] = []
                             }
-                            escape += 1
-                            if (a.Type === AttrType.REFERENCE && a.RefTo) {
-                                v = LanguagePsqlService.genRandomRef(tblRows[a.RefTo.FN]) + ''
-                            } else {
-                                v = `${generateSeedData(a, map)}`
-                            }
-                        } while (usedMap[a.FN].includes(v) && v !== 'DEFAULT')
+
+                            let escape = 0
+                            do {
+                                if (escape > 100) {
+                                    console.warn('break unique: ', t.Name)
+                                    break adding
+                                }
+                                escape += 1
+                                if (srcA && srcA.Type === AttrType.REFERENCE) {
+                                    v = LanguagePsqlService.genRandomRef(attrExisting[a.ID])
+                                } else {
+                                    v = `${generateSeedData(a, map)}`
+                                }
+                            } while (attrExisting[a.ID].includes(v) && v !== 'DEFAULT')
+                        }
 
                         v2.push(v)
-                        usedMap[a.FN].push(v)
+                        if (v === 'DEFAULT' && a.Type === AttrType.SERIAL) {
+                            v = tblRows[t.FN] + 1 + ''
+                        }
+                        attrExisting[a.ID].push(v)
+                        if (t.Name === 'foo') {
+                            console.log('v :>> ', v)
+                        }
                     }
                     const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
-
-                    if (u && values.map(e => e.includes(c)).filter(e => e).length !== 0) {
-                        v2 = []
-                        continue
-                    }
 
                     if (tGenCount[t.FNInitials] === undefined) {
                         tGenCount[t.FNInitials] = 0
@@ -190,10 +206,8 @@ export class LanguagePsqlService {
                     v2 = []
                 }
 
-                // console.log('tblRows[t.FN] :>> ', t.FN, tblRows[t.FN])
-
-                // eslint-disable-next-line @typescript-eslint/prefer-for-of
-                for (let index = 0; index < t.Attributes.length; index++) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
                     values = alignKeyword(values, alignmentKeyword)
                     values = values.map(e => e.replace(alignmentKeyword, ''))
                 }
@@ -351,6 +365,7 @@ $$ LANGUAGE plpgsql;`
             }
             return attrLine.join(' ')
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [srcA, a, isPk, isFk, validation, options] = details
         const name = cc(determinedKey, 'sk')
         let type = ''
