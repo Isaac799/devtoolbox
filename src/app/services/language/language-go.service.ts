@@ -204,13 +204,12 @@ export class LanguageGoService {
                     return `${cc(e.label, 'cm')}`
                 })
                 .join(', ')
-            const getParamsStrWithoutTypeWithAnd = getParams
-                .map(e => {
-                    return `${cc(e.label, 'cm')}`
-                })
-                .join(' and ')
 
-            const notFoundStr = `cannot find ${cc(table.Name, 'sk')} matching that ${getParamsStrWithoutTypeWithAnd}`
+            const notFoundStr = `cannot find ${cc(table.Name, 'sk')} matching that ${getParams
+                .map(e => {
+                    return `${cc(e.label, 'nc')}`
+                })
+                .join(' and ')}`
             const getParamsStrOnlyType = getParams.map(e => e.type).join(', ')
             const getParamsStrDefaultValues = getParams.map(e => e.defaultValue).join(', ')
 
