@@ -206,6 +206,7 @@ WHERE
     }
 
     static FormatQuery(s: string) {
+        // console.log("-----------------")
         // console.log(s)
         s = s.replace('ORDER BY', 'ORDER_BY')
         s = s.replace('GROUP BY', 'GROUP_BY')
@@ -227,9 +228,20 @@ WHERE
                 w = words.shift()
                 if (w && !sameLinePool.includes(w)) {
                     // console.log('w2 :>> ', w)
-                    l.push(w)
-                    answer += l.join(' ')
+
+                    const willAddInNewLine = newlinePool.includes(w)
+
+                    if (!willAddInNewLine) {
+                        l.push(w)
+                    }
+
                     addedSameLine = true
+                    answer += l.join(' ')
+
+                    if (willAddInNewLine) {
+                        answer += `\n${w}`
+                    }
+
                     break
                 }
             }
@@ -264,7 +276,7 @@ WHERE
     }
 
     private static generateKeywordPools() {
-        const newlineKeywords = ['SELECT', 'UPDATE', 'VALUES', 'WHERE', 'FROM', 'ORDER_BY', 'LIMIT', 'SET']
+        const newlineKeywords = ['SELECT', 'UPDATE', 'VALUES', 'WHERE', 'FROM', 'ORDER_BY', 'LIMIT', 'SET', 'RETURNING']
         const samelineKeywords = ['GROUP_BY', 'ASC', 'DESC', 'DELETE', 'OFFSET', 'AND', 'OR']
         const newlinePool = []
         const sameLinePool = []
