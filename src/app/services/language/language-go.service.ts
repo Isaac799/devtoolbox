@@ -165,23 +165,12 @@ export class LanguageGoService {
             const contextGatheredTheseIDs: string[] = []
 
             let i = 0
-            const allAttrs = table.AllAttributes()
-            for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
-                let isPrimary = false
 
-                // has src attr, so from another table
-                if (!!srcA && srcA.Option?.PrimaryKey) {
-                    isPrimary = true
-                }
-
-                // no source attr, so is form self
-                if (!srcA && a.Option?.PrimaryKey) {
-                    isPrimary = true
-                }
-                if (!isPrimary) continue
+            for (const e of funcGo.outputs) {
+                if (!e.primary) continue
                 i += 1
-                w.push(`${cc(determinedAttr, 'cm')} = $${i}`)
-                contextGatheredTheseIDs.push(`${cc(determinedAttr, 'cm')}`)
+                w.push(`${cc(e.label, 'sk')} = $${i}`)
+                contextGatheredTheseIDs.push(`${cc(e.label, 'cm')}`)
             }
 
             const selectWhereLen = w.length
@@ -238,12 +227,7 @@ export class LanguageGoService {
 
                 lines.push(`func GetMany${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
 
-                const selecting: string[] = []
-                const allAttrs = table.AllAttributes()
-                for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
-                    selecting.push(`${cc(determinedAttr, 'sk')}`)
-                }
-
+                const selecting: string[] = funcGo.outputs.map(e => cc(e.label, 'sk'))
                 const selectingStr = selecting.join(', ')
 
                 let orderBy = ''
@@ -355,12 +339,7 @@ export class LanguageGoService {
 
                 const l: string[] = []
 
-                const selecting: string[] = []
-                const allAttrs = table.AllAttributes()
-                for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
-                    selecting.push(`${cc(determinedAttr, 'sk')}`)
-                }
-
+                const selecting: string[] = funcGo.outputs.map(e => cc(e.label, 'sk'))
                 const selectingStr = selecting.join(', ')
 
                 const query = `SELECT ${selectingStr} FROM ${table.FN} WHERE ${selectWhere}`
@@ -501,13 +480,7 @@ export class LanguageGoService {
                     l.push(``)
                 }
 
-                const cols: string[] = []
-                const allAttrs = table.AllAttributes()
-                for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
-                    if (!a.toInsert()) continue
-                    cols.push(`${item}.${cc(determinedAttr, 'pl')}`)
-                }
-
+                const cols: string[] = funcGo.outputs.filter(e => e.raw.attribute.toInsert()).map(e => `${item}.${cc(e.label, 'pl')}`)
                 const aEqB: string[] = cols.map((e, i) => `${e} = $${selectWhereLen + i + 1}`)
 
                 const aEqBStr: string = aEqB.join(', ')
@@ -587,24 +560,7 @@ export class LanguageGoService {
                 const scansStr = scans.join(', ')
                 const colsStr = cols.join(', ')
 
-                const returning: string[] = []
-                const allAttrs = table.AllAttributes()
-                for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
-                    let isPrimary = false
-
-                    // has src attr, so from another table
-                    if (!!srcA && srcA.Option?.PrimaryKey) {
-                        isPrimary = true
-                    }
-
-                    // no source attr, so is form self
-                    if (!srcA && a.Option?.PrimaryKey) {
-                        isPrimary = true
-                    }
-                    if (!isPrimary) continue
-                    returning.push(`${cc(determinedAttr, 'sk')}`)
-                }
-
+                const returning: string[] = funcGo.outputs.filter(e => e.primary).map(e => cc(e.label, 'sk'))
                 const returningStr = returning.join(', ')
 
                 const query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuePlaceHolderStr}) RETURNING ${returningStr}`
