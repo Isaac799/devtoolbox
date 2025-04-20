@@ -236,7 +236,13 @@ export class LanguageGoService {
 
                 lines.push(`func GetMany${funcGo.title}(w http.ResponseWriter, r *http.Request) {`)
 
-                const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(', ')
+                const selecting: string[] = []
+                const allAttrs = table.AllAttributes()
+                for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
+                    selecting.push(`${cc(determinedAttr, 'sk')}`)
+                }
+
+                const selectingStr = selecting.join(', ')
 
                 let orderBy = ''
                 const pks = funcGo.table.AllPrimaryDeterminedIdentifiers()
@@ -244,7 +250,7 @@ export class LanguageGoService {
                     orderBy = 'ORDER BY ' + pks.map(e => `${e} ASC`).join(', ')
                 }
 
-                const sel = `SELECT ${selecting} FROM ${table.FN}`
+                const sel = `SELECT ${selectingStr} FROM ${table.FN}`
                 const page = `LIMIT $1 OFFSET $2`
                 const query = [sel, orderBy, page].filter(e => e.trim().length > 0).join(' ')
 
@@ -347,8 +353,15 @@ export class LanguageGoService {
 
                 const l: string[] = []
 
-                const selecting = table.Attributes.map(e => cc(e.Name, 'sk')).join(', ')
-                const query = `SELECT ${selecting} FROM ${table.FN} WHERE ${selectWhere}`
+                const selecting: string[] = []
+                const allAttrs = table.AllAttributes()
+                for (const [determinedAttr, [srcA, a]] of Object.entries(allAttrs)) {
+                    selecting.push(`${cc(determinedAttr, 'sk')}`)
+                }
+
+                const selectingStr = selecting.join(', ')
+
+                const query = `SELECT ${selectingStr} FROM ${table.FN} WHERE ${selectWhere}`
 
                 l.push(`${item} := ${funcGo.title}{}`)
 
