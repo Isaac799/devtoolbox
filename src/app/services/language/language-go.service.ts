@@ -572,23 +572,17 @@ export class LanguageGoService {
                     l.push(``)
                 }
 
-                const cols = table.Attributes.filter(e => e.toInsert()).map(e => cc(e.Name, 'sk'))
-
-                const values: string[] = []
-                const valuesAttrs: string[] = []
+                const valuesAttrs: string[] = funcGo.outputs.filter(e => e.raw.attribute.toInsert()).map(e => `${item}.${cc(e.label, 'pl')}`)
+                const cols: string[] = funcGo.outputs.filter(e => e.raw.attribute.toInsert()).map(e => `${cc(e.label, 'sk')}`)
                 const scans: string[] = funcGo.outputs.filter(e => e.primary).map(e => `&${item}.${e.label}`)
 
-                const colsSnake = cols.map(e => cc(e, 'sk'))
+                const valuePlaceHolders: string[] = []
 
-                const fields = funcGo.outputs.filter(e => colsSnake.includes(cc(e.label, 'sk')))
-
-                for (let i = 0; i < fields.length; i++) {
-                    const field = fields[i]
-                    values.push(`$${i + 1}`)
-                    valuesAttrs.push(`${item}.${field.label}`)
+                for (let i = 0; i < valuesAttrs.length; i++) {
+                    valuePlaceHolders.push(`$${i + 1}`)
                 }
 
-                const valuesStr = values.join(', ')
+                const valuePlaceHolderStr = valuePlaceHolders.join(', ')
                 const valuesAttrsStr = valuesAttrs.join(', ')
                 const scansStr = scans.join(', ')
                 const colsStr = cols.join(', ')
@@ -613,7 +607,7 @@ export class LanguageGoService {
 
                 const returningStr = returning.join(', ')
 
-                const query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuesStr}) RETURNING ${returningStr}`
+                const query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuePlaceHolderStr}) RETURNING ${returningStr}`
 
                 l.push(`err := db.QueryRow("${query}", ${valuesAttrsStr}).Scan(${scansStr})`)
                 l.push(`if err != nil {`)
