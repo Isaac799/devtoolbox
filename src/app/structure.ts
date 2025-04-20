@@ -577,9 +577,22 @@ export class Table {
             if (!Object.prototype.hasOwnProperty.call(attrs, determinedKey)) {
                 continue
             }
+
             const [srcA, a] = attrs[determinedKey]
-            if (!a.Option?.PrimaryKey && srcA?.Parent.ID !== this.ID) continue
-            if (srcA && !srcA.Option?.PrimaryKey) continue
+
+            if (!srcA) {
+                if (!a.Option?.PrimaryKey) continue
+            }
+
+            const betweenTwoDiffTables = srcA && srcA?.Parent.ID !== this.ID
+            const nearby = !betweenTwoDiffTables
+            const isRef = srcA && srcA.RefTo !== undefined
+            const originIsPkAndRef = srcA && srcA.RefTo && srcA.Option?.PrimaryKey
+            const nestedPK = isRef && a.Option?.PrimaryKey
+            // console.log(determinedKey, {nearby, isRef, originIsPkAndRef})
+            if (betweenTwoDiffTables && !nestedPK) continue
+            // if ((distant && !nested) || (!distant && nested)) continue
+            if (nearby && isRef && !originIsPkAndRef) continue
 
             pks.push(determinedKey)
         }
@@ -618,6 +631,9 @@ export class Table {
             }
 
             if (a.RefTo && options.foreignKeysOnly && a.Option?.PrimaryKey) {
+                const refPks = a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)
+                if (refPks.length == 0) continue
+
                 const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a)
                 answer = {
                     ...answer,
@@ -625,10 +641,9 @@ export class Table {
                 }
                 continue
             } else if (a.RefTo) {
-                // if (a.RefTo.ID !== this.ID) {
-                //     continue
-                // }
-                // console.log(depth, a.FN)
+                const refPks = a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)
+                if (refPks.length == 0) continue
+
                 const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a)
                 answer = {
                     ...answer,
@@ -643,6 +658,27 @@ export class Table {
                     console.error('missing called from on depth > 0')
                     continue
                 }
+
+                const srcA = calledFrom
+                const distant = depth > 1
+                const isRef = srcA.RefTo !== undefined
+                const originIsPkAndRef = srcA && srcA.RefTo && srcA.Option?.PrimaryKey
+
+                // if (determinedKey === 'fizz_id') {
+                //     console.warn('SIMPLE?', this.ID)
+                //     console.log(srcA, ' -> ', a)
+                //     console.log(determinedKey)
+                //     console.log({distant, isRef, originIsPkAndRef, depth})
+                // }
+
+                // if (determinedKey === 'foo_fizz_id') {
+                //     console.warn('DEEP?', this.ID)
+                //     console.log(srcA, ' -> ', a)
+                //     console.log(determinedKey)
+                //     console.log({distant, isRef, originIsPkAndRef, depth})
+                // }
+
+                if (distant && isRef && !originIsPkAndRef) continue
 
                 // foreign
                 if (options.foreignKeysOnly && a.Option?.PrimaryKey) {
