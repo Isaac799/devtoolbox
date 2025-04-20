@@ -83,9 +83,8 @@ export class LanguagePsqlService {
             const nested = srcA && srcA.RefTo && a.Option?.PrimaryKey
             if (distant && !nested) continue
 
-            // const sameSchema = srcA.Parent.Parent.ID === a.Parent.Parent.ID
-            // const parentTbl = sameSchema ? a.Parent.Name : a.Parent.FN
-            const rStr = `FOREIGN KEY ( ${key} ) REFERENCES ${a.Parent.FN} ( ${cc(a.Name, 'sk')} ) ON DELETE CASCADE`
+            const parent = distant ? srcA.Parent.FN : a.Parent.FN
+            const rStr = `FOREIGN KEY ( ${key} ) REFERENCES ${parent} ( ${cc(a.Name, 'sk')} ) ON DELETE CASCADE`
             endThings.push(rStr)
         }
         endThings = alignKeyword(endThings, '(')
