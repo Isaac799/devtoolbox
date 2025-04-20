@@ -141,13 +141,7 @@ export class Func {
         const inputs: FuncIn[] = []
 
         const allAttrs = this.table.AllAttributes()
-        for (const determinedKey in allAttrs) {
-            if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
-                continue
-            }
-
-            const [srcA, a] = allAttrs[determinedKey]
-
+        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
             if (a.Option?.SystemField || a.Option?.Default) {
                 continue
             }
@@ -168,12 +162,7 @@ export class Func {
         let inputIndex = 0
 
         const allAttrs = this.table.AllAttributes()
-        for (const determinedKey in allAttrs) {
-            if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
-                continue
-            }
-            const [srcA, a] = allAttrs[determinedKey]
-
+        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
             const fromAnotherTable = srcA && srcA.Parent.ID !== this.table.ID
             if (fromAnotherTable) continue
 
@@ -573,27 +562,8 @@ export class Table {
     AllPrimaryDeterminedIdentifiers(): string[] {
         const pks: string[] = []
         const attrs = this.AllAttributes()
-        for (const determinedKey in attrs) {
-            if (!Object.prototype.hasOwnProperty.call(attrs, determinedKey)) {
-                continue
-            }
-
-            const [srcA, a] = attrs[determinedKey]
-
-            if (!srcA) {
-                if (!a.Option?.PrimaryKey) continue
-            }
-
-            const betweenTwoDiffTables = srcA && srcA?.Parent.ID !== this.ID
-            const nearby = !betweenTwoDiffTables
-            const isRef = srcA && srcA.RefTo !== undefined
-            const originIsPkAndRef = srcA && srcA.RefTo && srcA.Option?.PrimaryKey
-            const nestedPK = isRef && a.Option?.PrimaryKey
-            // console.log(determinedKey, {nearby, isRef, originIsPkAndRef})
-            if (betweenTwoDiffTables && !nestedPK) continue
-            // if ((distant && !nested) || (!distant && nested)) continue
-            if (nearby && isRef && !originIsPkAndRef) continue
-
+        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(attrs)) {
+            if (!isPk) continue
             pks.push(determinedKey)
         }
         return pks
@@ -610,16 +580,19 @@ export class Table {
             maxDepth: 10
         },
         calledFrom?: Attribute
-    ): Record<string, [Attribute | undefined, Attribute]> {
+    ): Record<string, [Attribute | undefined, Attribute, boolean, boolean]> {
         if (depth > options.maxDepth) {
             return {}
         }
         if (selfDepth > 1) {
             return {}
         }
-        let answer: Record<string, [Attribute | undefined, Attribute]> = {}
+        let answer: Record<string, [Attribute | undefined, Attribute, boolean, boolean]> = {}
         for (const a of this.Attributes) {
             let determinedKey = depth === 0 ? cc(a.Name, 'sk') : `${src}:${cc(a.Name, 'sk')}`
+
+            let isPrimary = false
+            let isForeign = false
 
             {
                 // not sure where I want this rn... I know its backwards
@@ -652,41 +625,32 @@ export class Table {
                 continue
             }
             if (depth === 0 && options.includeSelf) {
-                answer[determinedKey] = [undefined, a]
+                isPrimary = a.Option?.PrimaryKey === true
+                answer[determinedKey] = [undefined, a, isPrimary, isForeign]
+                continue
+            }
+
+            isForeign = true
+
+            if (!calledFrom) {
+                console.error('missing called from on depth > 0')
+                continue
+            }
+
+            const distant = depth > 1
+            const isRef = calledFrom.RefTo !== undefined
+            const originIsPkAndRef = calledFrom.RefTo && calledFrom.Option?.PrimaryKey
+
+            isPrimary = (!distant && calledFrom.Option?.PrimaryKey) || (distant && isRef && !originIsPkAndRef)
+
+            if (distant && isRef && !originIsPkAndRef) continue
+
+            // foreign
+            if (options.foreignKeysOnly && a.Option?.PrimaryKey) {
+                answer[determinedKey] = [calledFrom, a, isPrimary, isForeign]
             } else {
-                if (!calledFrom) {
-                    console.error('missing called from on depth > 0')
-                    continue
-                }
-
-                const srcA = calledFrom
-                const distant = depth > 1
-                const isRef = srcA.RefTo !== undefined
-                const originIsPkAndRef = srcA && srcA.RefTo && srcA.Option?.PrimaryKey
-
-                // if (determinedKey === 'fizz_id') {
-                //     console.warn('SIMPLE?', this.ID)
-                //     console.log(srcA, ' -> ', a)
-                //     console.log(determinedKey)
-                //     console.log({distant, isRef, originIsPkAndRef, depth})
-                // }
-
-                // if (determinedKey === 'foo_fizz_id') {
-                //     console.warn('DEEP?', this.ID)
-                //     console.log(srcA, ' -> ', a)
-                //     console.log(determinedKey)
-                //     console.log({distant, isRef, originIsPkAndRef, depth})
-                // }
-
-                if (distant && isRef && !originIsPkAndRef) continue
-
-                // foreign
-                if (options.foreignKeysOnly && a.Option?.PrimaryKey) {
-                    answer[determinedKey] = [calledFrom, a]
-                } else {
-                    if (options.foreignAttrs) {
-                        answer[determinedKey] = [calledFrom, a]
-                    }
+                if (options.foreignAttrs) {
+                    answer[determinedKey] = [calledFrom, a, isPrimary, isForeign]
                 }
             }
         }

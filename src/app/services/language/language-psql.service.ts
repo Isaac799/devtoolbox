@@ -70,12 +70,7 @@ export class LanguagePsqlService {
         }
 
         const allAttrs = t.AllAttributes()
-
-        for (const key in allAttrs) {
-            if (!Object.prototype.hasOwnProperty.call(allAttrs, key)) {
-                continue
-            }
-            const [srcA, a] = allAttrs[key]
+        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
 
             if (!srcA) continue
 
@@ -84,7 +79,7 @@ export class LanguagePsqlService {
             if (distant && !nested) continue
 
             const parent = distant ? srcA.Parent.FN : a.Parent.FN
-            const rStr = `FOREIGN KEY ( ${key} ) REFERENCES ${parent} ( ${cc(a.Name, 'sk')} ) ON DELETE CASCADE`
+            const rStr = `FOREIGN KEY ( ${determinedKey} ) REFERENCES ${parent} ( ${cc(a.Name, 'sk')} ) ON DELETE CASCADE`
             endThings.push(rStr)
         }
         endThings = alignKeyword(endThings, '(')
@@ -312,12 +307,7 @@ $$ LANGUAGE plpgsql;`
         let attrs: string[] = []
 
         const allAttrs = t.AllAttributes()
-
-        for (const determinedKey in allAttrs) {
-            if (!Object.prototype.hasOwnProperty.call(allAttrs, determinedKey)) {
-                continue
-            }
-            const [srcA, a] = allAttrs[determinedKey]
+        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
 
             const distant = srcA && srcA?.Parent.ID !== t.ID
             const nested = srcA && srcA.RefTo && a.Option?.PrimaryKey

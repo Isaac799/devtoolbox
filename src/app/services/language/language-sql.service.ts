@@ -11,6 +11,7 @@ export class LanguageSqlService {
         const uniques: Record<string, string[]> = {}
 
         // const allAttrs = t.AllAttributes()
+        // TODO
 
         for (const a of t.Attributes) {
             if (a.Option?.PrimaryKey) continue
@@ -34,6 +35,7 @@ export class LanguageSqlService {
         const uniques: Record<string, Attribute[]> = {}
 
         // const allAttrs = t.AllAttributes()
+        // TODO
 
         for (const a of t.Attributes) {
             if (a.Option?.PrimaryKey) continue
