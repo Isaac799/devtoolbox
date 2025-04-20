@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core'
 import {groupBy, TAB} from '../../constants'
 import {alignKeyword, cc, fixPluralGrammar} from '../../formatting'
 import {Func, AppGeneratorMode, Schema, Table, FuncOut} from '../../structure'
+import {LanguageSqlService} from './language-sql.service'
 
 @Injectable({
     providedIn: 'root'
@@ -238,11 +239,14 @@ export class LanguageGoService {
 
                 const sel = `SELECT ${selectingStr} FROM ${table.FN}`
                 const page = `LIMIT $1 OFFSET $2`
-                const query = [sel, orderBy, page].filter(e => e.trim().length > 0).join(' ')
+                let query = [sel, orderBy, page].filter(e => e.trim().length > 0).join(' ')
+                query = LanguageSqlService.FormatQuery(query)
 
                 l.push(`offset, limit, page := GetPagination(r, 10, 1)`)
+                l.push(``)
 
-                l.push(`rows, err := db.Query("${query}", limit, offset)`)
+                l.push(`rows, err := db.Query(\`${query}\`, limit, offset)`)
+                l.push(``)
                 l.push(`if err != nil {`)
                 l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
                 l.push(`${TAB}return`)
@@ -342,11 +346,13 @@ export class LanguageGoService {
                 const selecting: string[] = funcGo.outputs.map(e => cc(e.label, 'sk'))
                 const selectingStr = selecting.join(', ')
 
-                const query = `SELECT ${selectingStr} FROM ${table.FN} WHERE ${selectWhere}`
+                let query = `SELECT ${selectingStr} FROM ${table.FN} WHERE ${selectWhere}`
+                query = LanguageSqlService.FormatQuery(query)
 
                 l.push(`${item} := ${funcGo.title}{}`)
 
-                l.push(`row := db.QueryRow("${query}", ${queryInStr})`)
+                l.push(`row := db.QueryRow(\`${query}\`, ${queryInStr})`)
+                l.push(``)
 
                 const scan = funcGo.outputs
                     .filter(e => e.self)
@@ -448,8 +454,11 @@ export class LanguageGoService {
                 const aEqBStr: string = aEqB.join(', ')
                 const fieldsStr: string = [...contextGatheredTheseIDs, ...cols].join(', ')
 
-                const query = `UPDATE ${table.FN} SET ${aEqBStr} WHERE ${selectWhere}`
-                l.push(`res, err = db.Exec("${query}", ${fieldsStr})`)
+                let query = `UPDATE ${table.FN} SET ${aEqBStr} WHERE ${selectWhere}`
+                query = LanguageSqlService.FormatQuery(query)
+
+                l.push(`res, err = db.Exec(\`${query}\`, ${fieldsStr})`)
+                l.push(``)
 
                 l.push(`if err != nil {`)
                 l.push(`${TAB}http.Error(w, "Failed to update ${cc(table.Name, 'sk')}", http.StatusInternalServerError)`)
@@ -525,9 +534,11 @@ export class LanguageGoService {
                 const returning: string[] = funcGo.outputs.filter(e => e.primary).map(e => cc(e.label, 'sk'))
                 const returningStr = returning.join(', ')
 
-                const query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuePlaceHolderStr}) RETURNING ${returningStr}`
+                let query = `INSERT INTO ${table.FN} (${colsStr}) VALUES (${valuePlaceHolderStr}) RETURNING ${returningStr}`
+                query = LanguageSqlService.FormatQuery(query)
 
-                l.push(`err := db.QueryRow("${query}", ${valuesAttrsStr}).Scan(${scansStr})`)
+                l.push(`err := db.QueryRow(\`${query}\`, ${valuesAttrsStr}).Scan(${scansStr})`)
+                l.push(``)
                 l.push(`if err != nil {`)
                 l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
                 l.push(`${TAB}return`)
@@ -564,9 +575,11 @@ export class LanguageGoService {
                 l.push(`${TAB}return`)
                 l.push(`}`)
 
-                const query = `DELETE FROM ${table.FN} WHERE ${selectWhere}`
+                let query = `DELETE FROM ${table.FN} WHERE ${selectWhere}`
+                query = LanguageSqlService.FormatQuery(query)
 
-                l.push(`_, err = db.Exec("${query}", ${queryInStr})`)
+                l.push(`_, err = db.Exec(\`${query}\`, ${queryInStr})`)
+                l.push(``)
                 l.push(`if err != nil {`)
                 l.push(`${TAB}http.Error(w, err.Error(), http.StatusInternalServerError)`)
                 l.push(`${TAB}return`)

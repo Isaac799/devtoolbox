@@ -204,6 +204,80 @@ WHERE
 
         return q
     }
+
+    static FormatQuery(s: string) {
+        // console.log(s)
+        s = s.replace('ORDER BY', 'ORDER_BY')
+        s = s.replace('GROUP BY', 'GROUP_BY')
+        const words = s.trim().split(' ')
+        let answer = ''
+        const {newlinePool, sameLinePool} = LanguageSqlService.generateKeywordPools()
+        while (words.length > 0) {
+            let w = words.shift()
+            if (w && !newlinePool.includes(w) && !sameLinePool.includes(w)) {
+                // console.log('w0 :>> ', w)
+                answer += ` ${w} `
+                continue
+            }
+            let addedSameLine = false
+            while (w && sameLinePool.includes(w)) {
+                const l = []
+                // console.log('w1 :>> ', w)
+                l.push(` ${w} `)
+                w = words.shift()
+                if (w && !sameLinePool.includes(w)) {
+                    // console.log('w2 :>> ', w)
+                    l.push(w)
+                    answer += l.join(' ')
+                    addedSameLine = true
+                    break
+                }
+            }
+            if (addedSameLine) {
+                w = words.shift()
+            }
+            let addedNewLine = false
+            while (w && newlinePool.includes(w)) {
+                const l = []
+                // console.log('w3 :>> ', w)
+                l.push(`\n${w}`)
+                w = words.shift()
+                if (w && !newlinePool.includes(w)) {
+                    // console.log('w4 :>> ', w)
+                    l.push(w)
+                    answer += l.join(' ')
+                    addedNewLine = true
+                    break
+                }
+            }
+            if (w && addedSameLine && !addedNewLine) {
+                // console.log('w5 :>> ', w)
+                answer += ` ${w} `
+            }
+        }
+
+        let final = `\n${answer.trim().replaceAll('  ', ' ')}\n`
+        final = final.replace('ORDER_BY', 'ORDER BY')
+        final = final.replace('GROUP_BY', 'GROUP BY')
+        // console.log(final)
+        return final
+    }
+
+    private static generateKeywordPools() {
+        const newlineKeywords = ['SELECT', 'UPDATE', 'VALUES', 'WHERE', 'FROM', 'ORDER_BY', 'LIMIT', 'SET']
+        const samelineKeywords = ['GROUP_BY', 'ASC', 'DESC', 'DELETE', 'OFFSET', 'AND', 'OR']
+        const newlinePool = []
+        const sameLinePool = []
+        for (const k of newlineKeywords) {
+            newlinePool.push(k)
+            newlinePool.push(k + ',')
+        }
+        for (const k of samelineKeywords) {
+            sameLinePool.push(k)
+            sameLinePool.push(k + ',')
+        }
+        return {newlinePool, sameLinePool}
+    }
 }
 
 class UseI {
