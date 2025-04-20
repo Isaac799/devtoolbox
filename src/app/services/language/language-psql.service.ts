@@ -76,7 +76,12 @@ export class LanguagePsqlService {
                 continue
             }
             const [srcA, a] = allAttrs[key]
-            if (!srcA || (srcA && srcA?.Parent.ID !== t.ID)) continue
+
+            if (!srcA) continue
+
+            const distant = srcA && srcA?.Parent.ID !== t.ID
+            const nested = srcA && srcA.RefTo && a.Option?.PrimaryKey
+            if (distant && !nested) continue
 
             // const sameSchema = srcA.Parent.Parent.ID === a.Parent.Parent.ID
             // const parentTbl = sameSchema ? a.Parent.Name : a.Parent.FN
@@ -315,7 +320,13 @@ $$ LANGUAGE plpgsql;`
             }
             const [srcA, a] = allAttrs[determinedKey]
 
-            if (srcA && srcA?.Parent.ID !== t.ID) continue
+            const distant = srcA && srcA?.Parent.ID !== t.ID
+            const nested = srcA && srcA.RefTo && a.Option?.PrimaryKey
+            // console.log('edge :>> ', edge);
+            // console.log('t.FN :>> ', t.FN);
+            // console.log('srcA :>> ', srcA , " -> ", a);
+
+            if (distant && !nested) continue
 
             const attrLine = LanguagePsqlService.generateAttrLine(determinedKey, a)
             attrs.push(attrLine)
