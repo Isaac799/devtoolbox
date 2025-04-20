@@ -501,7 +501,7 @@ export class PageMigrationComponent implements AfterViewInit {
 
                             if (a2.RefTo) {
                                 const allAttrs = t2.AllAttributes()
-                                for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
+                                for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
                                     if (!srcA || (srcA && srcA?.Parent.ID !== t2.ID)) continue
 
                                     const parts = [

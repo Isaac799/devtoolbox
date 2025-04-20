@@ -141,7 +141,7 @@ export class Func {
         const inputs: FuncIn[] = []
 
         const allAttrs = this.table.AllAttributes()
-        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
+        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
             if (a.Option?.SystemField || a.Option?.Default) {
                 continue
             }
@@ -162,7 +162,7 @@ export class Func {
         let inputIndex = 0
 
         const allAttrs = this.table.AllAttributes()
-        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
+        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
             const fromAnotherTable = srcA && srcA.Parent.ID !== this.table.ID
             if (fromAnotherTable) continue
 
@@ -439,6 +439,9 @@ export class Attribute {
         if (!this.isStr()) {
             console.warn('Fetching varchar type for non varchar!')
         }
+        if (this.Type === AttrType.CHAR) {
+            return 'CHAR'
+        }
         if (!this.Validation || !this.Validation.Max) {
             console.warn(`missing max validation on "${this.Name}"`)
         } else {
@@ -467,6 +470,24 @@ export class Attribute {
         return !((!this.Option?.SystemField && this.Option?.Default) || (this.Option?.PrimaryKey && this.Type === AttrType.SERIAL))
     }
 }
+
+/**
+ *
+ * - `srcA` exists if coming from another table
+ * - `a` is the attribute
+ * - `isPk` is if its a primary key for the sake of this table
+ * - `isFk` is if its a foreign key for the sake of this table
+ * - `validation` is the validation of the root attr
+ * - `options` is the options of the root attr. Ignore its primary key value
+ *
+ * @example
+ * const allAttrs = this.table.AllAttributes()
+ * for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+ *
+ * }
+ *
+ */
+export type DeterminedAttrDetails = [Attribute | undefined, Attribute, boolean, boolean, Validation | null, AttributeOptions | null]
 
 // Schema represents the entire schema containing multiple tables
 export interface SchemaConfig {
@@ -562,7 +583,7 @@ export class Table {
     AllPrimaryDeterminedIdentifiers(): string[] {
         const pks: string[] = []
         const attrs = this.AllAttributes()
-        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(attrs)) {
+        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(attrs)) {
             if (!isPk) continue
             pks.push(determinedKey)
         }
@@ -579,15 +600,16 @@ export class Table {
             foreignAttrs: false,
             maxDepth: 10
         },
-        calledFrom?: Attribute
-    ): Record<string, [Attribute | undefined, Attribute, boolean, boolean]> {
+        calledFrom?: Attribute,
+        og?: Attribute
+    ): Record<string, DeterminedAttrDetails> {
         if (depth > options.maxDepth) {
             return {}
         }
         if (selfDepth > 1) {
             return {}
         }
-        let answer: Record<string, [Attribute | undefined, Attribute, boolean, boolean]> = {}
+        let answer: Record<string, DeterminedAttrDetails> = {}
         for (const a of this.Attributes) {
             let determinedKey = depth === 0 ? cc(a.Name, 'sk') : `${src}:${cc(a.Name, 'sk')}`
 
@@ -607,7 +629,7 @@ export class Table {
                 const refPks = a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)
                 if (refPks.length == 0) continue
 
-                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a)
+                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a, og || a)
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -617,7 +639,7 @@ export class Table {
                 const refPks = a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)
                 if (refPks.length == 0) continue
 
-                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a)
+                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a, og || a)
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -626,7 +648,7 @@ export class Table {
             }
             if (depth === 0 && options.includeSelf) {
                 isPrimary = a.Option?.PrimaryKey === true
-                answer[determinedKey] = [undefined, a, isPrimary, isForeign]
+                answer[determinedKey] = [undefined, a, isPrimary, isForeign, a.Validation || null, a.Option || null]
                 continue
             }
 
@@ -647,10 +669,10 @@ export class Table {
 
             // foreign
             if (options.foreignKeysOnly && a.Option?.PrimaryKey) {
-                answer[determinedKey] = [calledFrom, a, isPrimary, isForeign]
+                answer[determinedKey] = [calledFrom, a, isPrimary, isForeign, og?.Validation || null, og?.Option || null]
             } else {
                 if (options.foreignAttrs) {
-                    answer[determinedKey] = [calledFrom, a, isPrimary, isForeign]
+                    answer[determinedKey] = [calledFrom, a, isPrimary, isForeign, og?.Validation || null, og?.Option || null]
                 }
             }
         }

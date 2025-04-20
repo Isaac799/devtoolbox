@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core'
 import {TAB} from '../../../app/constants'
 import {cc, alignKeyword, alignKeywords} from '../../../app/formatting'
-import {Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue, Attribute} from '../../../app/structure'
+import {Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue, Attribute, DeterminedAttrDetails} from '../../../app/structure'
 import {LanguageSqlService} from './language-sql.service'
 import {AttributeMap} from '../../varchar'
 
@@ -70,8 +70,7 @@ export class LanguagePsqlService {
         }
 
         const allAttrs = t.AllAttributes()
-        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
-
+        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
             if (!srcA) continue
 
             const distant = srcA && srcA?.Parent.ID !== t.ID
@@ -307,8 +306,7 @@ $$ LANGUAGE plpgsql;`
         let attrs: string[] = []
 
         const allAttrs = t.AllAttributes()
-        for (const [determinedKey, [srcA, a, isPk, isFk]] of Object.entries(allAttrs)) {
-
+        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
             const distant = srcA && srcA?.Parent.ID !== t.ID
             const nested = srcA && srcA.RefTo && a.Option?.PrimaryKey
             // console.log('edge :>> ', edge);
@@ -317,7 +315,7 @@ $$ LANGUAGE plpgsql;`
 
             if (distant && !nested) continue
 
-            const attrLine = LanguagePsqlService.generateAttrLine(determinedKey, a)
+            const attrLine = LanguagePsqlService.generateAttrLine(determinedKey, [srcA, a, isPk, isFk, validation, options])
             attrs.push(attrLine)
         }
 
@@ -325,10 +323,38 @@ $$ LANGUAGE plpgsql;`
         return attrs
     }
 
-    static generateAttrLine(determinedKey: string, a: Attribute) {
+    static generateAttrLine(determinedKey: string, details: DeterminedAttrDetails | Attribute) {
+        if (details instanceof Attribute) {
+            const name = cc(determinedKey, 'sk')
+            let type = ''
+            const a = details
+            if (a.isStr()) {
+                type = a.VarcharType()
+            } else {
+                type = PG_TO_PG_TYPE[a.Type]
+            }
+
+            if (a.Type === AttrType.SERIAL) {
+                type = 'INT'
+            }
+
+            const attrLine = [`${cc(name, 'sk')} ${type}`]
+
+            if (a.Option?.Default !== undefined) {
+                const def = GenerateDefaultValue(a, Lang.PGSQL)
+                if (def !== null) {
+                    attrLine.push(`DEFAULT ${def}`)
+                }
+            }
+            if (a.Validation?.Required === true) {
+                attrLine.push(`NOT NULL`)
+            }
+            return attrLine.join(' ')
+        }
+        const [srcA, a, isPk, isFk, validation, options] = details
         const name = cc(determinedKey, 'sk')
         let type = ''
-        if ([AttrType.VARCHAR].includes(a.Type)) {
+        if (a.isStr()) {
             type = a.VarcharType()
         } else {
             type = PG_TO_PG_TYPE[a.Type]
@@ -340,13 +366,13 @@ $$ LANGUAGE plpgsql;`
 
         const attrLine = [`${cc(name, 'sk')} ${type}`]
 
-        if (a.Option?.Default) {
+        if (options?.Default !== undefined) {
             const def = GenerateDefaultValue(a, Lang.PGSQL)
             if (def !== null) {
                 attrLine.push(`DEFAULT ${def}`)
             }
         }
-        if (a.Validation?.Required) {
+        if (validation?.Required === true) {
             attrLine.push(`NOT NULL`)
         }
         return attrLine.join(' ')

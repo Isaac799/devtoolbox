@@ -644,7 +644,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                         const validatorFn = validationMap.get(type)
 
                         if (!validatorFn) {
-                            console.error(`missing valid default fn for type ${type}`)
+                            addError('default not allowed')
+                            // console.error(`missing valid default fn for type ${type}`)
                             continue
                         }
 
