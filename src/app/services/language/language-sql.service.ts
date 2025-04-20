@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core'
-import {Attribute, AttrType, DeterminedAttrDetails, DeterminedAttrDetailsWithLabel, Table} from '../../structure'
-import {cc, alignKeyword} from '../../formatting'
-import {TAB} from '../../constants'
+import { Injectable } from '@angular/core'
+import { Attribute, AttrType, Table } from '../../structure'
+import { cc, alignKeyword } from '../../formatting'
+import { TAB } from '../../constants'
 
 @Injectable({
     providedIn: 'root'
