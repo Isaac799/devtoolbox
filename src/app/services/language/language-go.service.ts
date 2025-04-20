@@ -231,7 +231,7 @@ export class LanguageGoService {
                 const selectingStr = selecting.join(', ')
 
                 let orderBy = ''
-                const pks = funcGo.table.AllPrimaryDeterminedIdentifiers()
+                const pks = funcGo.outputs.filter(e => e.primary).map(e => e.label)
                 if (pks.length > 0) {
                     orderBy = 'ORDER BY ' + pks.map(e => `${e} ASC`).join(', ')
                 }
