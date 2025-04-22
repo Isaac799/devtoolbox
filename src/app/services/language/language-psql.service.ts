@@ -1,7 +1,18 @@
 import {Injectable} from '@angular/core'
 import {TAB} from '../../../app/constants'
 import {cc, alignKeyword, alignKeywords} from '../../../app/formatting'
-import {Table, Schema, AttrType, generateSeedData, PG_TO_PG_TYPE, Lang, GenerateDefaultValue, Attribute, DeterminedAttrDetails} from '../../../app/structure'
+import {
+    Table,
+    Schema,
+    AttrType,
+    generateSeedData,
+    PG_TO_PG_TYPE,
+    Lang,
+    GenerateDefaultValue,
+    Attribute,
+    DeterminedAttrDetails,
+    Seed
+} from '../../../app/structure'
 import {LanguageSqlService} from './language-sql.service'
 import {AttributeMap} from '../../varchar'
 
@@ -89,122 +100,37 @@ export class LanguagePsqlService {
         return endThings
     }
 
-    private static genRandomRef(options: string[]): string {
-        const max = options.length
-        const index = Math.floor(Math.random() * max)
-        return options[index]
-    }
-
     static ToSeed(schemas: Schema[], map: AttributeMap, limit: number): string {
         const lines: string[] = []
-
-        const tGenCount: Record<string, number> = {}
-
-        const attrExisting: Record<string, string[]> = {}
-        const uniqueLabelsMap: Record<string, string[]> = {}
-
-        const tblRows: Record<string, number> = {}
 
         for (const s of schemas) {
             lines.push('')
             for (const t of s.Tables) {
-                if (!t.Attributes.length) {
-                    continue
-                }
-                const allAttrs = t.AllAttributes()
-
                 let values: string[] = []
                 const alignmentKeyword = `~|~|~`
+                let columns: string[] = []
+                let divider: string[] = []
 
-                let v2: string[] = []
-                let v3: string[] = []
+                const allAttrs = t.AllAttributes()
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
-                    v2.push(determinedKey)
-                    v3.push('-'.repeat(determinedKey.length))
+                    columns.push(determinedKey)
+                    divider.push('-'.repeat(determinedKey.length))
                 }
 
-                const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} ) VALUES~~`
-                const c2 = `\n${TAB}  ${v3.join(` ${alignmentKeyword} `)}`
+                const c = `\n${TAB}( ${columns.join(`,${alignmentKeyword} `)} ) VALUES~~`
+                const c2 = `\n${TAB}  ${divider.join(` ${alignmentKeyword} `)}`
                 values.push(c)
                 values.push()
                 values.push(c2)
-                v2 = []
-                v3 = []
+                columns = []
+                divider = []
 
-                if (tblRows[t.FN] === undefined) {
-                    tblRows[t.FN] = 0
-                }
-
-                adding: for (let index = 0; index < limit; index++) {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
-                        const isUnique = options?.Unique || options?.PrimaryKey
-
-                        if (!isUnique) {
-                            let v = ''
-                            if (srcA && srcA.Type === AttrType.REFERENCE) {
-                                v = LanguagePsqlService.genRandomRef(attrExisting[a.ID]) + ''
-                            } else {
-                                v = `${generateSeedData(a, map)}`
-                            }
-                            v2.push(v)
-                            continue
-                        }
-
-                        let v = ''
-                        if (!attrExisting[a.ID]) {
-                            attrExisting[a.ID] = []
-                        }
-
-                        let uniqueLabels: string[] = []
-                        if (options.Unique !== undefined && options.Unique.length > 0) {
-                            uniqueLabels = uniqueLabels.concat(options.Unique)
-                        }
-                        if (uniqueLabels.length === 0) {
-                            uniqueLabels.push('pk')
-                        }
-
-                        for (const label of uniqueLabels) {
-                            if (!uniqueLabelsMap[label]) {
-                                uniqueLabelsMap[label] = []
-                            }
-
-                            let escape = 0
-                            do {
-                                if (escape > 100) {
-                                    console.warn('break unique: ', t.Name)
-                                    break adding
-                                }
-                                escape += 1
-                                if (srcA && srcA.Type === AttrType.REFERENCE) {
-                                    v = LanguagePsqlService.genRandomRef(attrExisting[a.ID])
-                                } else {
-                                    v = `${generateSeedData(a, map)}`
-                                }
-                            } while (attrExisting[a.ID].includes(v) && v !== 'DEFAULT')
-                        }
-
-                        v2.push(v)
-                        if (v === 'DEFAULT' && a.Type === AttrType.SERIAL) {
-                            v = tblRows[t.FN] + 1 + ''
-                        }
-                        attrExisting[a.ID].push(v)
-                        if (t.Name === 'foo') {
-                            console.log('v :>> ', v)
-                        }
-                    }
-                    const c = `\n${TAB}( ${v2.join(`,${alignmentKeyword} `)} )`
-
-                    if (tGenCount[t.FNInitials] === undefined) {
-                        tGenCount[t.FNInitials] = 0
-                    }
-                    tGenCount[t.FNInitials] += 1
-
+                const seed = new Seed(t, map, limit)
+                const data = seed.seedTable.Read()
+                for (const row of data) {
+                    const c = `\n${TAB}( ${row.join(`,${alignmentKeyword} `)} )`
                     values.push(c)
-                    tblRows[t.FN] += 1
-
-                    v2 = []
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars

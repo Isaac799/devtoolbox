@@ -1,6 +1,7 @@
 import {cc, fixPluralGrammar} from './formatting'
 import {AttributeMap, randAttrVarchar} from './varchar'
-import {v4 as uuidv4} from 'uuid'
+
+const SEED_RETRY_MAX = 10 as const
 
 export enum Cardinality {
     One = 1 << 4,
@@ -548,6 +549,8 @@ export class Table {
     Attributes: Attribute[]
     dragPosition = {x: 0, y: 0}
 
+    seed?: SeedTable
+
     constructor(ID: string, Name: string, Parent: Schema, dragPosition: {x: number; y: number}) {
         this.ID = ID
         this.Name = Name
@@ -614,7 +617,7 @@ export class Table {
             if (options?.Unique !== undefined && options.Unique.length > 0) {
                 uniqueLabels = uniqueLabels.concat(options.Unique)
             }
-            if (optionParam.includePk) {
+            if (optionParam.includePk && isPk) {
                 uniqueLabels.push(tableUC)
             }
 
@@ -623,6 +626,41 @@ export class Table {
                     uniques[label] = []
                 }
                 uniques[label].push(x)
+            }
+        }
+
+        return uniques
+    }
+
+    DetermineUniqueAttributesSimple(
+        optionParam = {
+            includePk: false
+        }
+    ): Record<string, string[]> {
+        const uniques: Record<string, string[]> = {}
+
+        const allAttrs = this.AllAttributes()
+
+        const tableUC = NewTableConstraint('Primary Key', this)
+
+        for (const x of Object.entries(allAttrs)) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const [determinedKey, [srcA, a, isPk, isFk, validation, options]] = x
+
+            let uniqueLabels: string[] = []
+
+            if (options?.Unique !== undefined && options.Unique.length > 0) {
+                uniqueLabels = uniqueLabels.concat(options.Unique)
+            }
+            if (optionParam.includePk && isPk) {
+                uniqueLabels.push(tableUC)
+            }
+
+            for (const label of uniqueLabels) {
+                if (!uniques[label]) {
+                    uniques[label] = []
+                }
+                uniques[label].push(determinedKey)
             }
         }
 
@@ -717,6 +755,335 @@ export class Table {
         }
 
         return answer
+    }
+}
+
+export class SeedCell {
+    attrID: string
+    refToAttrID?: string
+    generatedValue: string
+
+    constructor(attrID: string, generatedValue: string) {
+        this.attrID = attrID
+        this.generatedValue = generatedValue
+    }
+}
+
+export class SeedRow {
+    columns: SeedCell[]
+
+    constructor(columns: SeedCell[]) {
+        this.columns = columns
+    }
+}
+
+export class SeedTable {
+    private rows: SeedRow[]
+    uniqueAttrIdGroups: Record<string, string[]> = {}
+
+    constructor(uniqueAttrIdGroups: Record<string, string[]>) {
+        this.uniqueAttrIdGroups = uniqueAttrIdGroups
+        this.rows = []
+    }
+
+    AddRow(newRow: SeedRow) {
+        // console.log('-----')
+        // console.log(newRow)
+        if (this.rows.length === 0) {
+            // console.log('allow first row')
+            this.rows.push(newRow)
+            return true
+        }
+
+        // console.log(this.rows)
+
+        const previousRowsToCompare: Record<string, string[]> = {}
+        for (const [existingUniqueLabel, existingAttrIDsForUniqueLabel] of Object.entries(this.uniqueAttrIdGroups)) {
+            if (!previousRowsToCompare[existingUniqueLabel]) {
+                previousRowsToCompare[existingUniqueLabel] = []
+            }
+
+            for (const row of this.rows) {
+                const labelValues: string[] = []
+
+                for (const col of row.columns) {
+                    if (!existingAttrIDsForUniqueLabel.includes(col.attrID)) {
+                        continue
+                    }
+                    labelValues.push(col.generatedValue)
+                }
+
+                const str = labelValues.join(', ')
+
+                previousRowsToCompare[existingUniqueLabel].push(str)
+            }
+        }
+
+        const newRowToCompare: Record<string, string[]> = {}
+        for (const [existingUniqueLabel, existingAttrIDsForUniqueLabel] of Object.entries(this.uniqueAttrIdGroups)) {
+            const labelValues: string[] = []
+            for (const col of newRow.columns) {
+                if (!existingAttrIDsForUniqueLabel.includes(col.attrID)) {
+                    continue
+                }
+                labelValues.push(col.generatedValue)
+            }
+            const str = labelValues.join(', ')
+
+            if (!newRowToCompare[existingUniqueLabel]) {
+                newRowToCompare[existingUniqueLabel] = []
+            }
+            newRowToCompare[existingUniqueLabel].push(str)
+        }
+
+        // console.log({
+        //     previousRowsToCompare,
+        //     newRowToCompare
+        // })
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const [existingUniqueLabel, existingAttrIDsForUniqueLabel] of Object.entries(this.uniqueAttrIdGroups)) {
+            const prev = previousRowsToCompare[existingUniqueLabel]
+            const cur = newRowToCompare[existingUniqueLabel]
+            // console.log({prev, cur})
+            for (const p of prev) {
+                for (const c of cur) {
+                    if (p !== c) continue
+                    // console.log('already exists', p, c)
+                    return false
+                }
+            }
+        }
+
+        this.rows.push(newRow)
+        return true
+    }
+
+    GetPool(srcA: Attribute) {
+        const previousRowsToCompare: SeedCell[][] = []
+
+        if (!srcA.RefTo) {
+            console.error('cannot get pool for a non reference')
+            return previousRowsToCompare
+        }
+
+        if (!srcA.RefTo.seed) {
+            console.error('cannot get pool for a table missing seed')
+            return previousRowsToCompare
+        }
+
+        const pkIds = srcA.RefTo.AllPrimaryDeterminedIdentifiers()
+
+        console.log('srcA.RefTo.seed.rows ~~', srcA.RefTo.FN)
+        console.log(srcA.RefTo.seed.rows)
+
+        for (let rowIndex = 0; rowIndex < srcA.RefTo.seed.rows.length; rowIndex++) {
+            const row = srcA.RefTo.seed.rows[rowIndex]
+
+            if (!previousRowsToCompare[rowIndex]) {
+                previousRowsToCompare[rowIndex] = []
+            }
+
+            for (const col of row.columns) {
+                // console.log(col.attrID, a.Name)
+                if (!col.refToAttrID) {
+                    console.warn('missing the column name we are trying to reference')
+                    continue
+                }
+                // console.log("--")
+                // console.log("pkIds: ",pkIds)
+                // console.log("col.refToAttrID: ", col.refToAttrID)
+                if (!pkIds.includes(col.refToAttrID)) {
+                    continue
+                }
+                previousRowsToCompare[rowIndex].push(col)
+            }
+        }
+
+        // console.log(previousRowsToCompare)
+        return previousRowsToCompare
+    }
+
+    Read(
+        options = {
+            includeHeader: false
+        }
+    ) {
+        const answer: string[][] = []
+
+        if (this.rows.length === 0) {
+            return []
+        }
+
+        if (options.includeHeader) {
+            for (const col of this.rows[0].columns) {
+                if (!answer[0]) {
+                    answer[0] = []
+                }
+                answer[0].push(col.attrID)
+            }
+        }
+
+        for (let ri = 0; ri < this.rows.length; ri++) {
+            const row = this.rows[ri]
+            for (const col of row.columns) {
+                if (!answer[ri]) {
+                    answer[ri] = []
+                }
+                answer[ri].push(col.generatedValue)
+            }
+        }
+
+        return answer
+    }
+}
+
+export class Seed {
+    private limit = 1
+    seedTable: SeedTable
+
+    // /**
+    //  *
+    //  *  Record<uniqueLabel, Record<attrID, generatedValues[]>>
+    //  *
+    //  */
+    // private uniqueLabelsMap: Record<string, Record<string, string[]>> = {}
+
+    constructor(t: Table, map: AttributeMap, limit: number) {
+        if (t.FN.includes('buzz')) {
+            console.warn(t.FN)
+        } else {
+            console.log(t.FN)
+        }
+        if (limit > 50) {
+            limit = 50
+        } else if (limit < 1) {
+            limit = 1
+        }
+        this.limit = limit
+
+        // Build unique groupings
+        const uniqueAttrs = t.DetermineUniqueAttributesSimple({
+            includePk: true
+        })
+
+        const seedTable = new SeedTable(uniqueAttrs)
+
+        // generate data
+
+        let escape = 0
+        const attrs = t.AllAttributes()
+        for (let rowIndex = 0; rowIndex < limit; rowIndex++) {
+            if (escape > SEED_RETRY_MAX) {
+                console.warn('break unique: ', t.Name)
+                break
+            }
+
+            // generate a row of data
+            const seedCells: SeedCell[] = []
+
+            let pkChosen: SeedCell[] | null = null
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(attrs)) {
+                let v = ''
+                if (srcA && srcA.Type === AttrType.REFERENCE) {
+                    if (!pkChosen) {
+                        const options = seedTable.GetPool(srcA)
+                        // console.log(options)
+                        pkChosen = Seed.randomArrayItem(options)
+                    }
+
+                    if (!pkChosen) {
+                        console.warn('missing chosen primary key')
+                        continue
+                    }
+
+                    if (!srcA.RefTo) {
+                        console.warn('srcA should of had a reference')
+                        continue
+                    }
+
+                    let found = false
+                    for (const pk of pkChosen) {
+                        // console.log(pk.attrID, pk.refToAttrID, pk.generatedValue, determinedKey)
+
+                        // We have to look at the columns of the table we are referencing.
+                        // From there we look at each one, checking for the primary key we randomly grabbed
+                        // then we make sure this cell in the row we are generating for matches up with the
+                        // referenced tables col. After that we can save the value
+                        const attrs2 = srcA.RefTo.AllAttributes()
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        for (const [determinedKey, [srcA, a2, isPk, isFk, validation, options]] of Object.entries(attrs2)) {
+                            // console.log("\n---")
+                            // console.log(determinedKey, pk.refToAttrID)
+
+                            if (a2.ID !== a.ID) continue
+                            if (determinedKey !== pk.refToAttrID) {
+                                continue
+                            }
+                            found = true
+                            v = pk.generatedValue
+                        }
+                    }
+
+                    if (!found) {
+                        console.warn('did not find a pk value')
+                        console.log('pkChosen: ', pkChosen)
+                        v = '?'
+                    }
+                } else if (a.Type === AttrType.SERIAL) {
+                    v = rowIndex + 1 + ''
+                } else {
+                    v = `${generateSeedData(a, map)}`
+                }
+
+                const seedCell = new SeedCell(determinedKey, v)
+
+                // since this is a reference we need to look at the attribute name
+                const attrs = a.Parent.AllAttributes()
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                for (const [determinedKey, [srcA, a2, isPk, isFk, validation, options]] of Object.entries(attrs)) {
+                    if (a.ID !== a2.ID) continue
+                    seedCell.refToAttrID = determinedKey
+                    // console.log(seedCell.refToAttrID)
+                    break
+                }
+
+                // console.log(seedCell)
+                seedCells.push(seedCell)
+            }
+
+            const seedRow = new SeedRow(seedCells)
+            // console.log(seedRow)
+
+            const success = seedTable.AddRow(seedRow)
+            if (!success) {
+                escape += 1
+                rowIndex -= 1
+            }
+        }
+        this.seedTable = seedTable
+
+        if (!t.seed) {
+            t.seed = seedTable
+        } else {
+            console.warn('why are we re-creating seed data for table: ', t.FN)
+        }
+    }
+
+    private static randomArrayItem<T>(options: T[]): T | null {
+        if (options === undefined) {
+            console.error('could not generate random reference, options was undefined')
+            return null
+        }
+        const max = options.length
+        const index = Math.floor(Math.random() * max)
+        if (options[index] === undefined) {
+            console.error('could not generate random reference, invalid index')
+            return null
+        }
+        return options[index]
     }
 }
 

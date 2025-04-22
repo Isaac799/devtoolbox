@@ -184,7 +184,7 @@ export class AppService {
                     const search = t.FN
                     const pos = parsed.find((e: any) => e?.id === search)
                     if (!pos) {
-                        console.warn('missing table for saved position, skipped')
+                        // console.info('missing table for saved position, skipped')
                         continue
                     }
                     t.dragPosition.x = pos.x
