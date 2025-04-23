@@ -1,19 +1,19 @@
-import { CommonModule } from '@angular/common'
-import { AfterViewInit, Component, ElementRef, inject, ViewChild } from '@angular/core'
-import { FormsModule } from '@angular/forms'
-import { PageTextEditorComponent } from '../page-text-editor/page-text-editor.component'
-import { NewAttrConstraint, PG_TO_PG_TYPE, SchemaConfig } from '../../structure'
-import { LanguagePsqlService } from '../../services/language/language-psql.service'
-import { DataService } from '../../services/data.service'
-import { alignKeyword, cc } from '../../formatting'
+import {CommonModule} from '@angular/common'
+import {AfterViewInit, Component, ElementRef, inject, ViewChild} from '@angular/core'
+import {FormsModule} from '@angular/forms'
+import {PageTextEditorComponent} from '../page-text-editor/page-text-editor.component'
+import {NewAttrConstraint, PG_TO_PG_TYPE, SchemaConfig} from '../../structure'
+import {LanguagePsqlService} from '../../services/language/language-psql.service'
+import {DataService} from '../../services/data.service'
+import {alignKeyword, cc} from '../../formatting'
 import hljs from 'highlight.js'
-import { MatToolbarModule } from '@angular/material/toolbar'
-import { MatButtonModule } from '@angular/material/button'
-import { MatIconModule } from '@angular/material/icon'
-import { MatSnackBar } from '@angular/material/snack-bar'
-import { MatDialog } from '@angular/material/dialog'
-import { MatTooltipModule } from '@angular/material/tooltip'
-import { MatChipsModule } from '@angular/material/chips'
+import {MatToolbarModule} from '@angular/material/toolbar'
+import {MatButtonModule} from '@angular/material/button'
+import {MatIconModule} from '@angular/material/icon'
+import {MatSnackBar} from '@angular/material/snack-bar'
+import {MatDialog} from '@angular/material/dialog'
+import {MatTooltipModule} from '@angular/material/tooltip'
+import {MatChipsModule} from '@angular/material/chips'
 
 interface Example {
     title: string
@@ -503,7 +503,8 @@ export class PageMigrationComponent implements AfterViewInit {
                             if (a2.RefTo) {
                                 const allAttrs = t2.AllAttributes()
                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+                                for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+                                    const srcA = calledFrom[calledFrom.length - 1]
                                     if (!srcA || (srcA && srcA?.Parent.ID !== t2.ID)) continue
 
                                     const parts = [

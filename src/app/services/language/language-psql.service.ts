@@ -1,20 +1,10 @@
 import {Injectable} from '@angular/core'
 import {TAB} from '../../../app/constants'
 import {cc, alignKeyword, alignKeywords} from '../../../app/formatting'
-import {
-    Table,
-    Schema,
-    AttrType,
-    generateSeedData,
-    PG_TO_PG_TYPE,
-    Lang,
-    GenerateDefaultValue,
-    Attribute,
-    DeterminedAttrDetails,
-    Seed
-} from '../../../app/structure'
+import {Table, Schema, AttrType, PG_TO_PG_TYPE, Lang, GenerateDefaultValue, Attribute, DeterminedAttrDetails, Seed} from '../../../app/structure'
 import {LanguageSqlService} from './language-sql.service'
 import {AttributeMap} from '../../varchar'
+import {MatSnackBar} from '@angular/material/snack-bar'
 
 @Injectable({
     providedIn: 'root'
@@ -83,7 +73,8 @@ export class LanguagePsqlService {
 
         const allAttrs = t.AllAttributes()
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+        for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+            const srcA = calledFrom[calledFrom.length - 1]
             if (!srcA) continue
 
             const distant = srcA && srcA?.Parent.ID !== t.ID
@@ -100,7 +91,7 @@ export class LanguagePsqlService {
         return endThings
     }
 
-    static ToSeed(schemas: Schema[], map: AttributeMap, limit: number): string {
+    static ToSeed(schemas: Schema[], map: AttributeMap, limit: number, snackBar: MatSnackBar): string {
         const lines: string[] = []
 
         for (const s of schemas) {
@@ -113,7 +104,7 @@ export class LanguagePsqlService {
 
                 const allAttrs = t.AllAttributes()
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+                for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
                     columns.push(determinedKey)
                     divider.push('-'.repeat(determinedKey.length))
                 }
@@ -127,6 +118,11 @@ export class LanguagePsqlService {
                 divider = []
 
                 const seed = new Seed(t, map, limit)
+                if (seed.brokeUnique) {
+                    snackBar.open('Results limited due to constraints', '', {
+                        duration: 2000
+                    })
+                }
                 const data = seed.seedTable.Read()
                 for (const row of data) {
                     const c = `\n${TAB}( ${row.join(`,${alignmentKeyword} `)} )`
@@ -134,7 +130,7 @@ export class LanguagePsqlService {
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+                for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
                     values = alignKeyword(values, alignmentKeyword)
                     values = values.map(e => e.replace(alignmentKeyword, ''))
                 }
@@ -247,7 +243,8 @@ $$ LANGUAGE plpgsql;`
         let attrs: string[] = []
 
         const allAttrs = t.AllAttributes()
-        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+        for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+            const srcA = calledFrom[calledFrom.length - 1]
             const distant = srcA && srcA?.Parent.ID !== t.ID
             const nested = srcA && srcA.RefTo && a.Option?.PrimaryKey
             // console.log('edge :>> ', edge);
@@ -256,7 +253,7 @@ $$ LANGUAGE plpgsql;`
 
             if (distant && !nested) continue
 
-            const attrLine = LanguagePsqlService.generateAttrLine(determinedKey, [srcA, a, isPk, isFk, validation, options])
+            const attrLine = LanguagePsqlService.generateAttrLine(determinedKey, [[srcA], a, isPk, isFk, validation, options])
             attrs.push(attrLine)
         }
 
@@ -292,8 +289,9 @@ $$ LANGUAGE plpgsql;`
             }
             return attrLine.join(' ')
         }
+
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [srcA, a, isPk, isFk, validation, options] = details
+        const [calledFrom, a, isPk, isFk, validation, options] = details
         const name = cc(determinedKey, 'sk')
         let type = ''
         if (a.isStr()) {

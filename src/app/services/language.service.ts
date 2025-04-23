@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core'
+import {inject, Injectable} from '@angular/core'
 import {LanguageCsService} from './language/language-cs.service'
 import {LanguageGoService} from './language/language-go.service'
 import {LanguageJsService} from './language/language-js.service'
@@ -13,11 +13,13 @@ import {AttributeMap} from '../varchar'
 import {generateAttributeMap, VarcharJSONData} from '../varchar'
 import varcharJSON from '../../../public/varchar.json'
 import {LanguageHtmlService} from './language/language-html.service'
+import {MatSnackBar} from '@angular/material/snack-bar'
 
 @Injectable({
     providedIn: 'root'
 })
 export class LanguageService {
+    private readonly snackBar = inject(MatSnackBar)
     varcharMap: AttributeMap = new Map()
 
     // private readonly languageCsService = inject(LanguageCsService)
@@ -109,7 +111,7 @@ export class LanguageService {
                 ext = 'CS'
                 break
             case AppGeneratorMode.PostgresSeed:
-                output = LanguagePsqlService.ToSeed(schemas, this.varcharMap, seedLimit)
+                output = LanguagePsqlService.ToSeed(schemas, this.varcharMap, seedLimit, this.snackBar)
                 ext = 'SQL'
                 break
             case AppGeneratorMode.HTMLRaw:

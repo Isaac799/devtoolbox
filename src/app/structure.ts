@@ -143,7 +143,7 @@ export class Func {
 
         const allAttrs = this.table.AllAttributes()
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+        for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
             if (a.Option?.SystemField || a.Option?.Default) {
                 continue
             }
@@ -165,7 +165,8 @@ export class Func {
 
         const allAttrs = this.table.AllAttributes()
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+        for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(allAttrs)) {
+            const srcA = calledFrom[calledFrom.length - 1]
             const fromAnotherTable = srcA && srcA.Parent.ID !== this.table.ID
             if (fromAnotherTable) continue
 
@@ -490,7 +491,7 @@ export class Attribute {
  * }
  *
  */
-export type DeterminedAttrDetails = [Attribute | undefined, Attribute, boolean, boolean, Validation | null, AttributeOptions | null]
+export type DeterminedAttrDetails = [Attribute[], Attribute, boolean, boolean, Validation | null, AttributeOptions | null]
 export type DeterminedAttrDetailsWithLabel = [string, DeterminedAttrDetails]
 
 // Schema represents the entire schema containing multiple tables
@@ -590,8 +591,26 @@ export class Table {
         const pks: string[] = []
         const attrs = this.AllAttributes()
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(attrs)) {
+        for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(attrs)) {
+            // console.log({determinedKey})
             if (!isPk) continue
+            // if (isFk) {
+            //     if (calledFrom.length === 0) {
+            //         console.warn('how can this be a FK without a src arr?')
+            //         continue
+            //     }
+            //     const aaa = calledFrom[0].Parent.AllAttributes()
+            //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            //     for (const [determinedKey2, [calledFrom, a2, isPk, isFk, validation, options]] of Object.entries(aaa)) {
+            //         if (calledFrom[0].ID !== a2.ID) {
+            //             continue
+            //         }
+            //         pks.push(determinedKey2)
+            //         break
+            //     }
+
+            //     continue
+            // }
             pks.push(determinedKey)
         }
         return pks
@@ -610,7 +629,7 @@ export class Table {
 
         for (const x of Object.entries(allAttrs)) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [determinedKey, [srcA, a, isPk, isFk, validation, options]] = x
+            const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] = x
 
             let uniqueLabels: string[] = []
 
@@ -645,7 +664,7 @@ export class Table {
 
         for (const x of Object.entries(allAttrs)) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [determinedKey, [srcA, a, isPk, isFk, validation, options]] = x
+            const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] = x
 
             let uniqueLabels: string[] = []
 
@@ -677,7 +696,7 @@ export class Table {
             foreignAttrs: false,
             maxDepth: 10
         },
-        calledFrom?: Attribute,
+        calledFrom?: Attribute[],
         og?: Attribute
     ): Record<string, DeterminedAttrDetails> {
         if (depth > options.maxDepth) {
@@ -702,11 +721,16 @@ export class Table {
                 determinedKey = kr
             }
 
+            if (!calledFrom) {
+                calledFrom = []
+            }
+
             if (a.RefTo && options.foreignKeysOnly && a.Option?.PrimaryKey) {
                 const refPks = a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)
                 if (refPks.length == 0) continue
 
-                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a, og || a)
+                calledFrom.push(a)
+                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, calledFrom, og || a)
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -716,7 +740,8 @@ export class Table {
                 const refPks = a.RefTo.Attributes.filter(e => e.Option?.PrimaryKey)
                 if (refPks.length == 0) continue
 
-                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, a, og || a)
+                calledFrom.push(a)
+                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, calledFrom, og || a)
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -725,22 +750,24 @@ export class Table {
             }
             if (depth === 0 && options.includeSelf) {
                 isPrimary = a.Option?.PrimaryKey === true
-                answer[determinedKey] = [undefined, a, isPrimary, isForeign, a.Validation || null, a.Option || null]
+                answer[determinedKey] = [[], a, isPrimary, isForeign, a.Validation || null, a.Option || null]
                 continue
             }
 
             isForeign = true
 
-            if (!calledFrom) {
+            const nearestCalledFrom = calledFrom[calledFrom.length - 1]
+
+            if (!nearestCalledFrom) {
                 console.error('missing called from on depth > 0')
                 continue
             }
 
             const distant = depth > 1
-            const isRef = calledFrom.RefTo !== undefined
-            const originIsPkAndRef = calledFrom.RefTo && calledFrom.Option?.PrimaryKey
+            const isRef = nearestCalledFrom.RefTo !== undefined
+            const originIsPkAndRef = nearestCalledFrom.RefTo && nearestCalledFrom.Option?.PrimaryKey
 
-            isPrimary = (!distant && calledFrom.Option?.PrimaryKey) || (distant && isRef && !originIsPkAndRef)
+            isPrimary = (!distant && nearestCalledFrom.Option?.PrimaryKey) || (distant && isRef && !originIsPkAndRef)
 
             if (distant && isRef && !originIsPkAndRef) continue
 
@@ -760,7 +787,6 @@ export class Table {
 
 export class SeedCell {
     attrID: string
-    refToAttrID?: string
     generatedValue: string
 
     constructor(attrID: string, generatedValue: string) {
@@ -859,26 +885,18 @@ export class SeedTable {
         return true
     }
 
-    GetPool(srcA: Attribute) {
+    GetPool(a: Attribute) {
         const previousRowsToCompare: SeedCell[][] = []
 
-        if (!srcA.RefTo) {
-            console.error('cannot get pool for a non reference')
-            return previousRowsToCompare
-        }
-
-        if (!srcA.RefTo.seed) {
+        if (!a.Parent.seed) {
             console.error('cannot get pool for a table missing seed')
             return previousRowsToCompare
         }
 
-        const pkIds = srcA.RefTo.AllPrimaryDeterminedIdentifiers()
+        const pkIds = a.Parent.AllPrimaryDeterminedIdentifiers()
 
-        console.log('srcA.RefTo.seed.rows ~~', srcA.RefTo.FN)
-        console.log(srcA.RefTo.seed.rows)
-
-        for (let rowIndex = 0; rowIndex < srcA.RefTo.seed.rows.length; rowIndex++) {
-            const row = srcA.RefTo.seed.rows[rowIndex]
+        for (let rowIndex = 0; rowIndex < a.Parent.seed.rows.length; rowIndex++) {
+            const row = a.Parent.seed.rows[rowIndex]
 
             if (!previousRowsToCompare[rowIndex]) {
                 previousRowsToCompare[rowIndex] = []
@@ -886,14 +904,11 @@ export class SeedTable {
 
             for (const col of row.columns) {
                 // console.log(col.attrID, a.Name)
-                if (!col.refToAttrID) {
+                if (!col.attrID) {
                     console.warn('missing the column name we are trying to reference')
                     continue
                 }
-                // console.log("--")
-                // console.log("pkIds: ",pkIds)
-                // console.log("col.refToAttrID: ", col.refToAttrID)
-                if (!pkIds.includes(col.refToAttrID)) {
+                if (!pkIds.includes(col.attrID)) {
                     continue
                 }
                 previousRowsToCompare[rowIndex].push(col)
@@ -941,6 +956,7 @@ export class SeedTable {
 export class Seed {
     private limit = 1
     seedTable: SeedTable
+    brokeUnique = false
 
     // /**
     //  *
@@ -950,11 +966,12 @@ export class Seed {
     // private uniqueLabelsMap: Record<string, Record<string, string[]>> = {}
 
     constructor(t: Table, map: AttributeMap, limit: number) {
-        if (t.FN.includes('buzz')) {
-            console.warn(t.FN)
-        } else {
-            console.log(t.FN)
+        if (t.seed) {
+            // important for re-generations
+            t.seed = undefined
         }
+
+        // console.log(`\n\n: ~~~~ ${t.FN} ~~~~`)
         if (limit > 50) {
             limit = 50
         } else if (limit < 1) {
@@ -975,61 +992,85 @@ export class Seed {
         const attrs = t.AllAttributes()
         for (let rowIndex = 0; rowIndex < limit; rowIndex++) {
             if (escape > SEED_RETRY_MAX) {
-                console.warn('break unique: ', t.Name)
+                this.brokeUnique = true
+                // console.warn('break unique: ', t.Name)
                 break
             }
 
             // generate a row of data
             const seedCells: SeedCell[] = []
 
-            let pkChosen: SeedCell[] | null = null
+            // we choose a pk
+            // some cols are more than one, so its a record
+            const pkChosen: Record<string, SeedCell[]> = {}
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const [determinedKey, [srcA, a, isPk, isFk, validation, options]] of Object.entries(attrs)) {
+            for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(attrs)) {
                 let v = ''
+
+                // const srcA = calledFrom[calledFrom.length - 1]
+                const srcA = calledFrom[0]
+                // console.log(srcA?.FN, a.FN)
+                // console.log(calledFrom)
+                // const nearestSrcA = calledFrom[0]
+
+                // console.log('--')
+                // console.log(determinedKey)
+                // console.log(calledFrom)
+
                 if (srcA && srcA.Type === AttrType.REFERENCE) {
-                    if (!pkChosen) {
-                        const options = seedTable.GetPool(srcA)
-                        // console.log(options)
-                        pkChosen = Seed.randomArrayItem(options)
-                    }
-
-                    if (!pkChosen) {
-                        console.warn('missing chosen primary key')
-                        continue
-                    }
-
                     if (!srcA.RefTo) {
                         console.warn('srcA should of had a reference')
                         continue
                     }
 
-                    let found = false
-                    for (const pk of pkChosen) {
-                        // console.log(pk.attrID, pk.refToAttrID, pk.generatedValue, determinedKey)
+                    const plChosenKey = a.Parent.FN
+                    // console.log('plChosenKey :>> ', plChosenKey);
+                    if (!pkChosen[plChosenKey] || pkChosen[plChosenKey].length === 0) {
+                        const options = seedTable.GetPool(a)
+                        // console.log(options)
+                        const arr = Seed.randomArrayItem(options)
+                        if (arr) {
+                            pkChosen[plChosenKey] = arr
+                        }
+                    }
 
+                    if (!pkChosen[plChosenKey]) {
+                        console.warn('missing chosen primary key')
+                        continue
+                    }
+
+                    // console.log(pkChosen)
+
+                    let found = false
+                    for (const pk of pkChosen[plChosenKey]) {
                         // We have to look at the columns of the table we are referencing.
                         // From there we look at each one, checking for the primary key we randomly grabbed
                         // then we make sure this cell in the row we are generating for matches up with the
                         // referenced tables col. After that we can save the value
-                        const attrs2 = srcA.RefTo.AllAttributes()
+                        const attrs2 = a.Parent.AllAttributes()
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        for (const [determinedKey, [srcA, a2, isPk, isFk, validation, options]] of Object.entries(attrs2)) {
+                        for (const [determinedKey2, [calledFrom2, a2, isPk, isFk, validation, options]] of Object.entries(attrs2)) {
                             // console.log("\n---")
-                            // console.log(determinedKey, pk.refToAttrID)
-
+                            // if (t.Name.includes('foo_bar')) {
+                            //     console.log(a, a2)
+                            //     console.log({determinedKey, determinedKey2})
+                            //     console.log({pk})
+                            // }
                             if (a2.ID !== a.ID) continue
-                            if (determinedKey !== pk.refToAttrID) {
+                            if (determinedKey2 !== pk.attrID) {
                                 continue
                             }
                             found = true
                             v = pk.generatedValue
+                            break
                         }
                     }
 
                     if (!found) {
                         console.warn('did not find a pk value')
                         console.log('pkChosen: ', pkChosen)
+                        console.log('plChosenKey: ', plChosenKey)
                         v = '?'
                     }
                 } else if (a.Type === AttrType.SERIAL) {
@@ -1040,17 +1081,6 @@ export class Seed {
 
                 const seedCell = new SeedCell(determinedKey, v)
 
-                // since this is a reference we need to look at the attribute name
-                const attrs = a.Parent.AllAttributes()
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                for (const [determinedKey, [srcA, a2, isPk, isFk, validation, options]] of Object.entries(attrs)) {
-                    if (a.ID !== a2.ID) continue
-                    seedCell.refToAttrID = determinedKey
-                    // console.log(seedCell.refToAttrID)
-                    break
-                }
-
-                // console.log(seedCell)
                 seedCells.push(seedCell)
             }
 
