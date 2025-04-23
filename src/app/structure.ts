@@ -1307,78 +1307,96 @@ export interface App {
 export function generateSeedData(attr: Attribute, map: AttributeMap): string {
     const Type = attr.Type
     const Required = !attr.isNullable()
-    // const Min = attr.Validation?.Min
+    const Min = attr.Validation?.Min
     const Max = attr.Validation?.Max
 
-    // Helper function to generate a valid date (Postgres format: YYYY-MM-DD)
-    const generateDate = () => {
-        const year = Math.floor(Math.random() * 20) + 2000 // Random year between 2000 and 2019
-        const month = Math.floor(Math.random() * 12) // Random month (0-11, which corresponds to Jan-Dec)
-        const day = Math.floor(Math.random() * new Date(year, month + 1, 0).getDate()) + 1 // Get the last date of the month
-        return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` // Format as 'YYYY-MM-DD'
+    const DEFAULT_EPOCH_RANGE = 60 * 60 * 24 * 365 * 5 // ~5 years in seconds
+
+    const randomEpochInRange = (min?: number, max?: number): number => {
+        if (min !== undefined && max !== undefined) {
+            return Math.floor(Math.random() * (max - min + 1)) + min
+        } else if (min !== undefined) {
+            return Math.floor(Math.random() * DEFAULT_EPOCH_RANGE) + min
+        } else if (max !== undefined) {
+            return max - Math.floor(Math.random() * DEFAULT_EPOCH_RANGE)
+        } else {
+            // Random epoch between 2000-01-01 and 2020-01-01
+            const defaultMin = new Date('2000-01-01').getTime() / 1000
+            const defaultMax = new Date('2020-01-01').getTime() / 1000
+            return Math.floor(Math.random() * (defaultMax - defaultMin + 1)) + defaultMin
+        }
     }
 
-    // Helper function to generate a valid time (Postgres format: HH:MI:SS)
-    const generateTime = () => {
-        const hours = Math.floor(Math.random() * 24) // Random hour between 0-23
-        const minutes = Math.floor(Math.random() * 60) // Random minute between 0-59
-        const seconds = Math.floor(Math.random() * 60) // Random second between 0-59
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}` // Format as 'HH:MI:SS'
+    const generateDate = (min?: number, max?: number): string => {
+        const epoch = randomEpochInRange(min, max)
+        return new Date(epoch * 1000).toISOString().split('T')[0] // Format: YYYY-MM-DD
     }
 
-    // Helper function to generate a valid timestamp (Postgres format: YYYY-MM-DD HH:MI:SS)
-    const generateTimestamp = () => {
-        const date = generateDate() // Generate random date
-        const time = generateTime() // Generate random time
-        return `'${date} ${time}'` // Combine both for 'YYYY-MM-DD HH:MI:SS' format
+    const generateTime = (min?: number, max?: number): string => {
+        const epoch = randomEpochInRange(min, max)
+        return new Date(epoch * 1000).toTimeString().split(' ')[0] // Format: HH:MM:SS
     }
 
-    // Helper function to handle nullability
+    const generateTimestamp = (min?: number, max?: number): string => {
+        const epoch = randomEpochInRange(min, max)
+        const iso = new Date(epoch * 1000).toISOString().replace('T', ' ').split('.')[0]
+        return `'${iso}'` // Format: 'YYYY-MM-DD HH:MI:SS'
+    }
+
     const getNullOrValue = (value: string) => (Required ? value : Math.random() > 0.5 ? value : 'NULL')
+
+    const getSafeRange = (min?: number, max?: number, fallbackMin = 0, fallbackMax = 1000) => {
+        return {
+            min: min !== undefined ? min : fallbackMin,
+            max: max !== undefined ? max : fallbackMax
+        }
+    }
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
+
+    const randomIntInRange = (min: number, max: number) => Math.floor(randomInRange(min, max + 1)) // inclusive upper bound
 
     switch (Type) {
         case AttrType.BIT:
             return getNullOrValue(Math.random() > 0.5 ? '1' : '0')
 
+        // Switch-case usage:
         case AttrType.DATE: {
-            const date = generateDate()
-            return getNullOrValue(date)
+            const date = generateDate(Min, Max)
+            return getNullOrValue(`'${date}'`)
         }
 
         case AttrType.TIME: {
-            const time = generateTime()
-            return getNullOrValue(time)
+            const time = generateTime(Min, Max)
+            return getNullOrValue(`'${time}'`)
         }
 
         case AttrType.TIMESTAMP: {
-            const timestamp = generateTimestamp()
+            const timestamp = generateTimestamp(Min, Max)
             return getNullOrValue(timestamp)
         }
 
         case AttrType.CHAR:
-            return getNullOrValue(`'${String.fromCharCode(Math.floor(Math.random() * 26) + 65)}'`)
+            return getNullOrValue(`'${String.fromCharCode(randomIntInRange(65, 90))}'`)
 
         case AttrType.DECIMAL: {
-            const decimal = (Math.random() * (Max || 1000)).toFixed(2)
-            return getNullOrValue(decimal)
+            const {min, max} = getSafeRange(Min, Max)
+            return getNullOrValue(randomInRange(min, max).toFixed(2))
         }
 
         case AttrType.REAL: {
-            const real = (Math.random() * (Max || 1000)).toFixed(3)
-            return getNullOrValue(real)
+            const {min, max} = getSafeRange(Min, Max)
+            return getNullOrValue(randomInRange(min, max).toFixed(3))
         }
 
         case AttrType.FLOAT: {
-            const float = (Math.random() * (Max || 1000)).toFixed(4)
-            return getNullOrValue(float)
+            const {min, max} = getSafeRange(Min, Max)
+            return getNullOrValue(randomInRange(min, max).toFixed(4))
         }
 
-        case AttrType.SERIAL:
-            return 'DEFAULT' // Serial is usually auto-incremented
-
         case AttrType.INT: {
-            const int = Math.floor(Math.random() * (Max || 1000))
-            return getNullOrValue(int.toString())
+            const {min, max} = getSafeRange(Min, Max)
+            return getNullOrValue(randomIntInRange(min, max).toString())
         }
 
         case AttrType.BOOLEAN:
@@ -1386,13 +1404,12 @@ export function generateSeedData(attr: Attribute, map: AttributeMap): string {
 
         case AttrType.VARCHAR: {
             const randWord = randAttrVarchar(attr.PFN, map)
-
             let result = ''
 
             if (randWord) {
                 result = randWord
             } else {
-                const length = Max ? Math.min(Max, 255) : 10 // Limit to 255 for realistic string length
+                const length = Max !== undefined ? Math.min(Max, 255) : 10
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
                 for (let i = 0; i < length; i++) {
@@ -1400,16 +1417,16 @@ export function generateSeedData(attr: Attribute, map: AttributeMap): string {
                 }
             }
 
-            if (Max && result.length > Max) {
-                result = result.slice(0, Max - 1)
+            if (Max !== undefined && result.length > Max) {
+                result = result.slice(0, Max)
             }
 
             return getNullOrValue(`'${result.replaceAll("'", "''")}'`)
         }
 
         case AttrType.MONEY: {
-            const money = (Math.random() * (Max || 1000)).toFixed(2)
-            return getNullOrValue(money)
+            const {min, max} = getSafeRange(Min, Max)
+            return getNullOrValue(randomInRange(min, max).toFixed(2))
         }
 
         default:
