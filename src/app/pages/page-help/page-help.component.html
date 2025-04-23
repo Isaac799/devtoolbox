@@ -24,6 +24,17 @@
 
     <h4>Why use this tool?</h4>
 
+    <p>
+        Ever tried documenting something? What do I write? Who maintains the documents? Why maintain documentation if I
+        am
+        the only one who uses this? Do I have time since I am already a week past due?
+    </p>
+
+    <p>
+        If I am going to document something, <em>what</em> I
+        write must have significance. That is where this tool comes in. (see bullet points below)
+    </p>
+
     <ul>
         <li>
             <strong>Practical.</strong> I am developing this tool for real needs that I have. Features are purposeful
@@ -97,7 +108,7 @@
     <p>
         Firstly, create a folder (schema)
     </p>
-    <code>#  [ identifier ]</code>
+    <code>#  identifier</code>
 
     <h4>
         Blueprints
@@ -105,7 +116,7 @@
     <p>
         Secondly, create a blueprint (entity / table)
     </p>
-    <code>##  [ identifier ]</code>
+    <code>##  identifier</code>
 
     <h4>
         Attributes
@@ -113,31 +124,36 @@
     <p>
         Finally, add attribute (properties / columns)
     </p>
-    <code>-  [ identifier ] as [ type ] with [ options ]</code>
+    <code>-  identifier <strong>as</strong> type <strong>with</strong> options</code>
 
     <p>
         Shorthand to referencing other blueprints (identifier must already exist)
     </p>
-    <code>-  &#64;[ identifier ] with [ options ]</code>
+    <code>-  &#64;identifier <strong>with</strong> options</code>
 
-    <h4>Options</h4>
-    <p>Note that all options can be truncated to just their first letter.</p>
+    <h3>Options</h3>
+    <p>Note that all options can be truncated to just their first letter. Seed data respects these constraint.</p>
     <ul>
         <li>
-            <code>[ required ]</code> must have a value, cannot be null
+            <code>min..max</code> a min..max range. A max required for strings (varchar in database). Decimals dictate
+            html steppers. Min-max applied to validation functions. Date/times are in epoch seconds (e.g.
+            <code>1145450409..1545450409</code>).
         </li>
         <li>
-            <code>[ unique ]:[ identifier ]</code> must be unique for matching identifier(s) (identifier is optional)
+            <code>required</code> must have a value, cannot be null
         </li>
         <li>
-            <code>[ primary ]</code> this is a primary identifier.
+            <code>unique:identifier</code> must be unique for matching identifier(s) (identifier is optional).
         </li>
         <li>
-            <code>[ default ]</code> this is the default value to set an attribute to. Tooltips will guide the expected
+            <code>primary</code> this is a primary identifier.
+        </li>
+        <li>
+            <code>default</code> this is the default value to set an attribute to. Tooltips will guide the expected
             format.
         </li>
         <li>
-            <code>[ system ]</code> excludes it from certain things, like needing passed in on creation.
+            <code>system</code> excludes it from certain things, like needing passed in on creation.
         </li>
     </ul>
 
@@ -219,11 +235,11 @@
     <h4>Special Types</h4>
     <ul>
         <li>
-            <code>[ auto increment | ++ ]</code> is a unique integer that increments. Automatically gains
-            <code>[ primary & required & unique & system ] options.</code>
+            <code>auto increment | ++</code> is a unique integer that increments. Automatically gains
+            <code>primary & required & unique & system options.</code>
         </li>
         <li>
-            <code>[ blueprint name ]</code> indicating another blueprint will reference it. Allowing for aliasing.
+            <code>blueprint name</code> indicating another blueprint will reference it. Allowing for aliasing.
         </li>
     </ul>
 
@@ -249,7 +265,7 @@
                     <strong>Associative Entities</strong>
                 </td>
                 <td>
-                    <code>![ identifier ]:[ identifier ]!</code>
+                    <code>!identifier:identifier!</code>
                 </td>
                 <td>
                     A common need is many-many relationships. Use this to relate 2 code-existing blueprints.
@@ -265,7 +281,7 @@
                     <strong>Lists</strong>
                 </td>
                 <td>
-                    <code>!list:[ identifier ]!</code>
+                    <code>!list:identifier!</code>
                 </td>
                 <td>
                     Another common need is a list of things to choose from, categorical data. For example, dropdown
@@ -282,7 +298,7 @@
                     <strong>Attributes</strong>
                 </td>
                 <td>
-                    <code>!attr:[ keyword ]!</code>
+                    <code>!attr:keyword!</code>
                 </td>
                 <td>
                     <p>
