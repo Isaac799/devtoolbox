@@ -804,7 +804,7 @@ export class SeedRow {
 }
 
 export class SeedTable {
-    private rows: SeedRow[]
+    rows: SeedRow[]
     uniqueAttrIdGroups: Record<string, string[]> = {}
 
     constructor(uniqueAttrIdGroups: Record<string, string[]>) {
@@ -895,26 +895,29 @@ export class SeedTable {
 
         const pkIds = a.Parent.AllPrimaryDeterminedIdentifiers()
 
-        for (let rowIndex = 0; rowIndex < a.Parent.seed.rows.length; rowIndex++) {
-            const row = a.Parent.seed.rows[rowIndex]
+        for (const pkID of pkIds) {
+            for (let rowIndex = 0; rowIndex < a.Parent.seed.rows.length; rowIndex++) {
+                const row = a.Parent.seed.rows[rowIndex]
 
-            if (!previousRowsToCompare[rowIndex]) {
-                previousRowsToCompare[rowIndex] = []
-            }
+                if (!previousRowsToCompare[rowIndex]) {
+                    previousRowsToCompare[rowIndex] = []
+                }
 
-            for (const col of row.columns) {
-                // console.log(col.attrID, a.Name)
-                if (!col.attrID) {
-                    console.warn('missing the column name we are trying to reference')
-                    continue
+                for (const col of row.columns) {
+                    // console.log(col.attrID, a.Name)
+                    if (pkID !== col.attrID) {
+                        continue
+                    }
+                    if (!col.attrID) {
+                        console.warn('missing the column name we are trying to reference')
+                        continue
+                    }
+                    previousRowsToCompare[rowIndex].push(col)
                 }
-                if (!pkIds.includes(col.attrID)) {
-                    continue
-                }
-                previousRowsToCompare[rowIndex].push(col)
             }
         }
 
+        // console.log('previousRowsToCompare')
         // console.log(previousRowsToCompare)
         return previousRowsToCompare
     }
@@ -967,11 +970,15 @@ export class Seed {
 
     constructor(t: Table, map: AttributeMap, limit: number) {
         if (t.seed) {
+            // if (t.FN.includes("foo_bar")) {
+            //     console.warn("SS")
+            //     console.log(JSON.parse(JSON.stringify(t.seed)))
+            // }
             // important for re-generations
             t.seed = undefined
         }
 
-        // console.log(`\n\n: ~~~~ ${t.FN} ~~~~`)
+        console.log(`\n\n: ~~~~ ${t.FN} ~~~~`)
         if (limit > 50) {
             limit = 50
         } else if (limit < 1) {
@@ -1008,8 +1015,19 @@ export class Seed {
             for (const [determinedKey, [calledFrom, a, isPk, isFk, validation, options]] of Object.entries(attrs)) {
                 let v = ''
 
-                // const srcA = calledFrom[calledFrom.length - 1]
                 const srcA = calledFrom[0]
+
+                // console.log('calledFrom');
+                // console.log(calledFrom );
+
+                // if (t.Name.includes('buzz')) {
+                //     console.log('--')
+                //     console.log(determinedKey)
+                //     console.log(calledFrom.map(e => e.FN))
+                //     console.log(srcA)
+                // }
+
+                // const srcA = calledFrom[0]
                 // console.log(srcA?.FN, a.FN)
                 // console.log(calledFrom)
                 // const nearestSrcA = calledFrom[0]
@@ -1043,28 +1061,16 @@ export class Seed {
                     // console.log(pkChosen)
 
                     let found = false
+                    // console.log(pkChosen[plChosenKey])
                     for (const pk of pkChosen[plChosenKey]) {
-                        // We have to look at the columns of the table we are referencing.
-                        // From there we look at each one, checking for the primary key we randomly grabbed
-                        // then we make sure this cell in the row we are generating for matches up with the
-                        // referenced tables col. After that we can save the value
-                        const attrs2 = a.Parent.AllAttributes()
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        for (const [determinedKey2, [calledFrom2, a2, isPk, isFk, validation, options]] of Object.entries(attrs2)) {
-                            // console.log("\n---")
-                            // if (t.Name.includes('foo_bar')) {
-                            //     console.log(a, a2)
-                            //     console.log({determinedKey, determinedKey2})
-                            //     console.log({pk})
-                            // }
-                            if (a2.ID !== a.ID) continue
-                            if (determinedKey2 !== pk.attrID) {
-                                continue
-                            }
-                            found = true
-                            v = pk.generatedValue
-                            break
+                        // console.log('a.Name :>> ', a.Name)
+                        // console.log('pk :>> ', pk)
+                        if (pk.attrID !== a.Name) {
+                            continue
                         }
+                        found = true
+                        v = pk.generatedValue
+                        break
                     }
 
                     if (!found) {
