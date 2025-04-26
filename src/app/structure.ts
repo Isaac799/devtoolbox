@@ -730,7 +730,14 @@ export class Table {
                 if (refPks.length == 0) continue
 
                 calledFrom.push(a)
-                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, calledFrom, og || a)
+                const refAttrs = a.RefTo.AllAttributes(
+                    determinedKey,
+                    depth + 1,
+                    a.RefTo.ID === this.ID ? selfDepth + 1 : 0,
+                    {...options},
+                    [...calledFrom],
+                    og || a
+                )
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -741,7 +748,14 @@ export class Table {
                 if (refPks.length == 0) continue
 
                 calledFrom.push(a)
-                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, calledFrom, og || a)
+                const refAttrs = a.RefTo.AllAttributes(
+                    determinedKey,
+                    depth + 1,
+                    a.RefTo.ID === this.ID ? selfDepth + 1 : 0,
+                    {...options},
+                    [...calledFrom],
+                    og || a
+                )
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -780,6 +794,8 @@ export class Table {
                 }
             }
         }
+        // console.log('\ndepth :>> ', depth);
+        // console.log('answer :>> ', answer);
 
         return answer
     }
@@ -888,16 +904,16 @@ export class SeedTable {
     GetPool(a: Attribute) {
         const previousRowsToCompare: SeedCell[][] = []
 
-        if (!a.Parent.seed) {
+        if (!a.RefTo?.seed) {
             console.error('cannot get pool for a table missing seed')
             return previousRowsToCompare
         }
 
-        const pkIds = a.Parent.AllPrimaryDeterminedIdentifiers()
+        const pkIds = a.RefTo.AllPrimaryDeterminedIdentifiers()
 
         for (const pkID of pkIds) {
-            for (let rowIndex = 0; rowIndex < a.Parent.seed.rows.length; rowIndex++) {
-                const row = a.Parent.seed.rows[rowIndex]
+            for (let rowIndex = 0; rowIndex < a.RefTo.seed.rows.length; rowIndex++) {
+                const row = a.RefTo.seed.rows[rowIndex]
 
                 if (!previousRowsToCompare[rowIndex]) {
                     previousRowsToCompare[rowIndex] = []
@@ -1018,7 +1034,7 @@ export class Seed {
                 const srcA = calledFrom[0]
 
                 // console.log('calledFrom');
-                // console.log(calledFrom );
+                // console.log(calledFrom)
 
                 // if (t.Name.includes('buzz')) {
                 //     console.log('--')
@@ -1042,10 +1058,10 @@ export class Seed {
                         continue
                     }
 
-                    const plChosenKey = a.Parent.FN
+                    const plChosenKey = srcA.FN
                     // console.log('plChosenKey :>> ', plChosenKey);
                     if (!pkChosen[plChosenKey] || pkChosen[plChosenKey].length === 0) {
-                        const options = seedTable.GetPool(a)
+                        const options = seedTable.GetPool(srcA)
                         // console.log(options)
                         const arr = Seed.randomArrayItem(options)
                         if (arr) {
@@ -1062,15 +1078,32 @@ export class Seed {
 
                     let found = false
                     // console.log(pkChosen[plChosenKey])
-                    for (const pk of pkChosen[plChosenKey]) {
-                        // console.log('a.Name :>> ', a.Name)
-                        // console.log('pk :>> ', pk)
-                        if (pk.attrID !== a.Name) {
-                            continue
+
+                    const allAttrs2 = srcA.Parent.AllAttributes()
+                    for (const [determinedKey2, [calledFrom, a2, isPk, isFk, validation, options]] of Object.entries(allAttrs2)) {
+                        // console.log("---------------------")
+                        // console.log(a)
+                        // console.log("--")
+                        // console.log(a2)
+                        if (a.ID !== a2.ID) continue
+                        for (const pk of pkChosen[plChosenKey]) {
+                            // console.log('a.Name :>> ', a.Name)
+                            // console.log('pk :>> ', pk)
+                            // console.log('a :>> ', a)
+                            // console.log('srcA :>> ', srcA)
+                            console.log({
+                                'pk.attrID': pk.attrID,
+                                determinedKey,
+                                determinedKey2,
+                            })
+                            // if (!determinedKey2.includes(pk.attrID)) continue
+                            if (determinedKey !== determinedKey2) {
+                                continue
+                            }
+                            found = true
+                            v = pk.generatedValue
+                            break
                         }
-                        found = true
-                        v = pk.generatedValue
-                        break
                     }
 
                     if (!found) {
