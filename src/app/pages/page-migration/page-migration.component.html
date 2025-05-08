@@ -1,5 +1,13 @@
 <div class="p2">
     <div class="fc g2">
+        <div>
+            <p>
+                This page takes in 2 TUI configs and attempts to generate a migration script. See the examples. Examples start simple and get more involved. 
+                This page (as with most of the app) is a WIP. Notably, this page does not persist changes.
+            </p>
+        </div>
+
+
         <div class="fr g2 center-align">
             Examples: <mat-chip-set aria-label="Example selection">
                 @for (example of examples; track $index) {
@@ -7,7 +15,9 @@
                     [matTooltip]="example.desc"
                     (click)="UseExample(example)"
                 >
-                    {{ example.title }}
+                    <code>
+                        {{ example.title }}
+                    </code>
                 </mat-chip>
                 }
             </mat-chip-set>
