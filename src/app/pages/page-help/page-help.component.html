@@ -1,41 +1,35 @@
 <div class="p1">
     <h1>Help</h1>
 
-    <em>What is it?</em>
+    <h4>What is it?</h4>
 
     <p>
         A higher level approach to helping common CRUD needs.
     </p>
 
-    <em>
+    <h4>
         Is it ready to use?
-    </em>
+    </h4>
 
     <p>
-        Not really. It mostly works, but is just a side project. I like the syntax I made, but its subject to change
-        depending on peer feedback. Features are mostly tested, but all testing is manual and by eye/hand.
+        Not really. It mostly works, but is just a side project. I like the syntax I made, but its subject to change. Testing is manual and by eye/hand.
     </p>
 
-    <em>
+    <h4>
         Why not just use a LLM?
-    </em>
+    </h4>
     <p>
-        This is not supposed to compete with or replace other tooling. This fills a void in my workflow, <em>for
-            me</em>. My responsibilities are to develop new projects and maintain old ones. Often written by someone
-        not around anymore. Documentation is great, but always falls short. What do I write? Who maintains the
-        documents? Why maintain documentation if I am the only one who uses this and am already a week past due?
-        If I am going to document something, <em>what</em> I write must have significance. That is where this tool comes
-        in. (see bullet points below)
+        This is not supposed to compete with or replace other tooling.
     </p>
 
-    <em>Why use this tool?</em>
+    <h4>Why use this tool?</h4>
 
     <ul>
         <li>
             <strong>Practical.</strong> I am developing this tool for real needs that I have. Features are purposeful
             and powerful, not pomps.
         </li>
-        <li><strong>Source controllable</strong>. The plain text markdown enables simple documentation of data
+        <li><strong>Source controllable</strong>. The plain text markdown syntax enables simple documentation of data
             structure. Especially helpful when working across multiple projects.
         </li>
         <li>
@@ -56,19 +50,16 @@
         </li> -->
     </ul>
 
-    <em>
+    <h4>
         Why not use an ORM?
-    </em>
+    </h4>
     <p>
-        This is not competing with an ORM - despite a lot of the generated code is CRUD orientated. Plus, as a general
-        rule I have been trying to move away from libraries. When using a library I find myself limiting the features of
-        an app to what a library gives me. More recently though, a core library for me became pay walled, leaving
-        several applications I maintain without access to the documentation they where written with. This tool aims to
+        This is not competing with an ORM - despite a lot of the generated code is CRUD orientated. This tool aims to
         encourage writing code and database migrations.
     </p>
 
 
-    <em>What are the key concepts?</em>
+    <h4>What are the key concepts?</h4>
 
     <p>
         I wanted a higher level approach, but keeping technical enough for my needs. To achieve this approach I landed
@@ -81,7 +72,7 @@
             structs.</li>
     </ol>
 
-    <em>Whats the difference in the GUI and the TUI?</em>
+    <h4>Whats the difference in the GUI and the TUI?</h4>
 
     <p>
         The Graphical User Interface (GUI) is pretty cool. It shows the relevant options and validation to fill out
@@ -100,25 +91,25 @@
         shorthand and more verbose modes.
     </p>
 
-    <h3>
+    <h4>
         Folders
-    </h3>
+    </h4>
     <p>
         Firstly, create a folder (schema)
     </p>
     <code>#  [ identifier ]</code>
 
-    <h3>
+    <h4>
         Blueprints
-    </h3>
+    </h4>
     <p>
         Secondly, create a blueprint (entity / table)
     </p>
     <code>##  [ identifier ]</code>
 
-    <h3>
+    <h4>
         Attributes
-    </h3>
+    </h4>
     <p>
         Finally, add attribute (properties / columns)
     </p>
@@ -129,7 +120,7 @@
     </p>
     <code>-  &#64;[ identifier ] with [ options ]</code>
 
-    <h3>Options</h3>
+    <h4>Options</h4>
     <p>Note that all options can be truncated to just their first letter.</p>
     <ul>
         <li>
@@ -150,7 +141,7 @@
         </li>
     </ul>
 
-    <h3>Types</h3>
+    <h4>Types</h4>
     <p>All the following types are supported</p>
     <table [cellSpacing]="6">
         <thead>
@@ -225,7 +216,7 @@
         </tbody>
     </table>
 
-    <h3>Special Types</h3>
+    <h4>Special Types</h4>
     <ul>
         <li>
             <code>[ auto increment | ++ ]</code> is a unique integer that increments. Automatically gains
@@ -236,7 +227,7 @@
         </li>
     </ul>
 
-    <h3>Macros</h3>
+    <h4>Macros</h4>
     <p>
         To help rapidly prototype ideas, use macros.
     </p>
