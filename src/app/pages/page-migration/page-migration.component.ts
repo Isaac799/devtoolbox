@@ -2,7 +2,7 @@ import {CommonModule} from '@angular/common'
 import {AfterViewInit, Component, ElementRef, inject, ViewChild} from '@angular/core'
 import {FormsModule} from '@angular/forms'
 import {PageTextEditorComponent} from '../page-text-editor/page-text-editor.component'
-import {NewAttrConstraint, PG_TO_PG_TYPE, SchemaConfig} from '../../structure'
+import {NewAttrConstraint, PG_TO_PG_TYPE, SchemaConfig, Table} from '../../structure'
 import {LanguagePsqlService} from '../../services/language/language-psql.service'
 import {DataService} from '../../services/data.service'
 import {alignKeyword, cc} from '../../formatting'
@@ -14,6 +14,9 @@ import {MatSnackBar} from '@angular/material/snack-bar'
 import {MatDialog} from '@angular/material/dialog'
 import {MatTooltipModule} from '@angular/material/tooltip'
 import {MatChipsModule} from '@angular/material/chips'
+
+const replaceAlign = `~~!~~`
+const replaceAlign2 = `~~!!~~`
 
 interface Example {
     title: string
@@ -243,9 +246,6 @@ export class PageMigrationComponent implements AfterViewInit {
     static compare(before: Record<string, SchemaConfig>, after: Record<string, SchemaConfig>): string {
         let script: string[] = []
 
-        const replaceAlign = `~~!~~`
-        const replaceAlign2 = `~~!!~~`
-
         const beforeParsed = DataService.ParseSchemaConfig(before)
         const afterParsed = DataService.ParseSchemaConfig(after)
 
@@ -268,6 +268,19 @@ export class PageMigrationComponent implements AfterViewInit {
                         if (t1.Name !== t2.Name) continue
                         foundTable = true
                         const alterT = `ALTER TABLE ${t1.FN}`
+
+                        
+                        const beforePks = t1.AllPrimaryDeterminedIdentifiers()
+                        const afterPks = t2.AllPrimaryDeterminedIdentifiers()
+                        const pkChanged = JSON.stringify(beforePks) !== JSON.stringify(afterPks)
+                        if (pkChanged) {
+                            {
+                                const constraint = t1.Constraint('Primary Key')
+                                const s = `${alterT} ${replaceAlign}DROP CONSTRAINT${replaceAlign2} ${constraint};`
+                                script.push(s)
+                            }
+                        }
+                        
                         //
                         for (const a1 of t1.Attributes) {
                             let foundAttribute = false
@@ -536,16 +549,15 @@ export class PageMigrationComponent implements AfterViewInit {
 
                         const beforePks = t1.AllPrimaryDeterminedIdentifiers()
                         const afterPks = t2.AllPrimaryDeterminedIdentifiers()
-
                         const pkChanged = JSON.stringify(beforePks) !== JSON.stringify(afterPks)
-
+                    
                         if (pkChanged) {
                             {
                                 const constraint = t1.Constraint('Primary Key')
                                 const s = `${alterT} ${replaceAlign}DROP CONSTRAINT${replaceAlign2} ${constraint};`
                                 script.push(s)
                             }
-
+                    
                             if (afterPks.length > 0) {
                                 // const newPK = NewTableConstraint('Primary Key', t2)
                                 const newPkLabels = afterPks.join(', ')
@@ -553,6 +565,7 @@ export class PageMigrationComponent implements AfterViewInit {
                                 script.push(s)
                             }
                         }
+
                         if (!addedCol) continue
 
                         //#region uniques
