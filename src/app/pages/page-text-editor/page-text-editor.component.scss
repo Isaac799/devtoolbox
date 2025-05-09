@@ -37,7 +37,7 @@
         background-color: rgb(0, 0, 0, 0);
         // color: rgba(122, 122, 255, .7);
         color: rgba(0, 0, 0, 0);
-        caret-color: black;
+        caret-color: white;
         resize: none;
         outline: none;
         min-width: 30rem;
@@ -45,10 +45,8 @@
 
     >div.render-box {
         min-width: 30rem;
-
-        color: #545454;
-
-        background-color: rgb(0, 0, 0, 0);
+        
+        color: var(--mat-sidenav-content-text-color, var(--mat-sys-on-background));
 
         .is-message {
             padding: 0 0.5rem 0 0.5rem;
@@ -57,28 +55,28 @@
         }
 
         >.is-shortcut {
-            color: rgb(170, 93, 0);
+            color: #98c379
             // background-color: rgba(170, 93, 0, 0.085);
         }
 
         >.is-delimiter {
-            color: rgb(121, 40, 161);
+            color: #c678dd;
             // background-color: rgba(121, 40, 161, 0.085);
         }
 
         >.is-header {
-            color: rgb(0, 127, 170);
+            color: rgb(97, 175, 240);
             // background-color: rgba(0, 127, 170, 0.085);
         }
 
         >.is-suggestion {
-            color: rgb(105, 105, 105);
-            background-color: rgba(105, 105, 105, 0.085);
+            color: var(--mat-sidenav-content-text-color, var(--mat-sys-on-background));
+            background-color: rgba(97, 175, 240, 0.2);
         }
 
         >.is-error {
             background-color: rgba(217, 30, 24, 0.085);
-            color: #d91e18;
+            color: #be5046
         }
 
         // >.is-string {

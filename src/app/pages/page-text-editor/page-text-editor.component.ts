@@ -19,7 +19,7 @@ import {
 import {v4 as uuidv4} from 'uuid'
 import {CommonModule} from '@angular/common'
 import {FormsModule} from '@angular/forms'
-import {cc} from '../../formatting'
+import {alignKeyword, cc} from '../../formatting'
 import {DataService} from '../../services/data.service'
 import {MatButtonModule} from '@angular/material/button'
 import {MatIconModule} from '@angular/material/icon'
@@ -809,7 +809,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             }
         }
 
-        return lines.join('\n').trim()
+        let split = [...lines]
+        split = alignKeyword(split, " as ")
+        split = alignKeyword(split, " with ")
+        split.join("\n")
+
+        return split.join('\n').trim()
 
         function gatherOptions(a: Attribute) {
             const options: string[] = []

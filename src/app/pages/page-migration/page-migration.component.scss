@@ -1,6 +1,8 @@
 textarea {
     background-color: rgba(0, 0, 0, 0);
 
+    color: var(--mat-sidenav-content-text-color, var(--mat-sys-on-background));
+
     border: 0;
 
     font-size: 1rem;
@@ -49,10 +51,11 @@ textarea:focus {
     overflow: auto;
 
     padding: 0.5rem;
-    border-radius: 0.5rem;
 
-    border: 1px solid rgb(26, 27, 31);
-    border-radius: 0.5rem;
+    border-width: var(--mdc-chip-outline-width, 1px);
+  border-radius: var(--mdc-chip-container-shape-radius, 8px);
+  box-sizing: border-box;
+    border-style: solid;
 
     min-height: 20rem;
 

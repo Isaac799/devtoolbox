@@ -180,6 +180,7 @@ const convertString = (str: string, toCase: 'sk' | 'pl' | 'cm' | 'up' | 'tc' | '
 
 // Main function to convert a string to the desired case
 export function cc(str: string, caseType: 'sk' | 'pl' | 'cm' | 'up' | 'tc' | 'nc'): string {
+    str = str.trim()
     return convertString(str, caseType)
 }
 
