@@ -994,7 +994,7 @@ export class Seed {
             t.seed = undefined
         }
 
-        console.log(`\n\n: ~~~~ ${t.FN} ~~~~`)
+        // console.log(`\n\n: ~~~~ ${t.FN} ~~~~`)
         if (limit > 50) {
             limit = 50
         } else if (limit < 1) {
@@ -1091,11 +1091,11 @@ export class Seed {
                             // console.log('pk :>> ', pk)
                             // console.log('a :>> ', a)
                             // console.log('srcA :>> ', srcA)
-                            console.log({
-                                'pk.attrID': pk.attrID,
-                                determinedKey,
-                                determinedKey2,
-                            })
+                            // console.log({
+                            //     'pk.attrID': pk.attrID,
+                            //     determinedKey,
+                            //     determinedKey2,
+                            // })
                             // if (!determinedKey2.includes(pk.attrID)) continue
                             if (determinedKey !== determinedKey2) {
                                 continue
@@ -1579,7 +1579,7 @@ export const PG_TO_PG_TYPE: Record<AttrType, string> = {
     [AttrType.BIT]: AttrType.BIT,
     [AttrType.DATE]: AttrType.DATE,
     [AttrType.CHAR]: AttrType.CHAR,
-    [AttrType.TIME]: 'TIMETZ',
+    [AttrType.TIME]: 'TIME',
     [AttrType.TIMESTAMP]: 'TIMESTAMPTZ',
     [AttrType.SERIAL]: AttrType.SERIAL,
     [AttrType.DECIMAL]: AttrType.DECIMAL,
@@ -2115,7 +2115,7 @@ export const GenerateDefaultValue = (attr: Attribute, lang: Lang): string | null
 
     if (attr.Type === AttrType.TIME && d.trim().toUpperCase() === 'NOW') {
         if (lang === Lang.PGSQL) {
-            d = `CURRENT_TIME AT TIME ZONE 'UTC'`
+            d = `CURRENT_TIME`
         } else if (lang === Lang.TSQL) {
             d = 'CAST(SYSDATETIMEOFFSET() AS TIME)'
         } else if (lang === Lang.SQLite) {
@@ -2125,7 +2125,7 @@ export const GenerateDefaultValue = (attr: Attribute, lang: Lang): string | null
 
     if (attr.Type === AttrType.TIMESTAMP && d.trim().toUpperCase() === 'NOW') {
         if (lang === Lang.PGSQL) {
-            d = `CURRENT_TIMESTAMP AT TIME ZONE 'UTC'`
+            d = `CURRENT_TIMESTAMP`
         } else if (lang === Lang.TSQL) {
             d = 'SYSDATETIMEOFFSET()'
         } else if (lang === Lang.SQLite) {

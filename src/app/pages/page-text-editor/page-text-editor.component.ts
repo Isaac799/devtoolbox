@@ -182,14 +182,51 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     newLine.push(el)
                     continue
                 }
+
                 if (word.startsWith('@')) {
                     el.class = 'is-shortcut'
+                    newLine.push(el)
                 } else if (['with', 'as'].includes(word)) {
                     el.class = 'is-delimiter'
+                    newLine.push(el)
+                } else if (word.includes(':') && word.split(':').length >= 2) {
+                    const split = word.split(':')
+                    const keyword: RenderE = {innerText: word}
+                    keyword.innerText = split.shift()!
+                    keyword.class = ''
+                    newLine.push(keyword)
+
+                    const colin: RenderE = {innerText: word}
+                    colin.innerText = ":"
+                    colin.class = 'is-option-delimiter'
+                    newLine.push(colin)
+
+                    const value: RenderE = {innerText: word}
+                    value.innerText = split.join(":")
+                    value.class = ''
+                    newLine.push(value)
+                }else if (word.includes('..') && word.split('..').length >= 2) {
+                    const split = word.split('..')
+                    const keyword: RenderE = {innerText: word}
+                    keyword.innerText = split.shift()!
+                    keyword.class = ''
+                    newLine.push(keyword)
+
+                    const colin: RenderE = {innerText: word}
+                    colin.innerText = ".."
+                    colin.class = 'is-option-delimiter'
+                    newLine.push(colin)
+
+                    const value: RenderE = {innerText: word}
+                    value.innerText = split.join("..")
+                    value.class = ''
+                    newLine.push(value)
                 } else if (['#', '##'].includes(word)) {
                     el.class = 'is-header'
+                    newLine.push(el)
+                } else {
+                    newLine.push(el)
                 }
-                newLine.push(el)
             }
 
             const suggestions = (parsed.suggestions || [])[i + 1]
@@ -223,7 +260,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 rows = 20
             }
             rows += 2
-            this.inputContainer.nativeElement.style.height = rows + 'rem'
+            this.inputContainer.nativeElement.style.height = (rows * 1.15) + 'rem'
             this.AdjustEditorWidth(lines)
         }
     }
@@ -810,9 +847,9 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
         }
 
         let split = [...lines]
-        split = alignKeyword(split, " as ")
-        split = alignKeyword(split, " with ")
-        split.join("\n")
+        split = alignKeyword(split, ' as ')
+        split = alignKeyword(split, ' with ')
+        split.join('\n')
 
         return split.join('\n').trim()
 

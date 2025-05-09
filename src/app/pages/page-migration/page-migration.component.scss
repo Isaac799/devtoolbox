@@ -53,8 +53,8 @@ textarea:focus {
     padding: 0.5rem;
 
     border-width: var(--mdc-chip-outline-width, 1px);
-  border-radius: var(--mdc-chip-container-shape-radius, 8px);
-  box-sizing: border-box;
+    border-radius: var(--mdc-chip-container-shape-radius, 8px);
+    box-sizing: border-box;
     border-style: solid;
 
     min-height: 20rem;

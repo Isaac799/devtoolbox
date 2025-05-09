@@ -223,9 +223,9 @@ export class PageGuiEditorComponent implements AfterViewInit, OnInit, OnDestroy 
         // }
 
         const gradient = ctx.createLinearGradient(sourceX, sourceY, targetX, targetY)
-        gradient.addColorStop(0, 'rgba(0, 114, 178, 1)')
-        gradient.addColorStop(0.8, 'rgba(0,0,0,0.3)')
-        gradient.addColorStop(1, 'rgba(0,0,0,0.1)')
+        gradient.addColorStop(0, 'rgba(57, 113, 237, 1)')
+        gradient.addColorStop(0.8, 'rgba(197, 200, 198,0.3)')
+        gradient.addColorStop(1, 'rgba(197, 200, 198,0.1)')
 
         // Set the gradient as the stroke style
         ctx.strokeStyle = gradient

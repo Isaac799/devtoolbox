@@ -4,11 +4,16 @@ li {
 
 pre,
 code {
-    color: #545454;
     padding: 0 0.5rem 0 0.5rem;
     border-radius: 0.25rem;
     overflow: auto;
-    outline: 1px solid lightgray;
+    
+    border-width: var(--mdc-chip-outline-width, 1px);
+    border-radius: var(--mdc-chip-container-shape-radius, 8px);
+    box-sizing: border-box;
+    border-style: solid;
+    
+    line-height: 1.5rem;
 }
 
 h2 {
