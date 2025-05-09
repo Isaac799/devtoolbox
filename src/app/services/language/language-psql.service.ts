@@ -119,7 +119,7 @@ export class LanguagePsqlService {
 
                 const seed = new Seed(t, map, limit)
                 if (seed.brokeUnique) {
-                    snackBar.open('Results limited due to constraints', '', {
+                    snackBar.open('Results limited', '', {
                         duration: 2000
                     })
                 }

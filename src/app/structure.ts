@@ -730,7 +730,14 @@ export class Table {
                 if (refPks.length == 0) continue
 
                 calledFrom.push(a)
-                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, calledFrom, og || a)
+                const refAttrs = a.RefTo.AllAttributes(
+                    determinedKey,
+                    depth + 1,
+                    a.RefTo.ID === this.ID ? selfDepth + 1 : 0,
+                    {...options},
+                    [...calledFrom],
+                    og || a
+                )
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -741,7 +748,14 @@ export class Table {
                 if (refPks.length == 0) continue
 
                 calledFrom.push(a)
-                const refAttrs = a.RefTo.AllAttributes(determinedKey, depth + 1, a.RefTo.ID === this.ID ? selfDepth + 1 : 0, {...options}, calledFrom, og || a)
+                const refAttrs = a.RefTo.AllAttributes(
+                    determinedKey,
+                    depth + 1,
+                    a.RefTo.ID === this.ID ? selfDepth + 1 : 0,
+                    {...options},
+                    [...calledFrom],
+                    og || a
+                )
                 answer = {
                     ...answer,
                     ...refAttrs
@@ -780,6 +794,8 @@ export class Table {
                 }
             }
         }
+        // console.log('\ndepth :>> ', depth);
+        // console.log('answer :>> ', answer);
 
         return answer
     }
@@ -888,16 +904,17 @@ export class SeedTable {
     GetPool(a: Attribute) {
         const previousRowsToCompare: SeedCell[][] = []
 
-        if (!a.Parent.seed) {
+        if (!a.RefTo?.seed) {
             console.error('cannot get pool for a table missing seed')
             return previousRowsToCompare
         }
 
-        const pkIds = a.Parent.AllPrimaryDeterminedIdentifiers()
+        const pkIds = a.RefTo.AllPrimaryDeterminedIdentifiers()
 
         for (const pkID of pkIds) {
-            for (let rowIndex = 0; rowIndex < a.Parent.seed.rows.length; rowIndex++) {
-                const row = a.Parent.seed.rows[rowIndex]
+            for (let rowIndex = 0; rowIndex < a.RefTo.seed.rows.length; rowIndex++) {
+                const row = a.RefTo.seed.rows[rowIndex]
+
 
                 if (!previousRowsToCompare[rowIndex]) {
                     previousRowsToCompare[rowIndex] = []
@@ -912,6 +929,10 @@ export class SeedTable {
                         console.warn('missing the column name we are trying to reference')
                         continue
                     }
+                    
+                    // console.log(a.FN, pkID, col.generatedValue);
+                
+
                     previousRowsToCompare[rowIndex].push(col)
                 }
             }
@@ -978,7 +999,7 @@ export class Seed {
             t.seed = undefined
         }
 
-        console.log(`\n\n: ~~~~ ${t.FN} ~~~~`)
+        // console.log(`\n\n: ~~~~ ${t.FN} ~~~~`)
         if (limit > 50) {
             limit = 50
         } else if (limit < 1) {
@@ -1018,7 +1039,7 @@ export class Seed {
                 const srcA = calledFrom[0]
 
                 // console.log('calledFrom');
-                // console.log(calledFrom );
+                // console.log(calledFrom)
 
                 // if (t.Name.includes('buzz')) {
                 //     console.log('--')
@@ -1042,12 +1063,13 @@ export class Seed {
                         continue
                     }
 
-                    const plChosenKey = a.Parent.FN
+                    const plChosenKey = srcA.FN
                     // console.log('plChosenKey :>> ', plChosenKey);
                     if (!pkChosen[plChosenKey] || pkChosen[plChosenKey].length === 0) {
-                        const options = seedTable.GetPool(a)
+                        const options = seedTable.GetPool(srcA)
                         // console.log(options)
-                        const arr = Seed.randomArrayItem(options)
+                        const arr = randomArrayItem(options)
+                        
                         if (arr) {
                             pkChosen[plChosenKey] = arr
                         }
@@ -1062,15 +1084,32 @@ export class Seed {
 
                     let found = false
                     // console.log(pkChosen[plChosenKey])
-                    for (const pk of pkChosen[plChosenKey]) {
-                        // console.log('a.Name :>> ', a.Name)
-                        // console.log('pk :>> ', pk)
-                        if (pk.attrID !== a.Name) {
-                            continue
+
+                    const allAttrs2 = srcA.Parent.AllAttributes()
+                    for (const [determinedKey2, [calledFrom, a2, isPk, isFk, validation, options]] of Object.entries(allAttrs2)) {
+                        // console.log("---------------------")
+                        // console.log(a)
+                        // console.log("--")
+                        // console.log(a2)
+                        if (a.ID !== a2.ID) continue
+                        for (const pk of pkChosen[plChosenKey]) {
+                            // console.log('a.Name :>> ', a.Name)
+                            // console.log('pk :>> ', pk)
+                            // console.log('a :>> ', a)
+                            // console.log('srcA :>> ', srcA)
+                            // console.log({
+                            //     'pk.attrID': pk.attrID,
+                            //     determinedKey,
+                            //     determinedKey2,
+                            // })
+                            // if (!determinedKey2.includes(pk.attrID)) continue
+                            if (determinedKey !== determinedKey2) {
+                                continue
+                            }
+                            found = true
+                            v = pk.generatedValue
+                            break
                         }
-                        found = true
-                        v = pk.generatedValue
-                        break
                     }
 
                     if (!found) {
@@ -1106,9 +1145,9 @@ export class Seed {
         } else {
             console.warn('why are we re-creating seed data for table: ', t.FN)
         }
-    }
+    }}
 
-    private static randomArrayItem<T>(options: T[]): T | null {
+    function randomArrayItem<T>(options: T[]): T | null {
         if (options === undefined) {
             console.error('could not generate random reference, options was undefined')
             return null
@@ -1121,7 +1160,6 @@ export class Seed {
         }
         return options[index]
     }
-}
 
 function createAbbreviation(input: string): string {
     // Remove vowels (a, e, i, o, u) and keep the first and last letter
@@ -1546,7 +1584,7 @@ export const PG_TO_PG_TYPE: Record<AttrType, string> = {
     [AttrType.BIT]: AttrType.BIT,
     [AttrType.DATE]: AttrType.DATE,
     [AttrType.CHAR]: AttrType.CHAR,
-    [AttrType.TIME]: 'TIMETZ',
+    [AttrType.TIME]: 'TIME',
     [AttrType.TIMESTAMP]: 'TIMESTAMPTZ',
     [AttrType.SERIAL]: AttrType.SERIAL,
     [AttrType.DECIMAL]: AttrType.DECIMAL,
@@ -2082,7 +2120,7 @@ export const GenerateDefaultValue = (attr: Attribute, lang: Lang): string | null
 
     if (attr.Type === AttrType.TIME && d.trim().toUpperCase() === 'NOW') {
         if (lang === Lang.PGSQL) {
-            d = `CURRENT_TIME AT TIME ZONE 'UTC'`
+            d = `CURRENT_TIME`
         } else if (lang === Lang.TSQL) {
             d = 'CAST(SYSDATETIMEOFFSET() AS TIME)'
         } else if (lang === Lang.SQLite) {
@@ -2092,7 +2130,7 @@ export const GenerateDefaultValue = (attr: Attribute, lang: Lang): string | null
 
     if (attr.Type === AttrType.TIMESTAMP && d.trim().toUpperCase() === 'NOW') {
         if (lang === Lang.PGSQL) {
-            d = `CURRENT_TIMESTAMP AT TIME ZONE 'UTC'`
+            d = `CURRENT_TIMESTAMP`
         } else if (lang === Lang.TSQL) {
             d = 'SYSDATETIMEOFFSET()'
         } else if (lang === Lang.SQLite) {
