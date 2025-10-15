@@ -1,0 +1,89 @@
+<mat-toolbar>
+    <button
+        mat-icon-button
+        matTooltip="Undo"
+        aria-label="Undo the last change"
+        (click)="Undo()"
+        [disabled]="textEditorService.textInputUndoStack.length === 0"
+    >
+        <mat-icon>undo</mat-icon>
+    </button>
+    <button
+        mat-icon-button
+        matTooltip="Redo"
+        aria-label="Redo the last change"
+        (click)="Redo()"
+        [disabled]="textEditorService.textInputRedoStack.length === 0"
+    >
+        <mat-icon>redo</mat-icon>
+    </button>
+    <span class="toolbar-icon-spacer"></span>
+    <button
+        mat-icon-button
+        matTooltip="Toggle syntax mode"
+        aria-label="Change syntax size"
+        (click)="ToggleMode()"
+    >
+        <mat-icon>tune</mat-icon>
+    </button>
+    <button
+        mat-icon-button
+        matTooltip="Clean & Format"
+        aria-label="Format code"
+        [disabled]="textEditorService.justCleaned"
+        (click)="Format()"
+    >
+        <mat-icon>dry_cleaning</mat-icon>
+    </button>
+    <button
+        matTooltip="Copy"
+        mat-icon-button
+        aria-label="Copy code"
+        (click)="Copy()"
+    >
+        <mat-icon>content_copy</mat-icon>
+    </button>
+</mat-toolbar>
+
+<div class="scroll-thing">
+    <div
+        class="input-container"
+        #inputContainer
+    >
+        <div
+            class="render-box"
+            #renderBox
+        >
+            @for (el of renderElements; track $index) {
+            @if (el.innerText === NEWLINE) {
+            <br />
+            } @else if (el.class) {
+            <span [class]="el.class">{{ el.innerText }}</span>
+            } @else {
+            <span>{{ el.innerText }}</span>
+            }
+            }
+        </div>
+
+        <textarea
+            #textEditor
+            spellcheck="false"
+            (blur)="textEditorService.focused = false"
+            (focus)="textEditorService.focused = true"
+            [(ngModel)]="textEditorService.textInput"
+            (ngModelChange)="Run()"
+            class="input-box"
+        ></textarea>
+    </div>
+</div>
+
+
+<!-- <div class="copy-button">
+    <button
+        mat-fab
+        aria-label="Copy the generate code"
+        (click)="Copy()"
+    >
+        <mat-icon>content_copy</mat-icon>
+    </button>
+</div> -->

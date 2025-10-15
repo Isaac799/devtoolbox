@@ -1,0 +1,29 @@
+@if (appService.app.editor.gui) {
+<mat-tab-group
+    mat-stretch-tabs="false"
+    mat-align-tabs="start"
+>
+    <mat-tab label="Input">
+        <app-page-gui-editor></app-page-gui-editor>
+    </mat-tab>
+    <mat-tab label="Output">
+        <app-page-code-output></app-page-code-output>
+    </mat-tab>
+</mat-tab-group>
+}
+@else if (appService.app.editor.splitTui) {
+<app-page-split-view></app-page-split-view>
+}
+@else {
+<mat-tab-group
+    mat-stretch-tabs="false"
+    mat-align-tabs="start"
+>
+    <mat-tab label="Input">
+        <app-page-text-editor></app-page-text-editor>
+    </mat-tab>
+    <mat-tab label="Output">
+        <app-page-code-output></app-page-code-output>
+    </mat-tab>
+</mat-tab-group>
+}

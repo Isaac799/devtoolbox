@@ -1,0 +1,75 @@
+<table cellspacing="8">
+    <tr>
+        <td>
+            <mat-form-field>
+                <mat-label>Canvas Size</mat-label>
+                <mat-select
+                    [(ngModel)]="appService.app.canvasSize"
+                    (ngModelChange)="appService.Save()"
+                    [compareWith]="compareWithCanvasSize"
+                >
+                    @for (x of sideBarService.canvasSizeOptions; track $index) {
+                    <mat-option [value]="x">{{ x.name }}</mat-option>
+                    }
+                </mat-select>
+                <mat-hint align="start"> For Drag-Drop </mat-hint>
+            </mat-form-field>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button
+                mat-fab
+                extended
+                (click)="sideBarService.doShowModalTable()"
+            >
+                Blueprint
+                <mat-icon>add</mat-icon>
+            </button>
+        </td>
+    </tr>
+    <tr>
+    <tr>
+        <mat-list
+            cdkDropList
+            [cdkDropListData]="dataService.schemas"
+            (cdkDropListDropped)="drop($event)"
+        >
+            @for (s of dataService.schemas; track $index; let si = $index) {
+            <mat-list-item
+                cdkDrag
+                (dblclick)="sideBarService.doShowModalSchema(s)"
+            >
+                <mat-icon
+                    matListItemIcon
+                    [style]="'color: ' + s.Color || 'black'"
+                >
+                    folder
+                </mat-icon>
+                {{ s.Name }}
+            </mat-list-item>
+
+            @for (t of s.Tables; track $index; let ti = $index) {
+            <mat-list-item
+                (dblclick)=" sideBarService.doShowModalTable(t)"
+                class="tabbed"
+            >
+                <mat-icon matListItemIcon>
+                    description
+                </mat-icon>
+                {{ t.Name }}
+            </mat-list-item>
+            }
+            }
+        </mat-list>
+
+        <button
+            mat-icon-button
+            (click)="sideBarService.doShowModalSchema()"
+            aria-label="Add attribute to table"
+        >
+            <mat-icon>add</mat-icon>
+        </button>
+
+    </tr>
+</table>

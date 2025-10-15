@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Settings</h2>
+<mat-dialog-content>
+    <p>
+        Editor Settings
+    </p>
+    <div class="fr g2 p2">
+        <mat-slide-toggle
+            [(ngModel)]="appService.app.editor.gui"
+            (ngModelChange)="appService.Save()"
+        >
+            {{
+            appService.app.editor.gui ? 'Mode: Graphical' : "Mode: Text (recommended)"
+            }}
+        </mat-slide-toggle>
+
+        @if (!appService.app.editor.gui) {
+        <mat-slide-toggle
+            [(ngModel)]="appService.app.editor.splitTui"
+            (ngModelChange)="appService.Save()"
+        >
+            {{
+            appService.app.editor.splitTui ? 'View: Split Screen (recommended)' : "Tab View"
+            }}
+        </mat-slide-toggle>
+        }
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button
+        mat-button
+        (click)="reset()"
+        mat-dialog-close
+    >
+        Reset
+    </button>
+    <button
+        mat-button
+        mat-dialog-close
+    >
+        Done
+    </button>
+</mat-dialog-actions>

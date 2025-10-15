@@ -1,0 +1,111 @@
+<div class="container">
+    <div class="side">
+        <app-side-bar-editor></app-side-bar-editor>
+    </div>
+    <div class="main">
+        <div
+            class=" table-boundary"
+            id="root-editor"
+            #rootEditor
+            [ngStyle]="{
+                'height': appService.app.canvasSize.y + 'px',
+                'width': appService.app.canvasSize.x + 'px',
+            }"
+        >
+            <canvas
+                class="canvas"
+                #canvas
+            ></canvas>
+
+            @for (s of dataService.schemas; track $index) {
+            @for (t of s.Tables; track $index; let ti = $index) {
+            <mat-card
+                appearance="outlined"
+                [id]="'table:' + t.ID"
+                class="table"
+                cdkDrag
+                cdkDragBoundary=".table-boundary"
+                [cdkDragFreeDragPosition]="t.dragPosition"
+                (cdkDragEnded)="doneDrag(t, $event)"
+            >
+                <mat-card-header (dblclick)="sideBarService.doShowModalTable(t)">
+                    <mat-card-title>
+                        {{ t.Name | trueTitle }}
+                    </mat-card-title>
+                    <mat-card-subtitle>
+                        <span [style]="'color: ' + s.Color || 'black'">
+                            {{ s.Name | trueTitle }}
+                        </span>
+                    </mat-card-subtitle>
+                </mat-card-header>
+
+                <mat-list>
+                    @for (a of t.Attributes; track $index; let ai = $index) {
+                    <!-- Attribute -->
+
+                    <mat-list-item (dblclick)="doShowModalAttribute(s,t,a)">
+
+                        <mat-icon matListItemIcon>
+                            {{ a | attrIcon }}
+                        </mat-icon>
+                        <div matListItemTitle>{{ a.Name | trueTitle }} {{a | prettyType}}</div>
+                        <div matListItemLine>{{ a.Description }}</div>
+
+                        <div
+                            class="attribute"
+                            (dblclick)="doShowModalAttribute(s, t, a)"
+                            [id]="'attribute:' + a.ID"
+                        >
+
+
+                            <!--                       
+                        <mat-chip-set aria-label="Attribute properties">
+                            @if(a.Option?.PrimaryKey) {
+                            <mat-chip> PK </mat-chip>
+                            }
+                            @if(a.Type === 'REF' ) {
+                            <mat-chip> FK </mat-chip>
+                            }
+                            @if(a.Option?.Unique) {
+                            <mat-chip> Unique </mat-chip>
+                            }
+                            @if(a.Validation?.Required) {
+                            <mat-chip> Required </mat-chip>
+                            }
+                        </mat-chip-set> -->
+
+                            <!-- <span>
+                            {{a.Description}}
+                        </span> -->
+                        </div>
+
+
+                    </mat-list-item>
+
+                    @if (a.warnings.length > 0) {
+                    <div class="p2 fc align-center justify-center">
+                        @for (w of a.warnings; track $index) {
+                        <span class="error">
+                            {{ w }}
+                        </span>
+                        }
+                    </div>
+                    }
+                    }
+                </mat-list>
+
+                <mat-card-actions>
+                    <button
+                        mat-icon-button
+                        (click)="doShowModalAttribute(s, t)"
+                        aria-label="Add attribute to table"
+                    >
+                        <mat-icon>add</mat-icon>
+                    </button>
+                </mat-card-actions>
+            </mat-card>
+            }
+            }
+        </div>
+    </div>
+</div>
