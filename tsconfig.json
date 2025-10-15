@@ -1,22 +1,28 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
-        "compilerOptions": {
-                "target": "ES2023",
-                "module": "esnext",
-                "lib": ["dom", "es6"],
-                "strict": true,
-                "esModuleInterop": true,
-                "moduleResolution": "node",
-                "outDir": "dist",
-                "rootDir": "src",
-                "sourceMap": true,
-                "declaration": false,
-                "removeComments": true,
-                "noImplicitAny": true,
-                "noUnusedLocals": true,
-                "noUnusedParameters": true,
-                "noImplicitReturns": true,
-                "noImplicitThis": true
-        },
-        "include": ["src/public/scripts/**/*"],
-        "exclude": ["node_modules", "dist"]
+    "compileOnSave": false,
+    "compilerOptions": {
+        "outDir": "./dist/out-tsc",
+        "strict": true,
+        "noImplicitAny": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "skipLibCheck": true,
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "moduleResolution": "bundler",
+        "importHelpers": true,
+        "target": "ES2022",
+        "module": "ES2022"
+    },
+    "angularCompilerOptions": {
+        "enableI18nLegacyMessageIdFormat": false,
+        "strictInjectionParameters": true,
+        "strictInputAccessModifiers": true,
+        "strictTemplates": true
+    }
 }

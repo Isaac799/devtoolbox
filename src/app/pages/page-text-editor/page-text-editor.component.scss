@@ -1,0 +1,91 @@
+.scroll-thing {
+    max-height: calc(100vh - 8rem);
+    overflow: auto;
+}
+
+.input-container {
+    position: relative;
+    overflow: auto;
+
+    margin: 0 1rem 0 1rem;
+    padding: 0.35rem 1rem 0.35rem 1rem;
+    border-radius: 0.5rem;
+
+    >.input-box,
+    >div.render-box {
+        position: absolute;
+        overflow: hidden;
+        inset: 0;
+
+        border: 0;
+        border-radius: 0;
+
+        font-size: 1rem;
+        line-height: 1.15rem;
+        letter-spacing: 0.1rem;
+
+        font-family: 'Courier New', Courier, monospace;
+        padding: 1rem;
+
+        white-space: pre;
+        overflow-wrap: normal;
+        overflow-x: scroll;
+
+    }
+
+    >.input-box {
+        background-color: rgb(0, 0, 0, 0);
+        // color: rgba(122, 122, 255, .7);
+        color: rgba(0, 0, 0, 0);
+        caret-color: #c5c8c6;
+        resize: none;
+        outline: none;
+        min-width: 30rem;
+    }
+
+    >div.render-box {
+        min-width: 30rem;
+        
+        color: var(--mat-sidenav-content-text-color, var(--mat-sys-on-background));
+
+        .is-message {
+            padding: 0 0.5rem 0 0.5rem;
+            margin: 0 0.5rem 0 0.5rem;
+            border-radius: 0.35rem;
+        }
+
+        >.is-shortcut {
+            color: #FBA922
+            // background-color: rgba(170, 93, 0, 0.085);
+        }
+
+        >.is-delimiter {
+            color: #A36AC7;
+            // background-color: rgba(121, 40, 161, 0.085);
+        }
+
+        >.is-option-delimiter {
+            color: #198844;
+            // background-color: rgba(121, 40, 161, 0.085);
+        }
+
+        >.is-header {
+            color: #3971ED;
+            // background-color: rgba(0, 127, 170, 0.085);
+        }
+
+        >.is-suggestion {
+            color: var(--mat-sidenav-content-text-color, var(--mat-sys-on-background));
+            background-color: rgba(197, 200, 198, 0.1);
+        }
+
+        >.is-error {
+            background-color:  rgba(204, 52, 43, 0.1);
+            color: rgb(204, 52, 43)
+        }
+
+        // >.is-string {
+        //     color: #008000;
+        // }
+    }
+}

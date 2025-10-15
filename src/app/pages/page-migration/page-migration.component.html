@@ -1,0 +1,91 @@
+<div class="p2">
+    <div class="fc g2">
+        <div>
+            <p>
+                This page takes in 2 TUI configs and attempts to generate a migration script. See the examples. Examples start simple and get more involved. 
+                This page (as with most of the app) is a WIP. Notably, this page does not persist changes.
+            </p>
+        </div>
+
+
+        <div class="fr g2 center-align">
+            Examples: <mat-chip-set aria-label="Example selection">
+                @for (example of examples; track $index) {
+                <mat-chip
+                    [matTooltip]="example.desc"
+                    (click)="UseExample(example)"
+                >
+                    {{ example.title }}
+                </mat-chip>
+                }
+            </mat-chip-set>
+        </div>
+
+        <div class="fr fw g1">
+            <div class="fc">
+                <mat-toolbar>
+                    <span>Before</span>
+                </mat-toolbar>
+                <div class="box">
+                    <textarea
+                        [(ngModel)]="from.raw"
+                        (ngModelChange)="Run()"
+                        #fromEl
+                        name="from"
+                        id="from"
+                    ></textarea>
+                </div>
+            </div>
+            <div class="fc center">
+                <button
+                    matTooltip="Swap to-from"
+                    mat-icon-button
+                    aria-label="Swap to-from"
+                    (click)="Swap()"
+                >
+                    <mat-icon>swap_horiz</mat-icon>
+                </button>
+            </div>
+            <div class="fc">
+                <mat-toolbar>
+                    <span>After</span>
+                </mat-toolbar>
+                <div class="box">
+                    <textarea
+                        [(ngModel)]="to.raw"
+                        (ngModelChange)="Run()"
+                        #toEl
+                        name="to"
+                        id="to"
+                    ></textarea>
+                </div>
+
+            </div>
+
+
+        </div>
+        <div class="fc">
+            <mat-toolbar>
+                <span>Output</span>
+
+                <!-- <span class="toolbar-icon-spacer"></span> -->
+
+                <button
+                    matTooltip="Copy"
+                    mat-icon-button
+                    aria-label="Copy code"
+                    (click)="Copy()"
+                >
+                    <mat-icon>content_copy</mat-icon>
+                </button>
+            </mat-toolbar>
+
+            <div class="box">
+                <pre
+                    #outputEl
+                    id="output"
+                ></pre>
+            </div>
+        </div>
+    </div>
+</div>
