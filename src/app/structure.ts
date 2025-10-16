@@ -9,17 +9,6 @@ export enum Cardinality {
     Self = 1 << 6
 }
 
-export interface TableGuiMeta {
-    id: string
-    x: number
-    y: number
-}
-
-export interface SchemaGuiMeta {
-    id: string
-    Color: string
-}
-
 export enum Lang {
     PGSQL = 1 << 7,
     TSQL = 1 << 8,
@@ -1339,10 +1328,6 @@ export interface CanvasSize {
 export interface App {
     seedLimit: number
     textEditorState: number
-    editor: {
-        gui: boolean
-        splitTui: boolean
-    }
     canvasSize: CanvasSize
     generatorMode: AppGeneratorMode
     complexity: AppComplexityMode

@@ -131,7 +131,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     Run() {
-        this.appService.Run('txt')
+        this.appService.Run()
     }
 
     Copy() {
@@ -291,7 +291,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     HardRefresh() {
         this.textEditorService.textInput = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.appService.app.textEditorState)
-        this.appService.Run('txt')
+        this.appService.Run()
         this.textEditorService.justCleaned = true
     }
 

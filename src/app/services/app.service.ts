@@ -2,7 +2,7 @@ import {EventEmitter, inject, Injectable} from '@angular/core'
 import {DataService} from './data.service'
 import {TextEditorService} from './text-editor.service'
 import {PageTextEditorComponent} from '../pages/page-text-editor/page-text-editor.component'
-import {App, AppGeneratorMode, AppComplexityMode, Schema, TableGuiMeta, SchemaGuiMeta} from '../structure'
+import {App, AppGeneratorMode, AppComplexityMode, Schema} from '../structure'
 
 @Injectable({
     providedIn: 'root'
@@ -14,11 +14,6 @@ export class AppService {
 
     private readonly preferencesKey = 'devtoolboxAppConfig'
     private readonly stateKey = 'state'
-    private readonly tableGuiMetaKey = 'tableGuiMeta'
-    private readonly schemaGuiMetaKey = 'schemaGuiMeta'
-
-    private tableGuiMeta: TableGuiMeta[] = []
-    private schemaGuiMeta: SchemaGuiMeta[] = []
 
     app: App = {
         seedLimit: 4,
@@ -30,11 +25,7 @@ export class AppService {
 
         textEditorState: 1,
         generatorMode: AppGeneratorMode.Postgres,
-        complexity: AppComplexityMode.Advanced,
-        editor: {
-            gui: false,
-            splitTui: true
-        }
+        complexity: AppComplexityMode.Advanced
     }
     private _initialized = false
     public get initialized() {
@@ -85,66 +76,38 @@ export class AppService {
                 }
             }
 
-            this.Run('txt')
-            this.RestoreGuiMeta()
+            this.Run()
             this.initialized = true
         }, 0)
     }
 
-    Run(src: 'txt' | 'gui') {
-        if (src === 'txt') {
-            /**
-             *
-             * Things we want to do NOW for rendering purposes
-             *
-             */
-            this.textEditorService.justCleaned = false
-            const r = PageTextEditorComponent.parse(this.textEditorService.textInput)
-            if (typeof r === 'string') {
-                this.textEditorService.fromMacro = true
-                this.textEditorService.textInput = r
-                this.Run('txt')
-                this.textEditorService.fromMacro = false
-                return
-            }
-
-            this.dataService.previousParse = r
-            this.textEditorService.doRender.next()
-
-            if (this.dataService.schemas.length === 0) {
-                this._run()
-                return
-            }
-            clearTimeout(this.runDebounce)
-            this.runDebounce = setTimeout(() => {
-                this._run()
-            }, 300)
+    Run() {
+        /**
+         *
+         * Things we want to do NOW for rendering purposes
+         *
+         */
+        this.textEditorService.justCleaned = false
+        const r = PageTextEditorComponent.parse(this.textEditorService.textInput)
+        if (typeof r === 'string') {
+            this.textEditorService.fromMacro = true
+            this.textEditorService.textInput = r
+            this.Run()
+            this.textEditorService.fromMacro = false
             return
         }
 
-        const p = DataService.parseSchemasConfig(this.dataService.schemas)
-
-        this.dataService.previousParse = {
-            data: p,
-            suggestions: [],
-            errors: []
-        }
+        this.dataService.previousParse = r
+        this.textEditorService.doRender.next()
 
         if (this.dataService.schemas.length === 0) {
             this._run()
             return
         }
-
         clearTimeout(this.runDebounce)
-
-        const str = PageTextEditorComponent.reverseParse(this.dataService.schemas, this.app.textEditorState)
-        this.textEditorService.textInput = str
-
         this.runDebounce = setTimeout(() => {
             this._run()
         }, 300)
-
-        this.SaveGuiMeta()
     }
 
     private _run() {
@@ -159,84 +122,10 @@ export class AppService {
 
     Save() {
         this.savePreferences()
-        this.saveGUI()
         this.textEditorService.SaveLastTextEdit()
         if (this.dataService.previousParse) {
             localStorage.setItem(this.stateKey, JSON.stringify(this.dataService.previousParse.data))
         }
-    }
-
-    private saveGUI() {
-        const p = DataService.parseSchemasConfig(this.dataService.schemas)
-        const s = JSON.stringify(p)
-        localStorage.setItem(this.stateKey, s)
-    }
-
-    RestoreGuiMeta() {
-        settingTableMeta: try {
-            const str = localStorage.getItem(this.tableGuiMetaKey)
-            if (!str) break settingTableMeta
-
-            const parsed = JSON.parse(str)
-
-            for (const s of this.dataService.schemas) {
-                for (const t of s.Tables) {
-                    const search = t.FN
-                    const pos = parsed.find((e: any) => e?.id === search)
-                    if (!pos) {
-                        // console.info('missing table for saved position, skipped')
-                        continue
-                    }
-                    t.dragPosition.x = pos.x
-                    t.dragPosition.y = pos.y
-                }
-            }
-        } catch (err) {
-            console.error(err)
-            localStorage.removeItem(this.tableGuiMetaKey)
-        }
-
-        settingSchemaMeta: try {
-            const str = localStorage.getItem(this.schemaGuiMetaKey)
-            if (!str) break settingSchemaMeta
-
-            const parsed = JSON.parse(str)
-
-            for (const s of this.dataService.schemas) {
-                const pp = parsed.find((e: any) => e?.id === s.Name)
-                if (pp) {
-                    s.Color = pp.Color
-                }
-            }
-        } catch (err) {
-            console.error(err)
-            localStorage.removeItem(this.schemaGuiMetaKey)
-        }
-    }
-
-    SaveGuiMeta() {
-        if (!this.initialized) return
-
-        this.tableGuiMeta = []
-        this.schemaGuiMeta = []
-        for (const s of this.dataService.schemas) {
-            this.schemaGuiMeta.push({
-                id: s.Name,
-                Color: s.Color
-            })
-            for (const t of s.Tables) {
-                this.tableGuiMeta.push({
-                    id: t.FN,
-                    ...t.dragPosition
-                })
-            }
-        }
-
-        const s2 = JSON.stringify(this.tableGuiMeta)
-        localStorage.setItem(this.tableGuiMetaKey, s2)
-
-        const s3 = JSON.stringify(this.schemaGuiMeta)
-        localStorage.setItem(this.schemaGuiMetaKey, s3)
     }
 
     RefreshOutput() {
@@ -277,12 +166,6 @@ export class AppService {
             }
 
             this.app = parsed
-            if (!this.app.editor) {
-                this.app.editor = {
-                    gui: false,
-                    splitTui: true
-                }
-            }
         } catch (err) {
             console.error(err)
             localStorage.removeItem(this.preferencesKey)

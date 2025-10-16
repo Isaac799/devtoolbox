@@ -22,7 +22,7 @@ export class LanguageGoService {
         for (const f of funcs) {
             // Struct
 
-            lines.push(`type ${f.title} = struct {`)
+            lines.push(`type ${f.title} struct {`)
             const attrs: string[] = LanguageGoService.generateStructAttributes(f)
             lines = lines.concat(attrs)
             lines.push(`}\n`)
