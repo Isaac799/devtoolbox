@@ -25,7 +25,7 @@ import {TextEditorService} from '../../services/text-editor.service'
 import {AppService} from '../../services/app.service'
 import {BitwiseOperations} from '../../constants'
 import {DefaultValueHintPipe} from '../../pipes/default-value-hint.pipe'
-import { InformService } from '../../services/inform.service'
+import {InformService} from '../../services/inform.service'
 
 @Component({
     selector: 'app-page-text-editor',
@@ -164,6 +164,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
             const newLine: RenderE[] = []
             const words = this.ExtractLineWords(line)
 
+            let longAlias = false
             for (const word of words) {
                 const el: RenderE = {innerText: word}
                 if (el.innerText === ' ') {
@@ -171,12 +172,16 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     continue
                 }
 
-                if (word.startsWith('@')) {
+                const isDelimAfterAt = ['with', 'as'].includes(word)
+
+                if (word.startsWith('@') || (longAlias && !isDelimAfterAt)) {
                     el.class = 'is-shortcut'
                     newLine.push(el)
-                } else if (['with', 'as'].includes(word)) {
+                    longAlias = !longAlias
+                } else if (isDelimAfterAt) {
                     el.class = 'is-delimiter'
                     newLine.push(el)
+                    longAlias = false
                 } else if (word.includes(':') && word.split(':').length >= 2) {
                     const split = word.split(':')
                     const keyword: RenderE = {innerText: word}
@@ -185,15 +190,15 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     newLine.push(keyword)
 
                     const colin: RenderE = {innerText: word}
-                    colin.innerText = ":"
+                    colin.innerText = ':'
                     colin.class = 'is-option-delimiter'
                     newLine.push(colin)
 
                     const value: RenderE = {innerText: word}
-                    value.innerText = split.join(":")
+                    value.innerText = split.join(':')
                     value.class = ''
                     newLine.push(value)
-                }else if (word.includes('..') && word.split('..').length >= 2) {
+                } else if (word.includes('..') && word.split('..').length >= 2) {
                     const split = word.split('..')
                     const keyword: RenderE = {innerText: word}
                     keyword.innerText = split.shift()!
@@ -201,12 +206,12 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                     newLine.push(keyword)
 
                     const colin: RenderE = {innerText: word}
-                    colin.innerText = ".."
+                    colin.innerText = '..'
                     colin.class = 'is-option-delimiter'
                     newLine.push(colin)
 
                     const value: RenderE = {innerText: word}
-                    value.innerText = split.join("..")
+                    value.innerText = split.join('..')
                     value.class = ''
                     newLine.push(value)
                 } else if (['#', '##'].includes(word)) {
@@ -248,7 +253,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
                 rows = 20
             }
             rows += 2
-            this.inputContainer.nativeElement.style.height = (rows * 1.15) + 'rem'
+            this.inputContainer.nativeElement.style.height = rows * 1.15 + 'rem'
             this.AdjustEditorWidth(lines)
         }
     }
