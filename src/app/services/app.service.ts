@@ -184,19 +184,10 @@ export class AppService {
         return a.ID === b.ID
     }
 
-    constructor() {
-        for (const e of this.generatorModeOptions) {
-            if (e.value !== this.app.generatorMode) {
-                continue
-            }
-            this.generatorModeSelected = e.value
-        }
-    }
-
     setGenMode() {
-        const c = this.generatorModeOptions.find(e => e.value === this.generatorModeSelected)
+        const c = this.generatorModeOptions.find(e => e.value === this.app.generatorMode)
         if (!c) {
-            this.generatorModeSelected = 0
+            this.app.generatorMode = AppGeneratorMode.Postgres
             this.setGenMode()
             return
         }
@@ -204,7 +195,6 @@ export class AppService {
         this.RefreshOutput()
     }
 
-    generatorModeSelected = 0
     generatorModeOptions: {title: string; icon?: string; value: AppGeneratorMode}[] = [
         {
             title: 'Postgres - Tables',

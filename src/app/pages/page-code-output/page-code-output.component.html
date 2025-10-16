@@ -1,7 +1,7 @@
 <div class="fr p2">
     <select
         class="fr"
-        [(ngModel)]="appService.generatorModeSelected"
+        [(ngModel)]="appService.app.generatorMode"
         (ngModelChange)="appService.setGenMode(); ClearOutput(); appService.Save()"
     >
         @for (mode of appService.generatorModeOptions; track $index; let i = $index) {
