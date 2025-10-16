@@ -1,9 +1,10 @@
+.toast {
+    background-color: white;
+    color: black;
+}
 
-.flex-row {
-    display: flex;
-    gap: 1rem;
-    flex-direction: row;
-    padding-left: 2rem;
-    align-items: flex-end;
-    justify-content: flex-start;
+.toaster {
+    position: fixed;
+    inset: 0 0 auto auto;
+    z-index: 999;
 }

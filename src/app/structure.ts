@@ -1183,7 +1183,7 @@ export interface TextEditorSyntax {
 }
 
 export enum AppGeneratorMode {
-    PostgresFunctions,
+    PostgresFunctions = 1,
     Postgres,
     AngularFormControl,
     GoStructsAndFns,

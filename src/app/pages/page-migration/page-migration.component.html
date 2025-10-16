@@ -2,30 +2,33 @@
     <div class="fc g2">
         <div>
             <p>
-                This page takes in 2 TUI configs and attempts to generate a migration script. See the examples. Examples start simple and get more involved. 
+                This page takes in 2 TUI configs and attempts to generate a migration script. See the examples. Examples
+                start simple and get more involved.
                 This page (as with most of the app) is a WIP. Notably, this page does not persist changes.
             </p>
         </div>
 
-
         <div class="fr g2 center-align">
-            Examples: <mat-chip-set aria-label="Example selection">
+            Examples:
+            <select
+                class="fr"
+                aria-label="Example selection"
+                [(ngModel)]="selectedExample"
+                (ngModelChange)="UseExample()"
+            >
                 @for (example of examples; track $index) {
-                <mat-chip
-                    [matTooltip]="example.desc"
-                    (click)="UseExample(example)"
-                >
-                    {{ example.title }}
-                </mat-chip>
+                <option [ngValue]="example">
+                    {{ example.title }} - {{ example.desc }}
+                </option>
                 }
-            </mat-chip-set>
+            </select>
         </div>
 
         <div class="fr fw g1">
             <div class="fc">
-                <mat-toolbar>
+                <div class="fr p2">
                     <span>Before</span>
-                </mat-toolbar>
+                </div>
                 <div class="box">
                     <textarea
                         [(ngModel)]="from.raw"
@@ -38,18 +41,17 @@
             </div>
             <div class="fc center">
                 <button
-                    matTooltip="Swap to-from"
-                    mat-icon-button
+                    title="Swap to-from"
                     aria-label="Swap to-from"
                     (click)="Swap()"
                 >
-                    <mat-icon>swap_horiz</mat-icon>
+                    <span class="icons">swap_horiz</span>
                 </button>
             </div>
             <div class="fc">
-                <mat-toolbar>
+                <div class="fr p2">
                     <span>After</span>
-                </mat-toolbar>
+                </div>
                 <div class="box">
                     <textarea
                         [(ngModel)]="to.raw"
@@ -65,20 +67,17 @@
 
         </div>
         <div class="fc">
-            <mat-toolbar>
+            <div class="fr p2">
                 <span>Output</span>
 
-                <!-- <span class="toolbar-icon-spacer"></span> -->
-
                 <button
-                    matTooltip="Copy"
-                    mat-icon-button
+                    title="Copy"
                     aria-label="Copy code"
                     (click)="Copy()"
                 >
-                    <mat-icon>content_copy</mat-icon>
+                    <span class="icons">content_copy</span>
                 </button>
-            </mat-toolbar>
+            </div>
 
             <div class="box">
                 <pre

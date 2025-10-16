@@ -1,12 +1,12 @@
 import {Routes} from '@angular/router'
 import {PageHelpComponent} from './pages/page-help/page-help.component'
 import {PageMigrationComponent} from './pages/page-migration/page-migration.component'
-import {PageEditorComponent} from './pages/page-editor/page-editor.component'
+import {EditorComponent} from './pages/editor/editor.component'
 
 const routeConfig: Routes = [
     {
         path: 'editor',
-        component: PageEditorComponent,
+        component: EditorComponent,
         title: 'Editor'
     },
     {

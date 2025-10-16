@@ -1,51 +1,44 @@
-<mat-toolbar>
+<div class="fr p2">
     <button
-        mat-icon-button
-        matTooltip="Undo"
+        title="Undo"
         aria-label="Undo the last change"
         (click)="Undo()"
         [disabled]="textEditorService.textInputUndoStack.length === 0"
     >
-        <mat-icon>undo</mat-icon>
+        <span class="icons">undo</span>
     </button>
     <button
-        mat-icon-button
-        matTooltip="Redo"
+        title="Redo"
         aria-label="Redo the last change"
         (click)="Redo()"
         [disabled]="textEditorService.textInputRedoStack.length === 0"
     >
-        <mat-icon>redo</mat-icon>
+        <span class="icons">redo</span>
     </button>
-    <span class="toolbar-icon-spacer"></span>
     <button
-        mat-icon-button
-        matTooltip="Toggle syntax mode"
+        title="Toggle syntax mode"
         aria-label="Change syntax size"
         (click)="ToggleMode()"
     >
-        <mat-icon>tune</mat-icon>
+        <span class="icons">tune</span>
     </button>
     <button
-        mat-icon-button
-        matTooltip="Clean & Format"
+        title="Clean & Format"
         aria-label="Format code"
         [disabled]="textEditorService.justCleaned"
         (click)="Format()"
     >
-        <mat-icon>dry_cleaning</mat-icon>
+        <span class="icons">dry_cleaning</span>
     </button>
     <button
-        matTooltip="Copy"
-        mat-icon-button
+        title="Copy"
         aria-label="Copy code"
         (click)="Copy()"
     >
-        <mat-icon>content_copy</mat-icon>
+        <span class="icons">content_copy</span>
     </button>
-</mat-toolbar>
-
-<div class="scroll-thing">
+</div>
+<div class="scroll-box">
     <div
         class="input-container"
         #inputContainer
@@ -80,10 +73,10 @@
 
 <!-- <div class="copy-button">
     <button
-        mat-fab
+        
         aria-label="Copy the generate code"
         (click)="Copy()"
     >
-        <mat-icon>content_copy</mat-icon>
+        <span class="icons">content_copy</span>
     </button>
 </div> -->

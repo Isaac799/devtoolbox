@@ -7,13 +7,7 @@ import {LanguagePsqlService} from '../../services/language/language-psql.service
 import {DataService} from '../../services/data.service'
 import {alignKeyword, cc} from '../../formatting'
 import hljs from 'highlight.js'
-import {MatToolbarModule} from '@angular/material/toolbar'
-import {MatButtonModule} from '@angular/material/button'
-import {MatIconModule} from '@angular/material/icon'
-import {MatSnackBar} from '@angular/material/snack-bar'
-import {MatDialog} from '@angular/material/dialog'
-import {MatTooltipModule} from '@angular/material/tooltip'
-import {MatChipsModule} from '@angular/material/chips'
+import {InformService} from '../../services/inform.service'
 
 const replaceAlign = `~~!~~`
 const replaceAlign2 = `~~!!~~`
@@ -28,19 +22,20 @@ interface Example {
 @Component({
     standalone: true,
     selector: 'app-page-migration',
-    imports: [CommonModule, FormsModule, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule, MatChipsModule],
+    imports: [CommonModule, FormsModule],
     templateUrl: './page-migration.component.html',
     styleUrl: './page-migration.component.scss'
 })
 export class PageMigrationComponent implements AfterViewInit {
-    private readonly snackBar = inject(MatSnackBar)
-    readonly dialog = inject(MatDialog)
     private output = ''
+
+    readonly inform = inject(InformService)
 
     @ViewChild('fromEl') fromEl?: ElementRef<HTMLTextAreaElement>
     @ViewChild('toEl') toEl?: ElementRef<HTMLTextAreaElement>
     @ViewChild('outputEl') outputEl?: ElementRef<HTMLTextAreaElement>
 
+    selectedExample?: Example
     examples: Example[] = [
         {
             title: `Nullability`,
@@ -251,7 +246,7 @@ export class PageMigrationComponent implements AfterViewInit {
         if (!to || !from) return
     }
 
-    UseExample(e: Example) {
+    UseExample() {
         // this.dialog.open(DialogConfirmComponent, {
         //     data: {
         //         message: 'Using an example will replace the existing code, this cannot be undone. Are you sure?',
@@ -262,8 +257,11 @@ export class PageMigrationComponent implements AfterViewInit {
         //         }
         //     }
         // })
-        this.from.raw = e.from
-        this.to.raw = e.to
+        if (!this.selectedExample) {
+            return
+        }
+        this.from.raw = this.selectedExample.from
+        this.to.raw = this.selectedExample.to
         this.Run()
     }
 
@@ -277,9 +275,7 @@ export class PageMigrationComponent implements AfterViewInit {
 
     Copy() {
         navigator.clipboard.writeText(this.output)
-        this.snackBar.open('Copied to clipboard', '', {
-            duration: 2500
-        })
+        this.inform.Mention('Copied to clipboard')
     }
 
     Run() {
@@ -624,7 +620,7 @@ function handleUpdateDeleteAttr(beforeTable: Table, beforeAttr: Attribute, after
                 const allAttrs = afterAttr.Parent.AllAttributes()
 
                 {
-                    const s = `${alterT} ${replaceAlign}DROP COLUMN${replaceAlign2} ${cc(beforeAttr.Name, "sk")};`
+                    const s = `${alterT} ${replaceAlign}DROP COLUMN${replaceAlign2} ${cc(beforeAttr.Name, 'sk')};`
                     script.push(s)
                 }
 

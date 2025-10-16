@@ -13,13 +13,12 @@ import {AttributeMap} from '../varchar'
 import {generateAttributeMap, VarcharJSONData} from '../varchar'
 import varcharJSON from '../../../public/varchar.json'
 import {LanguageHtmlService} from './language/language-html.service'
-import {MatSnackBar} from '@angular/material/snack-bar'
+import {InformService} from './inform.service'
 
 @Injectable({
     providedIn: 'root'
 })
 export class LanguageService {
-    private readonly snackBar = inject(MatSnackBar)
     varcharMap: AttributeMap = new Map()
 
     // private readonly languageCsService = inject(LanguageCsService)
@@ -30,6 +29,7 @@ export class LanguageService {
     // private readonly languagePsqlService = inject(LanguagePsqlService)
     // private readonly languageTsqlService = inject(LanguageTsqlService)
     // private readonly languageSqliteService = inject(LanguageSqliteService)
+    readonly inform = inject(InformService)
 
     constructor() {
         let all: VarcharJSONData = {}
@@ -111,7 +111,7 @@ export class LanguageService {
                 ext = 'CS'
                 break
             case AppGeneratorMode.PostgresSeed:
-                output = LanguagePsqlService.ToSeed(schemas, this.varcharMap, seedLimit, this.snackBar)
+                output = LanguagePsqlService.ToSeed(schemas, this.varcharMap, seedLimit, this.inform)
                 ext = 'SQL'
                 break
             case AppGeneratorMode.HTMLRaw:
@@ -142,4 +142,5 @@ export class LanguageService {
             code: output
         }
     }
+
 }

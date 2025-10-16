@@ -4,7 +4,7 @@ import {cc, alignKeyword, alignKeywords} from '../../../app/formatting'
 import {Table, Schema, AttrType, PG_TO_PG_TYPE, Lang, GenerateDefaultValue, Attribute, DeterminedAttrDetails, Seed} from '../../../app/structure'
 import {LanguageSqlService} from './language-sql.service'
 import {AttributeMap} from '../../varchar'
-import {MatSnackBar} from '@angular/material/snack-bar'
+import {InformService} from '../inform.service'
 
 @Injectable({
     providedIn: 'root'
@@ -91,7 +91,7 @@ export class LanguagePsqlService {
         return endThings
     }
 
-    static ToSeed(schemas: Schema[], map: AttributeMap, limit: number, snackBar: MatSnackBar): string {
+    static ToSeed(schemas: Schema[], map: AttributeMap, limit: number, inform: InformService): string {
         const lines: string[] = []
 
         for (const s of schemas) {
@@ -119,9 +119,7 @@ export class LanguagePsqlService {
 
                 const seed = new Seed(t, map, limit)
                 if (seed.brokeUnique) {
-                    snackBar.open('Results limited', '', {
-                        duration: 2000
-                    })
+                    inform.Mention(`Could not generate ${limit} records`)
                 }
                 const data = seed.seedTable.Read()
                 for (const row of data) {

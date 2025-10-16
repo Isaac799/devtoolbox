@@ -300,4 +300,107 @@ export class AppService {
         if (!a || !b) return false
         return a.ID === b.ID
     }
+
+    constructor() {
+        for (const e of this.generatorModeOptions) {
+            if (e.value !== this.app.generatorMode) {
+                continue
+            }
+            this.generatorModeSelected = e.value
+        }
+    }
+
+    setGenMode() {
+        const c = this.generatorModeOptions.find(e => e.value === this.generatorModeSelected)
+        if (!c) {
+            this.generatorModeSelected = 0
+            this.setGenMode()
+            return
+        }
+        this.app.generatorMode = c.value
+        this.RefreshOutput()
+    }
+
+    generatorModeSelected = 0
+    generatorModeOptions: {title: string; icon?: string; value: AppGeneratorMode}[] = [
+        {
+            title: 'Postgres - Tables',
+            icon: 'star',
+            value: AppGeneratorMode.Postgres
+        },
+        // {
+        //     title: 'Postgres - Functions',
+        //     value: AppGeneratorMode.PostgresFunctions
+        // },
+        {
+            title: 'Postgres - Seed',
+            icon: 'star',
+            value: AppGeneratorMode.PostgresSeed
+        },
+        // {
+        //     title: 'MS SQL - Tables',
+        //     value: AppGeneratorMode.TSQLTables
+        // },
+        // {
+        //     title: 'SQLite - Tables',
+        //     value: AppGeneratorMode.SQLiteTables
+        // },
+        // {
+        //     title: 'SQLite - Queries',
+        //     value: AppGeneratorMode.SQLiteJoinQuery
+        // },
+        {
+            title: 'JS - Classes',
+            value: AppGeneratorMode.JSClasses
+        },
+        {
+            title: 'TS - Classes',
+            value: AppGeneratorMode.TSClasses
+        },
+        {
+            title: 'TS - Types & new functions',
+            value: AppGeneratorMode.TSTypesAndFns
+        },
+        {
+            title: 'TS - Angular reactive form',
+            value: AppGeneratorMode.AngularFormControl
+        },
+        // {
+        //     title: 'C# Classes',
+        //     value: AppGeneratorMode.CSClasses
+        // },
+        {
+            title: ' Go - Structs & new functions',
+            value: AppGeneratorMode.GoStructsAndFns
+        },
+        // {
+        //     title: ' Go - HTTP handlers using PostgreSQL',
+        //     icon: 'star',
+        //     value: AppGeneratorMode.APIGoPostgres
+        // },
+        {
+            title: 'HTML - Fields',
+            value: AppGeneratorMode.HTMLRaw
+        },
+        {
+            title: 'HTML - Fields (Bulma v1)',
+            value: AppGeneratorMode.HTMLRawBulma01
+        }
+        // {
+        //     title: 'Angular reactive form',
+        //     value: AppGeneratorMode.HTMLAngularReactive
+        // },
+        // {
+        //     title: 'Go Template',
+        //     value: AppGeneratorMode.GoTemplateHTML
+        // },
+        // {
+        //     title: 'Go Template (Bulma v1)',
+        //     value: AppGeneratorMode.GoTemplateBulma01HTML
+        // },
+        // {
+        //     title: 'Rust - Structs & impl functions',
+        //     value: AppGeneratorMode.RustStructAndImpl
+        // }
+    ]
 }

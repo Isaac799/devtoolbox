@@ -1,58 +1,26 @@
-import {Component, inject, isDevMode, OnInit} from '@angular/core'
-import {CommonModule} from '@angular/common'
-import {FormsModule, ReactiveFormsModule} from '@angular/forms'
-import {MatSidenavModule} from '@angular/material/sidenav'
-import {MatToolbarModule} from '@angular/material/toolbar'
-import {MatIconModule} from '@angular/material/icon'
-import {MatButtonModule} from '@angular/material/button'
-import {RouterModule} from '@angular/router'
-import {AppService} from './services/app.service'
-import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout'
-import {MatTooltipModule} from '@angular/material/tooltip'
-import {MatDialog} from '@angular/material/dialog'
-import {DialogSettingsComponent} from './dialogs/dialog-settings/dialog-settings.component'
+import { Component, inject, OnInit } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { Router, RouterModule } from '@angular/router'
+import { AppService } from './services/app.service'
+import { InformService } from './services/inform.service'
 
 @Component({
     selector: 'app-root',
-    imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MatSidenavModule,
-        MatToolbarModule,
-        MatIconModule,
-        MatButtonModule,
-        RouterModule,
-        MatTooltipModule
-    ],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
-    readonly title = 'devtoolbox'
+    private readonly router = inject(Router)
     private readonly appService = inject(AppService)
-    private readonly breakpointObserver = inject(BreakpointObserver)
-    private readonly matDialog = inject(MatDialog)
-
-    showSplitPage = false
-    showTitle = true
+    readonly informService = inject(InformService)
 
     ngOnInit(): void {
         this.appService.Initialize()
-
-        if (!isDevMode()) {
-            if (this.breakpointObserver.isMatched(Breakpoints.Large) || this.breakpointObserver.isMatched(Breakpoints.XLarge)) {
-                this.showSplitPage = true
-            }
-        } else {
-            this.showSplitPage = true
-        }
-        if (this.breakpointObserver.isMatched(Breakpoints.HandsetPortrait)) {
-            this.showTitle = false
-        }
     }
 
     showSettings() {
-        this.matDialog.open(DialogSettingsComponent)
+        this.router.navigate(['/settings'])
     }
 }

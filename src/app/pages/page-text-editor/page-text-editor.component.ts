@@ -21,22 +21,15 @@ import {CommonModule} from '@angular/common'
 import {FormsModule} from '@angular/forms'
 import {alignKeyword, cc} from '../../formatting'
 import {DataService} from '../../services/data.service'
-import {MatButtonModule} from '@angular/material/button'
-import {MatIconModule} from '@angular/material/icon'
-import {MatSelectModule} from '@angular/material/select'
-import {MatExpansionModule} from '@angular/material/expansion'
-import {MatToolbar} from '@angular/material/toolbar'
-import {MatSnackBar} from '@angular/material/snack-bar'
 import {TextEditorService} from '../../services/text-editor.service'
 import {AppService} from '../../services/app.service'
 import {BitwiseOperations} from '../../constants'
-import {MatDialog} from '@angular/material/dialog'
-import {MatTooltipModule} from '@angular/material/tooltip'
 import {DefaultValueHintPipe} from '../../pipes/default-value-hint.pipe'
+import { InformService } from '../../services/inform.service'
 
 @Component({
     selector: 'app-page-text-editor',
-    imports: [CommonModule, FormsModule, MatButtonModule, MatExpansionModule, MatIconModule, MatSelectModule, MatToolbar, MatTooltipModule],
+    imports: [CommonModule, FormsModule],
     templateUrl: './page-text-editor.component.html',
     styleUrl: './page-text-editor.component.scss'
 })
@@ -47,8 +40,8 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     readonly dataService = inject(DataService)
     readonly textEditorService = inject(TextEditorService)
+    readonly inform = inject(InformService)
 
-    private readonly matDialog = inject(MatDialog)
     private readonly appService = inject(AppService)
 
     toggleMode = 0
@@ -56,7 +49,6 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
     readonly NEWLINE = '~N~'
     renderElements: RenderE[] = []
     renderSuggestionElements: RenderE[] = []
-    private readonly snackBar = inject(MatSnackBar)
     private suggestionDebounce: ReturnType<typeof setTimeout> | undefined = undefined
 
     //     textInput = `
@@ -135,9 +127,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
         this.HardRefresh()
 
-        this.snackBar.open('Switched syntax mode', '', {
-            duration: 2500
-        })
+        this.inform.Mention('Switched syntax mode')
     }
 
     Run() {
@@ -146,9 +136,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     Copy() {
         navigator.clipboard.writeText(this.textEditorService.textInput)
-        this.snackBar.open('Copied to clipboard', '', {
-            duration: 2500
-        })
+        this.inform.Mention('Copied to clipboard')
     }
 
     Undo() {
@@ -298,9 +286,7 @@ export class PageTextEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     Format() {
         this.HardRefresh()
-        this.snackBar.open('Formatting applied', '', {
-            duration: 2500
-        })
+        this.inform.Mention('Formatting applied')
     }
 
     HardRefresh() {
