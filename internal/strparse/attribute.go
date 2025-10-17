@@ -11,7 +11,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func newAttributeFromLine(s string) (*model.Attribute, error) {
+func newAttributeFromLine(s string) *model.Attribute {
 	var (
 		noPrefix = strings.TrimPrefix(s, PrefixAttr)
 		kind     model.AttrKind
@@ -48,15 +48,18 @@ func newAttributeFromLine(s string) (*model.Attribute, error) {
 	optsStr = strings.TrimSpace(optsStr)
 
 	if len(identifierStr) == 0 {
-		return nil, ErrIdentifierRequired
+		attr.Err = ErrIdentifierRequired
+		return &attr
 	}
 	if len(kindStr) == 0 {
-		return nil, ErrKindRequired
+		attr.Err = ErrKindRequired
+		return &attr
 	}
 
 	kind = determineAttrKind(kindStr)
 	if kind == model.AttrKindNone {
-		return nil, ErrKindInvalid
+		attr.Err = ErrKindInvalid
+		return &attr
 	}
 
 	var (
@@ -111,7 +114,7 @@ func newAttributeFromLine(s string) (*model.Attribute, error) {
 		}
 	}
 
-	return &attr, nil
+	return &attr
 }
 
 func determineAttrKind(s string) model.AttrKind {

@@ -1,7 +1,6 @@
 package strparse
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -88,11 +87,7 @@ func Raw(s string) []*model.Schema {
 			if prevTbl == nil {
 				continue
 			}
-			attr, err := newAttributeFromLine(line)
-			if err != nil {
-				fmt.Println(err.Error(), line)
-				continue
-			}
+			attr := newAttributeFromLine(line)
 			prevTbl.Attributes = append(prevTbl.Attributes, attr)
 		default:
 			continue
