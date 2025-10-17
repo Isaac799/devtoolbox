@@ -62,6 +62,8 @@ func newAttributeFromLine(s string) *model.Attribute {
 		return &attr
 	}
 
+	attr.Kind = kind
+
 	var (
 		primaries = []string{"p", "primary"}
 		reqs      = []string{"r", "required"}
@@ -114,6 +116,10 @@ func newAttributeFromLine(s string) *model.Attribute {
 		}
 	}
 
+	if attr.Kind == model.AttrKindString && !attr.Validation.Max.Valid {
+		attr.Err = ErrMissingMax
+	}
+
 	return &attr
 }
 
@@ -128,7 +134,7 @@ func determineAttrKind(s string) model.AttrKind {
 	case "bool", "boolean":
 		kind = model.AttrKindBoolean
 	case "str", "string", "varchar":
-		kind = model.AttrKindVarchar
+		kind = model.AttrKindString
 	case "ts", "timestamp", "datetime":
 		kind = model.AttrKindTimestamp
 	case "date":

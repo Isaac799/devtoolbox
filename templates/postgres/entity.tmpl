@@ -1,0 +1,7 @@
+{{ define "entity" }}
+CREATE TABLE {{ .Name }} (
+    {{ range $index, $element := .Attributes }}{{ template "attribute" . }}{{ if notLast $index $.Attributes }},
+    {{ end }}{{ end }}{{ if .HasPrimary }},
+    PRIMARY KEY({{ range $index, $element := .PrimaryList }}{{ if ne $index 0 }},{{ end }}{{ $element }}{{ end }}){{ end }}
+);
+{{ end }}

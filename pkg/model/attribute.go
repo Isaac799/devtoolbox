@@ -15,7 +15,7 @@ const (
 	AttrKindSerial
 	AttrKindInt
 	AttrKindBoolean
-	AttrKindVarchar
+	AttrKindString
 	AttrKindMoney
 	AttrKindReference
 )

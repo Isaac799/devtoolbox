@@ -7,4 +7,5 @@ var (
 	ErrIdentifierRequired = errors.New("identifier required")
 	ErrKindRequired       = errors.New("kind required")
 	ErrKindInvalid        = errors.New("kind invalid")
+	ErrMissingMax         = errors.New("missing max")
 )
