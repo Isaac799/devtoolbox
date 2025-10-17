@@ -8,14 +8,14 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func determineLineKind(s string) LineKind {
-	kind := LineKindNone
-	if strings.HasPrefix(s, PrefixSch) {
-		kind = LineKindSch
-	} else if strings.HasPrefix(s, PrefixTbl) {
-		kind = LineKindTbl
-	} else if strings.HasPrefix(s, PrefixAttr) {
-		kind = LineKindAttr
+func determineLineKind(s string) lineKind {
+	kind := lineKindNone
+	if strings.HasPrefix(s, prefixSch) {
+		kind = lineKindSch
+	} else if strings.HasPrefix(s, prefixEnt) {
+		kind = lineKindEnt
+	} else if strings.HasPrefix(s, prefixAttr) {
+		kind = lineKindAttr
 	}
 	return kind
 }
@@ -37,12 +37,12 @@ func normalize(s string) string {
 
 		// no digit first char
 		if i == 0 {
-			if matched, _ := regexp.Match(RegDigit.String(), []byte(string(r))); matched {
+			if matched, _ := regexp.Match(regDigit.String(), []byte(string(r))); matched {
 				continue
 			}
 		}
 		// word chars (snake) only
-		if matched, _ := regexp.Match(RegWordChar.String(), []byte(string(r))); !matched {
+		if matched, _ := regexp.Match(regWordChar.String(), []byte(string(r))); !matched {
 			continue
 		}
 
@@ -58,7 +58,7 @@ func Raw(s string) []*model.Schema {
 	schemas := make([]*model.Schema, 0, 3)
 
 	var prevSch *model.Schema
-	var prevTbl *model.Entity
+	var prevEnt *model.Entity
 
 	lines := strings.SplitSeq(s, "\n")
 	for lineRaw := range lines {
@@ -66,29 +66,29 @@ func Raw(s string) []*model.Schema {
 		lineKind := determineLineKind(line)
 
 		switch lineKind {
-		case LineKindSch:
+		case lineKindSch:
 			sch, err := newSchFromLine(line)
 			if err != nil {
 				continue
 			}
 			prevSch = sch
 			schemas = append(schemas, sch)
-		case LineKindTbl:
+		case lineKindEnt:
 			if prevSch == nil {
 				continue
 			}
-			tbl, err := newTblFromLine(line)
+			ent, err := newEntFromLine(line)
 			if err != nil {
 				continue
 			}
-			prevTbl = tbl
-			prevSch.Entities = append(prevSch.Entities, tbl)
-		case LineKindAttr:
-			if prevTbl == nil {
+			prevEnt = ent
+			prevSch.Entities = append(prevSch.Entities, ent)
+		case lineKindAttr:
+			if prevEnt == nil {
 				continue
 			}
 			attr := newAttributeFromLine(line)
-			prevTbl.Attributes = append(prevTbl.Attributes, attr)
+			prevEnt.Attributes = append(prevEnt.Attributes, attr)
 		default:
 			continue
 		}

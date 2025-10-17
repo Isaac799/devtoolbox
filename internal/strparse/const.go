@@ -2,28 +2,28 @@ package strparse
 
 import "regexp"
 
-type LineKind int
+type lineKind int
 
 const (
-	LineKindNone LineKind = iota
-	LineKindSch
-	LineKindTbl
-	LineKindAttr
+	lineKindNone lineKind = iota
+	lineKindSch
+	lineKindEnt
+	lineKindAttr
 )
 
 const (
-	PrefixSch  = "# "
-	PrefixTbl  = "## "
-	PrefixAttr = "- "
-	DeliAs     = " as "
-	DeliWith   = " with "
-	DeliRange  = ".."
-	DeliLabel  = ":"
+	prefixSch  = "# "
+	prefixEnt  = "## "
+	prefixAttr = "- "
+	deliAs     = " as "
+	deliWith   = " with "
+	deliRange  = ".."
+	deliLabel  = ":"
 )
 
 var (
-	RegDigit    = regexp.MustCompile("[0-9]")
-	RegChar     = regexp.MustCompile("[a-zA-Z]")
-	RegWordChar = regexp.MustCompile("\\w")
-	RegWord     = regexp.MustCompile("^\\w+$")
+	regDigit    = regexp.MustCompile("[0-9]")
+	regChar     = regexp.MustCompile("[a-zA-Z]")
+	regWordChar = regexp.MustCompile("\\w")
+	regWord     = regexp.MustCompile("^\\w+$")
 )

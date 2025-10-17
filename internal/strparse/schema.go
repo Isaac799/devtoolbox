@@ -7,7 +7,7 @@ import (
 )
 
 func newSchFromLine(s string) (*model.Schema, error) {
-	noPrefix := strings.TrimPrefix(s, PrefixSch)
+	noPrefix := strings.TrimPrefix(s, prefixSch)
 
 	sch := model.Schema{
 		Name:     normalize(noPrefix),

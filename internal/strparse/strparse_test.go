@@ -49,11 +49,11 @@ func testNoErr(t *testing.T, schemas []*model.Schema) {
 		if sch.Entities == nil {
 			t.Fatal(sch.Name, "nil entities")
 		}
-		for _, tbl := range sch.Entities {
+		for _, ent := range sch.Entities {
 			if sch.Entities == nil {
-				t.Fatal(tbl.Name, "nil attributes")
+				t.Fatal(ent.Name, "nil attributes")
 			}
-			for _, attr := range tbl.Attributes {
+			for _, attr := range ent.Attributes {
 				if attr.Err == nil {
 					continue
 				}

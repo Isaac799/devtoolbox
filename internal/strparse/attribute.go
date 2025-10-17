@@ -13,7 +13,7 @@ import (
 
 func newAttributeFromLine(s string) *model.Attribute {
 	var (
-		noPrefix = strings.TrimPrefix(s, PrefixAttr)
+		noPrefix = strings.TrimPrefix(s, prefixAttr)
 		kind     model.AttrKind
 	)
 
@@ -21,20 +21,20 @@ func newAttributeFromLine(s string) *model.Attribute {
 
 	_afterRefShortHand, found := strings.CutPrefix(noPrefix, "@")
 	if found {
-		if !strings.Contains(noPrefix, DeliAs) {
-			kindStr, optsStr, _ := strings.Cut(_afterRefShortHand, DeliWith)
+		if !strings.Contains(noPrefix, deliAs) {
+			kindStr, optsStr, _ := strings.Cut(_afterRefShortHand, deliWith)
 			noPrefix = fmt.Sprintf("%s as reference with %s", kindStr, optsStr)
 		} else {
-			identifierStr, after, _ := strings.Cut(_afterRefShortHand, DeliAs)
-			kindStr, optsStr, _ := strings.Cut(after, DeliWith)
+			identifierStr, after, _ := strings.Cut(_afterRefShortHand, deliAs)
+			kindStr, optsStr, _ := strings.Cut(after, deliWith)
 			alias = strings.TrimSpace(kindStr)
 			noPrefix = fmt.Sprintf("%s as reference with %s", identifierStr, optsStr)
 		}
 	}
 
 	var (
-		identifierStr, _later, _ = strings.Cut(noPrefix, DeliAs)
-		kindStr, optsStr, _      = strings.Cut(_later, DeliWith)
+		identifierStr, _later, _ = strings.Cut(noPrefix, deliAs)
+		kindStr, optsStr, _      = strings.Cut(_later, deliWith)
 		optsRaw                  = strings.Split(optsStr, ",")
 		attr                     = model.Attribute{
 			Name:   normalize(identifierStr),
@@ -88,8 +88,8 @@ func newAttributeFromLine(s string) *model.Attribute {
 			continue
 		}
 
-		if strings.Contains(opt, DeliRange) {
-			minStr, maxStr, _ := strings.Cut(opt, DeliRange)
+		if strings.Contains(opt, deliRange) {
+			minStr, maxStr, _ := strings.Cut(opt, deliRange)
 			min, minErr := strconv.ParseFloat(minStr, 64)
 			if minErr == nil {
 				attr.Min = sql.NullFloat64{Float64: min, Valid: true}
@@ -101,8 +101,8 @@ func newAttributeFromLine(s string) *model.Attribute {
 			continue
 		}
 
-		if strings.Contains(opt, DeliLabel) {
-			str, label, _ := strings.Cut(opt, DeliLabel)
+		if strings.Contains(opt, deliLabel) {
+			str, label, _ := strings.Cut(opt, deliLabel)
 
 			if slices.Contains(uniques, strings.ToLower(str)) {
 				attr.Unique = append(attr.Unique, strcase.ToSnake(label))
