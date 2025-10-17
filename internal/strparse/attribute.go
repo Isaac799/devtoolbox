@@ -48,17 +48,17 @@ func newAttributeFromLine(s string) *model.Attribute {
 	optsStr = strings.TrimSpace(optsStr)
 
 	if len(identifierStr) == 0 {
-		attr.Err = ErrIdentifierRequired
+		attr.AppendErr(ErrIdentifierRequired)
 		return &attr
 	}
 	if len(kindStr) == 0 {
-		attr.Err = ErrKindRequired
+		attr.AppendErr(ErrKindRequired)
 		return &attr
 	}
 
 	kind = determineAttrKind(kindStr)
 	if kind == model.AttrKindNone {
-		attr.Err = ErrKindInvalid
+		attr.AppendErr(ErrKindInvalid)
 		return &attr
 	}
 
@@ -102,7 +102,7 @@ func newAttributeFromLine(s string) *model.Attribute {
 			}
 
 			if attr.Min.Float64 > attr.Max.Float64 {
-				attr.Err = ErrRangeInvalid
+				attr.AppendErr(ErrRangeInvalid)
 			}
 			continue
 		}
@@ -120,8 +120,10 @@ func newAttributeFromLine(s string) *model.Attribute {
 		}
 	}
 
+	attr.SanitizeDefaultValue()
+
 	if attr.Kind == model.AttrKindString && !attr.Validation.Max.Valid {
-		attr.Err = ErrMissingMax
+		attr.AppendErr(ErrMissingMax)
 	}
 
 	return &attr

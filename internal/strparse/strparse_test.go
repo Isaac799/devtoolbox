@@ -57,7 +57,9 @@ func testNoErr(t *testing.T, schemas []*model.Schema) {
 				if attr.Err == nil {
 					continue
 				}
-				t.Fatal(attr.Err.Error())
+				for _, err := range attr.Err {
+					t.Fatal(err.Error())
+				}
 			}
 		}
 	}
