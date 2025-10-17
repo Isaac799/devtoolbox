@@ -27,49 +27,8 @@ var _postgresKind = map[model.AttrKind]string{
 	model.AttrKindReference: "REF",
 }
 
-// PostgresSetup generates a postgres create statements to setup a new database
-func PostgresSetup(schemas []*model.Schema) string {
-	sb := strings.Builder{}
-	for schI, sch := range schemas {
-		if schI > 0 {
-			fmt.Fprintf(&sb, "\n")
-		}
-		fmt.Fprintf(&sb, "CREATE SCHEMA %s;", sch.Name)
-		for _, ent := range sch.Entities {
-			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "CREATE TABLE %s (", ent.Name)
-
-			for attrI, attr := range ent.Attributes {
-				if attrI > 0 {
-					fmt.Fprintf(&sb, ",\n")
-				} else {
-					fmt.Fprintf(&sb, "\n")
-				}
-				if attr.Err != nil {
-					fmt.Fprintf(&sb, "\t-- %v (", attr.Err)
-					continue
-				}
-
-				if attr.Kind == model.AttrKindString {
-					fmt.Fprintf(&sb, "\t%s %s(%d)", attr.Name, _postgresKind[attr.Kind], int(attr.Max.Float64))
-				} else {
-					fmt.Fprintf(&sb, "\t%s %s", attr.Name, _postgresKind[attr.Kind])
-				}
-			}
-
-			prim := ent.PrimaryList()
-			if len(prim) > 0 {
-				fmt.Fprintf(&sb, ",\n\tPRIMARY KEY (%s)", strings.Join(prim, ","))
-			}
-			fmt.Fprintf(&sb, "\n);")
-		}
-	}
-
-	return sb.String()
-}
-
 // PostgresSetupTemplate generates a postgres create statements to setup a new database
-func PostgresSetupTemplate(schemas []*model.Schema) (string, error) {
+func PostgresSetup(schemas []*model.Schema) (string, error) {
 	os.Chdir("..")
 	os.Chdir("..")
 

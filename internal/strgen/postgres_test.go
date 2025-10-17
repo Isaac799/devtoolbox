@@ -43,15 +43,13 @@ const testMockSchemas = testMockSchemaKitchen + "\n" + testMockSchemaRestaurant
 func TestPostgresSetup(t *testing.T) {
 	schemas := strparse.Raw(testMockSchemas)
 
-	pg := PostgresSetup(schemas)
-	pg2, err := PostgresSetupTemplate(schemas)
+	pg, err := PostgresSetup(schemas)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	os.MkdirAll("generated", os.ModePerm)
 	os.WriteFile("generated/pg-raw.sql", []byte(pg), os.ModePerm)
-	os.WriteFile("generated/pg-temp.sql", []byte(pg2), os.ModePerm)
 
 	_ = pg
 }
