@@ -11,9 +11,9 @@ const testMockSchemaKitchen = `# Kitchen
 
 ## Ingredient
 - id          as ++
-- name        as str  with required, 3..30, unique
+- name        as str  with required, 3..30, unique, d: foo
 - eol         as date with required
-- rare        as bool
+- rare        as bool with d:false
 
 ## Food
 - id          as ++

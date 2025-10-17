@@ -27,7 +27,47 @@ var _postgresKind = map[model.AttrKind]string{
 	model.AttrKindReference: "REF",
 }
 
-// PostgresSetupTemplate generates a postgres create statements to setup a new database
+func renderKind(attr model.Attribute) string {
+	s := _postgresKind[attr.Kind]
+	if attr.Kind == model.AttrKindString {
+		s = fmt.Sprintf("%s(%d)", s, int(attr.Max.Float64))
+	}
+	return s
+}
+
+func renderDefault(attr model.Attribute) string {
+	s := attr.DefaultValue
+	if len(s) == 0 {
+		return ""
+	}
+
+	switch attr.Kind {
+	case model.AttrKindString:
+		escaped := strings.ReplaceAll(s, "'", "''")
+		return fmt.Sprintf("'%s'", escaped)
+	case model.AttrKindChar:
+		return fmt.Sprintf("'%s'", s)
+	case model.AttrKindDate:
+		if s == "now" {
+			return "current_date"
+		}
+		return fmt.Sprintf("'%s'", s)
+	case model.AttrKindTime:
+		if s == "now" {
+			return "current_time"
+		}
+		return fmt.Sprintf("'%s'", s)
+	case model.AttrKindTimestamp:
+		if s == "now" {
+			return "current_timestamp"
+		}
+		return fmt.Sprintf("'%s'", s)
+	default:
+		return s
+	}
+}
+
+// PostgresSetup generates a postgres create statements to setup a new database
 func PostgresSetup(schemas []*model.Schema) (string, error) {
 	os.Chdir("..")
 	os.Chdir("..")
@@ -40,13 +80,8 @@ func PostgresSetup(schemas []*model.Schema) (string, error) {
 		"notLast": func(i int, arr []*model.Attribute) bool {
 			return i != len(arr)-1
 		},
-		"attrKind": func(attr model.Attribute) string {
-			s := _postgresKind[attr.Kind]
-			if attr.Kind == model.AttrKindString {
-				s = fmt.Sprintf("%s(%d)", s, int(attr.Max.Float64))
-			}
-			return s
-		},
+		"attrKind":    renderKind,
+		"attrDefault": renderDefault,
 	})
 
 	_, err = tmpl.ParseGlob("templates/postgres/**")
