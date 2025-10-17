@@ -2,9 +2,11 @@ package strparse
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/Isaac799/devtoolbox/pkg/model"
+	"github.com/iancoleman/strcase"
 )
 
 func determineLineKind(s string) LineKind {
@@ -17,6 +19,39 @@ func determineLineKind(s string) LineKind {
 		kind = LineKindAttr
 	}
 	return kind
+}
+
+func normalize(s string) string {
+	s = strings.ToLower(strcase.ToSnake(s))
+
+	ok := make([]rune, 0, len(s))
+	var prev rune
+
+	for i, r := range s {
+		if len(ok) == 0 && r == '_' {
+			continue
+		}
+
+		if r == '_' && prev == '_' {
+			continue
+		}
+
+		// no digit first char
+		if i == 0 {
+			if matched, _ := regexp.Match(RegDigit.String(), []byte(string(r))); matched {
+				continue
+			}
+		}
+		// word chars (snake) only
+		if matched, _ := regexp.Match(RegWordChar.String(), []byte(string(r))); !matched {
+			continue
+		}
+
+		ok = append(ok, r)
+		prev = r
+	}
+
+	return string(ok)
 }
 
 // Raw takes in a string and provides the schemas

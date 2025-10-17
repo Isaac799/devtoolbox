@@ -62,3 +62,27 @@ func testNoErr(t *testing.T, schemas []*model.Schema) {
 		}
 	}
 }
+
+func TestNormalize(t *testing.T) {
+	{
+		s := "2 FAST 4 u"
+		s2 := normalize(s)
+		if s2 != "fast_4_u" {
+			t.Fail()
+		}
+	}
+	{
+		s := "slow snail"
+		s2 := normalize(s)
+		if s2 != "slow_snail" {
+			t.Fail()
+		}
+	}
+	{
+		s := "Run Fast - Small spider!"
+		s2 := normalize(s)
+		if s2 != "run_fast_small_spider" {
+			t.Fail()
+		}
+	}
+}

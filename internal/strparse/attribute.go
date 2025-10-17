@@ -27,7 +27,7 @@ func newAttributeFromLine(s string) (*model.Attribute, error) {
 		} else {
 			identifierStr, after, _ := strings.Cut(_afterRefShortHand, DeliAs)
 			kindStr, optsStr, _ := strings.Cut(after, DeliWith)
-			alias = kindStr
+			alias = strings.TrimSpace(kindStr)
 			noPrefix = fmt.Sprintf("%s as reference with %s", identifierStr, optsStr)
 		}
 	}
@@ -37,14 +37,13 @@ func newAttributeFromLine(s string) (*model.Attribute, error) {
 		kindStr, optsStr, _      = strings.Cut(_later, DeliWith)
 		optsRaw                  = strings.Split(optsStr, ",")
 		attr                     = model.Attribute{
-			Name:   identifierStr,
+			Name:   normalize(identifierStr),
 			Kind:   kind,
 			Alias:  alias,
 			Unique: make([]string, 0, len(optsRaw)),
 		}
 	)
 
-	identifierStr = strings.TrimSpace(identifierStr)
 	kindStr = strings.TrimSpace(kindStr)
 	optsStr = strings.TrimSpace(optsStr)
 
