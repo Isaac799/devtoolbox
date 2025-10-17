@@ -31,6 +31,7 @@ const (
 
 // Attribute is a metric in an entity, like a column in a table
 type Attribute struct {
+	Parent       *Entity
 	Name         string
 	Alias        string
 	Kind         AttrKind

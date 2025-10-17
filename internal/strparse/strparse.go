@@ -81,6 +81,7 @@ func Raw(s string) []*model.Schema {
 			if err != nil {
 				continue
 			}
+			ent.Parent = prevSch
 			prevEnt = ent
 			prevSch.Entities = append(prevSch.Entities, ent)
 		case lineKindAttr:
@@ -88,6 +89,7 @@ func Raw(s string) []*model.Schema {
 				continue
 			}
 			attr := newAttributeFromLine(line)
+			attr.Parent = prevEnt
 			prevEnt.Attributes = append(prevEnt.Attributes, attr)
 		default:
 			continue

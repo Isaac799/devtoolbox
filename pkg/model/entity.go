@@ -4,6 +4,7 @@ package model
 type Entity struct {
 	Name       string
 	Attributes []*Attribute
+	Parent     *Schema
 }
 
 // Primary is a arr of attr that make up primary
