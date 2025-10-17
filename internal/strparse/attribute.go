@@ -100,6 +100,10 @@ func newAttributeFromLine(s string) *model.Attribute {
 			if maxErr == nil {
 				attr.Max = sql.NullFloat64{Float64: max, Valid: true}
 			}
+
+			if attr.Min.Float64 > attr.Max.Float64 {
+				attr.Err = ErrRangeInvalid
+			}
 			continue
 		}
 

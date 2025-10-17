@@ -8,4 +8,5 @@ var (
 	ErrKindRequired       = errors.New("kind required")
 	ErrKindInvalid        = errors.New("kind invalid")
 	ErrMissingMax         = errors.New("missing max")
+	ErrRangeInvalid       = errors.New("range is invalid")
 )
