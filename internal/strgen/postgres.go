@@ -31,8 +31,15 @@ func renderErrs(attr *model.Attribute) string {
 	return fmt.Sprintf("-- %s has errors: %s", attr.Name(), attr.Attribute.ErrString())
 }
 
+func renderIsNotNull(attr *model.Attribute) bool {
+	if attr.Source.Kind == model.AttrKindSerial {
+		return false
+	}
+	return attr.Source.Required.Valid && attr.Source.Required.Bool
+}
+
 func renderKind(attr *model.Attribute) string {
-	k := attr.Attribute.Kind
+	k := attr.Final.Kind
 
 	if k == model.AttrKindSerial && !attr.DirectChild {
 		k = model.AttrKindInt
@@ -40,18 +47,21 @@ func renderKind(attr *model.Attribute) string {
 
 	s := _postgresKind[k]
 	if k == model.AttrKindString {
-		s = fmt.Sprintf("%s(%d)", s, int(attr.Attribute.Max.Float64))
+		s = fmt.Sprintf("%s(%d)", s, int(attr.Final.Max.Float64))
 	}
-
-	if !attr.DirectChild {
-		if attr.ChangedSchema {
-			s = fmt.Sprintf("%s REFERENCES %s.%s(%s)", s, attr.Final.Parent.Parent.Name, attr.Final.Parent.Name, attr.Final.Name)
-		} else {
-			s = fmt.Sprintf("%s REFERENCES %s(%s)", s, attr.Final.Parent.Name, attr.Final.Name)
-		}
-	}
-
 	return s
+}
+
+func renderReference(attr *model.Attribute) string {
+	if attr.DirectChild {
+		// unreachable
+		return "???"
+	}
+
+	if attr.ChangedSchema {
+		return fmt.Sprintf("%s.%s(%s)", attr.Final.Parent.Parent.Name, attr.Final.Parent.Name, attr.Final.Name)
+	}
+	return fmt.Sprintf("%s(%s)", attr.Final.Parent.Name, attr.Final.Name)
 }
 
 func renderDefault(attr *model.Attribute) string {
@@ -99,9 +109,11 @@ func PostgresSetup(schemas []*model.Schema) (string, error) {
 		"notLast": func(i int, arr []*model.Attribute) bool {
 			return i != len(arr)-1
 		},
-		"renderKind":    renderKind,
-		"renderDefault": renderDefault,
-		"renderErrs":    renderErrs,
+		"renderKind":      renderKind,
+		"renderDefault":   renderDefault,
+		"renderErrs":      renderErrs,
+		"renderReference": renderReference,
+		"renderIsNotNull": renderIsNotNull,
 	})
 
 	_, err = tmpl.ParseGlob("templates/postgres/**")

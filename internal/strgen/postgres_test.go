@@ -41,7 +41,7 @@ const testMockSchemaRestaurant = `# Restaurant
 const testMockSchemaFoo = `# Foo
 
 ## Order
-- @Kitchen.food  as co         with required
+- @Kitchen.food      as co 
 - @Kitchen.Recipe       with required, primary
 - @Restaurant.Customer          with required
 - @Restaurant.order            with required

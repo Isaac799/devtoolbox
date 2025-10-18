@@ -144,6 +144,18 @@ func (ent *Entity) UniqueList() [][]*Attribute {
 	return arr
 }
 
+// ReferenceList is a list of references used for templating
+func (ent *Entity) ReferenceList() []*Attribute {
+	arr := make([]*Attribute, 0, 10)
+	for _, v := range ent.Attributes() {
+		if v.DirectChild {
+			continue
+		}
+		arr = append(arr, v)
+	}
+	return arr
+}
+
 // HasPrimary is easy way to see if primaries are relevant
 func (ent *Entity) HasPrimary() bool {
 	return len(ent.Primary()) > 0
@@ -153,6 +165,17 @@ func (ent *Entity) HasPrimary() bool {
 func (ent *Entity) HasUnique() bool {
 	for _, v := range ent.Unique() {
 		if len(v) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// HasReference is easy way to see if references is relevant
+// for templating
+func (ent *Entity) HasReference() bool {
+	for _, v := range ent.Attributes() {
+		if !v.DirectChild {
 			return true
 		}
 	}

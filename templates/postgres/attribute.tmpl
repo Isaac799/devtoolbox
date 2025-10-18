@@ -1,10 +1,13 @@
 {{- block "default" . }}
 {{- if .Attribute.HasDefault }} DEFAULT {{ renderDefault . }}{{ end }}
 {{- end }}
+{{- block "nullable" . }}
+{{- if renderIsNotNull . }} NOT NULL{{ end }}
+{{- end }}
 {{- define "attribute" }}
 {{- if .Attribute.HasErr }}
     {{- renderErrs . }}
 {{- else }}
-    {{- .Name }} {{ renderKind . }}{{ template "default" . }}
+    {{- .Name }} {{ renderKind . }}{{ template "default" . }}{{ template "nullable" . }}
 {{- end }}
 {{- end }}

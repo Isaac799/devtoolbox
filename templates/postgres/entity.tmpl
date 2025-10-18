@@ -1,6 +1,13 @@
-{{- block "primary" . }}
+{{- block "pk" . }}
     {{- if .HasPrimary }},
     PRIMARY KEY({{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}{{ end }})
+    {{- end }}
+{{- end }}
+{{- block "fk" . }}
+    {{- if .HasReference }},
+    {{ range $index, $element := .ReferenceList }}{{ if ne $index 0 }},
+    {{ end }}FOREIGN KEY({{ $element.Name }}) REFERENCES {{ renderReference $element }}
+    {{- end }}
     {{- end }}
 {{- end }}
 {{- block "unique" . }}
@@ -11,13 +18,14 @@
     {{- end }}
 {{- end }}
 {{ define "entity" }}
-CREATE TABLE {{ .Name }} (
+CREATE TABLE {{ .Parent.Name }}.{{ .Name }} (
     {{ range $index, $element := .Attributes }}
         {{- template "attribute" . }}
         {{- if notLast $index $.Attributes }},
     {{ end }}
     {{- end }}
     {{- template "unique" . }}
-    {{- template "primary" . }}
+    {{- template "pk" . }}
+    {{- template "fk" . }}
 );
 {{ end }}
