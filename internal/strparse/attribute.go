@@ -50,7 +50,7 @@ func newAttributeFromLine(s string) *model.Attribute {
 		optsRaw             = strings.Split(optsStr, ",")
 		attr                = model.Attribute{
 			Name:   identifierStr,
-			Alias:  alias,
+			Alias:  normalize(alias),
 			Unique: make([]string, 0, len(optsRaw)),
 		}
 	)
@@ -141,6 +141,13 @@ func newAttributeFromLine(s string) *model.Attribute {
 		attr.AppendErr(ErrMissingMax)
 	}
 
+	if attr.Kind == model.AttrKindSerial {
+		attr.Primary = true
+		attr.Required = sql.NullBool{Valid: true, Bool: true}
+		attr.Min = sql.NullFloat64{Valid: false}
+		attr.Max = sql.NullFloat64{Valid: false}
+	}
+
 	return &attr
 }
 
@@ -149,7 +156,7 @@ func determineAttrKind(s string) model.AttrKind {
 
 	switch strings.ToLower(s) {
 	case "++", "auto", "auto increment", "increment":
-		kind = model.AttrKindInt
+		kind = model.AttrKindSerial
 	case "int", "integer", "digit":
 		kind = model.AttrKindInt
 	case "bool", "boolean":

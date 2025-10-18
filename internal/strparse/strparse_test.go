@@ -65,6 +65,28 @@ func testNoErr(t *testing.T, schemas []*model.Schema) {
 	}
 }
 
+func TestRecursiveRead(t *testing.T) {
+	schemas := Raw(testMockSchemas)
+
+	foundAttrs := schemas[1].Entities[1].AttributesR()
+
+	for i, found := range foundAttrs {
+		if found.Attribute.Err != nil {
+			continue
+		}
+		if i == 0 && found.Name() != "co_id" {
+			t.Fatal("bad name: ", found.Name())
+		}
+		if i == 1 && found.Name() != "kitchen_recipe_food_id" {
+			t.Fatal("bad name: ", found.Name())
+		}
+		if i == 2 && found.Name() != "kitchen_recipe_ingredient_id" {
+			t.Fatal("bad name: ", found.Name())
+
+		}
+	}
+}
+
 func TestNormalize(t *testing.T) {
 	{
 		s := "2 FAST 4 u"

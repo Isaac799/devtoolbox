@@ -1,10 +1,69 @@
 package model
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Entity is an entity in a schema
 type Entity struct {
 	Name       string
 	Attributes []*Attribute
 	Parent     *Schema
+}
+
+type AttributeFound struct {
+	Attribute *Attribute
+	IsSelf    bool
+	Path      string
+}
+
+// Name is a naming convention, template friendly alias, for
+// attributes found, takeing into account the 'path to get there'
+func (found *AttributeFound) Name() string {
+	a := strings.ReplaceAll(found.Path, "/", "_")
+	b := strings.ReplaceAll(a, ".", "_")
+	return strings.Trim(b, "_")
+}
+
+func (ent *Entity) attributesR(n, max int, path string, collection *[]*AttributeFound) []*AttributeFound {
+	if n > max {
+		// todo attach info err to attr or entity
+		return *collection
+	}
+
+	for _, attr := range ent.Attributes {
+		s := attr.Name
+		if len(attr.Alias) > 0 {
+			s = attr.Alias
+		}
+		p := fmt.Sprintf("%s/%s", path, s)
+
+		if attr.ReferenceTo != nil {
+			attr.ReferenceTo.attributesR(n+1, max, p, collection)
+			continue
+		}
+		if n > 0 && !attr.Primary {
+			continue
+		}
+		*collection = append(*collection, &AttributeFound{
+			Attribute: attr,
+			IsSelf:    n == 0,
+			Path:      p,
+		})
+	}
+
+	return *collection
+}
+
+// AttributesR provides recursive list of attributes, so references are
+// made primitive
+func (ent *Entity) AttributesR() []*AttributeFound {
+	max := 5
+
+	attrs := make([]*AttributeFound, 0, len(ent.Attributes)*max)
+
+	return ent.attributesR(0, max, "", &attrs)
 }
 
 // Primary is a arr of attr that make up primary
