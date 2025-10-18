@@ -2,6 +2,11 @@ package {{ renderCamel .Name }}
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strconv"
 	"time"
 )
 {{ range $index, $element := .Entities }}{{ template "entity" . }}{{ end }}

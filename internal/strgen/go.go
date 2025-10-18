@@ -41,8 +41,12 @@ func renderPlusOneOverAttrs(ent *model.Entity, i int) int {
 	return i + 1 + len(ent.NonPrimary())
 }
 
+func renderHandlerName(ent *model.Entity) string {
+	return strcase.ToCamel(fmt.Sprintf("%s_handler", ent.Name))
+}
+
 func renderStoreName(ent *model.Entity) string {
-	return strcase.ToCamel(fmt.Sprintf("%sStore", ent.Name))
+	return strcase.ToCamel(fmt.Sprintf("%s_store", ent.Name))
 }
 
 func renderGoKind(attr *model.Attribute) string {
@@ -78,6 +82,8 @@ func GoStructs(schemas []*model.Schema) (map[string]string, error) {
 		"renderStoreName":        renderStoreName,
 		"renderPlusOne":          renderPlusOne,
 		"renderPlusOneOverAttrs": renderPlusOneOverAttrs,
+		"renderHandlerName":      renderHandlerName,
+		"renderKebab":            renderKebab,
 	})
 
 	_, err = tmpl.ParseGlob("templates/go/**")
