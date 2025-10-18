@@ -53,6 +53,33 @@ func normalize(s string) string {
 	return string(ok)
 }
 
+func ensureValidReference(schemas []*model.Schema, attr *model.Attribute) {
+	if attr.ReferenceTo != nil {
+		return
+	}
+
+	before, after, isFullRef := strings.Cut(attr.Name, ".")
+
+	for _, sch := range schemas {
+		for _, ent := range sch.Entities {
+			if isFullRef {
+				if before == sch.Name && after == ent.Name {
+					attr.ReferenceTo = ent
+					return
+				}
+				continue
+			}
+
+			if before == ent.Name {
+				attr.ReferenceTo = ent
+				return
+			}
+		}
+	}
+
+	attr.AppendErr(ErrInvalidReference)
+}
+
 // Raw takes in a string and provides the schemas
 func Raw(s string) []*model.Schema {
 	schemas := make([]*model.Schema, 0, 3)
@@ -90,6 +117,11 @@ func Raw(s string) []*model.Schema {
 			}
 			attr := newAttributeFromLine(line)
 			attr.Parent = prevEnt
+
+			if attr.Kind == model.AttrKindReference {
+				ensureValidReference(schemas, attr)
+			}
+
 			prevEnt.Attributes = append(prevEnt.Attributes, attr)
 		default:
 			continue

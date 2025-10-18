@@ -34,7 +34,7 @@ const testMockSchemaRestaurant = `# Restaurant
 
 ## Order
 - @customer  as co         with required, primary
-- @recipe            with required, primary
+- @kitchen.recipe            with required, primary
 - inserted at as ts   with required, system, default:now`
 
 const testMockSchemas = testMockSchemaKitchen + "\n" + testMockSchemaRestaurant

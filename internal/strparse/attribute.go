@@ -14,7 +14,6 @@ import (
 func newAttributeFromLine(s string) *model.Attribute {
 	var (
 		noPrefix = strings.TrimPrefix(s, prefixAttr)
-		kind     model.AttrKind
 	)
 
 	var alias string
@@ -32,13 +31,25 @@ func newAttributeFromLine(s string) *model.Attribute {
 		}
 	}
 
+	identifierStr, _later, _ := strings.Cut(noPrefix, deliAs)
+
+	// allow 'foo.bar' for schema.entity name as a reference
+	// later I prevent it if kind is not relevant
+	identifierStrBefore, identifierStrAfter, identifierStrHadPeriod := strings.Cut(identifierStr, ".")
+	identifierStrBefore = normalize(identifierStrBefore)
+	identifierStrAfter = normalize(identifierStrAfter)
+
+	if identifierStrHadPeriod {
+		identifierStr = fmt.Sprintf("%s.%s", identifierStrBefore, identifierStrAfter)
+	} else {
+		identifierStr = identifierStrBefore
+	}
+
 	var (
-		identifierStr, _later, _ = strings.Cut(noPrefix, deliAs)
-		kindStr, optsStr, _      = strings.Cut(_later, deliWith)
-		optsRaw                  = strings.Split(optsStr, ",")
-		attr                     = model.Attribute{
-			Name:   normalize(identifierStr),
-			Kind:   kind,
+		kindStr, optsStr, _ = strings.Cut(_later, deliWith)
+		optsRaw             = strings.Split(optsStr, ",")
+		attr                = model.Attribute{
+			Name:   identifierStr,
 			Alias:  alias,
 			Unique: make([]string, 0, len(optsRaw)),
 		}
@@ -51,18 +62,22 @@ func newAttributeFromLine(s string) *model.Attribute {
 		attr.AppendErr(ErrIdentifierRequired)
 		return &attr
 	}
+
 	if len(kindStr) == 0 {
 		attr.AppendErr(ErrKindRequired)
 		return &attr
 	}
 
-	kind = determineAttrKind(kindStr)
-	if kind == model.AttrKindNone {
+	attr.Kind = determineAttrKind(kindStr)
+	if attr.Kind == model.AttrKindNone {
 		attr.AppendErr(ErrKindInvalid)
 		return &attr
 	}
 
-	attr.Kind = kind
+	// prevent the case of 'foo.bar' from sneaking past if not a reference
+	if identifierStrHadPeriod && attr.Kind != model.AttrKindReference {
+		identifierStr = identifierStrBefore
+	}
 
 	var (
 		primaries = []string{"p", "primary"}

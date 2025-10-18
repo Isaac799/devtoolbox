@@ -31,14 +31,19 @@ const (
 
 // Attribute is a metric in an entity, like a column in a table
 type Attribute struct {
-	Parent       *Entity
+	Kind AttrKind
+
+	Primary      bool
 	Name         string
 	Alias        string
-	Kind         AttrKind
 	DefaultValue string
-	Primary      bool
-	Unique       []string
-	Err          []error
+
+	Unique []string
+	Err    []error
+
+	Parent      *Entity
+	ReferenceTo *Entity
+
 	Validation
 }
 
@@ -48,6 +53,11 @@ func (attr *Attribute) AppendErr(err error) {
 		attr.Err = make([]error, 0, 1)
 	}
 	attr.Err = append(attr.Err, err)
+}
+
+// HasErr makes checking for err easier
+func (attr *Attribute) HasErr() bool {
+	return len(attr.Err) > 0
 }
 
 // HasDefault just checks is default is relevant. Used in templating.
@@ -63,6 +73,10 @@ func (attr *Attribute) SanitizeDefaultValue() {
 		candidate = strings.TrimSpace(attr.DefaultValue)
 		final     string
 	)
+
+	if len(candidate) == 0 {
+		return
+	}
 
 	switch attr.Kind {
 	case AttrKindNone:

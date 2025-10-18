@@ -9,4 +9,5 @@ var (
 	ErrKindInvalid        = errors.New("kind invalid")
 	ErrMissingMax         = errors.New("missing max")
 	ErrRangeInvalid       = errors.New("range is invalid")
+	ErrInvalidReference   = errors.New("cannot find reference")
 )
