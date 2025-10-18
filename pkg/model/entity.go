@@ -120,6 +120,19 @@ func (ent *Entity) Primary() []*Attribute {
 	return attrs
 }
 
+// NonPrimary is a arr of attr that make up non primary keys
+// useful in templating
+func (ent *Entity) NonPrimary() []*Attribute {
+	attrs := make([]*Attribute, 0, len(ent.Attributes()))
+	for _, attr := range ent.Attributes() {
+		if attr.Source.Primary {
+			continue
+		}
+		attrs = append(attrs, attr)
+	}
+	return attrs
+}
+
 // Unique is a map of uniques
 func (ent *Entity) Unique() map[string][]*Attribute {
 	attrs := make(map[string][]*Attribute, 3)

@@ -31,6 +31,20 @@ func renderGoErrs(attr *model.Attribute) string {
 	return fmt.Sprintf("// %s has errors: %s", attr.Name(), attr.Attribute.ErrString())
 }
 
+func renderPlusOne(i int) int {
+	return i + 1
+}
+
+// renderPlusOneOverAttrs helps with postgres string query templating
+// on the where clause not overlapping with what is being set
+func renderPlusOneOverAttrs(ent *model.Entity, i int) int {
+	return i + 1 + len(ent.NonPrimary())
+}
+
+func renderStoreName(ent *model.Entity) string {
+	return strcase.ToCamel(fmt.Sprintf("%sStore", ent.Name))
+}
+
 func renderGoKind(attr *model.Attribute) string {
 	k := attr.Final.Kind
 
@@ -57,10 +71,13 @@ func GoStructs(schemas []*model.Schema) (map[string]string, error) {
 		"notLast": func(i int, arr []*model.Attribute) bool {
 			return i != len(arr)-1
 		},
-		"renderGoErrs": renderGoErrs,
-		"renderGoKind": renderGoKind,
-		"renderCamel":  renderCamelUA,
-		"renderPascal": renderPascalUA,
+		"renderGoErrs":           renderGoErrs,
+		"renderGoKind":           renderGoKind,
+		"renderCamel":            renderCamelUA,
+		"renderPascal":           renderPascalUA,
+		"renderStoreName":        renderStoreName,
+		"renderPlusOne":          renderPlusOne,
+		"renderPlusOneOverAttrs": renderPlusOneOverAttrs,
 	})
 
 	_, err = tmpl.ParseGlob("templates/go/**")
