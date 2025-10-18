@@ -53,7 +53,7 @@ func testNoErr(t *testing.T, schemas []*model.Schema) {
 			if sch.Entities == nil {
 				t.Fatal(ent.Name, "nil attributes")
 			}
-			for _, attr := range ent.Attributes {
+			for _, attr := range ent.RawAttributes {
 				if attr.Err == nil {
 					continue
 				}
@@ -68,20 +68,20 @@ func testNoErr(t *testing.T, schemas []*model.Schema) {
 func TestRecursiveRead(t *testing.T) {
 	schemas := Raw(testMockSchemas)
 
-	foundAttrs := schemas[1].Entities[1].AttributesR()
+	attrs := schemas[1].Entities[1].Attributes()
 
-	for i, found := range foundAttrs {
-		if found.Attribute.Err != nil {
+	for i, attr := range attrs {
+		if attr.Attribute.Err != nil {
 			continue
 		}
-		if i == 0 && found.Name() != "co_id" {
-			t.Fatal("bad name: ", found.Name())
+		if i == 0 && attr.Name() != "co_id" {
+			t.Fatal("bad name: ", attr.Name())
 		}
-		if i == 1 && found.Name() != "kitchen_recipe_food_id" {
-			t.Fatal("bad name: ", found.Name())
+		if i == 1 && attr.Name() != "kitchen_recipe_food_id" {
+			t.Fatal("bad name: ", attr.Name())
 		}
-		if i == 2 && found.Name() != "kitchen_recipe_ingredient_id" {
-			t.Fatal("bad name: ", found.Name())
+		if i == 2 && attr.Name() != "kitchen_recipe_ingredient_id" {
+			t.Fatal("bad name: ", attr.Name())
 
 		}
 	}

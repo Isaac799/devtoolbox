@@ -1,6 +1,10 @@
 {{- block "default" . }}
-{{- if .HasDefault }} DEFAULT {{ renderDefault . }}{{ end }}
+{{- if .Attribute.HasDefault }} DEFAULT {{ renderDefault . }}{{ end }}
 {{- end }}
 {{- define "attribute" }}
-{{- renderName . }} {{ renderKind . }}{{ template "default" . }}
+{{- if .Attribute.HasErr }}
+    {{- renderErrs . }}
+{{- else }}
+    {{- .Name }} {{ renderKind . }}{{ template "default" . }}
+{{- end }}
 {{- end }}

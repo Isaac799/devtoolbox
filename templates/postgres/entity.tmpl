@@ -1,6 +1,6 @@
 {{- block "primary" . }}
     {{- if .HasPrimary }},
-    PRIMARY KEY({{ range $index, $element := .PrimaryList }}{{ if ne $index 0 }},{{ end }}{{ $element }}{{ end }})
+    PRIMARY KEY({{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}{{ end }})
     {{- end }}
 {{- end }}
 {{- block "unique" . }}

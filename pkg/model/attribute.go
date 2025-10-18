@@ -29,8 +29,8 @@ const (
 	AttrKindReference
 )
 
-// Attribute is a metric in an entity, like a column in a table
-type Attribute struct {
+// AttributeRaw is a metric in an entity, like a column in a table
+type AttributeRaw struct {
 	Kind AttrKind
 
 	Primary      bool
@@ -48,7 +48,7 @@ type Attribute struct {
 }
 
 // AppendErr simplifies adding errors
-func (attr *Attribute) AppendErr(err error) {
+func (attr *AttributeRaw) AppendErr(err error) {
 	if attr.Err == nil {
 		attr.Err = make([]error, 0, 1)
 	}
@@ -56,19 +56,31 @@ func (attr *Attribute) AppendErr(err error) {
 }
 
 // HasErr makes checking for err easier
-func (attr *Attribute) HasErr() bool {
+func (attr *AttributeRaw) HasErr() bool {
 	return len(attr.Err) > 0
 }
 
+// ErrString provides a template friendly way to print an err
+func (attr *AttributeRaw) ErrString() string {
+	sb := strings.Builder{}
+	for i, err := range attr.Err {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString(err.Error())
+	}
+	return sb.String()
+}
+
 // HasDefault just checks is default is relevant. Used in templating.
-func (attr *Attribute) HasDefault() bool {
+func (attr *AttributeRaw) HasDefault() bool {
 	return len(attr.DefaultValue) > 0
 }
 
 // SanitizeDefaultValue will ensure that the default
 // value is acceptable, and clear it if not, adding
 // an Err if this takes place.
-func (attr *Attribute) SanitizeDefaultValue() {
+func (attr *AttributeRaw) SanitizeDefaultValue() {
 	var (
 		candidate = strings.TrimSpace(attr.DefaultValue)
 		final     string

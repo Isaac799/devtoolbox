@@ -2,6 +2,7 @@ package strparse
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Isaac799/devtoolbox/pkg/model"
@@ -53,7 +54,23 @@ func normalize(s string) string {
 	return string(ok)
 }
 
-func ensureValidReference(schemas []*model.Schema, attr *model.Attribute) {
+func ensureValidAlias(ent *model.Entity, attr *model.AttributeRaw) {
+	consumedAlias := make([]string, 0, len(ent.RawAttributes))
+	for _, attr := range ent.RawAttributes {
+		if len(attr.Alias) == 0 {
+			continue
+		}
+		consumedAlias = append(consumedAlias, attr.Alias)
+	}
+
+	if slices.Contains(consumedAlias, attr.Alias) {
+		attr.Alias = ""
+		// todo warnings
+		// attr.AppendErr(ErrReusedAlias)
+	}
+}
+
+func ensureValidReference(schemas []*model.Schema, attr *model.AttributeRaw) {
 	if attr.ReferenceTo != nil {
 		return
 	}
@@ -122,7 +139,9 @@ func Raw(s string) []*model.Schema {
 				ensureValidReference(schemas, attr)
 			}
 
-			prevEnt.Attributes = append(prevEnt.Attributes, attr)
+			ensureValidAlias(prevEnt, attr)
+
+			prevEnt.RawAttributes = append(prevEnt.RawAttributes, attr)
 		default:
 			continue
 		}

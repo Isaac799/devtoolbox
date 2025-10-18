@@ -27,28 +27,40 @@ var _postgresKind = map[model.AttrKind]string{
 	model.AttrKindReference: "REF",
 }
 
-func renderName(attr model.Attribute) string {
-	if len(attr.Alias) > 0 {
-		return attr.Alias
-	}
-	return attr.Name
+func renderErrs(attr *model.Attribute) string {
+	return fmt.Sprintf("-- %s has errors: %s", attr.Name(), attr.Attribute.ErrString())
 }
 
-func renderKind(attr model.Attribute) string {
-	s := _postgresKind[attr.Kind]
-	if attr.Kind == model.AttrKindString {
-		s = fmt.Sprintf("%s(%d)", s, int(attr.Max.Float64))
+func renderKind(attr *model.Attribute) string {
+	k := attr.Attribute.Kind
+
+	if k == model.AttrKindSerial && !attr.DirectChild {
+		k = model.AttrKindInt
 	}
+
+	s := _postgresKind[k]
+	if k == model.AttrKindString {
+		s = fmt.Sprintf("%s(%d)", s, int(attr.Attribute.Max.Float64))
+	}
+
+	if !attr.DirectChild {
+		if attr.ChangedSchema {
+			s = fmt.Sprintf("%s REFERENCES %s.%s(%s)", s, attr.Final.Parent.Parent.Name, attr.Final.Parent.Name, attr.Final.Name)
+		} else {
+			s = fmt.Sprintf("%s REFERENCES %s(%s)", s, attr.Final.Parent.Name, attr.Final.Name)
+		}
+	}
+
 	return s
 }
 
-func renderDefault(attr model.Attribute) string {
-	s := attr.DefaultValue
+func renderDefault(attr *model.Attribute) string {
+	s := attr.Attribute.DefaultValue
 	if len(s) == 0 {
 		return ""
 	}
 
-	switch attr.Kind {
+	switch attr.Attribute.Kind {
 	case model.AttrKindString:
 		escaped := strings.ReplaceAll(s, "'", "''")
 		return fmt.Sprintf("'%s'", escaped)
@@ -89,7 +101,7 @@ func PostgresSetup(schemas []*model.Schema) (string, error) {
 		},
 		"renderKind":    renderKind,
 		"renderDefault": renderDefault,
-		"renderName":    renderName,
+		"renderErrs":    renderErrs,
 	})
 
 	_, err = tmpl.ParseGlob("templates/postgres/**")

@@ -11,7 +11,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func newAttributeFromLine(s string) *model.Attribute {
+func newAttributeFromLine(s string) *model.AttributeRaw {
 	var (
 		noPrefix = strings.TrimPrefix(s, prefixAttr)
 	)
@@ -48,7 +48,7 @@ func newAttributeFromLine(s string) *model.Attribute {
 	var (
 		kindStr, optsStr, _ = strings.Cut(_later, deliWith)
 		optsRaw             = strings.Split(optsStr, ",")
-		attr                = model.Attribute{
+		attr                = model.AttributeRaw{
 			Name:   identifierStr,
 			Alias:  normalize(alias),
 			Unique: make([]string, 0, len(optsRaw)),

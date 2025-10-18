@@ -34,11 +34,20 @@ const testMockSchemaRestaurant = `# Restaurant
 - last visit  as ts   with required, default:now
 
 ## Order
-- @customer  as co         with required, primary
+- @customer          with required, primary
 - @recipe            with required, primary
 - inserted at as ts   with required, system, default:now`
 
-const testMockSchemas = testMockSchemaKitchen + "\n" + testMockSchemaRestaurant
+const testMockSchemaFoo = `# Foo
+
+## Order
+- @Kitchen.food  as co         with required
+- @Kitchen.Recipe       with required, primary
+- @Restaurant.Customer          with required
+- @Restaurant.order            with required
+`
+
+const testMockSchemas = testMockSchemaKitchen + "\n" + testMockSchemaRestaurant + "\n" + testMockSchemaFoo
 
 func TestPostgresSetup(t *testing.T) {
 	schemas := strparse.Raw(testMockSchemas)

@@ -10,4 +10,5 @@ var (
 	ErrMissingMax         = errors.New("missing max")
 	ErrRangeInvalid       = errors.New("range is invalid")
 	ErrInvalidReference   = errors.New("cannot find reference")
+	ErrReusedAlias        = errors.New("alias already used")
 )
