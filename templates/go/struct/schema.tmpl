@@ -1,0 +1,6 @@
+package {{ renderCamel .Name }}
+
+import (
+	"time"
+)
+{{ range $index, $element := .Entities }}{{ template "entity" . }}{{ end }}

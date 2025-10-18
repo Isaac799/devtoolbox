@@ -66,40 +66,75 @@ func packageName(s string) string {
 }
 
 // GoStructs generates golang structs
-func GoStructs(schemas []*model.Schema) (map[string]string, error) {
+func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 	var err error
 
-	tmpl := template.Template{}
+	var rootTmpl = func() template.Template {
+		tmpl := template.Template{}
 
-	tmpl.Funcs(template.FuncMap{
-		"notLast": func(i int, arr []*model.Attribute) bool {
-			return i != len(arr)-1
-		},
-		"renderGoErrs":           renderGoErrs,
-		"renderGoKind":           renderGoKind,
-		"renderCamel":            renderCamelUA,
-		"renderPascal":           renderPascalUA,
-		"renderStoreName":        renderStoreName,
-		"renderPlusOne":          renderPlusOne,
-		"renderPlusOneOverAttrs": renderPlusOneOverAttrs,
-		"renderHandlerName":      renderHandlerName,
-		"renderKebab":            renderKebab,
-	})
-
-	_, err = tmpl.ParseGlob("templates/go/**")
-	if err != nil {
-		return nil, err
+		tmpl.Funcs(template.FuncMap{
+			"notLast": func(i int, arr []*model.Attribute) bool {
+				return i != len(arr)-1
+			},
+			"renderGoErrs":           renderGoErrs,
+			"renderGoKind":           renderGoKind,
+			"renderCamel":            renderCamelUA,
+			"renderPascal":           renderPascalUA,
+			"renderStoreName":        renderStoreName,
+			"renderPlusOne":          renderPlusOne,
+			"renderPlusOneOverAttrs": renderPlusOneOverAttrs,
+			"renderHandlerName":      renderHandlerName,
+			"renderKebab":            renderKebab,
+		})
+		return tmpl
 	}
 
-	m := make(map[string]string, len(schemas))
+	m := make(map[FileName]string, len(schemas))
 
 	for _, s := range schemas {
+		tmpl := rootTmpl()
+		_, err = tmpl.ParseGlob("templates/go/struct/**.tmpl")
+		if err != nil {
+			return nil, err
+		}
+
 		sb := strings.Builder{}
 		err = tmpl.ExecuteTemplate(&sb, "schema.tmpl", s)
 		if err != nil {
 			return nil, err
 		}
-		m[s.Name] = sb.String()
+		pn := packageName(s.Name)
+		m[newFileName(pn, fmt.Sprintf("%s.go", pn))] = sb.String()
+	}
+
+	for _, s := range schemas {
+		tmpl := rootTmpl()
+		_, err = tmpl.ParseGlob("templates/go/store/**.tmpl")
+		if err != nil {
+			return nil, err
+		}
+
+		sb := strings.Builder{}
+		err = tmpl.ExecuteTemplate(&sb, "root.tmpl", s)
+		if err != nil {
+			return nil, err
+		}
+		m[newFileName(packageName(s.Name), "store.go")] = sb.String()
+	}
+
+	for _, s := range schemas {
+		tmpl := rootTmpl()
+		_, err = tmpl.ParseGlob("templates/go/handler/**.tmpl")
+		if err != nil {
+			return nil, err
+		}
+
+		sb := strings.Builder{}
+		err = tmpl.ExecuteTemplate(&sb, "root.tmpl", s)
+		if err != nil {
+			return nil, err
+		}
+		m[newFileName(packageName(s.Name), "handler.go")] = sb.String()
 	}
 
 	return m, nil

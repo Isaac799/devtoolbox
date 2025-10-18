@@ -1,7 +1,6 @@
 package {{ renderCamel .Name }}
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,4 +8,6 @@ import (
 	"strconv"
 	"time"
 )
-{{ range $index, $element := .Entities }}{{ template "entity" . }}{{ end }}
+{{- range $index, $element := .Entities }}
+{{ template "handler" $element }}
+{{- end }}

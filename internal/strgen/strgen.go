@@ -2,6 +2,8 @@
 package strgen
 
 import (
+	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -85,4 +87,28 @@ func renderCamelUA(s string) string {
 
 func renderPascalUA(s string) string {
 	return upAcronym(s, strcase.ToCamel)
+}
+
+// FileName is used to key generated files
+// to allow putting them in the correct place
+type FileName string
+
+func newFileName(path string, name string) FileName {
+	s := fmt.Sprintf("%s:%s", path, name)
+	return FileName(s)
+}
+
+func (fn FileName) path() string {
+	before, _, _ := strings.Cut(string(fn), ":")
+	return before
+}
+
+func (fn FileName) fileName() string {
+	_, after, _ := strings.Cut(string(fn), ":")
+	return after
+}
+
+func (fn FileName) full() string {
+	before, after, _ := strings.Cut(string(fn), ":")
+	return filepath.Join(before, after)
 }

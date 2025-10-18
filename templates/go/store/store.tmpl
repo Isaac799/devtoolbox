@@ -1,6 +1,6 @@
 {{- block "create" . }}
 func (store *{{ renderStoreName . }}) Create({{ renderCamel .Name }} *{{ renderPascal .Name }}) error {
-	q := `INSERT INTO {{ .Name }} ({{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}{{ .Name }}{{- end }}) VALUES ({{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}${{ renderPlusOne $index }}{{- end }}) RETURNING {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}{{- end }}`
+	q := `INSERT INTO {{ .Parent.Name }}.{{ .Name }} ({{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}{{ .Name }}{{- end }}) VALUES ({{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}${{ renderPlusOne $index }}{{- end }}) RETURNING {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}{{- end }}`
 	row := store.db.QueryRow(q, {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }})
 	if row.Err() != nil {
 		return row.Err()
@@ -14,7 +14,7 @@ func (store *{{ renderStoreName . }}) Create({{ renderCamel .Name }} *{{ renderP
 {{- end }}
 {{- block "read" . }}
 func (store *{{ renderStoreName . }}) Read({{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{ end }}) (*{{ renderPascal .Name }}, error) {
-	q := `SELECT {{ range $index, $element := .Attributes }}{{ if ne $index 0 }},{{ end }}{{ .Name }}{{- end }} FROM {{ .Name }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}=${{ renderPlusOne $index }}{{- end }}`
+	q := `SELECT {{ range $index, $element := .Attributes }}{{ if ne $index 0 }},{{ end }}{{ .Name }}{{- end }} FROM {{ .Parent.Name }}.{{ .Name }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}=${{ renderPlusOne $index }}{{- end }}`
 	row := store.db.QueryRow(q, {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ renderCamel $element.Name }}{{ end }})
 	if row.Err() != nil {
 		return nil, row.Err()
@@ -29,7 +29,7 @@ func (store *{{ renderStoreName . }}) Read({{ range $index, $element := .Primary
 {{- end }}
 {{- block "readMany" . }}
 func (store *{{ renderStoreName . }}) ReadMany(limit, offset int) ([]{{ renderPascal .Name }}, error) {
-	q := `SELECT {{ range $index, $element := .Attributes }}{{ if ne $index 0 }},{{ end }}{{ .Name }}{{- end }} FROM {{ .Name }} ORDER BY {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }} DESC{{- end }} LIMIT $1 OFFSET $2`
+	q := `SELECT {{ range $index, $element := .Attributes }}{{ if ne $index 0 }},{{ end }}{{ .Name }}{{- end }} FROM {{ .Parent.Name }}.{{ .Name }} ORDER BY {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }} DESC{{- end }} LIMIT $1 OFFSET $2`
 	rows, err := store.db.Query(q, limit, offset)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (store *{{ renderStoreName . }}) ReadMany(limit, offset int) ([]{{ renderPa
 {{- end }}
 {{- block "update" . }}
 func (store *{{ renderStoreName . }}) Update({{ renderCamel .Name }} *{{ renderPascal .Name }}) (int64, error) {
-	q := `UPDATE {{ .Name }} SET {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}{{ .Name }}=${{ renderPlusOne $index }}{{- end }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}=${{ renderPlusOneOverAttrs $ $index }}{{- end }}`
+	q := `UPDATE {{ .Parent.Name }}.{{ .Name }} SET {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}{{ .Name }}=${{ renderPlusOne $index }}{{- end }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}=${{ renderPlusOneOverAttrs $ $index }}{{- end }}`
 	result, err := store.db.Exec(q, {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }},{{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }},{{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }})
 	if err != nil {
 		return 0, err
@@ -66,7 +66,7 @@ func (store *{{ renderStoreName . }}) Update({{ renderCamel .Name }} *{{ renderP
 {{- end }}
 {{- block "delete" . }}
 func (store *{{ renderStoreName . }}) Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{ end }}) (int64, error) {
-	q := `DELETE FROM {{ .Name }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}=${{ renderPlusOne $index }}{{- end }}`
+	q := `DELETE FROM {{ .Parent.Name }}.{{ .Name }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}=${{ renderPlusOne $index }}{{- end }}`
 	result, err := store.db.Exec(q, {{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ renderCamel $element.Name }}{{ end }})
 	if err != nil {
 		return 0, err

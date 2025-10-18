@@ -1,7 +1,6 @@
 package strgen
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,10 +25,10 @@ func TestGoStructs(t *testing.T) {
 	os.RemoveAll(scope)
 
 	for k, v := range m {
-		packageName := packageName(k)
-		p := filepath.Join(scope, packageName)
-		os.MkdirAll(p, os.ModePerm)
-		fileName := filepath.Join(p, fmt.Sprintf("%s.go", packageName))
-		os.WriteFile(fileName, []byte(v), os.ModePerm)
+		dir := filepath.Join(scope, k.path())
+		name := filepath.Join(scope, k.full())
+
+		os.MkdirAll(dir, os.ModePerm)
+		os.WriteFile(name, []byte(v), os.ModePerm)
 	}
 }
