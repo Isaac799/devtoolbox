@@ -49,6 +49,15 @@ func renderStoreName(ent *model.Entity) string {
 	return strcase.ToCamel(fmt.Sprintf("%s_store", ent.Name))
 }
 
+func renderPathValues(ent *model.Entity) string {
+	parts := []string{}
+	for _, attr := range ent.Primary() {
+		s := fmt.Sprintf("{%s}", strcase.ToKebab(attr.Name()))
+		parts = append(parts, s)
+	}
+	return strings.Join(parts, "/")
+}
+
 func renderGoKind(attr *model.Attribute) string {
 	k := attr.Final.Kind
 
@@ -76,15 +85,19 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 			"notLast": func(i int, arr []*model.Attribute) bool {
 				return i != len(arr)-1
 			},
-			"renderGoErrs":           renderGoErrs,
-			"renderGoKind":           renderGoKind,
-			"renderCamel":            renderCamelUA,
-			"renderPascal":           renderPascalUA,
-			"renderStoreName":        renderStoreName,
+			"renderCamel":  renderCamelUA,
+			"renderPascal": renderPascalUA,
+			"renderKebab":  renderKebab,
+
+			"renderGoErrs": renderGoErrs,
+			"renderGoKind": renderGoKind,
+
 			"renderPlusOne":          renderPlusOne,
 			"renderPlusOneOverAttrs": renderPlusOneOverAttrs,
-			"renderHandlerName":      renderHandlerName,
-			"renderKebab":            renderKebab,
+
+			"renderStoreName":   renderStoreName,
+			"renderHandlerName": renderHandlerName,
+			"renderPathValues":  renderPathValues,
 		})
 		return tmpl
 	}

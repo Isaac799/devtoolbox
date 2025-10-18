@@ -1,6 +1,6 @@
 {{- block "pk" . }}
     {{- if .HasPrimary }},
-    PRIMARY KEY({{ range $index, $element := .Primary }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}{{ end }})
+    PRIMARY KEY({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }}{{ end }})
     {{- end }}
 {{- end }}
 {{- block "fk" . }}
@@ -13,7 +13,7 @@
 {{- block "unique" . }}
     {{- if .HasUnique }},
     {{ range $index, $elements := .UniqueList }}{{ if ne $index 0 }},
-    {{ end }}UNIQUE({{ range $index, $element := $elements }}{{ if ne $index 0 }},{{ end }}{{ $element.Name }}{{ end }})
+    {{ end }}UNIQUE({{ range $index, $element := $elements }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }}{{ end }})
     {{- end }}
     {{- end }}
 {{- end }}
