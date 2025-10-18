@@ -51,9 +51,18 @@ func renderStoreName(ent *model.Entity) string {
 
 func renderPathValues(ent *model.Entity) string {
 	parts := []string{}
-	for _, attr := range ent.Primary() {
-		s := fmt.Sprintf("{%s}", strcase.ToKebab(attr.Name()))
-		parts = append(parts, s)
+	primaries := ent.Primary()
+
+	if len(primaries) > 1 {
+		for _, attr := range primaries {
+			s := fmt.Sprintf("%s/{%s}", strcase.ToKebab(attr.Name()), strcase.ToKebab(attr.Name()))
+			parts = append(parts, s)
+		}
+	} else {
+		for _, attr := range primaries {
+			s := fmt.Sprintf("{%s}", strcase.ToKebab(attr.Name()))
+			parts = append(parts, s)
+		}
 	}
 	return strings.Join(parts, "/")
 }

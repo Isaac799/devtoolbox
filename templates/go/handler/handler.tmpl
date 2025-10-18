@@ -1,13 +1,3 @@
-{{- block "parsePrimaries" . }}
-{{- range $index, $element := .Primary }}
-	raw{{ renderPascal $element.Name }} := r.PathValue("{{ renderKebab $element.Name }}")
-	{{ renderCamel $element.Name }}, err := strconv.Atoi(raw{{ renderPascal $element.Name }})
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-{{- end }}
-{{- end }}
 {{- block "createHandler" . }}
 func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
@@ -39,20 +29,21 @@ func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Re
 }
 {{- end }}
 {{- block "readHandler" . }}
-func (handler *{{ renderHandlerName . }}) Get(w http.ResponseWriter, r *http.Request) {
-	{{- template "parsePrimaries" . }}
-	one, err := handler.store.Read({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+func (handler *{{ renderHandlerName . }}) Get({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{- end }}) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		one, err := handler.store.Read({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		b, err := json.Marshal(one)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		w.Write(b)
 	}
-	b, err := json.Marshal(one)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Add("Content-Type", "application/json")
-	w.Write(b)
 }
 {{- end }}
 {{- block "readManyHandler" . }}
@@ -84,39 +75,41 @@ func (handler *{{ renderHandlerName . }}) GetMany(w http.ResponseWriter, r *http
 }
 {{- end }}
 {{- block "updateHandler" . }}
-func (handler *{{ renderHandlerName . }}) Put(w http.ResponseWriter, r *http.Request) {
-	{{- template "parsePrimaries" . }}
-	b, err := io.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	defer r.Body.Close()
+func (handler *{{ renderHandlerName . }}) Put({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{- end }}) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer r.Body.Close()
 
-	var {{ renderCamel .Name }} {{ renderPascal .Name }}
-	err = json.Unmarshal(b, &{{ renderCamel .Name }})
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+		var {{ renderCamel .Name }} {{ renderPascal .Name }}
+		err = json.Unmarshal(b, &{{ renderCamel .Name }})
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-	n, err := handler.store.Update({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }}, &{{ renderCamel .Name }})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		n, err := handler.store.Update({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }}, &{{ renderCamel .Name }})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprint(w, n)
 	}
-	fmt.Fprint(w, n)
 }
 {{- end }}
 {{- block "deleteHandler" . }}
-func (handler *{{ renderHandlerName . }}) Delete(w http.ResponseWriter, r *http.Request) {
-	{{- template "parsePrimaries" . }}
-	n, err := handler.store.Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+func (handler *{{ renderHandlerName . }}) Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{- end }}) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		n, err := handler.store.Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprint(w, n)
 	}
-	fmt.Fprint(w, n)
 }
 {{- end }}
 {{- block "attachMux" . }}
@@ -132,13 +125,21 @@ func (handler *{{ renderHandlerName . }}) Register(mux *http.ServeMux) {
 		}
 	})
 	mux.HandleFunc("/{{ renderKebab .Name }}/{{ renderPathValues . }}", func(w http.ResponseWriter, r *http.Request) {
+		{{- range $index, $element := .Primary }}
+		raw{{ renderPascal $element.Name }} := r.PathValue("{{ renderKebab $element.Name }}")
+		{{ renderCamel $element.Name }}, err := strconv.Atoi(raw{{ renderPascal $element.Name }})
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		{{- end }}
 		switch r.Method {
 		case http.MethodGet:
-			handler.Get(w, r)
+			handler.Get({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})(w, r)
 		case http.MethodPut:
-			handler.Put(w, r)
+			handler.Put({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})(w, r)
 		case http.MethodDelete:
-			handler.Delete(w, r)
+			handler.Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})(w, r)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
