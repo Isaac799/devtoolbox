@@ -2,7 +2,6 @@ package strgen
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"text/template"
 
@@ -98,9 +97,6 @@ func renderDefault(attr *model.Attribute) string {
 
 // PostgresSetup generates a postgres create statements to setup a new database
 func PostgresSetup(schemas []*model.Schema) (string, error) {
-	os.Chdir("..")
-	os.Chdir("..")
-
 	var err error
 
 	tmpl := template.Template{}

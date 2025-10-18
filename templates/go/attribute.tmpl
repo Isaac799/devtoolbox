@@ -1,0 +1,7 @@
+{{- define "attribute" }}
+{{- if .Attribute.HasErr }}
+    {{- renderGoErrs . }}
+{{- else }}
+    {{- renderPascal .Name }} {{ renderGoKind . }} `json:"{{ .Name }}"`
+    {{ end }}
+{{- end }}

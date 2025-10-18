@@ -1,0 +1,7 @@
+{{ define "entity" }}
+type {{ renderPascal .Name }} struct {
+    {{ range $index, $element := .Attributes }}
+        {{- template "attribute" . }}
+    {{- end }}
+}
+{{ end }}

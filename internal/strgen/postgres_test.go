@@ -2,6 +2,7 @@ package strgen
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Isaac799/devtoolbox/internal/strparse"
@@ -50,6 +51,11 @@ const testMockSchemaFoo = `# Foo
 const testMockSchemas = testMockSchemaKitchen + "\n" + testMockSchemaRestaurant + "\n" + testMockSchemaFoo
 
 func TestPostgresSetup(t *testing.T) {
+	wd, _ := os.Getwd()
+	os.Chdir("..")
+	os.Chdir("..")
+	defer os.Chdir(wd)
+
 	schemas := strparse.Raw(testMockSchemas)
 
 	pg, err := PostgresSetup(schemas)
@@ -57,8 +63,11 @@ func TestPostgresSetup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	os.MkdirAll("generated", os.ModePerm)
-	os.WriteFile("generated/pg-raw.sql", []byte(pg), os.ModePerm)
+	p := filepath.Join("generated", "postgres")
+	os.RemoveAll(p)
+	os.MkdirAll(p, os.ModePerm)
+	fileName := filepath.Join(p, "tables.sql")
+	os.WriteFile(fileName, []byte(pg), os.ModePerm)
 
 	_ = pg
 }
