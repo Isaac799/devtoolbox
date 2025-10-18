@@ -27,6 +27,13 @@ var _postgresKind = map[model.AttrKind]string{
 	model.AttrKindReference: "REF",
 }
 
+func renderName(attr model.Attribute) string {
+	if len(attr.Alias) > 0 {
+		return attr.Alias
+	}
+	return attr.Name
+}
+
 func renderKind(attr model.Attribute) string {
 	s := _postgresKind[attr.Kind]
 	if attr.Kind == model.AttrKindString {
@@ -80,8 +87,9 @@ func PostgresSetup(schemas []*model.Schema) (string, error) {
 		"notLast": func(i int, arr []*model.Attribute) bool {
 			return i != len(arr)-1
 		},
-		"attrKind":    renderKind,
-		"attrDefault": renderDefault,
+		"renderKind":    renderKind,
+		"renderDefault": renderDefault,
+		"renderName":    renderName,
 	})
 
 	_, err = tmpl.ParseGlob("templates/postgres/**")

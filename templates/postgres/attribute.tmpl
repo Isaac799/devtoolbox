@@ -1,6 +1,6 @@
 {{- block "default" . }}
-{{- if .HasDefault }} DEFAULT {{ attrDefault . }}{{ end }}
+{{- if .HasDefault }} DEFAULT {{ renderDefault . }}{{ end }}
 {{- end }}
 {{- define "attribute" }}
-{{- .Name }} {{ attrKind . }}{{ template "default" . }}
+{{- renderName . }} {{ renderKind . }}{{ template "default" . }}
 {{- end }}
