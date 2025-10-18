@@ -2,6 +2,5 @@
 {{- if .Attribute.HasErr }}
     {{- renderGoErrs . }}
 {{- else }}
-    {{- renderPascal .Name }} {{ renderGoKind . }} `json:"{{ .Name }}"`
-    {{ end }}
+    {{- renderPascal .Name }} {{ renderGoKind . }} `json:"{{ .Name }}"`{{ end }}
 {{- end }}

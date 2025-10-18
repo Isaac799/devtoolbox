@@ -1,7 +1,8 @@
 {{ define "entity" }}
 type {{ renderPascal .Name }} struct {
     {{ range $index, $element := .Attributes }}
-        {{- template "attribute" . }}
+    {{- template "attribute" . }}{{if notLast $index $.Attributes }}
+    {{ end }}
     {{- end }}
 }
 {{ template "store" . }}
