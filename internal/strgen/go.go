@@ -27,6 +27,24 @@ var _goKind = map[model.AttrKind]string{
 	model.AttrKindReference: "???",
 }
 
+var _goZeroVue = map[model.AttrKind]string{
+	model.AttrKindNone:      "???",
+	model.AttrKindBit:       "0",
+	model.AttrKindDate:      "time.Time{}",
+	model.AttrKindChar:      "''",
+	model.AttrKindTime:      "time.Time{}",
+	model.AttrKindTimestamp: "time.Time{}",
+	model.AttrKindDecimal:   "0.0",
+	model.AttrKindReal:      "0.0",
+	model.AttrKindFloat:     "0.0",
+	model.AttrKindSerial:    "0",
+	model.AttrKindInt:       "0",
+	model.AttrKindBoolean:   "false",
+	model.AttrKindString:    `""`,
+	model.AttrKindMoney:     "0.0",
+	model.AttrKindReference: "???",
+}
+
 func renderGoErrs(attr *model.Attribute) string {
 	return fmt.Sprintf("// %s has errors: %s", attr.Name(), attr.Attribute.ErrString())
 }
@@ -78,6 +96,17 @@ func renderGoKind(attr *model.Attribute) string {
 	return s
 }
 
+func renderGoEmptyValue(attr *model.Attribute) string {
+	k := attr.Final.Kind
+
+	if k == model.AttrKindSerial && !attr.DirectChild {
+		k = model.AttrKindInt
+	}
+
+	s := _goZeroVue[k]
+	return s
+}
+
 // renderCast is used after placeholder args to cast if needed
 func renderCast(attr *model.Attribute) string {
 	switch attr.Final.Kind {
@@ -108,9 +137,10 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 			"renderPascal": renderPascalUA,
 			"renderKebab":  renderKebab,
 
-			"renderGoErrs": renderGoErrs,
-			"renderGoKind": renderGoKind,
-			"renderCast":   renderCast,
+			"renderGoErrs":       renderGoErrs,
+			"renderGoKind":       renderGoKind,
+			"renderGoEmptyValue": renderGoEmptyValue,
+			"renderCast":         renderCast,
 
 			"renderPlusOne":          renderPlusOne,
 			"renderPlusOneOverAttrs": renderPlusOneOverAttrs,
