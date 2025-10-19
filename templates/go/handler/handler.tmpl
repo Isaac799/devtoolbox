@@ -126,12 +126,7 @@ func (handler *{{ renderHandlerName . }}) Register(mux *http.ServeMux) {
 	})
 	mux.HandleFunc("/{{ renderKebab .Name }}/{{ renderPathValues . }}", func(w http.ResponseWriter, r *http.Request) {
 		{{- range $index, $element := .Primary }}
-		raw{{ renderPascal $element.Name }} := r.PathValue("{{ renderKebab $element.Name }}")
-		{{ renderCamel $element.Name }}, err := strconv.Atoi(raw{{ renderPascal $element.Name }})
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+			{{- template "parseprimary" $element }}
 		{{- end }}
 		switch r.Method {
 		case http.MethodGet:
