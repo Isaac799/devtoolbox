@@ -14,7 +14,7 @@ var (
 	ErrBadParam = errors.New("unacceptable parameter")
 )
 
-func NewBadParamError(s string) error {
+func NewErrBadParam(s string) error {
 	return fmt.Errorf("%w: %s", ErrBadParam, s)
 }
 

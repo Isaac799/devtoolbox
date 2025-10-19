@@ -1,39 +1,39 @@
 {{- block "validFloat" . }}
-    {{- if .Final.Max.Valid }}
-    if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }} > {{ .Final.Max.String }} {
-        return errors.Join(NewValidationErr(label), ErrMax)
-    }
-    {{- end }}
-    {{- if .Final.Min.Valid }}
-    if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }} < {{ .Final.Min.String }} {
-        return errors.Join(NewValidationErr(label), ErrMin)
-    }
-    {{- end }}
     {{- if .Source.Required.Valid }}
     {{- if .Source.Required.Bool }}
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }} == 0.0 {
-        return errors.Join(NewValidationErr(label), ErrEmpty)
+        return errors.Join(NewErrValidation(label), ErrEmpty)
     }
     {{- end }}
     {{- end }}
-{{- end}}
-{{- block "validInt" . }}
     {{- if .Final.Max.Valid }}
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }} > {{ .Final.Max.String }} {
-        return errors.Join(NewValidationErr(label), ErrMax)
+        return errors.Join(NewErrValidation(label), ErrMax)
     }
     {{- end }}
     {{- if .Final.Min.Valid }}
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }} < {{ .Final.Min.String }} {
-        return errors.Join(NewValidationErr(label), ErrMin)
+        return errors.Join(NewErrValidation(label), ErrMin)
     }
     {{- end }}
+{{- end}}
+{{- block "validInt" . }}
     {{- if .Source.Required.Valid }}
     {{- if .Source.Required.Bool }}
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }} == 0 {
-        return errors.Join(NewValidationErr(label), ErrEmpty)
+        return errors.Join(NewErrValidation(label), ErrEmpty)
     }
     {{- end }}
+    {{- end }}
+    {{- if .Final.Max.Valid }}
+    if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }} > {{ .Final.Max.String }} {
+        return errors.Join(NewErrValidation(label), ErrMax)
+    }
+    {{- end }}
+    {{- if .Final.Min.Valid }}
+    if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }} < {{ .Final.Min.String }} {
+        return errors.Join(NewErrValidation(label), ErrMin)
+    }
     {{- end }}
 {{- end}}
 {{- define "attribute" }}
@@ -42,82 +42,82 @@
 	if err != nil {
 		_, err := strconv.ParseUint({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}, 10, {{ .Attribute.Max.String }})
 		if err != nil {
-			return errors.Join(NewValidationErr(label), ErrMax)
+			return errors.Join(NewErrValidation(label), ErrMax)
 		}
 	}
 {{- else if eq .Final.Kind 2 }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.IsZero() {
+        return errors.Join(NewErrValidation(label), ErrEmpty)
+    }
+    {{- end }}
+    {{- end }}
     {{- if .Final.Max.Valid }}
 	max{{ renderPascal .Name }}, _ := time.Parse(time.DateOnly, "{{ .Final.Max.String }}")
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.After(max{{ renderPascal .Name }}) {
-        return errors.Join(NewValidationErr(label), ErrMaxTime)
+        return errors.Join(NewErrValidation(label), ErrMaxTime)
     }
     {{- end }}
     {{- if .Final.Min.Valid }}
 	min{{ renderPascal .Name }}, _ := time.Parse(time.DateOnly, "{{ .Final.Min.String }}")
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.Before(min{{ renderPascal .Name }}) {
-        return errors.Join(NewValidationErr(label), ErrMinTime)
+        return errors.Join(NewErrValidation(label), ErrMinTime)
     }
-    {{- end }}
-    {{- if .Source.Required.Valid }}
-    {{- if .Source.Required.Bool }}
-    if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.IsZero() {
-        return errors.Join(NewValidationErr(label), ErrEmpty)
-    }
-    {{- end }}
     {{- end }}
 {{- else if eq .Final.Kind 3 }}
     {{- if .Final.Max.Valid }}
     if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) != {{ .Final.Max.String }} {
-        return errors.Join(NewValidationErr(label), ErrMax)
+        return errors.Join(NewErrValidation(label), ErrMax)
     }
     {{- else }}
     {{- if .Source.Required.Valid }}
     {{- if .Source.Required.Bool }}
     if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) == 1 {
-        return errors.Join(NewValidationErr(label), ErrEmpty)
+        return errors.Join(NewErrValidation(label), ErrEmpty)
     }
     {{- end }}
     {{- end }}
     {{- end }}
 {{- else if eq .Final.Kind 4 }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.IsZero() {
+        return errors.Join(NewErrValidation(label), ErrEmpty)
+    }
+    {{- end }}
+    {{- end }}
     {{- if .Final.Max.Valid }}
 	max{{ renderPascal .Name }}, _ := time.Parse(time.TimeOnly, "{{ .Final.Max.String }}")
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.After(max{{ renderPascal .Name }}) {
-        return errors.Join(NewValidationErr(label), ErrMaxTime)
+        return errors.Join(NewErrValidation(label), ErrMaxTime)
     }
     {{- end }}
     {{- if .Final.Min.Valid }}
 	min{{ renderPascal .Name }}, _ := time.Parse(time.TimeOnly, "{{ .Final.Min.String }}")
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.Before(min{{ renderPascal .Name }}) {
-        return errors.Join(NewValidationErr(label), ErrMinTime)
+        return errors.Join(NewErrValidation(label), ErrMinTime)
     }
     {{- end }}
+{{- else if eq .Final.Kind 5 }}
     {{- if .Source.Required.Valid }}
     {{- if .Source.Required.Bool }}
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.IsZero() {
-        return errors.Join(NewValidationErr(label), ErrEmpty)
+        return errors.Join(NewErrValidation(label), ErrEmpty)
     }
     {{- end }}
     {{- end }}
-{{- else if eq .Final.Kind 5 }}
     {{- if .Final.Max.Valid }}
 	max{{ renderPascal .Name }}, _ := time.Parse(time.DateTime, "{{ .Final.Max.String }}")
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.After(max{{ renderPascal .Name }}) {
-        return errors.Join(NewValidationErr(label), ErrMaxTime)
+        return errors.Join(NewErrValidation(label), ErrMaxTime)
     }
     {{- end }}
     {{- if .Final.Min.Valid }}
 	min{{ renderPascal .Name }}, _ := time.Parse(time.DateTime, "{{ .Final.Min.String }}")
     if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.Before(min{{ renderPascal .Name }}) {
-        return errors.Join(NewValidationErr(label), ErrMinTime)
+        return errors.Join(NewErrValidation(label), ErrMinTime)
     }
-    {{- end }}
-    {{- if .Source.Required.Valid }}
-    {{- if .Source.Required.Bool }}
-    if {{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}.IsZero() {
-        return errors.Join(NewValidationErr(label), ErrEmpty)
-    }
-    {{- end }}
     {{- end }}
 {{- else if eq .Final.Kind 6 }}
     {{- template "validFloat" . }}
@@ -131,22 +131,22 @@
     {{- template "validInt" . }}
 {{- else if eq .Final.Kind 11 }}
 {{- else if eq .Final.Kind 12 }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) == 0 {
+        return errors.Join(NewErrValidation(label), ErrEmpty)
+    }
+    {{- end }}
+    {{- end }}
     {{- if .Final.Max.Valid }}
     if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) > {{ .Final.Max.String }} {
-        return errors.Join(NewValidationErr(label), ErrMax)
+        return errors.Join(NewErrValidation(label), ErrMax)
     }
     {{- end }}
     {{- if .Final.Min.Valid }}
     if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) < {{ .Final.Min.String }} {
-        return errors.Join(NewValidationErr(label), ErrMin)
+        return errors.Join(NewErrValidation(label), ErrMin)
     }
-    {{- end }}
-    {{- if .Source.Required.Valid }}
-    {{- if .Source.Required.Bool }}
-    if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) == 0 {
-        return errors.Join(NewValidationErr(label), ErrEmpty)
-    }
-    {{- end }}
     {{- end }}
 {{- else if eq .Final.Kind 13 }}
     {{- template "validFloat" . }}
