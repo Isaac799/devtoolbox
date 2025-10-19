@@ -1,0 +1,8 @@
+{{- define "entity.valid" }}
+func ({{ renderCamel .Name }} *{{ renderPascal .Name }}) Valid() bool {
+{{- range $index, $element := .NonPrimary }}
+{{ template "attribute.valid" . }}
+{{- end}}
+    return true
+}
+{{- end }}

@@ -2,6 +2,7 @@ package strgen
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -46,7 +47,8 @@ func renderKind(attr *model.Attribute) string {
 
 	s := _postgresKind[k]
 	if k == model.AttrKindString {
-		s = fmt.Sprintf("%s(%d)", s, int(attr.Final.Max.Float64))
+		i, _ := strconv.Atoi(attr.Final.Max.String)
+		s = fmt.Sprintf("%s(%d)", s, i)
 	}
 	return s
 }

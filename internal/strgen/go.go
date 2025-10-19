@@ -2,6 +2,7 @@ package strgen
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -111,7 +112,8 @@ func renderGoEmptyValue(attr *model.Attribute) string {
 func renderCast(attr *model.Attribute) string {
 	switch attr.Final.Kind {
 	case model.AttrKindBit:
-		return fmt.Sprintf("::bit(%d)", int(attr.Final.Max.Float64))
+		i, _ := strconv.Atoi(attr.Final.Max.String)
+		return fmt.Sprintf("::bit(%d)", i)
 	default:
 		return ""
 	}

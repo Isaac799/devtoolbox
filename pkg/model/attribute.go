@@ -110,10 +110,10 @@ func (attr *AttributeRaw) SanitizeDefaultValue() {
 	case AttrKindNone:
 		final = ""
 	case AttrKindBit:
-		size := int(attr.Max.Float64)
+		size, _ := strconv.Atoi(attr.Max.String)
 		parsed, err := strconv.ParseUint(candidate, 2, size)
 		if err == nil {
-			final = fmt.Sprintf("%0*b", int(attr.Max.Float64), parsed)
+			final = fmt.Sprintf("%0*b", size, parsed)
 		} else {
 			parsed, err := strconv.ParseUint(candidate, 10, size)
 			if err != nil {

@@ -13,8 +13,9 @@ const testMockSchemaKitchen = `# Kitchen
 ## Ingredient
 - id          as bit with primary, ..16
 - name        as str  with required, 3..30, unique, d: foo
-- eol         as date with required
+- eol         as date with required, 2006-01-02..2007-03-04
 - rare        as bool with d:false
+- flags          as bit with  ..8
 
 ## Food
 - id          as ++

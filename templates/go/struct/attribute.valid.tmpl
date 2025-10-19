@@ -1,0 +1,158 @@
+{{- block "validFloat" . }}
+    {{- if .Final.Max.Valid }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }} > {{ .Final.Max.String }} {
+        return false
+    }
+    {{- end }}
+    {{- if .Final.Min.Valid }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }} < {{ .Final.Min.String }} {
+        return false
+    }
+    {{- end }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }} == 0.0 {
+        return false
+    }
+    {{- end }}
+    {{- end }}
+{{- end}}
+{{- block "validInt" . }}
+    {{- if .Final.Max.Valid }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }} > {{ .Final.Max.String }} {
+        return false
+    }
+    {{- end }}
+    {{- if .Final.Min.Valid }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }} < {{ .Final.Min.String }} {
+        return false
+    }
+    {{- end }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }} == 0 {
+        return false
+    }
+    {{- end }}
+    {{- end }}
+{{- end}}
+{{- define "attribute.valid" }}
+{{- if eq .Final.Kind 1 }}
+	_, err := strconv.ParseUint({{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}, 2, {{ .Attribute.Max.String }})
+	if err != nil {
+		_, err := strconv.ParseUint({{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}, 10, {{ .Attribute.Max.String }})
+		if err != nil {
+			return false
+		}
+	}
+{{- else if eq .Final.Kind 2 }}
+    {{- if .Final.Max.Valid }}
+	max{{ renderPascal .Name }}, _ := time.Parse(time.DateOnly, "{{ .Final.Max.String }}")
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.After(max{{ renderPascal .Name }}) {
+        return false
+    }
+    {{- end }}
+    {{- if .Final.Min.Valid }}
+	min{{ renderPascal .Name }}, _ := time.Parse(time.DateOnly, "{{ .Final.Min.String }}")
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.Before(min{{ renderPascal .Name }}) {
+        return false
+    }
+    {{- end }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.IsZero() {
+        return false
+    }
+    {{- end }}
+    {{- end }}
+{{- else if eq .Final.Kind 3 }}
+    {{- if .Final.Max.Valid }}
+    if len({{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}) != {{ .Final.Max.String }} {
+        return false
+    }
+    {{- else }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if len({{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}) == 1 {
+        return false
+    }
+    {{- end }}
+    {{- end }}
+    {{- end }}
+{{- else if eq .Final.Kind 4 }}
+    {{- if .Final.Max.Valid }}
+	max{{ renderPascal .Name }}, _ := time.Parse(time.TimeOnly, "{{ .Final.Max.String }}")
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.After(max{{ renderPascal .Name }}) {
+        return false
+    }
+    {{- end }}
+    {{- if .Final.Min.Valid }}
+	min{{ renderPascal .Name }}, _ := time.Parse(time.TimeOnly, "{{ .Final.Min.String }}")
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.Before(min{{ renderPascal .Name }}) {
+        return false
+    }
+    {{- end }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.IsZero() {
+        return false
+    }
+    {{- end }}
+    {{- end }}
+{{- else if eq .Final.Kind 5 }}
+    {{- if .Final.Max.Valid }}
+	max{{ renderPascal .Name }}, _ := time.Parse(time.DateTime, "{{ .Final.Max.String }}")
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.After(max{{ renderPascal .Name }}) {
+        return false
+    }
+    {{- end }}
+    {{- if .Final.Min.Valid }}
+	min{{ renderPascal .Name }}, _ := time.Parse(time.DateTime, "{{ .Final.Min.String }}")
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.Before(min{{ renderPascal .Name }}) {
+        return false
+    }
+    {{- end }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if {{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}.IsZero() {
+        return false
+    }
+    {{- end }}
+    {{- end }}
+{{- else if eq .Final.Kind 6 }}
+    {{ template "validFloat" . }}
+{{- else if eq .Final.Kind 7 }}
+    {{ template "validFloat" . }}
+{{- else if eq .Final.Kind 8 }}
+    {{ template "validFloat" . }}
+{{- else if eq .Final.Kind 9 }}
+    {{ template "validInt" . }}
+{{- else if eq .Final.Kind 10 }}
+    {{ template "validInt" . }}
+{{- else if eq .Final.Kind 11 }}
+{{- else if eq .Final.Kind 12 }}
+    {{- if .Final.Max.Valid }}
+    if len({{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}) > {{ .Final.Max.String }} {
+        return false
+    }
+    {{- end }}
+    {{- if .Final.Min.Valid }}
+    if len({{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}) < {{ .Final.Min.String }} {
+        return false
+    }
+    {{- end }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if len({{ renderCamel .Attribute.Parent.Name }}.{{ renderPascal .Name }}) == 0 {
+        return false
+    }
+    {{- end }}
+    {{- end }}
+{{- else if eq .Final.Kind 13 }}
+    {{ template "validFloat" . }}
+{{- else if eq .Final.Kind 14 }}
+???
+{{- else }}
+???
+{{- end}}
+{{- end }}
