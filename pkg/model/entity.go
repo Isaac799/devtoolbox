@@ -107,13 +107,17 @@ func (ent *Entity) Attributes() []*Attribute {
 	return result
 }
 
+func (ent *Entity) CompositePrimary() bool {
+	return len(ent.Primary()) > 1
+}
+
 // AttributesToCreate provides recursive list of attributes for create operations.
 // Similar to AttributesToUpdate, but kept separate in case I want to change them later.
 func (ent *Entity) AttributesToCreate() []*Attribute {
 	var (
 		attrs     = ent.Attributes()
 		ok        = make([]*Attribute, 0, len(attrs))
-		composite = len(ent.Primary()) > 1
+		composite = ent.CompositePrimary()
 	)
 
 	for _, attr := range attrs {
@@ -135,7 +139,7 @@ func (ent *Entity) AttributesToUpdate() []*Attribute {
 	var (
 		attrs     = ent.Attributes()
 		ok        = make([]*Attribute, 0, len(attrs))
-		composite = len(ent.Primary()) > 1
+		composite = ent.CompositePrimary()
 	)
 
 	for _, attr := range attrs {

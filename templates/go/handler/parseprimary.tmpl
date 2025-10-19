@@ -1,61 +1,61 @@
 {{- block "parseFloat" . }}
-		raw{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		{{ renderCamel .Name }}, err := strconv.ParseFloat(raw{{ renderPascal .Name }}, 64)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := strconv.ParseFloat(raw{{ renderPascal .Name }}, 64)
+	if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
+	}
 {{- end }}
 {{- block "parseInt" . }}
-		raw{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		{{ renderCamel .Name }}, err := strconv.Atoi(raw{{ renderPascal .Name }})
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := strconv.Atoi(raw{{ renderPascal .Name }})
+	if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
+	}
 {{- end }}
 {{- define "parseprimary" }}
 {{- if eq .Final.Kind 1 }}
-		raw{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		var {{ renderCamel .Name }} string
-		parsed{{ renderPascal .Name }}, err := strconv.ParseUint(raw{{ renderPascal .Name }}, 2, {{ .Final.Max.String }})
-		if err == nil {
-			{{ renderCamel .Name }} = fmt.Sprintf("%0{{ .Final.Max.String }}b", parsed{{ renderPascal .Name }})
-		} else {
-			int{{ renderPascal .Name }}, err := strconv.ParseUint(raw{{ renderPascal .Name }}, 10, {{ .Final.Max.String }})
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			{{ renderCamel .Name }} = fmt.Sprintf("%0{{ .Final.Max.String }}b", int{{ renderPascal .Name }})
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	var {{ renderCamel .Name }} string
+	parsed{{ renderPascal .Name }}, err := strconv.ParseUint(raw{{ renderPascal .Name }}, 2, {{ .Final.Max.String }})
+	if err == nil {
+		{{ renderCamel .Name }} = fmt.Sprintf("%0{{ .Final.Max.String }}b", parsed{{ renderPascal .Name }})
+	} else {
+		int{{ renderPascal .Name }}, err := strconv.ParseUint(raw{{ renderPascal .Name }}, 10, {{ .Final.Max.String }})
+		if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
 		}
+		{{ renderCamel .Name }} = fmt.Sprintf("%0{{ .Final.Max.String }}b", int{{ renderPascal .Name }})
+	}
 {{- else if eq .Final.Kind 2 }}
-		raw{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		{{ renderCamel .Name }}, err := time.Parse(time.DateOnly, raw{{ renderPascal .Name }})
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := time.Parse(time.DateOnly, raw{{ renderPascal .Name }})
+	if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
+	}
 {{- else if eq .Final.Kind 3 }}
-		{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		if len({{ renderPascal .Name }}) != 1 {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	if len({{ renderPascal .Name }}) != 1 {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
+	}
 {{- else if eq .Final.Kind 4 }}
-		raw{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		{{ renderCamel .Name }}, err := time.Parse(time.TimeOnly, raw{{ renderPascal .Name }})
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := time.Parse(time.TimeOnly, raw{{ renderPascal .Name }})
+	if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
+	}
 {{- else if eq .Final.Kind 5 }}
-		raw{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		{{ renderCamel .Name }}, err := time.Parse(time.DateTime, raw{{ renderPascal .Name }})
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := time.Parse(time.DateTime, raw{{ renderPascal .Name }})
+	if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
+	}
 {{- else if eq .Final.Kind 6 }}
 {{ template "parseFloat" . }}
 {{- else if eq .Final.Kind 7 }}
@@ -67,18 +67,18 @@
 {{- else if eq .Final.Kind 10 }}
 {{ template "parseInt" . }}
 {{- else if eq .Final.Kind 11 }}
-		raw{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		{{ renderCamel .Name }}, err := strconv.ParseBool(raw{{ renderPascal .Name }})
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := strconv.ParseBool(raw{{ renderPascal .Name }})
+	if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
+	}
 {{- else if eq .Final.Kind 12 }}
-		{{ renderPascal .Name }} := r.PathValue("{{ renderKebab .Name }}")
-		if len({{ renderPascal .Name }}) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	if len({{ renderPascal .Name }}) == 0 {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewBadParamError(key{{ renderPascal .Name }})
+	}
 {{- else if eq .Final.Kind 13 }}
 {{ template "parseFloat" . }}
 {{- else if eq .Final.Kind 14 }}

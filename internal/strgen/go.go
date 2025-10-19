@@ -30,7 +30,7 @@ var _goKind = map[model.AttrKind]string{
 
 var _goZeroVue = map[model.AttrKind]string{
 	model.AttrKindNone:      "???",
-	model.AttrKindBit:       "0",
+	model.AttrKindBit:       `""`,
 	model.AttrKindDate:      "time.Time{}",
 	model.AttrKindChar:      "''",
 	model.AttrKindTime:      "time.Time{}",

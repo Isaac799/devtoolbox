@@ -9,6 +9,15 @@ import (
 	"strconv"
 	"time"
 )
+
+var (
+	ErrBadParam = errors.New("unacceptable parameter")
+)
+
+func NewBadParamError(s string) error {
+	return fmt.Errorf("%w: %s", ErrBadParam, s)
+}
+
 {{- range $index, $element := .Entities }}
 {{ template "handler" $element }}
 {{- end }}
