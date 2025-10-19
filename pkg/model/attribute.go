@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -77,6 +78,21 @@ func (attr *AttributeRaw) HasDefault() bool {
 	return len(attr.DefaultValue) > 0
 }
 
+// MaybeRequireValidation will error and attr if it does not have the
+// validation expected for its type
+func (attr *AttributeRaw) MaybeRequireValidation() {
+	switch attr.Kind {
+	case AttrKindString:
+		if !attr.Max.Valid {
+			attr.AppendErr(ErrMaxLenRequired)
+		}
+	case AttrKindBit:
+		if !attr.Max.Valid {
+			attr.AppendErr(ErrBitSizeRequired)
+		}
+	}
+}
+
 // SanitizeDefaultValue will ensure that the default
 // value is acceptable, and clear it if not, adding
 // an Err if this takes place.
@@ -94,8 +110,17 @@ func (attr *AttributeRaw) SanitizeDefaultValue() {
 	case AttrKindNone:
 		final = ""
 	case AttrKindBit:
-		if candidate == "0" || candidate == "1" {
-			final = candidate
+		size := int(attr.Max.Float64)
+		parsed, err := strconv.ParseUint(candidate, 2, size)
+		if err == nil {
+			final = fmt.Sprintf("%0*b", int(attr.Max.Float64), parsed)
+		} else {
+			parsed, err := strconv.ParseUint(candidate, 10, size)
+			if err != nil {
+				attr.AppendErr(ErrMalformedDefault)
+				break
+			}
+			final = fmt.Sprintf("%0*b", size, parsed)
 		}
 	case AttrKindDate:
 		if candidate == "now" {

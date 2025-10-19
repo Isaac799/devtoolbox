@@ -11,7 +11,7 @@ import (
 
 var _goKind = map[model.AttrKind]string{
 	model.AttrKindNone:      "???",
-	model.AttrKindBit:       "bool",
+	model.AttrKindBit:       "string",
 	model.AttrKindDate:      "time.Time",
 	model.AttrKindChar:      "rune",
 	model.AttrKindTime:      "time.Time",
@@ -78,6 +78,16 @@ func renderGoKind(attr *model.Attribute) string {
 	return s
 }
 
+// renderCast is used after placeholder args to cast if needed
+func renderCast(attr *model.Attribute) string {
+	switch attr.Final.Kind {
+	case model.AttrKindBit:
+		return fmt.Sprintf("::bit(%d)", int(attr.Final.Max.Float64))
+	default:
+		return ""
+	}
+}
+
 func packageName(s string) string {
 	s = strcase.ToSnake(s)
 	return strings.ReplaceAll(s, "_", "")
@@ -100,6 +110,7 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 
 			"renderGoErrs": renderGoErrs,
 			"renderGoKind": renderGoKind,
+			"renderCast":   renderCast,
 
 			"renderPlusOne":          renderPlusOne,
 			"renderPlusOneOverAttrs": renderPlusOneOverAttrs,

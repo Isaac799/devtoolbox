@@ -52,7 +52,7 @@ func (ent *Entity) attributes(n, max int, path string, collection *[]*Attribute,
 	}
 
 	for _, attr := range ent.RawAttributes {
-		if attr.Err != nil {
+		if len(attr.Err) > 0 {
 			continue
 		}
 

@@ -135,6 +135,8 @@ func newAttributeFromLine(s string) *model.AttributeRaw {
 		}
 	}
 
+	attr.MaybeRequireValidation()
+
 	attr.SanitizeDefaultValue()
 
 	if attr.Kind == model.AttrKindString && !attr.Validation.Max.Valid {
