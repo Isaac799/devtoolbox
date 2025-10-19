@@ -14,20 +14,20 @@ type AttrKind int
 // recognized kinds
 const (
 	AttrKindNone AttrKind = iota
-	AttrKindBit
-	AttrKindDate
-	AttrKindChar
-	AttrKindTime
-	AttrKindTimestamp
-	AttrKindDecimal
-	AttrKindReal
-	AttrKindFloat
+	AttrKindReference
 	AttrKindSerial
 	AttrKindInt
-	AttrKindBoolean
+	AttrKindChar
 	AttrKindString
+	AttrKindBit
+	AttrKindBoolean
+	AttrKindDate
+	AttrKindTime
+	AttrKindTimestamp
+	AttrKindFloat
+	AttrKindReal
+	AttrKindDecimal
 	AttrKindMoney
-	AttrKindReference
 )
 
 // AttributeRaw is a metric in an entity, like a column in a table
@@ -109,6 +109,22 @@ func (attr *AttributeRaw) SanitizeDefaultValue() {
 	switch attr.Kind {
 	case AttrKindNone:
 		final = ""
+	case AttrKindReference:
+		final = "???"
+	case AttrKindSerial, AttrKindInt:
+		_, err := strconv.Atoi(candidate)
+		if err != nil {
+			attr.AppendErr(ErrMalformedDefault)
+			break
+		}
+	case AttrKindString:
+		final = candidate
+	case AttrKindChar:
+		if len(candidate) != 1 {
+			attr.AppendErr(ErrMalformedDefault)
+			break
+		}
+		final = candidate
 	case AttrKindBit:
 		size, _ := strconv.Atoi(attr.Max.String)
 		parsed, err := strconv.ParseUint(candidate, 2, size)
@@ -122,6 +138,12 @@ func (attr *AttributeRaw) SanitizeDefaultValue() {
 			}
 			final = fmt.Sprintf("%0*b", size, parsed)
 		}
+	case AttrKindBoolean:
+		_, err := strconv.ParseBool(candidate)
+		if err != nil {
+			attr.AppendErr(ErrMalformedDefault)
+			break
+		}
 	case AttrKindDate:
 		if candidate == "now" {
 			final = candidate
@@ -133,12 +155,6 @@ func (attr *AttributeRaw) SanitizeDefaultValue() {
 			break
 		}
 		final = parsed.Format(time.DateOnly)
-	case AttrKindChar:
-		if len(candidate) != 1 {
-			attr.AppendErr(ErrMalformedDefault)
-			break
-		}
-		final = candidate
 	case AttrKindTime:
 		if candidate == "now" {
 			final = candidate
@@ -167,22 +183,6 @@ func (attr *AttributeRaw) SanitizeDefaultValue() {
 			attr.AppendErr(ErrMalformedDefault)
 			break
 		}
-	case AttrKindSerial, AttrKindInt:
-		_, err := strconv.Atoi(candidate)
-		if err != nil {
-			attr.AppendErr(ErrMalformedDefault)
-			break
-		}
-	case AttrKindBoolean:
-		_, err := strconv.ParseBool(candidate)
-		if err != nil {
-			attr.AppendErr(ErrMalformedDefault)
-			break
-		}
-	case AttrKindString:
-		final = candidate
-	case AttrKindReference:
-		final = "???"
 	}
 
 	for _, err := range attr.Err {

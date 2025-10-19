@@ -15,7 +15,23 @@
 	}
 {{- end }}
 {{- define "parseprimary" }}
-{{- if eq .Final.Kind 1 }}
+{{- if eq .Final.Kind 2 }}
+    {{- template "parseInt" . }}
+{{- else if eq .Final.Kind 3 }}
+    {{- template "parseInt" . }}
+{{- else if eq .Final.Kind 4 }}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	if len({{ renderPascal .Name }}) == 0 {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
+	}
+{{- else if eq .Final.Kind 5 }}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	if len({{ renderPascal .Name }}) == 0 {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
+	}
+{{- else if eq .Final.Kind 6 }}
 	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
 	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
 	var {{ renderCamel .Name }} string
@@ -29,60 +45,42 @@
 		}
 		{{ renderCamel .Name }} = fmt.Sprintf("%0{{ .Final.Max.String }}b", int{{ renderPascal .Name }})
 	}
-{{- else if eq .Final.Kind 2 }}
-	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
-	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
-	{{ renderCamel .Name }}, err := time.Parse(time.DateOnly, raw{{ renderPascal .Name }})
-	if err != nil {
-		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
-	}
-{{- else if eq .Final.Kind 3 }}
-	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
-	{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
-	if len({{ renderPascal .Name }}) != 1 {
-		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
-	}
-{{- else if eq .Final.Kind 4 }}
-	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
-	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
-	{{ renderCamel .Name }}, err := time.Parse(time.TimeOnly, raw{{ renderPascal .Name }})
-	if err != nil {
-		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
-	}
-{{- else if eq .Final.Kind 5 }}
-	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
-	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
-	{{ renderCamel .Name }}, err := time.Parse(time.DateTime, raw{{ renderPascal .Name }})
-	if err != nil {
-		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
-	}
-{{- else if eq .Final.Kind 6 }}
-{{ template "parseFloat" . }}
 {{- else if eq .Final.Kind 7 }}
-{{ template "parseFloat" . }}
-{{- else if eq .Final.Kind 8 }}
-{{ template "parseFloat" . }}
-{{- else if eq .Final.Kind 9 }}
-{{ template "parseInt" . }}
-{{- else if eq .Final.Kind 10 }}
-{{ template "parseInt" . }}
-{{- else if eq .Final.Kind 11 }}
 	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
 	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
 	{{ renderCamel .Name }}, err := strconv.ParseBool(raw{{ renderPascal .Name }})
 	if err != nil {
 		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
 	}
-{{- else if eq .Final.Kind 12 }}
+{{- else if eq .Final.Kind 8 }}
 	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
-	{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
-	if len({{ renderPascal .Name }}) == 0 {
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := time.Parse(time.DateOnly, raw{{ renderPascal .Name }})
+	if err != nil {
 		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
 	}
+{{- else if eq .Final.Kind 9 }}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := time.Parse(time.TimeOnly, raw{{ renderPascal .Name }})
+	if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
+	}
+{{- else if eq .Final.Kind 10 }}
+	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
+	raw{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	{{ renderCamel .Name }}, err := time.Parse(time.DateTime, raw{{ renderPascal .Name }})
+	if err != nil {
+		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
+	}
+{{- else if eq .Final.Kind 11 }}
+    {{- template "parseFloat" . }}
+{{- else if eq .Final.Kind 12 }}
+    {{- template "parseFloat" . }}
 {{- else if eq .Final.Kind 13 }}
-{{ template "parseFloat" . }}
+    {{- template "parseFloat" . }}
 {{- else if eq .Final.Kind 14 }}
-???
+    {{- template "parseFloat" . }}
 {{- else }}
 ???
 {{- end}}

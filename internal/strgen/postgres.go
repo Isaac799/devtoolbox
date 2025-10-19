@@ -11,20 +11,20 @@ import (
 
 var _postgresKind = map[model.AttrKind]string{
 	model.AttrKindNone:      "???",
-	model.AttrKindBit:       "BIT",
-	model.AttrKindDate:      "DATE",
-	model.AttrKindChar:      "CHARACTER",
-	model.AttrKindTime:      "TIME",
-	model.AttrKindTimestamp: "TIMESTAMP",
-	model.AttrKindDecimal:   "DECIMAL",
-	model.AttrKindReal:      "REAL",
-	model.AttrKindFloat:     "FLOAT",
+	model.AttrKindReference: "REF",
 	model.AttrKindSerial:    "SERIAL",
 	model.AttrKindInt:       "INT",
-	model.AttrKindBoolean:   "BOOLEAN",
+	model.AttrKindChar:      "CHARACTER",
 	model.AttrKindString:    "VARCHAR",
+	model.AttrKindBit:       "BIT",
+	model.AttrKindBoolean:   "BOOLEAN",
+	model.AttrKindDate:      "DATE",
+	model.AttrKindTime:      "TIME",
+	model.AttrKindTimestamp: "TIMESTAMP",
+	model.AttrKindFloat:     "FLOAT",
+	model.AttrKindReal:      "REAL",
+	model.AttrKindDecimal:   "DECIMAL",
 	model.AttrKindMoney:     "MONEY",
-	model.AttrKindReference: "REF",
 }
 
 func renderErrs(attr *model.Attribute) string {
