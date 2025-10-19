@@ -46,9 +46,13 @@ func renderKind(attr *model.Attribute) string {
 	}
 
 	s := _postgresKind[k]
-	if k == model.AttrKindString {
+
+	switch k {
+	case model.AttrKindString, model.AttrKindChar, model.AttrKindBit:
 		i, _ := strconv.Atoi(attr.Final.Max.String)
-		s = fmt.Sprintf("%s(%d)", s, i)
+		if i > 0 {
+			s = fmt.Sprintf("%s(%d)", s, i)
+		}
 	}
 	return s
 }
