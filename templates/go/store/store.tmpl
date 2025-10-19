@@ -88,6 +88,10 @@ func (store *{{ renderStoreName . }}) Delete({{ range $index, $element := .Prima
 type {{ renderStoreName . }} struct {
     db *sql.DB
 }
+
+func New{{ renderStoreName . }}(db *sql.DB) *{{ renderStoreName . }} {
+	return &{{ renderStoreName . }}{db: db}
+}
 {{- if ne .HasPrimary true }}
 
 // NOTICE: {{ renderPascal .Name }} has no primary key, cannot generate CRUD operations for {{ renderStoreName . }}

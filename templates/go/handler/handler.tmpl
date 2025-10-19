@@ -163,6 +163,10 @@ type {{ renderHandlerName . }} struct {
 	store *{{ renderStoreName . }}
 }
 
+func New{{ renderHandlerName . }}(db *sql.DB) *{{ renderHandlerName . }} {
+	return &{{ renderHandlerName . }}{store: New{{ renderStoreName . }}(db)}
+}
+
 {{- if ne .HasPrimary true }}
 
 // NOTICE: {{ renderPascal .Name }} has no primary key, cannot generate CRUD handlers for {{ renderHandlerName . }}
