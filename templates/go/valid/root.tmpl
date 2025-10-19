@@ -20,4 +20,4 @@ func NewValidationErr(s string) error {
 	return fmt.Errorf("%w: %s", ErrValidation, s)
 }
 
-{{ range $index, $element := .Entities }}{{ template "entity" . }}{{ end }}
+{{- range $index, $element := .Entities }}{{- template "entity" . }}{{- end }}

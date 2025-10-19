@@ -1,7 +1,8 @@
 {{- define "entity" }}
 func ({{ renderCamel .Name }} *{{ renderPascal .Name }}) Valid() error {
+    const label = "{{ .Name }}"
 {{- range $index, $element := .NonPrimary }}
-{{ template "attribute" . }}
+{{- template "attribute" . }}
 {{- end}}
     return nil
 }
