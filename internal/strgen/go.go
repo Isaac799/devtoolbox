@@ -54,10 +54,10 @@ func renderPlusOne(i int) int {
 	return i + 1
 }
 
-// renderPlusOneOverAttrs helps with postgres string query templating
-// on the where clause not overlapping with what is being set
-func renderPlusOneOverAttrs(ent *model.Entity, i int) int {
-	return i + 1 + len(ent.NonPrimary())
+// renderPrimaryPlaceholder helps with postgres string query templating
+// on the where clause not overlapping with what is being set in an update op
+func renderPrimaryPlaceholder(ent *model.Entity, i int) int {
+	return i + 1 + len(ent.AttributesToUpdate())
 }
 
 func renderHandlerName(ent *model.Entity) string {
@@ -144,8 +144,8 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 			"renderGoEmptyValue": renderGoEmptyValue,
 			"renderCast":         renderCast,
 
-			"renderPlusOne":          renderPlusOne,
-			"renderPlusOneOverAttrs": renderPlusOneOverAttrs,
+			"renderPlusOne":            renderPlusOne,
+			"renderPrimaryPlaceholder": renderPrimaryPlaceholder,
 
 			"renderStoreName":   renderStoreName,
 			"renderHandlerName": renderHandlerName,

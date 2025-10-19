@@ -3,8 +3,8 @@ func (store *{{ renderStoreName . }}) Create({{ renderCamel .Name }} *{{ renderP
 	if err := {{ renderCamel .Name }}.Valid(); err != nil {
 		return err
 	}
-	q := `INSERT INTO {{ .Parent.Name }}.{{ .Name }} ({{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}{{- end }}) VALUES ({{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}${{ renderPlusOne $index }}{{ renderCast $element }}{{- end }}) RETURNING {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }}{{- end }}`
-	row := store.db.QueryRow(q, {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }})
+	q := `INSERT INTO {{ .Parent.Name }}.{{ .Name }} ({{ range $index, $element := .AttributesToCreate }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}{{- end }}) VALUES ({{ range $index, $element := .AttributesToCreate }}{{ if ne $index 0 }}, {{ end }}${{ renderPlusOne $index }}{{ renderCast $element }}{{- end }}) RETURNING {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }}{{- end }}`
+	row := store.db.QueryRow(q, {{ range $index, $element := .AttributesToCreate }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }})
 	if row.Err() != nil {
 		return row.Err()
 	}
@@ -58,8 +58,8 @@ func (store *{{ renderStoreName . }}) Update({{ range $index, $element := .Prima
 	if err := {{ renderCamel .Name }}.Valid(); err != nil {
 		return 0, err
 	}
-	q := `UPDATE {{ .Parent.Name }}.{{ .Name }} SET {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}=${{ renderPlusOne $index }}{{ renderCast $element }}{{- end }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }}=${{ renderPlusOneOverAttrs $ $index }}{{ renderCast $element }}{{- end }}`
-	result, err := store.db.Exec(q, {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }}, {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderPascal $element.Name }}{{- end }})
+	q := `UPDATE {{ .Parent.Name }}.{{ .Name }} SET {{ range $index, $element := .AttributesToUpdate }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}=${{ renderPlusOne $index }}{{ renderCast $element }}{{- end }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }}=${{ renderPrimaryPlaceholder $ $index }}{{ renderCast $element }}{{- end }}`
+	result, err := store.db.Exec(q, {{ range $index, $element := .AttributesToUpdate }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }}, {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderPascal $element.Name }}{{- end }})
 	if err != nil {
 		return 0, err
 	}

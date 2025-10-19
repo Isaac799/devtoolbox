@@ -107,6 +107,50 @@ func (ent *Entity) Attributes() []*Attribute {
 	return result
 }
 
+// AttributesToCreate provides recursive list of attributes for create operations.
+// Similar to AttributesToUpdate, but kept separate in case I want to change them later.
+func (ent *Entity) AttributesToCreate() []*Attribute {
+	var (
+		attrs     = ent.Attributes()
+		ok        = make([]*Attribute, 0, len(attrs))
+		composite = len(ent.Primary()) > 1
+	)
+
+	for _, attr := range attrs {
+		if !composite && attr.Source.Primary {
+			continue
+		}
+		if len(attr.Source.DefaultValue) > 0 {
+			continue
+		}
+		ok = append(ok, attr)
+	}
+
+	return ok
+}
+
+// AttributesToUpdate provides recursive list of attributes for update operations
+// Similar to AttributesToCreate, but kept separate in case I want to change them later.
+func (ent *Entity) AttributesToUpdate() []*Attribute {
+	var (
+		attrs     = ent.Attributes()
+		ok        = make([]*Attribute, 0, len(attrs))
+		composite = len(ent.Primary()) > 1
+	)
+
+	for _, attr := range attrs {
+		if !composite && attr.Source.Primary {
+			continue
+		}
+		if len(attr.Source.DefaultValue) > 0 {
+			continue
+		}
+		ok = append(ok, attr)
+	}
+
+	return ok
+}
+
 // Primary is a arr of attr that make up primary
 func (ent *Entity) Primary() []*Attribute {
 	attrs := make([]*Attribute, 0, len(ent.Attributes()))
