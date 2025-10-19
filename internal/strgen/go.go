@@ -164,7 +164,7 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 		}
 
 		sb := strings.Builder{}
-		err = tmpl.ExecuteTemplate(&sb, "schema.tmpl", s)
+		err = tmpl.ExecuteTemplate(&sb, "root.tmpl", s)
 		if err != nil {
 			return nil, err
 		}
@@ -200,6 +200,21 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 			return nil, err
 		}
 		m[newFileName(packageName(s.Name), "handler.go")] = sb.String()
+	}
+
+	for _, s := range schemas {
+		tmpl := rootTmpl()
+		_, err = tmpl.ParseGlob("templates/go/valid/**.tmpl")
+		if err != nil {
+			return nil, err
+		}
+
+		sb := strings.Builder{}
+		err = tmpl.ExecuteTemplate(&sb, "root.tmpl", s)
+		if err != nil {
+			return nil, err
+		}
+		m[newFileName(packageName(s.Name), "valid.go")] = sb.String()
 	}
 
 	return m, nil

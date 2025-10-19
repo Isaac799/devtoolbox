@@ -2,6 +2,6 @@ package {{ renderCamel .Name }}
 
 import (
 	"time"
-	"strconv"
 )
+
 {{ range $index, $element := .Entities }}{{ template "entity" . }}{{ end }}

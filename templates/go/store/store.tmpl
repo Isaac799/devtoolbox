@@ -1,7 +1,7 @@
 {{- block "create" . }}
 func (store *{{ renderStoreName . }}) Create({{ renderCamel .Name }} *{{ renderPascal .Name }}) error {
-	if !{{ renderCamel .Name }}.Valid() {
-		return errors.New("invalid")
+	if err := {{ renderCamel .Name }}.Valid(); err != nil {
+		return err
 	}
 	q := `INSERT INTO {{ .Parent.Name }}.{{ .Name }} ({{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}{{- end }}) VALUES ({{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}${{ renderPlusOne $index }}{{ renderCast $element }}{{- end }}) RETURNING {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }}{{- end }}`
 	row := store.db.QueryRow(q, {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }})
@@ -55,8 +55,8 @@ func (store *{{ renderStoreName . }}) ReadMany(limit, offset int) ([]{{ renderPa
 {{- end }}
 {{- block "update" . }}
 func (store *{{ renderStoreName . }}) Update({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderPascal $element.Name }} {{ renderGoKind $element }}{{- end }}, {{ renderCamel .Name }} *{{ renderPascal .Name }}) (int64, error) {
-	if !{{ renderCamel .Name }}.Valid() {
-		return nil, errors.New("invalid")
+	if err := {{ renderCamel .Name }}.Valid(); err != nil {
+		return 0, err
 	}
 	q := `UPDATE {{ .Parent.Name }}.{{ .Name }} SET {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}=${{ renderPlusOne $index }}{{ renderCast $element }}{{- end }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }}=${{ renderPlusOneOverAttrs $ $index }}{{ renderCast $element }}{{- end }}`
 	result, err := store.db.Exec(q, {{ range $index, $element := .NonPrimary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $.Name }}.{{ renderPascal $element.Name }}{{- end }}, {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderPascal $element.Name }}{{- end }})

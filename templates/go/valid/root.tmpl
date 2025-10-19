@@ -1,0 +1,23 @@
+package {{ renderCamel .Name }}
+
+import (
+	"errors"
+	"fmt"
+	"strconv"
+	"time"
+)
+
+var (
+	ErrValidation = errors.New("validation failed")
+	ErrMin        = errors.New("too small")
+	ErrMax        = errors.New("too big")
+	ErrMinTime    = errors.New("too soon")
+	ErrMaxTime    = errors.New("too late")
+	ErrEmpty      = errors.New("empty")
+)
+
+func NewValidationErr(s string) error {
+	return fmt.Errorf("%w: %s", ErrValidation, s)
+}
+
+{{ range $index, $element := .Entities }}{{ template "entity" . }}{{ end }}
