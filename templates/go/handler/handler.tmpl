@@ -23,10 +23,14 @@ func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Re
 
 	err = handler.store.Create(&{{ renderCamel .Name }})
 	if err != nil {
+		{{- if $.HasValidity }}
 		if errors.Is(err, ErrValidation) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		{{- else }}
+		// NOTE: lack of validity err check
+		{{- end }}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -97,10 +101,14 @@ func (handler *{{ renderHandlerName . }}) Put(w http.ResponseWriter, r *http.Req
 	var {{ renderCamel .Name }} {{ renderPascal .Name }}
 	err = json.Unmarshal(b, &{{ renderCamel .Name }})
 	if err != nil {
+		{{- if $.HasValidity }}
 		if errors.Is(err, ErrValidation) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		{{- else }}
+		// NOTE: lack of validity err check 
+		{{- end }}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

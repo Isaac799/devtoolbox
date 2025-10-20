@@ -242,3 +242,15 @@ func (ent *Entity) HasReference() bool {
 	}
 	return false
 }
+
+// HasValidity is easy way to see if an entity needs validity checks
+// for templating
+func (ent *Entity) HasValidity() bool {
+	for _, v := range ent.AttributesToCreate() {
+		val := v.Source.Validation
+		if val.Max.Valid || val.Min.Valid || val.Required.Valid {
+			return true
+		}
+	}
+	return false
+}
