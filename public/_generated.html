@@ -39,12 +39,14 @@
 
     <h3>Postgres</h3>
 
+    {{ range $k, $v := .Fish.PgGen }}
     <details>
-        <summary> Tables </summary>
+        <summary> {{ $k.Full }} </summary>
         <div class="scroll-box">
-            <pre>{{- .Fish.PgGen }}</pre>
+            <pre>{{- $v }}</pre>
         </div>
     </details>
+    {{ end }}
 
     <h3>Go</h3>
 

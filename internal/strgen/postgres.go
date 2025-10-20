@@ -102,7 +102,7 @@ func renderDefault(attr *model.Attribute) string {
 }
 
 // PostgresSetup generates a postgres create statements to setup a new database
-func PostgresSetup(schemas []*model.Schema) (string, error) {
+func PostgresSetup(schemas []*model.Schema) (map[FileName]string, error) {
 	var err error
 
 	tmpl := template.Template{}
@@ -118,15 +118,18 @@ func PostgresSetup(schemas []*model.Schema) (string, error) {
 		"renderIsNotNull": renderIsNotNull,
 	})
 
-	_, err = tmpl.ParseGlob("templates/postgres/**")
-	if err != nil {
-		return "", err
+	m := make(map[FileName]string, len(schemas))
+	{
+		_, err = tmpl.ParseGlob("templates/postgres/tables/**")
+		if err != nil {
+			return nil, err
+		}
+		sb := strings.Builder{}
+		err = tmpl.ExecuteTemplate(&sb, "root.tmpl", schemas)
+		if err != nil {
+			return nil, err
+		}
+		m[newFileName("postgres", "tables.sql")] = sb.String()
 	}
-
-	sb := strings.Builder{}
-	err = tmpl.ExecuteTemplate(&sb, "root.tmpl", schemas)
-	if err != nil {
-		return "", err
-	}
-	return sb.String(), nil
+	return m, nil
 }

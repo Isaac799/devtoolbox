@@ -42,7 +42,7 @@ type Generated struct {
 	RawEscaped string
 	Schemas    []*model.Schema
 	GoGen      map[strgen.FileName]string
-	PgGen      string
+	PgGen      map[strgen.FileName]string
 	HasErr     bool
 }
 
@@ -55,6 +55,7 @@ func generate(r *http.Request) any {
 		return Generated{
 			Raw:     "error happened",
 			Schemas: make([]*model.Schema, 0),
+			PgGen:   make(map[strgen.FileName]string),
 			GoGen:   make(map[strgen.FileName]string),
 		}
 	}
@@ -126,17 +127,19 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	{
-		pgGen, err := strgen.PostgresSetup(schemas)
-		if err != nil {
-			log.Fatal(err)
-		}
-		zw, err := zWriter.Create("postgres-tables.sql")
+
+	pgGen, err := strgen.PostgresSetup(schemas)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	for k, v := range pgGen {
+		zw, err := zWriter.Create(k.Full())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		_, err = zw.Write([]byte(pgGen))
+		_, err = zw.Write([]byte(v))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

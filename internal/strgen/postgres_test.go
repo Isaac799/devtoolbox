@@ -59,16 +59,19 @@ func TestPostgresSetup(t *testing.T) {
 
 	schemas := strparse.Raw(testMockSchemas)
 
-	pg, err := PostgresSetup(schemas)
+	m, err := PostgresSetup(schemas)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	p := filepath.Join("generated", "postgres")
-	os.RemoveAll(p)
-	os.MkdirAll(p, os.ModePerm)
-	fileName := filepath.Join(p, "tables.sql")
-	os.WriteFile(fileName, []byte(pg), os.ModePerm)
+	scope := filepath.Join("generated", "pg")
+	os.RemoveAll(scope)
 
-	_ = pg
+	for k, v := range m {
+		dir := filepath.Join(scope, k.Path())
+		name := filepath.Join(scope, k.Full())
+
+		os.MkdirAll(dir, os.ModePerm)
+		os.WriteFile(name, []byte(v), os.ModePerm)
+	}
 }
