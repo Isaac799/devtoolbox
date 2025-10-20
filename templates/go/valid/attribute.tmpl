@@ -56,6 +56,23 @@
     {{- end }}
     {{- end }}
 {{- else if eq .Final.Kind 5 }}
+    {{- if .Final.Max.Valid }}
+    if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) > {{ .Final.Max.String }} {
+        return errors.Join(NewErrValidation(label), ErrMax)
+    }
+    {{- end }}
+    {{- if .Final.Min.Valid }}
+    if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) < {{ .Final.Min.String }} {
+        return errors.Join(NewErrValidation(label), ErrMin)
+    }
+    {{- end }}
+    {{- if .Source.Required.Valid }}
+    {{- if .Source.Required.Bool }}
+    if len({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}) == 0 {
+        return errors.Join(NewErrValidation(label), ErrEmpty)
+    }
+    {{- end }}
+    {{- end }}
 {{- else if eq .Final.Kind 6 }}
 	_, err := strconv.ParseUint({{ renderCamel .Source.Parent.Name }}.{{ renderPascal .Name }}, 2, {{ .Attribute.Max.String }})
 	if err != nil {
