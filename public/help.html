@@ -1,0 +1,76 @@
+<header>
+    <h1>Help</h1>
+
+    {{ template "_nav" }}
+</header>
+
+<main>
+    <h3>Types</h3>
+    <div class="scroll-box">
+        <pre>
+type is:  ( ++             | int     | bool     | str    | ts        | time | date |  bit  | char      | dec     | real | float | money )
+or
+type is:  ( auto increment | integer | boolean  | string | timestamp | time | date |  bit  | character | decimal | real | float | money )
+        </pre>
+    </div>
+    <h3>Options</h3>
+    <div class="scroll-box">
+        <pre>
+range  is:  [ value ]..[ value ] 
+                  min..max
+
+option is:  ( _range_  | d        | p       | s      | r        | u        )
+or
+option is:  ( _range_  | default  | primary | system | required | unique[ :_group_ ] )
+        </pre>
+    </div>
+
+    <h3>Attribute</h3>
+    <div class="scroll-box">
+        <pre>
+attribute is:  _name_ as _type_ [ with _option_ [ , ... ] ] 
+or
+attribute is:  @( _entity_ | _schema_._entity_ ) [ as _alias_ ] [ with _option_ [ , ... ] ] 
+        </pre>
+    </div>
+
+    <h3>Scheme</h3>
+    <div class="scroll-box">
+        <pre>
+# _schema_
+
+## _entity_
+- _attribute_
+        </pre>
+    </div>
+
+    <h3>Example</h3>
+    <div class="scroll-box">
+        <pre>
+# People
+
+## Author
+- id as ++
+- first name as string with unique:full name, required, 3..32
+- last name as str with u:full name, u:last name, r, ..30
+- dob as date with 2006-01-02..
+
+# Library
+
+## Category
+- id as ++
+- name as str with u, r, 3..30
+
+## Book
+- id as ++
+- title as str with u, r, ..50
+- published as ts with default:now
+- @category with r
+
+## Publication
+- @book with primary
+- @people.author with primary
+- flags as bit with ..16
+        </pre>
+    </div>
+</main>

@@ -25,8 +25,8 @@ func TestGoStructs(t *testing.T) {
 	os.RemoveAll(scope)
 
 	for k, v := range m {
-		dir := filepath.Join(scope, k.path())
-		name := filepath.Join(scope, k.full())
+		dir := filepath.Join(scope, k.Path())
+		name := filepath.Join(scope, k.Full())
 
 		os.MkdirAll(dir, os.ModePerm)
 		os.WriteFile(name, []byte(v), os.ModePerm)

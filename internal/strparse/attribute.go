@@ -116,43 +116,55 @@ func newAttributeFromLine(s string) *model.AttributeRaw {
 				attr.Min = sql.NullString{String: "", Valid: false}
 				_, maxErr := strconv.Atoi(maxStr)
 				if maxErr != nil {
-					attr.AppendErr(ErrRangeInvalid)
+					attr.AppendErr(ErrRangeMaxMalformed)
 				}
 			case model.AttrKindDate:
 				min, minErr := time.Parse(time.DateOnly, minStr)
 				max, maxErr := time.Parse(time.DateOnly, maxStr)
 				if minErr != nil && len(minStr) > 0 {
-					attr.AppendErr(ErrRangeInvalid)
-				} else if maxErr != nil && len(maxStr) > 0 {
-					attr.AppendErr(ErrRangeInvalid)
-				} else if max.Before(min) {
-					attr.AppendErr(ErrRangeInvalid)
+					attr.AppendErr(ErrRangeMinMalformed)
+				}
+				if maxErr != nil && len(maxStr) > 0 {
+					attr.AppendErr(ErrRangeMaxMalformed)
+				}
+				if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
+					attr.AppendErr(ErrRangeMaxUnderMin)
 				}
 			case model.AttrKindTime:
 				min, minErr := time.Parse(time.TimeOnly, minStr)
 				max, maxErr := time.Parse(time.TimeOnly, maxStr)
 				if minErr != nil && len(minStr) > 0 {
-					attr.AppendErr(ErrRangeInvalid)
-				} else if maxErr != nil && len(maxStr) > 0 {
-					attr.AppendErr(ErrRangeInvalid)
-				} else if max.Before(min) {
-					attr.AppendErr(ErrRangeInvalid)
+					attr.AppendErr(ErrRangeMinMalformed)
+				}
+				if maxErr != nil && len(maxStr) > 0 {
+					attr.AppendErr(ErrRangeMaxMalformed)
+				}
+				if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
+					attr.AppendErr(ErrRangeMaxUnderMin)
 				}
 			case model.AttrKindTimestamp:
 				min, minErr := time.Parse(time.DateTime, minStr)
 				max, maxErr := time.Parse(time.DateTime, maxStr)
 				if minErr != nil && len(minStr) > 0 {
-					attr.AppendErr(ErrRangeInvalid)
-				} else if maxErr != nil && len(maxStr) > 0 {
-					attr.AppendErr(ErrRangeInvalid)
-				} else if max.Before(min) {
-					attr.AppendErr(ErrRangeInvalid)
+					attr.AppendErr(ErrRangeMinMalformed)
+				}
+				if maxErr != nil && len(maxStr) > 0 {
+					attr.AppendErr(ErrRangeMaxMalformed)
+				}
+				if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
+					attr.AppendErr(ErrRangeMaxUnderMin)
 				}
 			case model.AttrKindDecimal, model.AttrKindReal, model.AttrKindFloat, model.AttrKindInt, model.AttrKindMoney, model.AttrKindSerial, model.AttrKindString, model.AttrKindChar:
 				min, minErr := strconv.ParseFloat(minStr, 64)
 				max, maxErr := strconv.ParseFloat(maxStr, 64)
-				if minErr != nil && maxErr != nil && max > min {
-					attr.AppendErr(ErrRangeInvalid)
+				if len(minStr) > 0 && minErr != nil {
+					attr.AppendErr(ErrRangeMinMalformed)
+				}
+				if len(maxStr) > 0 && maxErr != nil {
+					attr.AppendErr(ErrRangeMaxMalformed)
+				}
+				if len(minStr) > 0 && len(maxStr) > 0 && min > max {
+					attr.AppendErr(ErrRangeMaxUnderMin)
 				}
 			}
 			continue

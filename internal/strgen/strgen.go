@@ -98,7 +98,7 @@ func newFileName(path string, name string) FileName {
 	return FileName(s)
 }
 
-func (fn FileName) path() string {
+func (fn FileName) Path() string {
 	before, _, _ := strings.Cut(string(fn), ":")
 	return before
 }
@@ -108,7 +108,7 @@ func (fn FileName) fileName() string {
 	return after
 }
 
-func (fn FileName) full() string {
+func (fn FileName) Full() string {
 	before, after, _ := strings.Cut(string(fn), ":")
 	return filepath.Join(before, after)
 }
