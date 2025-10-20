@@ -74,7 +74,17 @@ func renderPathValues(ent *model.Entity) string {
 
 	if len(primaries) > 1 {
 		for _, attr := range primaries {
-			s := fmt.Sprintf("%s/{%s}", strcase.ToKebab(attr.Name()), strcase.ToKebab(attr.Name()))
+			if attr.Final.Parent.CompositePrimary() {
+				s := fmt.Sprintf("%s/{%s}", strcase.ToKebab(attr.Name()), strcase.ToKebab(attr.Name()))
+				parts = append(parts, s)
+				continue
+			}
+
+			// if not composite we can remove redundant pattern to improve clarity
+			// 'foo-id/{foo-id}' -> '/foo/{foo-id}'
+			redundantSuffix := fmt.Sprintf("_%s", attr.Final.Name)
+			s2, _ := strings.CutSuffix(attr.Name(), redundantSuffix)
+			s := fmt.Sprintf("%s/{%s}", strcase.ToKebab(s2), strcase.ToKebab(attr.Name()))
 			parts = append(parts, s)
 		}
 	} else {

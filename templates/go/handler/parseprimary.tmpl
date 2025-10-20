@@ -21,14 +21,14 @@
     {{- template "parseInt" . }}
 {{- else if eq .Final.Kind 4 }}
 	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
-	{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
-	if len({{ renderPascal .Name }}) == 0 {
+	{{ renderCamel .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	if len({{ renderCamel .Name }}) == 0 {
 		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
 	}
 {{- else if eq .Final.Kind 5 }}
 	key{{ renderPascal .Name }} := "{{ renderKebab .Name }}"
-	{{ renderPascal .Name }} := r.PathValue(key{{ renderPascal .Name }})
-	if len({{ renderPascal .Name }}) == 0 {
+	{{ renderCamel .Name }} := r.PathValue(key{{ renderPascal .Name }})
+	if len({{ renderCamel .Name }}) == 0 {
 		return {{ range $index, $element := $.Source.Parent.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoEmptyValue $element }}{{ end }}, NewErrBadParam(key{{ renderPascal .Name }})
 	}
 {{- else if eq .Final.Kind 6 }}

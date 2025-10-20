@@ -134,7 +134,7 @@ func (handler *{{ renderHandlerName . }}) Delete(w http.ResponseWriter, r *http.
 {{- end }}
 {{- block "attachMux" . }}
 func (handler *{{ renderHandlerName . }}) Register(mux *http.ServeMux) {
-	mux.HandleFunc("/{{ renderKebab .Name }}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/{{ renderKebab .Name }}", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			handler.Post(w, r)
@@ -144,7 +144,7 @@ func (handler *{{ renderHandlerName . }}) Register(mux *http.ServeMux) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
-	mux.HandleFunc("/{{ renderKebab .Name }}/{{ renderPathValues . }}", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/{{ renderKebab .Name }}/{{ renderPathValues . }}", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			handler.Get(w, r)
