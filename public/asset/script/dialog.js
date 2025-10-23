@@ -48,6 +48,7 @@ function discoverDialogs() {
   new Dialog("schema");
   new Dialog("entity");
   new Dialog("attribute");
+  new Dialog("examples");
 
   new Dialog("settings");
   new Dialog("download", true);

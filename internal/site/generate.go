@@ -20,8 +20,9 @@ const (
 
 // Input is for template rendering to help retain state
 type Input struct {
-	Q    string
-	Mode InputMode
+	Q       string
+	Example string
+	Mode    InputMode
 }
 
 // Output is for template rendering to show what was generated
@@ -36,12 +37,38 @@ type Output struct {
 // Generated is the combined generations for template usage
 // on a sardine
 type Generated struct {
-	Input  *Input
-	Output *Output
+	Input    *Input
+	Output   *Output
+	Examples []Example
+}
+
+// Example is preset to show functionality
+type Example struct {
+	Label string
+	Value string
+}
+
+func defaultExamples() []Example {
+	return []Example{
+		{
+			Label: "Foo Bar",
+			Value: `# foo 
+
+## bar 
+
+- id as ++
+- name as str with 0..3`,
+		},
+	}
 }
 
 func input(r *http.Request) *Input {
 	query := r.FormValue("q")
+	example := r.FormValue("example")
+
+	if len(example) > 0 {
+		query = example
+	}
 
 	mode := InputModeText
 	modeStr := r.FormValue("mode")
@@ -100,13 +127,15 @@ func IOData(r *http.Request) any {
 		}
 
 		return Generated{
-			Input:  in,
-			Output: &out,
+			Input:    in,
+			Output:   &out,
+			Examples: defaultExamples(),
 		}
 	}
 
 	return Generated{
-		Input:  in,
-		Output: out,
+		Input:    in,
+		Output:   out,
+		Examples: defaultExamples(),
 	}
 }

@@ -1,0 +1,28 @@
+<dialog id="dialog-examples">
+    <h3>
+        Examples
+    </h3>
+    <p>
+        Examples REPLACE existing entry.
+    </p>
+    <div class="fr">
+        {{- range $index, $element := .Fish.Examples }}
+        <button
+            hx-post="/"
+            hx-boost="true"
+            hx-trigger="click"
+            hx-target="body"
+            hx-include="[name='mode'], [name='q']"
+            name="example"
+            value="{{ $element.Value }}"
+        >
+            {{- $element.Label }}
+        </button>
+        {{- end }}
+        <form method="dialog">
+            <button>
+                Close
+            </button>
+        </form>
+    </div>
+</dialog>
