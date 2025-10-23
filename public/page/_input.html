@@ -1,0 +1,21 @@
+<div class="fc">
+    <div class="fr">
+        <button id="dialog-open-schema">Schema</button>
+        <button id="dialog-open-entity">Entity</button>
+        <button id="dialog-open-attribute">Attribute</button>
+    </div>
+    <div>
+        <textarea
+            name="q"
+            hx-post="/_output"
+            hx-trigger="keyup delay:500ms changed"
+            hx-target="#output-box"
+            hx-swap="innerHTML"
+            hx-include="[name='mode'], [name='q']"
+            cols="60"
+            rows="40"
+            autocapitalize="false"
+            autocomplete="false"
+        >{{ .Fish.Input.Q }}</textarea>
+    </div>
+</div>

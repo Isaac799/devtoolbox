@@ -1,0 +1,52 @@
+<div class="fc">
+
+    <div class="fr">
+        {{- if .Fish.Output.OkayToDownload }}
+        {{ template "_download" . }}
+        <button id="dialog-open-download">Download</button>
+        {{- end }}
+    </div>
+
+    {{- if .Fish.Output.HasErr }}
+        <details
+            open
+            style="color: red;"
+        >
+            <summary>Errors</summary>
+            <div class="scroll-box">
+                <pre>
+        {{- range $index, $sch := .Fish.Output.Schemas }}
+        {{- range $index, $ent := $sch.Entities }}
+        {{- range $index, $attr := $ent.RawAttributes }}
+        {{- range $index, $err := $attr.Err }}{{ $sch.Name }}/{{ $ent.Name }}/{{ $attr.Name }}: {{ $err }}{{- end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+            </pre>
+
+            </div>
+        </details>
+    {{- end }}
+
+    <h3>Postgres</h3>
+
+    {{ range $k, $v := .Fish.Output.PgGen }}
+    <details>
+        <summary> {{ $k.Full }} </summary>
+        <div class="scroll-box">
+            <pre>{{- $v }}</pre>
+        </div>
+    </details>
+    {{ end }}
+
+    <h3>Go</h3>
+
+    {{ range $k, $v := .Fish.Output.GoGen }}
+    <details>
+        <summary> {{ $k.Full }} </summary>
+        <div class="scroll-box">
+            <pre>{{- $v }}</pre>
+        </div>
+    </details>
+    {{ end }}
+</div>
