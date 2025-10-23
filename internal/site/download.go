@@ -15,7 +15,7 @@ import (
 
 // DownloadHandler allows downloading the generated as a zip
 func DownloadHandler(w http.ResponseWriter, r *http.Request) {
-	s := r.FormValue("q")
+	s := r.FormValue("download")
 
 	if len(s) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
