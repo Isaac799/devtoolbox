@@ -30,6 +30,24 @@ const (
 	AttrKindMoney
 )
 
+var _attrKind = map[AttrKind]string{
+	AttrKindNone:      "???",
+	AttrKindReference: "???",
+	AttrKindSerial:    "++",
+	AttrKindInt:       "int",
+	AttrKindChar:      "char",
+	AttrKindString:    "string",
+	AttrKindBit:       "bit",
+	AttrKindBoolean:   "bool",
+	AttrKindDate:      "date",
+	AttrKindTime:      "time",
+	AttrKindTimestamp: "timestamp",
+	AttrKindFloat:     "float",
+	AttrKindReal:      "real",
+	AttrKindDecimal:   "decimal",
+	AttrKindMoney:     "money",
+}
+
 // AttributeRaw is a metric in an entity, like a column in a table
 type AttributeRaw struct {
 	Kind AttrKind
@@ -46,6 +64,74 @@ type AttributeRaw struct {
 	ReferenceTo *Entity
 
 	Validation
+}
+
+// String provides parsable text to generate itself
+func (attr *AttributeRaw) String() string {
+	opts := []string{}
+	if attr.Primary {
+		opts = append(opts, "primary")
+	}
+	if attr.Validation.Required.Valid {
+		opts = append(opts, "required")
+	}
+
+	if len(attr.Validation.Min.String) > 0 || len(attr.Validation.Max.String) > 0 {
+		opts = append(opts, fmt.Sprintf("%s..%s", attr.Validation.Min.String, attr.Validation.Max.String))
+	}
+
+	if len(attr.Unique) > 0 {
+		for _, label := range attr.Unique {
+			s := strings.TrimSpace(label)
+			if len(s) == 0 {
+				continue
+			}
+			opts = append(opts, fmt.Sprintf("unique:%s", s))
+		}
+	}
+	if len(attr.DefaultValue) > 0 {
+		opts = append(opts, fmt.Sprintf("default:%s", attr.DefaultValue))
+	}
+
+	parts := make([]string, 0, 10)
+
+	if attr.ReferenceTo != nil {
+		if len(attr.Alias) > 0 {
+			parts = append(parts,
+				"-",
+				fmt.Sprintf("@%s", attr.ReferenceTo.Name),
+				"as",
+				attr.Alias,
+			)
+		} else {
+			parts = append(parts,
+				"-",
+				fmt.Sprintf("@%s", attr.ReferenceTo.Name),
+			)
+		}
+
+	} else {
+		parts = append(parts,
+			"-",
+			attr.Name,
+			"as",
+			_attrKind[attr.Kind],
+		)
+	}
+
+	if len(opts) > 0 {
+		parts = append(parts,
+			"with",
+			strings.Join(opts, ", "),
+		)
+	}
+
+	trimmed := make([]string, 0, len(parts))
+	for _, s := range parts {
+		trimmed = append(trimmed, strings.TrimSpace(s))
+	}
+
+	return strings.Join(trimmed, " ")
 }
 
 // AppendErr simplifies adding errors

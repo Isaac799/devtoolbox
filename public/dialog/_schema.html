@@ -2,4 +2,24 @@
     <h3>
         Schema
     </h3>
+
+    <p>Schema is a namespace or category to store entities.</p>
+
+    <form
+        hx-post="/make/schema"
+        hx-target="#make-schema"
+        hx-swap="innerText"
+        hx-trigger="keyup delay:500ms changed"
+    >
+        <div>
+            <label for="SchemaName">Name</label>
+            <input
+                type="text"
+                name="SchemaName"
+                id="SchemaName"
+            >
+        </div>
+    </form>
+
+    <pre id="make-schema"></pre>
 </dialog>

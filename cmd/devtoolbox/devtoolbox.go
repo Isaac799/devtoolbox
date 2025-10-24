@@ -72,6 +72,7 @@ func main() {
 	verbose := true
 	mux := pond.CastLines(verbose)
 	mux.HandleFunc("/download", site.DownloadHandler)
+	mux.HandleFunc("/make/{what}", site.Make)
 
 	fmt.Println("gone fishing")
 	http.ListenAndServe(":8080", mux)

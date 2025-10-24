@@ -18,6 +18,11 @@ type Entity struct {
 	ar []*Attribute
 }
 
+// String provides parsable text to generate itself
+func (ent *Entity) String() string {
+	return fmt.Sprintf("## %s", ent.Name)
+}
+
 // Attribute is a attribute discovered curing recursion.
 // Helps with a fuller picture of what an entity is, flattening
 // its references out.

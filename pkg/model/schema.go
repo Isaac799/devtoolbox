@@ -1,5 +1,9 @@
 package model
 
+import (
+	"fmt"
+)
+
 // Schema is the primary categorizations
 type Schema struct {
 	Name     string
@@ -15,4 +19,9 @@ func (sch *Schema) HasErr() bool {
 		}
 	}
 	return false
+}
+
+// String provides parsable text to generate itself
+func (sch *Schema) String() string {
+	return fmt.Sprintf("# %s", sch.Name)
 }
