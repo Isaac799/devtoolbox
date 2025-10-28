@@ -52,16 +52,15 @@ func main() {
 
 	rx := regexp.MustCompile
 
+	store := site.NewClientStore(100)
+
 	stockFish := aquatic.Stock{
-		rx("/"):        {OnCatch: site.IOData},
-		rx("/_output"): {OnCatch: site.IOData},
+		rx("/"): {
+			BeforeCatch: []aquatic.BeforeCatchFn{store.EnsureClient()},
+			OnCatch:     site.OnCatchForGenerate,
+		},
 	}
 	pond.Stock(stockFish)
-
-	pond.OnCatch = func(_ *http.Request) any {
-		fmt.Println("caught a fish")
-		return nil
-	}
 
 	go func() {
 		for err := range pond.OnErr {
@@ -71,7 +70,7 @@ func main() {
 
 	verbose := true
 	mux := pond.CastLines(verbose)
-	mux.HandleFunc("/download", site.DownloadHandler)
+	mux.HandleFunc("/download", store.Download())
 	mux.HandleFunc("/make/{what}", site.Make)
 
 	fmt.Println("gone fishing")

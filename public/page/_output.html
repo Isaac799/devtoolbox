@@ -2,19 +2,26 @@
 
     <div class="fr">
         {{- if .Fish.Output.OkayToDownload }}
-        {{ template "_download" . }}
-        <button id="dialog-open-download">Download</button>
+        <form
+            action="/download"
+            method="post"
+            target="_blank"
+        >
+            <button type="submit">
+                Download
+            </button>
+        </form>
         {{- end }}
     </div>
 
     {{- if .Fish.Output.HasErr }}
-        <details
-            open
-            style="color: red;"
-        >
-            <summary>Errors</summary>
-            <div class="scroll-box">
-                <pre>
+    <details
+        open
+        style="color: red;"
+    >
+        <summary>Errors</summary>
+        <div class="scroll-box">
+            <pre>
         {{- range $index, $sch := .Fish.Output.Schemas }}
         {{- range $index, $ent := $sch.Entities }}
         {{- range $index, $attr := $ent.RawAttributes }}
@@ -24,8 +31,8 @@
         {{- end }}
             </pre>
 
-            </div>
-        </details>
+        </div>
+    </details>
     {{- end }}
 
     <h3>Postgres</h3>

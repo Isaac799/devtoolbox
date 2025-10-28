@@ -1,8 +1,26 @@
 <div class="fc">
     <div class="fr">
-        <button id="dialog-open-schema">Schema</button>
-        <button id="dialog-open-entity">Entity</button>
-        <button id="dialog-open-attribute">Attribute</button>
+        <button
+            hx-post="/_schema"
+            hx-target="body"
+            hx-swap="beforeend"
+        >
+            Schema
+        </button>
+        <button
+            hx-post="/_entity"
+            hx-target="body"
+            hx-swap="beforeend"
+        >
+            Entity
+        </button>
+        <button
+            hx-post="/_attribute"
+            hx-target="body"
+            hx-swap="beforeend"
+        >
+            Attribute
+        </button>
     </div>
     <div>
         <textarea
@@ -11,7 +29,6 @@
             hx-trigger="keyup delay:500ms changed"
             hx-target="#output-box"
             hx-swap="innerHTML"
-            hx-include="[name='mode'], [name='q']"
             cols="60"
             rows="40"
             autocapitalize="false"

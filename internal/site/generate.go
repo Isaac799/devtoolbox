@@ -2,7 +2,7 @@ package site
 
 import (
 	"net/http"
-	"strconv"
+	"sync"
 
 	"github.com/Isaac799/devtoolbox/internal/strgen"
 	"github.com/Isaac799/devtoolbox/internal/strparse"
@@ -34,12 +34,18 @@ type Output struct {
 	HasErr         bool
 }
 
-// Generated is the combined generations for template usage
+// ClientState is the combined generations for template usage
 // on a sardine
-type Generated struct {
-	Input    *Input
-	Output   *Output
-	Examples []Example
+type ClientState struct {
+	mu    *sync.Mutex
+	Input *Input
+}
+
+func newClientState() *ClientState {
+	return &ClientState{
+		mu:    &sync.Mutex{},
+		Input: &Input{},
+	}
 }
 
 // Example is preset to show functionality
@@ -59,29 +65,6 @@ func defaultExamples() []Example {
 - id as ++
 - name as str with 0..3`,
 		},
-	}
-}
-
-func input(r *http.Request) *Input {
-	query := r.FormValue("q")
-	example := r.FormValue("example")
-
-	if len(example) > 0 {
-		query = example
-	}
-
-	mode := InputModeText
-	modeStr := r.FormValue("mode")
-	modeInt, err := strconv.Atoi(modeStr)
-	if err == nil {
-		if modeInt == int(InputModeGraphical) {
-			mode = InputModeGraphical
-		}
-	}
-
-	return &Input{
-		Q:    query,
-		Mode: mode,
 	}
 }
 
@@ -114,28 +97,41 @@ func output(input *Input) (*Output, error) {
 	}, nil
 }
 
-// IOData provides data for template rendering
-func IOData(r *http.Request) any {
-	in := input(r)
-	out, err := output(in)
+type RenderState struct {
+	Input    *Input
+	Output   *Output
+	Examples []Example
+}
 
-	if err != nil {
-		out := Output{
-			Schemas: make([]*model.Schema, 0),
-			PgGen:   make(map[strgen.FileName]string),
-			GoGen:   make(map[strgen.FileName]string),
-		}
-
-		return Generated{
-			Input:    in,
-			Output:   &out,
-			Examples: defaultExamples(),
-		}
-	}
-
-	return Generated{
-		Input:    in,
-		Output:   out,
+func renderState(client *Client) RenderState {
+	return RenderState{
+		Input:    client.State.Input,
+		Output:   &Output{},
 		Examples: defaultExamples(),
 	}
+}
+
+// OnCatchForGenerate is the on catch fn for generating
+// an output
+func OnCatchForGenerate(r *http.Request) any {
+	client, ok := r.Context().Value(_cid).(*Client)
+	if !ok {
+		return renderState(nil)
+	}
+
+	r.ParseForm()
+
+	client.deltas(
+		r,
+		deltaQ, deltaMode, deltaExample,
+	)
+
+	out, err := output(client.State.Input)
+	if err != nil {
+		return renderState(client)
+	}
+
+	state := renderState(client)
+	state.Output = out
+	return state
 }

@@ -3,7 +3,11 @@
         Settings
     </h3>
 
-   <div class="fc">
+    <form
+        hx-post="/"
+        hx-target="body"
+        class="fc"
+    >
         <fieldset>
             <legend>Input Mode:</legend>
             <div>
@@ -29,13 +33,7 @@
         </fieldset>
 
         <div class="fr">
-            <button
-                hx-post="/"
-                hx-boost="true"
-                hx-trigger="click"
-                hx-target="body"
-                hx-include="[name='mode'], [name='q']"
-            >
+            <button type="submit">
                 Save Preferences
             </button>
             <form method="dialog">
@@ -44,5 +42,5 @@
                 </button>
             </form>
         </div>
-   </div>
+    </form>
 </dialog>

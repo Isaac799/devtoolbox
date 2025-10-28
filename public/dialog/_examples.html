@@ -7,17 +7,18 @@
     </p>
     <div class="fr">
         {{- range $index, $element := .Fish.Examples }}
-        <button
+        <form
             hx-post="/"
-            hx-boost="true"
-            hx-trigger="click"
             hx-target="body"
-            hx-include="[name='mode'], [name='q']"
-            name="example"
-            value="{{ $element.Value }}"
         >
-            {{- $element.Label }}
-        </button>
+            <button
+                type="submit"
+                name="example"
+                value="{{ $element.Value }}"
+            >
+                {{- $element.Label }}
+            </button>
+        </form>
         {{- end }}
         <form method="dialog">
             <button>
