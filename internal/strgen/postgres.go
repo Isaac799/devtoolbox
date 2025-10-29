@@ -129,7 +129,12 @@ func PostgresSetup(schemas []*model.Schema) (map[FileName]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		m[newFileName("postgres", "tables.sql")] = sb.String()
+
+		s := sb.String()
+
+		if len(s) > 0 {
+			m[newFileName("postgres", "tables.sql")] = s
+		}
 	}
 	return m, nil
 }

@@ -1,5 +1,5 @@
 {{ define "_output" }}
-<div class="fc">
+<div class="fc fade-me-in">
 
     <div class="fr">
         {{- if .Output.OkayToDownload }}
@@ -8,6 +8,7 @@
             method="post"
             target="_blank"
         >
+            <input type="hidden" name="X-CSRF-TOKEN" value="{{ .Client.CSRF }}">
             <button type="submit">
                 Download
             </button>
@@ -40,7 +41,7 @@
 
     {{ range $k, $v := .Output.PgGen }}
     <details>
-        <summary> {{ $k.Full }} </summary>
+        <summary class="file-name"> {{ $k.Full }} </summary>
         <div class="scroll-box">
             <pre>{{- $v }}</pre>
         </div>
@@ -51,7 +52,7 @@
 
     {{ range $k, $v := .Output.GoGen }}
     <details>
-        <summary> {{ $k.Full }} </summary>
+        <summary class="file-name"> {{ $k.Full }} </summary>
         <div class="scroll-box">
             <pre>{{- $v }}</pre>
         </div>

@@ -11,8 +11,8 @@ import (
 
 // HandlerPageHome handles the home page.
 // Located in /public/page
-// Has access to client information
-// Has access to islands
+// No access to client information
+// Limit access to public islands
 func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request) {
 	var (
 		wd, err = os.Getwd()
@@ -24,6 +24,15 @@ func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	client, _ := store.clientInfo(w, r)
+	if client == nil {
+		client = NewClient()
+		store.preserve(client)
+		client.setSessionCookie(w)
+	}
+
+	client.setSessionCookie(w)
+
 	{
 		s := filepath.Join(wd, "public", "page", "home.html")
 		tmpl, err = template.ParseFiles(s)
@@ -34,7 +43,7 @@ func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request
 		}
 	}
 	{
-		s := filepath.Join(wd, "public", "island", "*.html")
+		s := filepath.Join(wd, "public", "island", "*.pub.html")
 		tmpl, err = tmpl.ParseGlob(s)
 		if err != nil {
 			fmt.Println(err)
@@ -43,31 +52,15 @@ func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	client := store.resume(w, r)
-	r.ParseForm()
-
-	client.deltas(
-		r,
-		deltaQ, deltaMode, deltaExample,
-	)
-
-	out, err := output(&client.State.Input)
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	state := renderState(client)
-	state.Output = out
-
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
-	tmpl.Execute(w, state)
+	tmpl.Execute(w, client.CSRF)
 }
 
 // HandlerPageHelp handles the help page
 // Located in /public/page
-// Has access to islands
+// No access to client information
+// Limit access to public islands
 func (store *ClientStore) HandlerPageHelp(w http.ResponseWriter, _ *http.Request) {
 	var (
 		wd, err = os.Getwd()
@@ -89,7 +82,7 @@ func (store *ClientStore) HandlerPageHelp(w http.ResponseWriter, _ *http.Request
 		}
 	}
 	{
-		s := filepath.Join(wd, "public", "island", "*.html")
+		s := filepath.Join(wd, "public", "island", "*.pub.html")
 		tmpl, err = tmpl.ParseGlob(s)
 		if err != nil {
 			fmt.Println(err)
@@ -98,6 +91,7 @@ func (store *ClientStore) HandlerPageHelp(w http.ResponseWriter, _ *http.Request
 		}
 	}
 
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
 	tmpl.Execute(w, nil)
 }
@@ -118,10 +112,19 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 	}
 
 	acceptable := []string{"_attribute", "_entity", "_examples", "_schema", "_settings"}
-
 	what := r.PathValue("what")
 	if !slices.Contains(acceptable, what) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
+
+	client, csrfOk := store.clientInfo(w, r)
+	if client == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if !csrfOk {
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
@@ -144,7 +147,6 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	client := store.resume(w, r)
 	r.ParseForm()
 
 	client.deltas(
@@ -152,18 +154,16 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 		deltaQ, deltaMode, deltaExample,
 	)
 
-	out, err := output(&client.State.Input)
+	templateData, err := client.templateData()
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	state := renderState(client)
-	state.Output = out
-
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
-	tmpl.ExecuteTemplate(w, what, state)
+	tmpl.ExecuteTemplate(w, what, templateData)
 }
 
 // HandlerIsland handles the islands
@@ -180,10 +180,19 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 	}
 
 	acceptable := []string{"_input", "_output", "_nav"}
-
 	what := r.PathValue("what")
 	if !slices.Contains(acceptable, what) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
+
+	client, csrfOk := store.clientInfo(w, r)
+	if client == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if !csrfOk {
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
@@ -195,7 +204,6 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	client := store.resume(w, r)
 	r.ParseForm()
 
 	client.deltas(
@@ -203,16 +211,37 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 		deltaQ, deltaMode, deltaExample,
 	)
 
-	out, err := output(&client.State.Input)
+	templateData, err := client.templateData()
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	state := renderState(client)
-	state.Output = out
-
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
-	tmpl.ExecuteTemplate(w, what, state)
+	tmpl.ExecuteTemplate(w, what, templateData)
+}
+
+// HandlerDelta handles changes to a clients state and refreshes the entire page
+// Has access to client information
+func (store *ClientStore) HandlerDelta(w http.ResponseWriter, r *http.Request) {
+	client, csrfOk := store.clientInfo(w, r)
+	if client == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if !csrfOk {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	r.ParseForm()
+
+	client.deltas(
+		r,
+		deltaQ, deltaMode, deltaExample,
+	)
+
+	store.HandlerPageHome(w, r)
 }

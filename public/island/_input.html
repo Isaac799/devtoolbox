@@ -1,22 +1,22 @@
 {{ define "_input" }}
-<div class="fc">
+<div class="fc fade-me-in">
     <div class="fr">
         <button
-            hx-post="/dialog/_schema"
+            hx-get="/dialog/_schema"
             hx-target="body"
             hx-swap="beforeend"
         >
             Schema
         </button>
         <button
-            hx-post="/dialog/_entity"
+            hx-get="/dialog/_entity"
             hx-target="body"
             hx-swap="beforeend"
         >
             Entity
         </button>
         <button
-            hx-post="/dialog/_attribute"
+            hx-get="/dialog/_attribute"
             hx-target="body"
             hx-swap="beforeend"
         >
@@ -34,7 +34,7 @@
             rows="40"
             autocapitalize="false"
             autocomplete="false"
-        >{{ .Input.Q }}</textarea>
+        >{{ .Client.Input.Q }}</textarea>
     </div>
 </div>
 {{ end }}

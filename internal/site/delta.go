@@ -15,9 +15,7 @@ var deltaQ = delta(func(r *http.Request, c *Client) {
 		return
 	}
 
-	c.State.mu.Lock()
-	defer c.State.mu.Unlock()
-	c.State.Input.Q = r.FormValue(k)
+	c.Input.Q = r.FormValue(k)
 })
 
 var deltaMode = delta(func(r *http.Request, c *Client) {
@@ -36,9 +34,7 @@ var deltaMode = delta(func(r *http.Request, c *Client) {
 		}
 	}
 
-	c.State.mu.Lock()
-	defer c.State.mu.Unlock()
-	c.State.Input.Mode = mode
+	c.Input.Mode = mode
 })
 
 var deltaExample = delta(func(r *http.Request, c *Client) {
@@ -48,7 +44,5 @@ var deltaExample = delta(func(r *http.Request, c *Client) {
 		return
 	}
 
-	c.State.mu.Lock()
-	defer c.State.mu.Unlock()
-	c.State.Input.Q = r.FormValue(k)
+	c.Input.Q = r.FormValue(k)
 })

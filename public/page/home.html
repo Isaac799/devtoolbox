@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html
+    lang="en"
+    hx-headers='{"X-CSRF-TOKEN": "{{ . }}"}'
+>
 
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/public/asset/style/dialog.css">
     <link rel="stylesheet" href="/public/asset/style/style.css">
     <link rel="stylesheet" href="/public/asset/font/material-icons.css">
@@ -14,6 +15,7 @@
     <link rel="stylesheet" href="/public/asset/font/red-hat-display.css">
     <script src="/public/asset/script/dialog.js"></script>
     <script src="/public/asset/script/htmlx.js"></script>
+    
     <title>Home</title>
 </head>
 
@@ -30,14 +32,14 @@
         <div class="fc">
             <div class="fr">
                 <button
-                    hx-post="/dialog/_settings"
+                    hx-get="/dialog/_settings"
                     hx-target="body"
                     hx-swap="beforeend"
                 >
                     Settings
                 </button>
                 <button
-                    hx-post="/dialog/_examples"
+                    hx-get="/dialog/_examples"
                     hx-target="body"
                     hx-swap="beforeend"
                 >
@@ -46,28 +48,23 @@
             </div>
 
             <div class="fr">
-                <div>
-                    {{ template "_input" . }}
-                </div>
+                <div
+                    hx-get="/island/_input"
+                    hx-trigger="load"
+                    hx-swap="outerHTML"
+                ></div>
 
                 <!-- targeted by input template -->
                 <div id="output-box">
-                    {{ template "_output" . }}
+                    <div
+                        hx-get="/island/_output"
+                        hx-trigger="load"
+                        hx-swap="outerHTML"
+                    ></div>
                 </div>
             </div>
         </div>
     </main>
-
-    <footer>
-        <p>
-            Source not public (for now). This is a side project over several years, with varying degrees of source
-            control.
-            I want to clean my room before showing it to people.
-        </p>
-        <p>
-            Here is my profile on <a href="https://github.com/Isaac799">GitHub</a> though.
-        </p>
-    </footer>
 
 </body>
 

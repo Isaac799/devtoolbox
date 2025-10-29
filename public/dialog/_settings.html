@@ -5,7 +5,7 @@
     </h3>
 
     <form
-        hx-post="/"
+        hx-post="/delta"
         hx-target="body"
         class="fc"
     >
@@ -17,7 +17,7 @@
                     name="mode"
                     id="mode-text"
                     value="1"
-                    {{ if eq .Input.Mode 1 }}checked{{ end }}
+                    {{ if eq .Client.Input.Mode 1 }}checked{{ end }}
                 />
                 <label for="mode-text">Text Mode</label>
             </div>
@@ -27,7 +27,7 @@
                     name="mode"
                     id="mode-graphical"
                     value="2"
-                    {{ if eq .Input.Mode 2 }}checked{{ end }}
+                    {{ if eq .Client.Input.Mode 2 }}checked{{ end }}
                 />
                 <label for="mode-graphical">Graphical Mode</label>
             </div>

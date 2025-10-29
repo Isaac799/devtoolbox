@@ -29,6 +29,7 @@ func main() {
 	mux.HandleFunc("/island/{what}", store.HandlerIsland)
 	mux.HandleFunc("/download", store.Download())
 	mux.HandleFunc("/help", store.HandlerPageHelp)
+	mux.HandleFunc("/delta", store.HandlerDelta)
 	mux.HandleFunc("/home", store.HandlerPageHome)
 	mux.HandleFunc("/make/{what}", site.Make)
 

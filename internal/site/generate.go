@@ -1,8 +1,6 @@
 package site
 
 import (
-	"sync"
-
 	"github.com/Isaac799/devtoolbox/internal/strgen"
 	"github.com/Isaac799/devtoolbox/internal/strparse"
 	"github.com/Isaac799/devtoolbox/pkg/model"
@@ -31,21 +29,6 @@ type Output struct {
 	PgGen          map[strgen.FileName]string
 	OkayToDownload bool
 	HasErr         bool
-}
-
-// ClientState is the combined generations for template usage
-// on a sardine
-type ClientState struct {
-	// mutex protects below
-	mu    sync.Mutex
-	Input Input
-}
-
-func newClientState() ClientState {
-	return ClientState{
-		mu:    sync.Mutex{},
-		Input: Input{},
-	}
 }
 
 // Example is preset to show functionality
@@ -99,15 +82,20 @@ func output(input *Input) (*Output, error) {
 
 // TemplateData is the structure used for most templates
 type TemplateData struct {
-	Input    *Input
+	Client   *Client
 	Output   *Output
 	Examples []Example
 }
 
-func renderState(client *Client) TemplateData {
-	return TemplateData{
-		Input:    &client.State.Input,
-		Output:   &Output{},
-		Examples: defaultExamples(),
+func (client *Client) templateData() (*TemplateData, error) {
+	out, err := output(&client.Input)
+	if err != nil {
+		return nil, err
 	}
+
+	return &TemplateData{
+		Client:   client,
+		Output:   out,
+		Examples: defaultExamples(),
+	}, nil
 }

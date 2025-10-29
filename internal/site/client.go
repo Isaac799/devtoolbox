@@ -25,12 +25,13 @@ var (
 
 // Client is my way of tracking state server side
 type Client struct {
-	ID    string
-	State ClientState
+	ID   string
+	CSRF string
 
 	// mutex protects below
 	mu     sync.Mutex
 	Expire time.Time
+	Input  Input
 }
 
 func (c *Client) extendLife() {
@@ -38,6 +39,19 @@ func (c *Client) extendLife() {
 	defer c.mu.Unlock()
 
 	c.Expire = time.Now().Add(_clientTTL)
+}
+
+func (c *Client) setSessionCookie(w http.ResponseWriter) {
+	c.extendLife()
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     string(_cid),
+		Value:    c.ID,
+		Expires:  time.Now().Add(_clientTTL),
+		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Path:     "/",
+	})
 }
 
 func (c *Client) deltas(r *http.Request, mods ...delta) {
@@ -53,7 +67,8 @@ func (c *Client) deltas(r *http.Request, mods ...delta) {
 func NewClient() *Client {
 	return &Client{
 		ID:    rand.Text(),
-		State: newClientState(),
+		CSRF:  rand.Text(),
+		Input: Input{},
 	}
 }
 
@@ -83,13 +98,25 @@ func (store *ClientStore) preserve(c *Client) {
 	store.clients = append(store.clients, c)
 }
 
-func (store *ClientStore) resume(w http.ResponseWriter, r *http.Request) *Client {
+// clientInfo provides a clientInfo and if the csrf matched
+func (store *ClientStore) clientInfo(w http.ResponseWriter, r *http.Request) (*Client, bool) {
 	store.removeExpired()
 
 	var (
 		cookie, cookieErr = r.Cookie(string(_cid))
+		csrf              = r.Header.Get("X-CSRF-TOKEN")
 		client            *Client
 	)
+
+	// allow forms to include csrf, mainly for downloads.
+	// most of the time it will come from the headers though
+	if len(csrf) == 0 {
+		r.ParseForm()
+		s := r.FormValue("X-CSRF-TOKEN")
+		if len(s) > 0 {
+			csrf = s
+		}
+	}
 
 	if cookieErr == nil {
 		for _, e := range store.clients {
@@ -105,22 +132,17 @@ func (store *ClientStore) resume(w http.ResponseWriter, r *http.Request) *Client
 	}
 
 	if client == nil {
-		client = NewClient()
-		store.preserve(client)
+		return nil, false
 	}
 
-	client.extendLife()
+	csrfOk := client.CSRF == csrf
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     string(_cid),
-		Value:    client.ID,
-		Expires:  time.Now().Add(_clientTTL),
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Path:     "/",
-	})
+	if csrfOk {
+		client.extendLife()
+		client.setSessionCookie(w)
+	}
 
-	return client
+	return client, csrfOk
 }
 
 func (store *ClientStore) removeExpired() {
@@ -143,16 +165,17 @@ func (store *ClientStore) removeExpired() {
 // Download allows downloading the generated as a zip
 func (store *ClientStore) Download() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s := r.FormValue("download")
-
-		client := store.resume(w, r)
-
-		schemas := strparse.Raw(client.State.Input.Q)
-
-		if len(s) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
+		client, csrfOk := store.clientInfo(w, r)
+		if client == nil {
+			w.WriteHeader(http.StatusNotFound)
 			return
 		}
+		if !csrfOk {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		schemas := strparse.Raw(client.Input.Q)
 
 		if len(schemas) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
