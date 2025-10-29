@@ -2,19 +2,20 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-}
-
-p,
-code,
-button,
-body {
   font-size: 16px;
+  font-family: "red-hat-display", sans-serif;
 }
 
 pre,
-textarea {
-  font-size: 12px;
+textarea,
+code,
+.file-name {
+  font-size: 13px;
+  font-family: "jetbrains", monospace;
+}
+
+.file-name {
+  color: blue;
 }
 
 main,
@@ -24,15 +25,6 @@ footer {
 
 header {
   padding: 0 1rem 0 1rem;
-}
-
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-size: 16px;
-  font-family: Roboto, Verdana, Geneva, Tahoma, sans-serif;
-  background-color: white;
 }
 
 .p1 {
@@ -124,4 +116,12 @@ button:has(.icons) {
 
 button:hover:not(:disabled) {
   cursor: pointer;
+}
+
+.fade-me-in.htmx-added {
+  opacity: 0;
+}
+.fade-me-in {
+  opacity: 1;
+  transition: opacity 250ms ease-out;
 }
