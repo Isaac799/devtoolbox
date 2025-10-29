@@ -66,9 +66,12 @@ func (c *Client) deltas(r *http.Request, mods ...delta) {
 // NewClient makes a new client
 func NewClient() *Client {
 	return &Client{
-		ID:    rand.Text(),
-		CSRF:  rand.Text(),
-		Input: Input{},
+		ID:   rand.Text(),
+		CSRF: rand.Text(),
+		Input: Input{
+			Mode: InputModeGraphical,
+			Q:    defaultExamples()[0].Value,
+		},
 	}
 }
 

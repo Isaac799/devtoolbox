@@ -1,0 +1,104 @@
+.schema {
+  transition: all ease-in-out 0.25s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0 0.5rem 0.5rem;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.schema:has(.schema-title:hover) {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+
+.schema-title {
+  font-size: 1.5rem;
+}
+
+.schema-title:hover {
+  cursor: pointer;
+}
+
+.entity {
+  transition: all ease-in-out 0.25s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0 0.5rem 0.5rem;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.entity:has(.entity-title:hover) {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+
+.entity-title {
+  font-size: 1.25rem;
+}
+
+.entity-title:hover {
+  cursor: pointer;
+}
+
+.attribute {
+  padding: 0 1rem 0 0.35rem;
+  transition: all ease-in-out 0.25s;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  background-color: white;
+}
+
+.attribute:hover {
+  cursor: pointer;
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+
+.attr-icon-0:after {
+  content: "question";
+}
+.attr-icon-1:after {
+  content: "quick_reference_all";
+}
+.attr-icon-2:after {
+  content: "123";
+}
+.attr-icon-3:after {
+  content: "tag";
+}
+.attr-icon-4:after {
+  content: "text_fields";
+}
+.attr-icon-5:after {
+  content: "text_fields";
+}
+.attr-icon-6:after {
+  content: "timer_10";
+}
+.attr-icon-7:after {
+  content: "rule";
+}
+.attr-icon-8:after {
+  content: "calendar_today";
+}
+.attr-icon-9:after {
+  content: "schedule";
+}
+.attr-icon-10:after {
+  content: "calendar_clock";
+}
+.attr-icon-11:after {
+  content: "speed_1_5";
+}
+.attr-icon-12:after {
+  content: "speed_1_5";
+}
+.attr-icon-13:after {
+  content: "speed_1_5";
+}
+.attr-icon-14:after {
+  content: "attach_money";
+}

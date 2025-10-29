@@ -1,4 +1,6 @@
 {{ define "_input" }}
+{{ if eq .Client.Input.Mode 1 }}
+
 <div class="fc fade-me-in">
     <div class="fr">
         <button
@@ -37,4 +39,33 @@
         >{{ .Client.Input.Q }}</textarea>
     </div>
 </div>
+
+{{ else }}
+
+<div class="fc fade-me-in">
+    {{ range $si, $schema := .Output.Schemas }}
+    <div class="schema">
+        {{ if ne $si 0 }}{{ end }}
+        <span class="schema-title">
+            {{ $schema.Name }}
+        </span>
+        {{ range $ei, $entity := $schema.Entities }}
+        <div class="entity">
+            {{ if ne $ei 0 }}{{ end }}
+            <span class="entity-title">
+                {{ $entity.Name }}
+            </span>
+            {{ range $ai, $attr := $entity.RawAttributes }}
+            <div class="attribute">
+                {{ if ne $ai 0 }}{{ end }}
+                <i class="material-icons attr-icon-{{ $attr.Kind }}"></i>
+                {{ $attr.Name }}
+            </div>
+            {{- end }}
+        </div>
+        {{- end }}
+    </div>
+    {{- end }}
+</div>
+{{ end }}
 {{ end }}
