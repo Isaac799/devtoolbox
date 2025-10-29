@@ -72,7 +72,7 @@ func (attr *AttributeRaw) String() string {
 	if attr.Primary {
 		opts = append(opts, "primary")
 	}
-	if attr.Validation.Required.Valid {
+	if attr.Validation.Required.Bool {
 		opts = append(opts, "required")
 	}
 
