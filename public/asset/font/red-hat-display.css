@@ -2,5 +2,5 @@
   font-family: "red-hat-display";
   font-style: normal;
   font-weight: 400;
-  src: url("/public/asset/font/red-hat-display.ttf") format("ttf");
+  src: url("/public/asset/font/red-hat-display.ttf") format("truetype");
 }
