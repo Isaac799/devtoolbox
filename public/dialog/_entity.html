@@ -1,0 +1,27 @@
+{{ define "_entity" }}
+<dialog id="dialog-entity">
+    <h3>
+        Entity
+    </h3>
+
+    <p>Entity should be a singular thing. A table / blueprint.</p>
+
+    <form
+        hx-post="/make/entity"
+        hx-target="#make-entity"
+        hx-swap="innerText"
+        hx-trigger="keyup delay:500ms changed"
+    >
+        <div>
+            <label for="EntityName">Name</label>
+            <input
+                type="text"
+                name="EntityName"
+                id="EntityName"
+            >
+        </div>
+    </form>
+
+    <pre id="make-entity"></pre>
+</dialog>
+{{ end }}

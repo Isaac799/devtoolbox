@@ -1,20 +1,30 @@
 {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "ng serve",
-            "type": "chrome",
+            "name": "Launch Package",
+            "type": "go",
             "request": "launch",
-            "preLaunchTask": "npm: start",
-            "url": "http://localhost:4200/"
+            "mode": "auto",
+            "args": [ "--debug"],
+            "program": "${workspaceFolder}/cmd/devtoolbox"
         },
         {
-            "name": "ng test",
-            "type": "chrome",
+            "name": "Test Str Gen",
+            "type": "go",
             "request": "launch",
-            "preLaunchTask": "npm: test",
-            "url": "http://localhost:9876/debug.html"
-        }
+            "mode": "test",
+            "program": "${workspaceFolder}/internal/strgen"
+        },
+        {
+            "name": "Test Str Parse",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/internal/strparse"
+        },
     ]
 }

@@ -1,0 +1,40 @@
+{{ define "_input" }}
+<div class="fc">
+    <div class="fr">
+        <button
+            hx-post="/dialog/_schema"
+            hx-target="body"
+            hx-swap="beforeend"
+        >
+            Schema
+        </button>
+        <button
+            hx-post="/dialog/_entity"
+            hx-target="body"
+            hx-swap="beforeend"
+        >
+            Entity
+        </button>
+        <button
+            hx-post="/dialog/_attribute"
+            hx-target="body"
+            hx-swap="beforeend"
+        >
+            Attribute
+        </button>
+    </div>
+    <div>
+        <textarea
+            name="q"
+            hx-post="/island/_output"
+            hx-trigger="keyup delay:500ms changed"
+            hx-target="#output-box"
+            hx-swap="innerHTML"
+            cols="60"
+            rows="40"
+            autocapitalize="false"
+            autocomplete="false"
+        >{{ .Input.Q }}</textarea>
+    </div>
+</div>
+{{ end }}

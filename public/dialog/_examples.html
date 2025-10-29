@@ -1,0 +1,31 @@
+{{ define "_examples" }}
+<dialog id="dialog-examples">
+    <h3>
+        Examples
+    </h3>
+    <p>
+        Examples REPLACE existing entry.
+    </p>
+    <div class="fr">
+        {{- range $index, $element := .Examples }}
+        <form
+            hx-post="/"
+            hx-target="body"
+        >
+            <button
+                type="submit"
+                name="example"
+                value="{{ $element.Value }}"
+            >
+                {{- $element.Label }}
+            </button>
+        </form>
+        {{- end }}
+        <form method="dialog">
+            <button>
+                Close
+            </button>
+        </form>
+    </div>
+</dialog>
+{{ end }}

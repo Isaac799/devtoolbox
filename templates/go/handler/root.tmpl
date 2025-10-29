@@ -1,0 +1,24 @@
+package {{ renderCamel .Name }}
+
+import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+var (
+	ErrBadParam = errors.New("unacceptable parameter")
+)
+
+func NewErrBadParam(s string) error {
+	return fmt.Errorf("%w: %s", ErrBadParam, s)
+}
+
+{{- range $index, $element := .Entities }}
+{{ template "handler" $element }}
+{{- end }}

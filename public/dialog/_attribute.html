@@ -1,0 +1,138 @@
+{{ define "_attribute" }}
+<dialog id="dialog-attribute">
+    <h3>
+        Attribute
+    </h3>
+
+    <p>Attribute is a property or single descriptor of an entity.</p>
+
+    <form
+        hx-post="/make/attribute"
+        hx-target="#make-attribute"
+        hx-swap="innerText"
+        hx-trigger="change delay:500ms, keyup delay:500ms"
+        class="fc"
+    >
+        <div class="fc">
+            <div class="fr">
+                <div>
+                    <label for="AttributeName">Name</label>
+                    <input
+                        type="text"
+                        name="AttributeName"
+                        id="AttributeName"
+                    >
+                </div>
+                <div>
+                    <label for="AttributeKind">Kind</label>
+                    <select
+                        name="AttributeKind"
+                        id="AttributeKind"
+                    >
+                        <option value="0">None</option>
+                        <option value="1">Reference</option>
+                        <option value="2">Serial</option>
+                        <option value="3">Int</option>
+                        <option value="4">Char</option>
+                        <option value="5">String</option>
+                        <option value="6">Bit</option>
+                        <option value="7">Boolean</option>
+                        <option value="8">Date</option>
+                        <option value="9">Time</option>
+                        <option value="10">Timestamp</option>
+                        <option value="11">Float</option>
+                        <option value="12">Real</option>
+                        <option value="13">Decimal</option>
+                        <option value="14">Money</option>
+                    </select>
+                </div>
+            </div>
+
+            <span>
+                OR
+            </span>
+
+            <div class="fr">
+                <div>
+                    <label for="AttributeReferenceTo">Reference To</label>
+                    <input
+                        type="text"
+                        name="AttributeReferenceTo"
+                        id="AttributeReferenceTo"
+                    >
+                </div>
+                <div>
+                    <label for="AttributeAlias">Alias</label>
+                    <input
+                        type="text"
+                        name="AttributeAlias"
+                        id="AttributeAlias"
+                    >
+                </div>
+            </div>
+        </div>
+
+        <span>
+            WITH
+        </span>
+
+        <div class="fr">
+            <div>
+                <label for="AttributeRequired">Is Required</label>
+                <input
+                    type="checkbox"
+                    value="true"
+                    name="AttributeRequired"
+                    id="AttributeRequired"
+                >
+            </div>
+            <div>
+                <label for="AttributePrimary">Is Primary</label>
+                <input
+                    type="checkbox"
+                    value="true"
+                    name="AttributePrimary"
+                    id="AttributePrimary"
+                >
+            </div>
+        </div>
+        <div>
+            <label for="AttributeUnique">Unique Labels (csv)</label>
+            <input
+                type="text"
+                name="AttributeUnique"
+                id="AttributeUnique"
+            >
+        </div>
+        <div>
+            <label for="AttributeDefault">Default Value</label>
+            <input
+                type="text"
+                name="AttributeDefault"
+                id="AttributeDefault"
+            >
+        </div>
+        <div class="fr">
+            <div>
+                <label for="AttributeMin">Min</label>
+                <input
+                    type="text"
+                    name="AttributeMin"
+                    id="AttributeMin"
+                >
+            </div>
+            <div>
+                <label for="AttributeMax">Max</label>
+                <input
+                    type="text"
+                    name="AttributeMax"
+                    id="AttributeMax"
+                >
+            </div>
+        </div>
+    </form>
+
+    <pre id="make-attribute"></pre>
+</dialog>
+{{ end }}
+

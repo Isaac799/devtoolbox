@@ -1,0 +1,61 @@
+{{ define "_output" }}
+<div class="fc">
+
+    <div class="fr">
+        {{- if .Output.OkayToDownload }}
+        <form
+            action="/download"
+            method="post"
+            target="_blank"
+        >
+            <button type="submit">
+                Download
+            </button>
+        </form>
+        {{- end }}
+    </div>
+
+    {{- if .Output.HasErr }}
+    <details
+        open
+        style="color: red;"
+    >
+        <summary>Errors</summary>
+        <div class="scroll-box">
+            <pre>
+        {{- range $index, $sch := .Output.Schemas }}
+        {{- range $index, $ent := $sch.Entities }}
+        {{- range $index, $attr := $ent.RawAttributes }}
+        {{- range $index, $err := $attr.Err }}{{ $sch.Name }}/{{ $ent.Name }}/{{ $attr.Name }}: {{ $err }}{{- end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+            </pre>
+
+        </div>
+    </details>
+    {{- end }}
+
+    <h3>Postgres</h3>
+
+    {{ range $k, $v := .Output.PgGen }}
+    <details>
+        <summary> {{ $k.Full }} </summary>
+        <div class="scroll-box">
+            <pre>{{- $v }}</pre>
+        </div>
+    </details>
+    {{ end }}
+
+    <h3>Go</h3>
+
+    {{ range $k, $v := .Output.GoGen }}
+    <details>
+        <summary> {{ $k.Full }} </summary>
+        <div class="scroll-box">
+            <pre>{{- $v }}</pre>
+        </div>
+    </details>
+    {{ end }}
+</div>
+{{ end }}

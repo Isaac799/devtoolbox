@@ -1,0 +1,190 @@
+{{- block "primaryFromRequest" . }}
+	{{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }}, err := handler.primaryFromRequest(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+{{- end }}
+{{- block "createHandler" . }}
+func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Request) {
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	var {{ renderCamel .Name }} {{ renderPascal .Name }}
+	err = json.Unmarshal(b, &{{ renderCamel .Name }})
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = handler.store.Create(&{{ renderCamel .Name }})
+	if err != nil {
+		{{- if $.HasValidity }}
+		if errors.Is(err, ErrValidation) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		{{- else }}
+		// NOTE: lack of validity err check
+		{{- end }}
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	b, err = json.Marshal({{ renderCamel .Name }})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(b)
+}
+{{- end }}
+{{- block "readHandler" . }}
+func (handler *{{ renderHandlerName . }}) Get(w http.ResponseWriter, r *http.Request) {
+	{{- template "primaryFromRequest" . }}
+	one, err := handler.store.Read({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	b, err := json.Marshal(one)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(b)
+}
+{{- end }}
+{{- block "readManyHandler" . }}
+func (handler *{{ renderHandlerName . }}) GetMany(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.FormValue("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	offsetStr := r.FormValue("offset")
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	many, err := handler.store.ReadMany(limit, offset)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	b, err := json.Marshal(many)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(b)
+}
+{{- end }}
+{{- block "updateHandler" . }}
+func (handler *{{ renderHandlerName . }}) Put(w http.ResponseWriter, r *http.Request) {
+	{{- template "primaryFromRequest" . }}
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	var {{ renderCamel .Name }} {{ renderPascal .Name }}
+	err = json.Unmarshal(b, &{{ renderCamel .Name }})
+	if err != nil {
+		{{- if $.HasValidity }}
+		if errors.Is(err, ErrValidation) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		{{- else }}
+		// NOTE: lack of validity err check 
+		{{- end }}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	n, err := handler.store.Update({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }}, &{{ renderCamel .Name }})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprint(w, n)
+}
+{{- end }}
+{{- block "deleteHandler" . }}
+func (handler *{{ renderHandlerName . }}) Delete(w http.ResponseWriter, r *http.Request) {
+	{{- template "primaryFromRequest" . }}
+	n, err := handler.store.Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprint(w, n)
+}
+{{- end }}
+{{- block "attachMux" . }}
+func (handler *{{ renderHandlerName . }}) Register(mux *http.ServeMux) {
+	mux.HandleFunc("/api/{{ renderKebab .Name }}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handler.Post(w, r)
+		case http.MethodGet:
+			handler.GetMany(w, r)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/api/{{ renderKebab .Name }}/{{ renderPathValues . }}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handler.Get(w, r)
+		case http.MethodPut:
+			handler.Put(w, r)
+		case http.MethodDelete:
+			handler.Delete(w, r)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
+}
+{{- end }}
+{{- block "gatherPrimaryFn" . }}
+func (handler *{{ renderHandlerName . }}) primaryFromRequest(r *http.Request) ({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoKind $element }}{{ end }}, error) {
+	{{- range $index, $element := .Primary }}
+		{{- template "parseprimary" $element }}
+	{{- end }}
+	return {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel .Name }}{{ end }}, nil
+}
+{{- end }}
+{{- define "handler" }}
+type {{ renderHandlerName . }} struct {
+	store *{{ renderStoreName . }}
+}
+
+func New{{ renderHandlerName . }}(db *sql.DB) *{{ renderHandlerName . }} {
+	return &{{ renderHandlerName . }}{store: New{{ renderStoreName . }}(db)}
+}
+
+{{- if ne .HasPrimary true }}
+
+// NOTICE: {{ renderPascal .Name }} has no primary key, cannot generate CRUD handlers for {{ renderHandlerName . }}
+{{- else }}
+{{ template "gatherPrimaryFn" . }}
+{{ template "attachMux" . }}
+{{ template "createHandler" . }}
+{{ template "readHandler" . }}
+{{ template "readManyHandler" . }}
+{{ template "updateHandler" . }}
+{{ template "deleteHandler" . }}
+{{- end }}
+{{- end }}

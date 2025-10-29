@@ -1,0 +1,90 @@
+<div class="p2">
+    <div class="fc g2">
+        <div>
+            <p>
+                This page takes in 2 TUI configs and attempts to generate a migration script. See the examples. Examples
+                start simple and get more involved.
+                This page (as with most of the app) is a WIP. Notably, this page does not persist changes.
+            </p>
+        </div>
+
+        <div class="fr g2 center-align">
+            Examples:
+            <select
+                class="fr"
+                aria-label="Example selection"
+                [(ngModel)]="selectedExample"
+                (ngModelChange)="UseExample()"
+            >
+                @for (example of examples; track $index) {
+                <option [ngValue]="example">
+                    {{ example.title }} - {{ example.desc }}
+                </option>
+                }
+            </select>
+        </div>
+
+        <div class="fr fw g1">
+            <div class="fc">
+                <div class="fr p2">
+                    <span>Before</span>
+                </div>
+                <div class="box">
+                    <textarea
+                        [(ngModel)]="from.raw"
+                        (ngModelChange)="Run()"
+                        #fromEl
+                        name="from"
+                        id="from"
+                    ></textarea>
+                </div>
+            </div>
+            <div class="fc center">
+                <button
+                    title="Swap to-from"
+                    aria-label="Swap to-from"
+                    (click)="Swap()"
+                >
+                    <span class="icons">swap_horiz</span>
+                </button>
+            </div>
+            <div class="fc">
+                <div class="fr p2">
+                    <span>After</span>
+                </div>
+                <div class="box">
+                    <textarea
+                        [(ngModel)]="to.raw"
+                        (ngModelChange)="Run()"
+                        #toEl
+                        name="to"
+                        id="to"
+                    ></textarea>
+                </div>
+
+            </div>
+
+
+        </div>
+        <div class="fc">
+            <div class="fr p2">
+                <span>Output</span>
+
+                <button
+                    title="Copy"
+                    aria-label="Copy code"
+                    (click)="Copy()"
+                >
+                    <span class="icons">content_copy</span>
+                </button>
+            </div>
+
+            <div class="box">
+                <pre
+                    #outputEl
+                    id="output"
+                ></pre>
+            </div>
+        </div>
+    </div>
+</div>

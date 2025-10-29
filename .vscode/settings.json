@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
-        "Psql",
-        "speedrunning"
+        "strcase",
+        "strgen",
+        "tmpl"
     ]
 }

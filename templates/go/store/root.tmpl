@@ -1,0 +1,9 @@
+package {{ renderCamel .Name }}
+
+import (
+	"database/sql"
+	"time"
+)
+{{- range $index, $element := .Entities }}
+{{ template "store" $element }}
+{{- end }}

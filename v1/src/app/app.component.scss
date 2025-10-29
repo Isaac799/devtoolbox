@@ -1,0 +1,10 @@
+.toast {
+    background-color: white;
+    color: black;
+}
+
+.toaster {
+    position: fixed;
+    inset: 0 0 auto auto;
+    z-index: 999;
+}

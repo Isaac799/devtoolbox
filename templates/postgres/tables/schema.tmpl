@@ -1,0 +1,4 @@
+{{- define "schema" }}
+CREATE SCHEMA {{ .Name }};
+{{ range $index, $element := .Entities }}{{ template "entity" . }}{{ end }}
+{{- end }}

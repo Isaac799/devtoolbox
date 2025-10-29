@@ -1,0 +1,48 @@
+{{ define "_settings" }}
+<dialog id="dialog-settings">
+    <h3>
+        Settings
+    </h3>
+
+    <form
+        hx-post="/"
+        hx-target="body"
+        class="fc"
+    >
+        <fieldset>
+            <legend>Input Mode:</legend>
+            <div>
+                <input
+                    type="radio"
+                    name="mode"
+                    id="mode-text"
+                    value="1"
+                    {{ if eq .Input.Mode 1 }}checked{{ end }}
+                />
+                <label for="mode-text">Text Mode</label>
+            </div>
+            <div>
+                <input
+                    type="radio"
+                    name="mode"
+                    id="mode-graphical"
+                    value="2"
+                    {{ if eq .Input.Mode 2 }}checked{{ end }}
+                />
+                <label for="mode-graphical">Graphical Mode</label>
+            </div>
+        </fieldset>
+
+        <div class="fr">
+            <button type="submit">
+                Save Preferences
+            </button>
+            <form method="dialog">
+                <button>
+                    Close
+                </button>
+            </form>
+        </div>
+    </form>
+</dialog>
+{{ end }}
