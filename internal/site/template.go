@@ -51,7 +51,7 @@ func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request
 		deltaQ, deltaMode, deltaExample,
 	)
 
-	out, err := output(client.State.Input)
+	out, err := output(&client.State.Input)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -152,7 +152,7 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 		deltaQ, deltaMode, deltaExample,
 	)
 
-	out, err := output(client.State.Input)
+	out, err := output(&client.State.Input)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -203,7 +203,7 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 		deltaQ, deltaMode, deltaExample,
 	)
 
-	out, err := output(client.State.Input)
+	out, err := output(&client.State.Input)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)

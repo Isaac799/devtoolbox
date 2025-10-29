@@ -3,7 +3,6 @@ package site
 import (
 	"archive/zip"
 	"bytes"
-	"context"
 	"crypto/rand"
 	"fmt"
 	"net/http"
@@ -15,63 +14,35 @@ import (
 	"github.com/Isaac799/devtoolbox/internal/strparse"
 )
 
-type ClientKey string
-
 var (
-	// ClientTTL is how long a client session is valid for
+	// _clientTTL is how long a client session is valid for
 	// after their final action
-	ClientTTL = time.Hour * 24 * 7
+	_clientTTL = time.Hour * 24 * 7
 
-	_cid = ClientKey("cid")
+	// _cid is the name for the client ID cookie
+	_cid = "cid"
 )
 
 // Client is my way of tracking state server side
 type Client struct {
 	ID    string
-	State *ClientState
+	State ClientState
+
+	// mutex protects below
+	mu     sync.Mutex
+	Expire time.Time
 }
 
-type delta = func(*http.Request, *Client)
+func (c *Client) extendLife() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-var deltaQ = delta(func(r *http.Request, c *Client) {
-	const k = "q"
-	_, exists := r.Form[k]
-	if !exists {
-		return
-	}
-	c.State.Input.Q = r.FormValue(k)
-})
-
-var deltaMode = delta(func(r *http.Request, c *Client) {
-	const k = "mode"
-	_, exists := r.Form[k]
-	if !exists {
-		return
-	}
-
-	mode := InputModeText
-	modeStr := r.FormValue(k)
-	modeInt, err := strconv.Atoi(modeStr)
-	if err == nil {
-		if modeInt == int(InputModeGraphical) {
-			mode = InputModeGraphical
-		}
-	}
-	c.State.Input.Mode = mode
-})
-
-var deltaExample = delta(func(r *http.Request, c *Client) {
-	const k = "example"
-	_, exists := r.Form[k]
-	if !exists {
-		return
-	}
-	c.State.Input.Q = r.FormValue(k)
-})
+	c.Expire = time.Now().Add(_clientTTL)
+}
 
 func (c *Client) deltas(r *http.Request, mods ...delta) {
-	c.State.mu.Lock()
-	defer c.State.mu.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	for _, mod := range mods {
 		mod(r, c)
@@ -88,7 +59,7 @@ func NewClient() *Client {
 
 // ClientStore is my way of tracking multiple clients server side
 type ClientStore struct {
-	mu      *sync.Mutex
+	mu      sync.Mutex
 	cap     int
 	clients []*Client
 }
@@ -96,7 +67,7 @@ type ClientStore struct {
 // NewClientStore provides a the client store with good cap
 func NewClientStore(cap int) *ClientStore {
 	return &ClientStore{
-		mu:      &sync.Mutex{},
+		mu:      sync.Mutex{},
 		cap:     cap,
 		clients: make([]*Client, 0, cap),
 	}
@@ -113,6 +84,8 @@ func (store *ClientStore) preserve(c *Client) {
 }
 
 func (store *ClientStore) resume(w http.ResponseWriter, r *http.Request) *Client {
+	store.removeExpired()
+
 	var (
 		cookie, cookieErr = r.Cookie(string(_cid))
 		client            *Client
@@ -136,10 +109,12 @@ func (store *ClientStore) resume(w http.ResponseWriter, r *http.Request) *Client
 		store.preserve(client)
 	}
 
+	client.extendLife()
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     string(_cid),
 		Value:    client.ID,
-		Expires:  time.Now().Add(ClientTTL),
+		Expires:  time.Now().Add(_clientTTL),
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
 		Path:     "/",
@@ -148,17 +123,21 @@ func (store *ClientStore) resume(w http.ResponseWriter, r *http.Request) *Client
 	return client
 }
 
-// EnsureClient is a middleware to get or create a client to state storage
-// and client is stored in request context so the fish on catch fn
-// can handle have access to the client
-func (store *ClientStore) EnsureClient() func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			client := store.resume(w, r)
-			ctx := context.WithValue(r.Context(), _cid, client)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
+func (store *ClientStore) removeExpired() {
+	store.mu.Lock()
+	defer store.mu.Unlock()
+
+	valid := make([]*Client, 0, len(store.clients))
+	for _, e := range store.clients {
+		if e == nil {
+			continue
+		}
+		if time.Now().After(e.Expire) {
+			continue
+		}
+		valid = append(valid, e)
 	}
+	store.clients = valid
 }
 
 // Download allows downloading the generated as a zip

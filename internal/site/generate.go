@@ -36,14 +36,15 @@ type Output struct {
 // ClientState is the combined generations for template usage
 // on a sardine
 type ClientState struct {
-	mu    *sync.Mutex
-	Input *Input
+	// mutex protects below
+	mu    sync.Mutex
+	Input Input
 }
 
-func newClientState() *ClientState {
-	return &ClientState{
-		mu:    &sync.Mutex{},
-		Input: &Input{},
+func newClientState() ClientState {
+	return ClientState{
+		mu:    sync.Mutex{},
+		Input: Input{},
 	}
 }
 
@@ -96,15 +97,16 @@ func output(input *Input) (*Output, error) {
 	}, nil
 }
 
-type RenderState struct {
+// TemplateData is the structure used for most templates
+type TemplateData struct {
 	Input    *Input
 	Output   *Output
 	Examples []Example
 }
 
-func renderState(client *Client) RenderState {
-	return RenderState{
-		Input:    client.State.Input,
+func renderState(client *Client) TemplateData {
+	return TemplateData{
+		Input:    &client.State.Input,
 		Output:   &Output{},
 		Examples: defaultExamples(),
 	}
