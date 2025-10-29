@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <link rel="stylesheet" href="/public/asset/style/dialog.css">
+    <link rel="stylesheet" href="/public/asset/style/style.css">
+    <link rel="stylesheet" href="/public/asset/font/material-icons.css">
+    <link rel="preload" href="/public/asset/font/material-icons.woff2" as="font" type="font/woff2">
+
+    <script src="/public/asset/script/dialog.js"></script>
+    <script src="/public/asset/script/htmlx.js"></script>
+    <title>Home</title>
+</head>
+
+<body>
+    <header>
+        <h1>
+            Dev Toolbox
+        </h1>
+
+        {{ template "_nav" }}
+    </header>
+
+    <main>
+        <div class="fc">
+            <div class="fr">
+                <button
+                    hx-post="/dialog/_settings"
+                    hx-target="body"
+                    hx-swap="beforeend"
+                >
+                    Settings
+                </button>
+                <button
+                    hx-post="/dialog/_examples"
+                    hx-target="body"
+                    hx-swap="beforeend"
+                >
+                    Examples
+                </button>
+            </div>
+
+            <div class="fr">
+                <div>
+                    {{ template "_input" . }}
+                </div>
+
+                <!-- targeted by input template -->
+                <div id="output-box">
+                    {{ template "_output" . }}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>
+            Source not public (for now). This is a side project over several years, with varying degrees of source
+            control.
+            I want to clean my room before showing it to people.
+        </p>
+        <p>
+            Here is my profile on <a href="https://github.com/Isaac799">GitHub</a> though.
+        </p>
+    </footer>
+
+</body>
+
+</html>

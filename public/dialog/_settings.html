@@ -1,3 +1,4 @@
+{{ define "_settings" }}
 <dialog id="dialog-settings">
     <h3>
         Settings
@@ -16,7 +17,7 @@
                     name="mode"
                     id="mode-text"
                     value="1"
-                    {{ if eq .Fish.Input.Mode 1 }}checked{{ end }}
+                    {{ if eq .Input.Mode 1 }}checked{{ end }}
                 />
                 <label for="mode-text">Text Mode</label>
             </div>
@@ -26,7 +27,7 @@
                     name="mode"
                     id="mode-graphical"
                     value="2"
-                    {{ if eq .Fish.Input.Mode 2 }}checked{{ end }}
+                    {{ if eq .Input.Mode 2 }}checked{{ end }}
                 />
                 <label for="mode-graphical">Graphical Mode</label>
             </div>
@@ -44,3 +45,4 @@
         </div>
     </form>
 </dialog>
+{{ end }}

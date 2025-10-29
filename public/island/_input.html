@@ -1,21 +1,22 @@
+{{ define "_input" }}
 <div class="fc">
     <div class="fr">
         <button
-            hx-post="/_schema"
+            hx-post="/dialog/_schema"
             hx-target="body"
             hx-swap="beforeend"
         >
             Schema
         </button>
         <button
-            hx-post="/_entity"
+            hx-post="/dialog/_entity"
             hx-target="body"
             hx-swap="beforeend"
         >
             Entity
         </button>
         <button
-            hx-post="/_attribute"
+            hx-post="/dialog/_attribute"
             hx-target="body"
             hx-swap="beforeend"
         >
@@ -25,7 +26,7 @@
     <div>
         <textarea
             name="q"
-            hx-post="/_output"
+            hx-post="/island/_output"
             hx-trigger="keyup delay:500ms changed"
             hx-target="#output-box"
             hx-swap="innerHTML"
@@ -33,6 +34,7 @@
             rows="40"
             autocapitalize="false"
             autocomplete="false"
-        >{{ .Fish.Input.Q }}</textarea>
+        >{{ .Input.Q }}</textarea>
     </div>
 </div>
+{{ end }}

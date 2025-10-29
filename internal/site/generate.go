@@ -1,7 +1,6 @@
 package site
 
 import (
-	"net/http"
 	"sync"
 
 	"github.com/Isaac799/devtoolbox/internal/strgen"
@@ -109,29 +108,4 @@ func renderState(client *Client) RenderState {
 		Output:   &Output{},
 		Examples: defaultExamples(),
 	}
-}
-
-// OnCatchForGenerate is the on catch fn for generating
-// an output
-func OnCatchForGenerate(r *http.Request) any {
-	client, ok := r.Context().Value(_cid).(*Client)
-	if !ok {
-		return renderState(nil)
-	}
-
-	r.ParseForm()
-
-	client.deltas(
-		r,
-		deltaQ, deltaMode, deltaExample,
-	)
-
-	out, err := output(client.State.Input)
-	if err != nil {
-		return renderState(client)
-	}
-
-	state := renderState(client)
-	state.Output = out
-	return state
 }

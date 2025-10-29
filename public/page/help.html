@@ -1,52 +1,70 @@
-<header>
-    <h1>Help</h1>
+<!DOCTYPE html>
+<html lang="en">
 
-    {{ template "_nav" }}
-</header>
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <link rel="stylesheet" href="/public/asset/style/dialog.css">
+    <link rel="stylesheet" href="/public/asset/style/style.css">
+    <link rel="stylesheet" href="/public/asset/font/material-icons.css">
+    <link rel="preload" href="/public/asset/font/material-icons.woff2" as="font" type="font/woff2">
 
-<main>
-    <h3>Types</h3>
-    <div class="scroll-box">
-        <pre>
+    <title>Help</title>
+</head>
+
+<body>
+    <header>
+        <h1>Help</h1>
+
+        {{ template "_nav" }}
+    </header>
+
+    <main>
+        <h3>Types</h3>
+        <div class="scroll-box">
+            <pre>
 type is:  ( ++             | int     | bool     | str    | ts        | time | date |  bit  | char      | dec     | real | float | money )
 or
 type is:  ( auto increment | integer | boolean  | string | timestamp | time | date |  bit  | character | decimal | real | float | money )
         </pre>
-    </div>
-    <h3>Options</h3>
-    <div class="scroll-box">
-        <pre>
+        </div>
+        <h3>Options</h3>
+        <div class="scroll-box">
+            <pre>
 range  is:  [ value ]..[ value ] 
                   min..max
 
-option is:  ( _range_  | d        | p       | s      | r        | u        )
+option is:  ( _range_  | d        | p       | r        | u        )
 or
-option is:  ( _range_  | default  | primary | system | required | unique[ :_group_ ] )
+option is:  ( _range_  | default  | primary | required | unique[ :_group_ ] )
         </pre>
-    </div>
+        </div>
 
-    <h3>Attribute</h3>
-    <div class="scroll-box">
-        <pre>
+        <h3>Attribute</h3>
+        <div class="scroll-box">
+            <pre>
 attribute is:  _name_ as _type_ [ with _option_ [ , ... ] ] 
 or
 attribute is:  @( _entity_ | _schema_._entity_ ) [ as _alias_ ] [ with _option_ [ , ... ] ] 
         </pre>
-    </div>
+        </div>
 
-    <h3>Scheme</h3>
-    <div class="scroll-box">
-        <pre>
+        <h3>Scheme</h3>
+        <div class="scroll-box">
+            <pre>
 # _schema_
 
 ## _entity_
 - _attribute_
         </pre>
-    </div>
+        </div>
 
-    <h3>Example</h3>
-    <div class="scroll-box">
-        <pre>
+        <h3>Example</h3>
+        <div class="scroll-box">
+            <pre>
 # People
 
 ## Author
@@ -72,5 +90,9 @@ attribute is:  @( _entity_ | _schema_._entity_ ) [ as _alias_ ] [ with _option_ 
 - @people.author with primary
 - flags as bit with ..16
         </pre>
-    </div>
-</main>
+        </div>
+    </main>
+
+</body>
+
+</html>

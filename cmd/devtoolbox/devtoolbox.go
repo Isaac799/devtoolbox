@@ -3,36 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-	"regexp"
+	"path/filepath"
 
 	"github.com/Isaac799/devtoolbox/internal/site"
-	"github.com/Isaac799/go-fish/pkg/aquatic"
 )
-
-func setupPond() (*aquatic.Pond, error) {
-	config := aquatic.NewPondOptions{}
-	uxPond, err := aquatic.NewPond("public/page", config)
-	if err != nil {
-		return nil, err
-	}
-
-	dialogPond, err := aquatic.NewPond("public/dialog", aquatic.NewPondOptions{GlobalSmallFish: true})
-	if err != nil {
-		return nil, err
-	}
-	dialogPond.FlowsInto(&uxPond)
-
-	assetPond, err := aquatic.NewPond("public/asset", aquatic.NewPondOptions{GlobalSmallFish: true})
-	if err != nil {
-		return nil, err
-	}
-
-	assetPond.FlowsInto(&uxPond)
-	return &uxPond, nil
-}
 
 func main() {
 	b := flag.Bool("debug", false, "moves up 2 dir")
@@ -42,38 +18,25 @@ func main() {
 		os.Chdir("..")
 	}
 
-	wd, _ := os.Getwd()
-	fmt.Println(wd)
-
-	pond, err := setupPond()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	rx := regexp.MustCompile
-
 	store := site.NewClientStore(100)
 
-	stockFish := aquatic.Stock{
-		rx("/"): {
-			BeforeCatch: []aquatic.BeforeCatchFn{store.EnsureClient()},
-			OnCatch:     site.OnCatchForGenerate,
-		},
-	}
-	pond.Stock(stockFish)
+	mux := http.NewServeMux()
 
-	go func() {
-		for err := range pond.OnErr {
-			fmt.Println(err.Error())
-		}
-	}()
+	script := http.FileServer(http.Dir(filepath.Join("public", "asset")))
+	mux.Handle("/public/asset/", http.StripPrefix("/public/asset/", script))
 
-	verbose := true
-	mux := pond.CastLines(verbose)
+	mux.HandleFunc("/dialog/{what}", store.HandlerDialog)
+	mux.HandleFunc("/island/{what}", store.HandlerIsland)
 	mux.HandleFunc("/download", store.Download())
+	mux.HandleFunc("/help", store.HandlerPageHelp)
+	mux.HandleFunc("/home", store.HandlerPageHome)
 	mux.HandleFunc("/make/{what}", site.Make)
 
-	fmt.Println("gone fishing")
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/home", http.StatusTemporaryRedirect)
+	})
+
+	fmt.Println("running")
 	http.ListenAndServe(":8080", mux)
 
 }

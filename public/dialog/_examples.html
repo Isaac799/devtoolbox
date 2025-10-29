@@ -1,3 +1,4 @@
+{{ define "_examples" }}
 <dialog id="dialog-examples">
     <h3>
         Examples
@@ -6,7 +7,7 @@
         Examples REPLACE existing entry.
     </p>
     <div class="fr">
-        {{- range $index, $element := .Fish.Examples }}
+        {{- range $index, $element := .Examples }}
         <form
             hx-post="/"
             hx-target="body"
@@ -27,3 +28,4 @@
         </form>
     </div>
 </dialog>
+{{ end }}
