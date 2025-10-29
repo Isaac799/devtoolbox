@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -38,6 +39,8 @@ func main() {
 	})
 
 	fmt.Println("running")
-	http.ListenAndServe(":8080", mux)
-
+	err := http.ListenAndServe(":8080", mux)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
