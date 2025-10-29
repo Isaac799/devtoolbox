@@ -1,7 +1,0 @@
-.main {
-    height: 100vh;
-    display: grid;
-    grid-template-columns: min(50vw, 65rem) calc(100vw - min(50vw, 65rem));
-    max-width: 100vw;
-    width: 100vw;
-}
