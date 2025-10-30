@@ -1,0 +1,150 @@
+{{ define "fields.attribute" }}
+{{ with $a := .Client.Input.Focus.Attribute }}
+<div class="fc g2">
+
+    {{ if $a }}
+    {{ if $a.ReferenceTo }}
+    <!-- reference -->
+    <div class="fr g1">
+        <div>
+            <label for="AttributeReferenceTo">Reference To</label>
+            <input
+                type="text"
+                name="AttributeReferenceTo"
+                id="AttributeReferenceTo"
+                {{ if $a }}
+                value="{{ $a.ReferenceTo.Name }}"
+                {{ end }}
+            >
+        </div>
+        <div>
+            <label for="AttributeAlias">Alias</label>
+            <input
+                type="text"
+                name="AttributeAlias"
+                id="AttributeAlias"
+                {{ if $a }}
+                value="{{ $a.Alias }}"
+                {{ end }}
+            >
+        </div>
+    </div>
+   
+    {{ else }}
+
+    <!-- non reference -->
+
+    <div class="fr g1">
+        <div>
+            <label for="AttributeName">Name</label>
+            <input
+                type="text"
+                name="AttributeName"
+                id="AttributeName"
+                {{ if $a }}
+                value="{{ $a.Name }}"
+                {{ end }}
+            >
+        </div>
+        <div>
+            <label for="AttributeKind">Kind</label>
+            <select
+                name="AttributeKind"
+                id="AttributeKind"
+            >
+                <option value="0">None</option>
+                <!-- <option value="1">Reference</option> -->
+                <option {{ if $a }}{{ if (eq 2 $a.Kind ) }} selected {{ end }}{{ end }} value="2">Serial</option>
+                <option {{ if $a }}{{ if (eq 3 $a.Kind ) }} selected {{ end }}{{ end }} value="3">Int</option>
+                <option {{ if $a }}{{ if (eq 4 $a.Kind ) }} selected {{ end }}{{ end }} value="4">Char</option>
+                <option {{ if $a }}{{ if (eq 5 $a.Kind ) }} selected {{ end }}{{ end }} value="5">String</option>
+                <option {{ if $a }}{{ if (eq 6 $a.Kind ) }} selected {{ end }}{{ end }} value="6">Bit</option>
+                <option {{ if $a }}{{ if (eq 7 $a.Kind ) }} selected {{ end }}{{ end }} value="7">Boolean</option>
+                <option {{ if $a }}{{ if (eq 8 $a.Kind ) }} selected {{ end }}{{ end }} value="8">Date</option>
+                <option {{ if $a }}{{ if (eq 9 $a.Kind ) }} selected {{ end }}{{ end }} value="9">Time</option>
+                <option {{ if $a }}{{ if (eq 10 $a.Kind ) }} selected {{ end }}{{ end }} value="10">Timestamp</option>
+                <option {{ if $a }}{{ if (eq 11 $a.Kind ) }} selected {{ end }}{{ end }} value="11">Float</option>
+                <option {{ if $a }}{{ if (eq 12 $a.Kind ) }} selected {{ end }}{{ end }} value="12">Real</option>
+                <option {{ if $a }}{{ if (eq 13 $a.Kind ) }} selected {{ end }}{{ end }} value="13">Decimal</option>
+                <option {{ if $a }}{{ if (eq 14 $a.Kind ) }} selected {{ end }}{{ end }} value="14">Money</option>
+            </select>
+        </div>
+    </div>
+    {{ end }}
+    {{ end }}
+</div>
+
+<span>
+    WITH
+</span>
+
+<div class="fr g1">
+    <div>
+        <label for="AttributeRequired">Is Required</label>
+        <input
+            type="checkbox"
+            value="true"
+            name="AttributeRequired"
+            id="AttributeRequired"
+            {{ if $a }}{{ if $a.Validation.Required.Bool }} checked {{ end }}{{ end }}
+        >
+    </div>
+    <div>
+        <label for="AttributePrimary">Is Primary</label>
+        <input
+            type="checkbox"
+            value="true"
+            name="AttributePrimary"
+            id="AttributePrimary"
+            {{ if $a }}{{ if $a.Primary }} checked {{ end }}{{ end }}
+        >
+    </div>
+</div>
+<div>
+    <label for="AttributeUnique">Unique Labels (csv)</label>
+    <input
+        type="text"
+        name="AttributeUnique"
+        id="AttributeUnique"
+        {{ if $a }}
+        value="{{ $a.UniqueLabels }}"
+        {{ end }}
+    >
+</div>
+<div>
+    <label for="AttributeDefault">Default Value</label>
+    <input
+        type="text"
+        name="AttributeDefault"
+        id="AttributeDefault"
+        {{ if $a }}
+        value="{{ $a.DefaultValue }}"
+        {{ end }}
+    >
+</div>
+<div class="fr g1">
+    <div>
+        <label for="AttributeMin">Min</label>
+        <input
+            type="text"
+            name="AttributeMin"
+            id="AttributeMin"
+            {{ if $a }}
+            value="{{ $a.Validation.Min.String }}"
+            {{ end }}
+        >
+    </div>
+    <div>
+        <label for="AttributeMax">Max</label>
+        <input
+            type="text"
+            name="AttributeMax"
+            id="AttributeMax"
+            {{ if $a }}
+            value="{{ $a.Validation.Max.String }}"
+            {{ end }}
+        >
+    </div>
+</div>
+{{ end }}
+{{ end }}

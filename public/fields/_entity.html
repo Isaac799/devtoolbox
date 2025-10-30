@@ -1,0 +1,13 @@
+{{ define "fields.entity" }}
+<div>
+    <label for="EntityName">Name</label>
+    <input
+        type="text"
+        name="EntityName"
+        id="EntityName"
+        {{ if .Client.Input.Focus.Entity }}
+        value="{{ .Client.Input.Focus.Entity.Name }}"
+        {{ end }}
+    >
+</div>
+{{ end }}

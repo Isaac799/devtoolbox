@@ -12,14 +12,7 @@
         hx-swap="innerText"
         hx-trigger="keyup delay:500ms changed"
     >
-        <div>
-            <label for="SchemaName">Name</label>
-            <input
-                type="text"
-                name="SchemaName"
-                id="SchemaName"
-            >
-        </div>
+        {{ template "fields.schema" }}
     </form>
 
     <pre id="make-schema"></pre>

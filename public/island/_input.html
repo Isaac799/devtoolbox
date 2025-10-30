@@ -42,10 +42,10 @@
 
 {{ else }}
 
-<div class="fr g1">
-    <div class="fc g2 fade-me-in">
+<div class="fr g1 fade-me-in">
+    <div class="fc g2">
         {{ range $si, $schema := .Output.Schemas }}
-        <div class="schema {{ if (eq $.Client.Input.Focus $schema.Path) }}focused{{ end }}">
+        <div class="schema {{ if (eq $.Client.Input.Focus.Path $schema.Path) }}focused{{ end }}">
             {{ if ne $si 0 }}{{ end }}
             <form
                 class="focusable fr g1"
@@ -64,7 +64,7 @@
                 </span>
             </form>
             {{ range $ei, $entity := $schema.Entities }}
-            <div class="entity {{ if (eq $.Client.Input.Focus $entity.Path) }}focused{{ end }}">
+            <div class="entity {{ if (eq $.Client.Input.Focus.Path $entity.Path) }}focused{{ end }}">
                 {{ if ne $ei 0 }}{{ end }}
                 <form
                     class="focusable fr g1"
@@ -83,7 +83,7 @@
                     </span>
                 </form>
                 {{ range $ai, $attr := $entity.RawAttributes }}
-                <div class="attribute {{ if (eq $.Client.Input.Focus $attr.Path) }}focused{{ end }}">
+                <div class="attribute {{ if (eq $.Client.Input.Focus.Path $attr.Path) }}focused{{ end }}">
                     {{ if ne $ai 0 }}{{ end }}
                     <form
                         class="focusable fr g1"
@@ -107,11 +107,16 @@
         </div>
         {{- end }}
     </div>
-    <div
-        class="fc g2 fade-me-in"
-        id="focus"
-    >
-
+    <div class="fc g2">
+        {{ if .Client.Input.Focus.Schema }}
+        {{ template "fields.schema" . }}
+        {{ end }}
+        {{ if .Client.Input.Focus.Entity }}
+        {{ template "fields.entity" . }}
+        {{ end }}
+        {{ if .Client.Input.Focus.Attribute }}
+        {{ template "fields.attribute" . }}
+        {{ end }}
     </div>
 </div>
 {{ end }}

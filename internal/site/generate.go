@@ -1,6 +1,8 @@
 package site
 
 import (
+	"strings"
+
 	"github.com/Isaac799/devtoolbox/internal/strgen"
 	"github.com/Isaac799/devtoolbox/internal/strparse"
 	"github.com/Isaac799/devtoolbox/pkg/model"
@@ -15,12 +17,61 @@ const (
 	InputModeGraphical
 )
 
+// Focus is the gui focus of a user
+type Focus struct {
+	Path string
+
+	// one of the following
+	Schema    *model.Schema
+	Entity    *model.Entity
+	Attribute *model.AttributeRaw
+}
+
 // Input is for template rendering to help retain state
 type Input struct {
 	Q       string
 	Example string
-	Focus   string
+	Focus   Focus
 	Mode    InputMode
+}
+
+// SetFocus sets the focus based on its path, given schemas
+func (focus *Focus) SetFocus(schemas []*model.Schema) {
+	focus.Schema = nil
+	focus.Entity = nil
+	focus.Attribute = nil
+
+	if len(focus.Path) == 0 {
+		return
+	}
+
+	schemaStr, s, _ := strings.Cut(focus.Path, "/")
+	entityStr, attrStr, _ := strings.Cut(s, "/")
+
+	for _, schema := range schemas {
+		if schema.Name != schemaStr {
+			continue
+		}
+		if schema.Name == schemaStr && len(entityStr) == 0 && len(attrStr) == 0 {
+			focus.Schema = schema
+			break
+		}
+		for _, entity := range schema.Entities {
+			if entity.Name != entityStr {
+				continue
+			}
+			if entity.Name == entityStr && len(attrStr) == 0 {
+				focus.Entity = entity
+				break
+			}
+			for _, attr := range entity.RawAttributes {
+				if attr.Name == attrStr {
+					focus.Attribute = attr
+					break
+				}
+			}
+		}
+	}
 }
 
 // Output is for template rendering to show what was generated
@@ -40,6 +91,33 @@ type Example struct {
 
 func defaultExamples() []Example {
 	return []Example{
+		{
+			Label: "Books and People",
+			Value: `# People
+
+## Author
+- id as ++
+- first name as string with unique:full name, required, 3..32
+- last name as str with u:full name, u:last name, r, ..30
+- dob as date with 2006-01-02..
+
+# Library
+
+## Category
+- id as ++
+- name as str with u, r, 3..30
+
+## Book
+- id as ++
+- title as str with u, r, ..50
+- published as ts with default:now
+- @category with r
+
+## Publication
+- @book with primary
+- @people.author with primary
+- flags as bit with ..16`,
+		},
 		{
 			Label: "Foo Bar",
 			Value: `# foo 
@@ -93,6 +171,8 @@ func (client *Client) templateData() (*TemplateData, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	client.Input.Focus.SetFocus(out.Schemas)
 
 	return &TemplateData{
 		Client:   client,

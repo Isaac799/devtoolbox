@@ -75,6 +75,11 @@ func (attr *AttributeRaw) Path() string {
 	}, "/")
 }
 
+// UniqueLabels allows string rep of unique labels, for templating entry
+func (attr *AttributeRaw) UniqueLabels() string {
+	return strings.Join(attr.Unique, ", ")
+}
+
 // String provides parsable text to generate itself
 func (attr *AttributeRaw) String() string {
 	opts := []string{}

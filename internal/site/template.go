@@ -51,6 +51,15 @@ func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
+	{
+		s := filepath.Join(wd, "public", "fields", "*.html")
+		tmpl, err = tmpl.ParseGlob(s)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
 
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
@@ -146,6 +155,15 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	}
+	{
+		s := filepath.Join(wd, "public", "fields", "*.html")
+		tmpl, err = tmpl.ParseGlob(s)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
 
 	r.ParseForm()
 
@@ -202,6 +220,16 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	{
+		s := filepath.Join(wd, "public", "fields", "*.html")
+		tmpl, err = tmpl.ParseGlob(s)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	r.ParseForm()
@@ -275,6 +303,16 @@ func (store *ClientStore) HandlerFocus(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	{
+		s := filepath.Join(wd, "public", "fields", "*.html")
+		tmpl, err = tmpl.ParseGlob(s)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	r.ParseForm()

@@ -54,5 +54,5 @@ var deltaFocus = delta(func(r *http.Request, c *Client) {
 		return
 	}
 
-	c.Input.Focus = r.FormValue(k)
+	c.Input.Focus.Path = r.FormValue(k)
 })
