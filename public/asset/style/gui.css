@@ -1,13 +1,11 @@
 .schema {
-  transition: all ease-in-out 0.25s;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem 0 0.5rem 0.5rem;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--blue);
+  color: white;
 }
 
-.schema:has(.schema-title:hover) {
+.schema.focused,
+.schema:has(.focused),
+.schema:has(.focusable:hover) {
   border-top-left-radius: 1rem;
   border-bottom-left-radius: 1rem;
 }
@@ -16,20 +14,14 @@
   font-size: 1.5rem;
 }
 
-.schema-title:hover {
-  cursor: pointer;
-}
-
 .entity {
-  transition: all ease-in-out 0.25s;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.5rem 0 0.5rem 0.5rem;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--light-blue);
+  color: black;
 }
 
-.entity:has(.entity-title:hover) {
+.entity.focused,
+.entity:has(.focused),
+.entity:has(.focusable:hover) {
   border-top-left-radius: 1rem;
   border-bottom-left-radius: 1rem;
 }
@@ -38,23 +30,35 @@
   font-size: 1.25rem;
 }
 
-.entity-title:hover {
-  cursor: pointer;
+.entity,
+.schema {
+  transition: all ease-in-out 0.25s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0 0.5rem 0.5rem;
 }
 
 .attribute {
   padding: 0 1rem 0 0.35rem;
   transition: all ease-in-out 0.25s;
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
   background-color: white;
 }
 
-.attribute:hover {
-  cursor: pointer;
+.attribute.focused,
+.attribute:has(.focused),
+.attribute:has(.focusable:hover) {
   border-top-left-radius: 1rem;
   border-bottom-left-radius: 1rem;
+}
+
+.focused {
+  background-color: var(--yellow);
+  color: black;
+}
+
+.focusable {
+  cursor: pointer;
 }
 
 .attr-icon-0:after {

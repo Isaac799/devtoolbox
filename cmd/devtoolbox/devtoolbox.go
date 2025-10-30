@@ -31,6 +31,7 @@ func main() {
 	mux.HandleFunc("/download", store.Download())
 	mux.HandleFunc("/help", store.HandlerPageHelp)
 	mux.HandleFunc("/delta", store.HandlerDelta)
+	mux.HandleFunc("/focus", store.HandlerFocus)
 	mux.HandleFunc("/home", store.HandlerPageHome)
 	mux.HandleFunc("/make/{what}", site.Make)
 

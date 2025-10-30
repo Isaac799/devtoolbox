@@ -46,3 +46,13 @@ var deltaExample = delta(func(r *http.Request, c *Client) {
 
 	c.Input.Q = r.FormValue(k)
 })
+
+var deltaFocus = delta(func(r *http.Request, c *Client) {
+	const k = "focus"
+	_, exists := r.Form[k]
+	if !exists {
+		return
+	}
+
+	c.Input.Focus = r.FormValue(k)
+})

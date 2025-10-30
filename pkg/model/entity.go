@@ -18,6 +18,14 @@ type Entity struct {
 	ar []*Attribute
 }
 
+// Path is a unique accessor value for focusing via the ux
+func (ent *Entity) Path() string {
+	return strings.Join([]string{
+		ent.Parent.Name,
+		ent.Name,
+	}, "/")
+}
+
 // String provides parsable text to generate itself
 func (ent *Entity) String() string {
 	return fmt.Sprintf("## %s", ent.Name)

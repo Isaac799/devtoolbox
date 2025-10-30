@@ -66,6 +66,15 @@ type AttributeRaw struct {
 	Validation
 }
 
+// Path is a unique accessor value for focusing via the ux
+func (attr *AttributeRaw) Path() string {
+	return strings.Join([]string{
+		attr.Parent.Parent.Name,
+		attr.Parent.Name,
+		attr.Name,
+	}, "/")
+}
+
 // String provides parsable text to generate itself
 func (attr *AttributeRaw) String() string {
 	opts := []string{}

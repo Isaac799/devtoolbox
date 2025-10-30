@@ -1,3 +1,15 @@
+:root {
+  /* Wong color blind pallette */
+
+  --blue: rgb(0, 114, 178);
+  --red: rgb(213, 94, 0);
+  --pink: rgb(204, 121, 167);
+  --yellow: rgb(240, 228, 66);
+  --green: rgb(0, 158, 115);
+  --light-blue: rgb(86, 180, 233);
+  --orange: rgb(230, 159, 0);
+}
+
 html,
 body {
   padding: 0;
@@ -20,7 +32,12 @@ code,
 }
 
 .file-name {
-  color: blue;
+  color: var(--blue);
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
 }
 
 main,
@@ -97,14 +114,12 @@ dialog h3 {
 
 .fr {
   display: flex;
-  gap: 0.5rem;
   flex-direction: row;
   flex-wrap: wrap;
 }
 
 .fc {
   display: flex;
-  gap: 0.5rem;
   flex-direction: column;
 }
 

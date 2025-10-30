@@ -240,8 +240,58 @@ func (store *ClientStore) HandlerDelta(w http.ResponseWriter, r *http.Request) {
 
 	client.deltas(
 		r,
-		deltaQ, deltaMode, deltaExample,
+		deltaQ, deltaMode, deltaExample, deltaFocus,
 	)
 
 	store.HandlerPageHome(w, r)
+}
+
+// HandlerFocus handles changes to a clients input state and refreshes the entire input section
+// Has access to client information
+func (store *ClientStore) HandlerFocus(w http.ResponseWriter, r *http.Request) {
+	var (
+		what    = "_input"
+		wd, err = os.Getwd()
+	)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	client, csrfOk := store.clientInfo(w, r)
+	if client == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if !csrfOk {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	s := filepath.Join(wd, "public", "island", what+".html")
+	tmpl, err := template.ParseFiles(s)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	r.ParseForm()
+
+	client.deltas(
+		r,
+		deltaFocus,
+	)
+
+	templateData, err := client.templateData()
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	w.Header().Add("Content-Type", "text/html")
+	tmpl.ExecuteTemplate(w, what, templateData)
 }

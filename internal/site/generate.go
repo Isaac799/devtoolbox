@@ -19,6 +19,7 @@ const (
 type Input struct {
 	Q       string
 	Example string
+	Focus   string
 	Mode    InputMode
 }
 

@@ -2,12 +2,20 @@ package model
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Schema is the primary categorizations
 type Schema struct {
 	Name     string
 	Entities []*Entity
+}
+
+// Path is a unique accessor value for focusing via the ux
+func (sch *Schema) Path() string {
+	return strings.Join([]string{
+		sch.Name,
+	}, "/")
 }
 
 func (sch *Schema) HasErr() bool {

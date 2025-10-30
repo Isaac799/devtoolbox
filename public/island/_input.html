@@ -1,8 +1,8 @@
 {{ define "_input" }}
 {{ if eq .Client.Input.Mode 1 }}
 
-<div class="fc fade-me-in">
-    <div class="fr">
+<div class="fc g2 fade-me-in">
+    <div class="fr g1">
         <button
             hx-get="/dialog/_schema"
             hx-target="body"
@@ -42,30 +42,77 @@
 
 {{ else }}
 
-<div class="fc fade-me-in">
-    {{ range $si, $schema := .Output.Schemas }}
-    <div class="schema">
-        {{ if ne $si 0 }}{{ end }}
-        <span class="schema-title">
-            {{ $schema.Name }}
-        </span>
-        {{ range $ei, $entity := $schema.Entities }}
-        <div class="entity">
-            {{ if ne $ei 0 }}{{ end }}
-            <span class="entity-title">
-                {{ $entity.Name }}
-            </span>
-            {{ range $ai, $attr := $entity.RawAttributes }}
-            <div class="attribute">
-                {{ if ne $ai 0 }}{{ end }}
-                <i class="material-icons attr-icon-{{ $attr.Kind }}"></i>
-                {{ $attr.Name }}
+<div class="fr g1">
+    <div class="fc g2 fade-me-in">
+        {{ range $si, $schema := .Output.Schemas }}
+        <div class="schema {{ if (eq $.Client.Input.Focus $schema.Path) }}focused{{ end }}">
+            {{ if ne $si 0 }}{{ end }}
+            <form
+                class="focusable fr g1"
+                hx-post="/focus"
+                hx-target="#input-box"
+                hx-swap="innerHTML"
+                hx-trigger="click"
+            >
+                <input
+                    type="hidden"
+                    name="focus"
+                    value="{{ $schema.Path }}"
+                >
+                <span class="schema-title">
+                    {{ $schema.Name }}
+                </span>
+            </form>
+            {{ range $ei, $entity := $schema.Entities }}
+            <div class="entity {{ if (eq $.Client.Input.Focus $entity.Path) }}focused{{ end }}">
+                {{ if ne $ei 0 }}{{ end }}
+                <form
+                    class="focusable fr g1"
+                    hx-post="/focus"
+                    hx-target="#input-box"
+                    hx-swap="innerHTML"
+                    hx-trigger="click"
+                >
+                    <input
+                        type="hidden"
+                        name="focus"
+                        value="{{ $entity.Path }}"
+                    >
+                    <span class="entity-title">
+                        {{ $entity.Name }}
+                    </span>
+                </form>
+                {{ range $ai, $attr := $entity.RawAttributes }}
+                <div class="attribute {{ if (eq $.Client.Input.Focus $attr.Path) }}focused{{ end }}">
+                    {{ if ne $ai 0 }}{{ end }}
+                    <form
+                        class="focusable fr g1"
+                        hx-post="/focus"
+                        hx-target="#input-box"
+                        hx-swap="innerHTML"
+                        hx-trigger="click"
+                    >
+                        <input
+                            type="hidden"
+                            name="focus"
+                            value="{{ $attr.Path }}"
+                        >
+                        <i class="material-icons attr-icon-{{ $attr.Kind }}"></i>
+                        {{ $attr.Name }}
+                    </form>
+                </div>
+                {{- end }}
             </div>
             {{- end }}
         </div>
         {{- end }}
     </div>
-    {{- end }}
+    <div
+        class="fc g2 fade-me-in"
+        id="focus"
+    >
+
+    </div>
 </div>
 {{ end }}
 {{ end }}

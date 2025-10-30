@@ -6,17 +6,41 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self';">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/public/asset/style/dialog.css">
-    <link rel="stylesheet" href="/public/asset/style/style.css">
-    <link rel="stylesheet" href="/public/asset/style/gui.css">
-    <link rel="stylesheet" href="/public/asset/font/material-icons.css">
-    <link rel="stylesheet" href="/public/asset/font/jetbrains.css">
-    <link rel="stylesheet" href="/public/asset/font/red-hat-display.css">
+    <meta
+        http-equiv="Content-Security-Policy"
+        content="default-src 'self';"
+    >
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <link
+        rel="stylesheet"
+        href="/public/asset/style/dialog.css"
+    >
+    <link
+        rel="stylesheet"
+        href="/public/asset/style/style.css"
+    >
+    <link
+        rel="stylesheet"
+        href="/public/asset/style/gui.css"
+    >
+    <link
+        rel="stylesheet"
+        href="/public/asset/font/material-icons.css"
+    >
+    <link
+        rel="stylesheet"
+        href="/public/asset/font/jetbrains.css"
+    >
+    <link
+        rel="stylesheet"
+        href="/public/asset/font/red-hat-display.css"
+    >
     <script src="/public/asset/script/dialog.js"></script>
     <script src="/public/asset/script/htmlx.js"></script>
-    
+
     <title>Home</title>
 </head>
 
@@ -30,8 +54,8 @@
     </header>
 
     <main>
-        <div class="fc">
-            <div class="fr">
+        <div class="fc g2">
+            <div class="fr g1">
                 <button
                     hx-get="/dialog/_settings"
                     hx-target="body"
@@ -48,12 +72,14 @@
                 </button>
             </div>
 
-            <div class="fr">
-                <div
-                    hx-get="/island/_input"
-                    hx-trigger="load"
-                    hx-swap="outerHTML"
-                ></div>
+            <div class="fr g1">
+                <div id="input-box">
+                    <div
+                        hx-get="/island/_input"
+                        hx-trigger="load"
+                        hx-swap="outerHTML"
+                    ></div>
+                </div>
 
                 <!-- targeted by input template -->
                 <div id="output-box">
