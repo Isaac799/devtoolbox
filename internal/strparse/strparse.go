@@ -1,8 +1,8 @@
 package strparse
 
 import (
+	"crypto/rand"
 	"regexp"
-	"slices"
 	"strings"
 
 	"github.com/Isaac799/devtoolbox/pkg/model"
@@ -21,7 +21,9 @@ func determineLineKind(s string) lineKind {
 	return kind
 }
 
-func normalize(s string) string {
+// Normalize makes a string follow my naming convention of snake, but with digit consideration
+// for valid syntax on generated code
+func Normalize(s string) string {
 	s = strings.ToLower(strcase.ToSnake(s))
 
 	ok := make([]rune, 0, len(s))
@@ -54,49 +56,6 @@ func normalize(s string) string {
 	return string(ok)
 }
 
-func ensureValidAlias(ent *model.Entity, attr *model.AttributeRaw) {
-	consumedAlias := make([]string, 0, len(ent.RawAttributes))
-	for _, attr := range ent.RawAttributes {
-		if len(attr.Alias) == 0 {
-			continue
-		}
-		consumedAlias = append(consumedAlias, attr.Alias)
-	}
-
-	if slices.Contains(consumedAlias, attr.Alias) {
-		attr.Alias = ""
-		// todo warnings
-		// attr.AppendErr(ErrReusedAlias)
-	}
-}
-
-func ensureValidReference(schemas []*model.Schema, attr *model.AttributeRaw) {
-	if attr.ReferenceTo != nil {
-		return
-	}
-
-	before, after, isFullRef := strings.Cut(attr.Name, ".")
-
-	for _, sch := range schemas {
-		for _, ent := range sch.Entities {
-			if isFullRef {
-				if before == sch.Name && after == ent.Name {
-					attr.ReferenceTo = ent
-					return
-				}
-				continue
-			}
-
-			if before == ent.Name {
-				attr.ReferenceTo = ent
-				return
-			}
-		}
-	}
-
-	attr.AppendErr(ErrInvalidReference)
-}
-
 // Raw takes in a string and provides the schemas
 func Raw(s string) []*model.Schema {
 	schemas := make([]*model.Schema, 0, 3)
@@ -115,6 +74,9 @@ func Raw(s string) []*model.Schema {
 			if err != nil {
 				continue
 			}
+			if len(sch.ID) == 0 {
+				sch.ID = rand.Text()
+			}
 			prevSch = sch
 			schemas = append(schemas, sch)
 		case lineKindEnt:
@@ -125,6 +87,9 @@ func Raw(s string) []*model.Schema {
 			if err != nil {
 				continue
 			}
+			if len(ent.ID) == 0 {
+				ent.ID = rand.Text()
+			}
 			ent.Parent = prevSch
 			prevEnt = ent
 			prevSch.Entities = append(prevSch.Entities, ent)
@@ -133,13 +98,20 @@ func Raw(s string) []*model.Schema {
 				continue
 			}
 			attr := newAttributeFromLine(line)
+			if len(attr.ID) == 0 {
+				attr.ID = rand.Text()
+			}
 			attr.Parent = prevEnt
 
 			if attr.Kind == model.AttrKindReference {
-				ensureValidReference(schemas, attr)
+				attr.EnsureValidReference(schemas)
 			}
 
-			ensureValidAlias(prevEnt, attr)
+			attr.EnsureValidAlias(prevEnt)
+			attr.EnsureValidRange()
+			attr.MaybeRequireValidation()
+			attr.SanitizeDefaultValue()
+			attr.SanativeSerialKind()
 
 			prevEnt.RawAttributes = append(prevEnt.RawAttributes, attr)
 		default:

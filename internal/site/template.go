@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"slices"
 	"text/template"
+
+	"github.com/Isaac799/devtoolbox/internal/strparse"
 )
 
 // HandlerPageHome handles the home page.
@@ -52,7 +54,7 @@ func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request
 		}
 	}
 	{
-		s := filepath.Join(wd, "public", "fields", "*.html")
+		s := filepath.Join(wd, "public", "form", "*.html")
 		tmpl, err = tmpl.ParseGlob(s)
 		if err != nil {
 			fmt.Println(err)
@@ -156,7 +158,7 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	{
-		s := filepath.Join(wd, "public", "fields", "*.html")
+		s := filepath.Join(wd, "public", "form", "*.html")
 		tmpl, err = tmpl.ParseGlob(s)
 		if err != nil {
 			fmt.Println(err)
@@ -191,6 +193,7 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 	var (
 		wd, err = os.Getwd()
 	)
+
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -223,7 +226,7 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 	}
 
 	{
-		s := filepath.Join(wd, "public", "fields", "*.html")
+		s := filepath.Join(wd, "public", "form", "*.html")
 		tmpl, err = tmpl.ParseGlob(s)
 		if err != nil {
 			fmt.Println(err)
@@ -244,6 +247,12 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	// TODO remove: allows setting initial off example
+	if len(client.Input.Q) > 0 && (client.LastOutput == nil || len(client.LastOutput.Schemas) == 0) {
+		client.LastOutput = emptyLastOutput(strparse.Raw(client.Input.Q))
+		client.SetOutput()
 	}
 
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
@@ -268,8 +277,15 @@ func (store *ClientStore) HandlerDelta(w http.ResponseWriter, r *http.Request) {
 
 	client.deltas(
 		r,
-		deltaQ, deltaMode, deltaExample, deltaFocus,
+		deltaQ, deltaMode, deltaExample,
+		deltaSchema, deltaEntity, deltaAttribute,
 	)
+
+	err := client.SetOutput()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	store.HandlerPageHome(w, r)
 }
@@ -306,7 +322,7 @@ func (store *ClientStore) HandlerFocus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	{
-		s := filepath.Join(wd, "public", "fields", "*.html")
+		s := filepath.Join(wd, "public", "form", "*.html")
 		tmpl, err = tmpl.ParseGlob(s)
 		if err != nil {
 			fmt.Println(err)

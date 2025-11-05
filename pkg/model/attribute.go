@@ -1,8 +1,10 @@
 package model
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -50,6 +52,8 @@ var _attrKind = map[AttrKind]string{
 
 // AttributeRaw is a metric in an entity, like a column in a table
 type AttributeRaw struct {
+	ID string
+
 	Kind AttrKind
 
 	Primary      bool
@@ -183,12 +187,128 @@ func (attr *AttributeRaw) HasDefault() bool {
 func (attr *AttributeRaw) MaybeRequireValidation() {
 	switch attr.Kind {
 	case AttrKindString:
-		if !attr.Max.Valid {
+		if len(attr.Max.String) == 0 {
 			attr.AppendErr(ErrMaxLenRequired)
 		}
 	case AttrKindBit:
-		if !attr.Max.Valid {
+		if len(attr.Max.String) == 0 {
 			attr.AppendErr(ErrBitSizeRequired)
+		}
+	}
+}
+
+// SanativeSerialKind will set and unset values accordingly
+func (attr *AttributeRaw) SanativeSerialKind() {
+	if attr.Kind != AttrKindSerial {
+		return
+	}
+	attr.Primary = true
+	attr.Required = sql.NullBool{Valid: true, Bool: true}
+	attr.Min = sql.NullString{Valid: false}
+	attr.Max = sql.NullString{Valid: false}
+}
+
+func (attr *AttributeRaw) EnsureValidAlias(ent *Entity) {
+	consumedAlias := make([]string, 0, len(ent.RawAttributes))
+	for _, attr := range ent.RawAttributes {
+		if len(attr.Alias) == 0 {
+			continue
+		}
+		consumedAlias = append(consumedAlias, attr.Alias)
+	}
+
+	if slices.Contains(consumedAlias, attr.Alias) {
+		attr.Alias = ""
+		// todo warnings
+		// attr.AppendErr(ErrReusedAlias)
+	}
+}
+
+func (attr *AttributeRaw) EnsureValidReference(schemas []*Schema) {
+	if attr.ReferenceTo != nil {
+		return
+	}
+
+	before, after, isFullRef := strings.Cut(attr.Name, ".")
+
+	for _, sch := range schemas {
+		for _, ent := range sch.Entities {
+			if isFullRef {
+				if before == sch.Name && after == ent.Name {
+					attr.ReferenceTo = ent
+					return
+				}
+				continue
+			}
+
+			if before == ent.Name {
+				attr.ReferenceTo = ent
+				return
+			}
+		}
+	}
+
+	attr.AppendErr(ErrInvalidReference)
+}
+
+func (attr *AttributeRaw) EnsureValidRange() {
+	minStr := attr.Min.String
+	maxStr := attr.Max.String
+
+	switch attr.Kind {
+	case AttrKindBit:
+		attr.Min = sql.NullString{String: "", Valid: false}
+		_, maxErr := strconv.Atoi(maxStr)
+		if maxErr != nil {
+			attr.AppendErr(ErrRangeMaxMalformed)
+		}
+	case AttrKindDate:
+		min, minErr := time.Parse(time.DateOnly, minStr)
+		max, maxErr := time.Parse(time.DateOnly, maxStr)
+		if minErr != nil && len(minStr) > 0 {
+			attr.AppendErr(ErrRangeMinMalformed)
+		}
+		if maxErr != nil && len(maxStr) > 0 {
+			attr.AppendErr(ErrRangeMaxMalformed)
+		}
+		if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
+			attr.AppendErr(ErrRangeMaxUnderMin)
+		}
+	case AttrKindTime:
+		min, minErr := time.Parse(time.TimeOnly, minStr)
+		max, maxErr := time.Parse(time.TimeOnly, maxStr)
+		if minErr != nil && len(minStr) > 0 {
+			attr.AppendErr(ErrRangeMinMalformed)
+		}
+		if maxErr != nil && len(maxStr) > 0 {
+			attr.AppendErr(ErrRangeMaxMalformed)
+		}
+		if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
+			attr.AppendErr(ErrRangeMaxUnderMin)
+		}
+	case AttrKindTimestamp:
+		min, minErr := time.Parse(time.DateTime, minStr)
+		max, maxErr := time.Parse(time.DateTime, maxStr)
+		if minErr != nil && len(minStr) > 0 {
+			attr.AppendErr(ErrRangeMinMalformed)
+		}
+		if maxErr != nil && len(maxStr) > 0 {
+			attr.AppendErr(ErrRangeMaxMalformed)
+		}
+		if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
+			attr.AppendErr(ErrRangeMaxUnderMin)
+		}
+	case AttrKindDecimal, AttrKindReal, AttrKindFloat, AttrKindInt, AttrKindMoney, AttrKindSerial, AttrKindString, AttrKindChar:
+		min, minErr := strconv.ParseFloat(minStr, 64)
+		max, maxErr := strconv.ParseFloat(maxStr, 64)
+		if len(minStr) > 0 && minErr != nil {
+			attr.AppendErr(ErrRangeMinMalformed)
+		}
+		if len(maxStr) > 0 && maxErr != nil {
+			attr.AppendErr(ErrRangeMaxMalformed)
+		}
+		if len(minStr) > 0 && len(maxStr) > 0 && min > max {
+			attr.AppendErr(ErrRangeMaxUnderMin)
 		}
 	}
 }

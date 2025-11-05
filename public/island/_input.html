@@ -1,7 +1,7 @@
 {{ define "_input" }}
 {{ if eq .Client.Input.Mode 1 }}
 
-<div class="fc g2 fade-me-in">
+<div class="fc g2">
     <div class="fr g1">
         <button
             hx-get="/dialog/_schema"
@@ -42,10 +42,10 @@
 
 {{ else }}
 
-<div class="fr g1 fade-me-in">
+<div class="fr g1">
     <div class="fc g2">
-        {{ range $si, $schema := .Output.Schemas }}
-        <div class="schema {{ if (eq $.Client.Input.Focus.Path $schema.Path) }}focused{{ end }}">
+        {{ range $si, $schema := .Client.LastOutput.Schemas }}
+        <div class="schema {{ if (eq $.Client.Input.Focus.RawID $schema.ID) }}focused{{ end }}">
             {{ if ne $si 0 }}{{ end }}
             <form
                 class="focusable fr g1"
@@ -57,14 +57,14 @@
                 <input
                     type="hidden"
                     name="focus"
-                    value="{{ $schema.Path }}"
+                    value="{{ $schema.ID }}"
                 >
                 <span class="schema-title">
                     {{ $schema.Name }}
                 </span>
             </form>
             {{ range $ei, $entity := $schema.Entities }}
-            <div class="entity {{ if (eq $.Client.Input.Focus.Path $entity.Path) }}focused{{ end }}">
+            <div class="entity {{ if (eq $.Client.Input.Focus.RawID $entity.ID) }}focused{{ end }}">
                 {{ if ne $ei 0 }}{{ end }}
                 <form
                     class="focusable fr g1"
@@ -76,14 +76,14 @@
                     <input
                         type="hidden"
                         name="focus"
-                        value="{{ $entity.Path }}"
+                        value="{{ $entity.ID }}"
                     >
                     <span class="entity-title">
                         {{ $entity.Name }}
                     </span>
                 </form>
                 {{ range $ai, $attr := $entity.RawAttributes }}
-                <div class="attribute {{ if (eq $.Client.Input.Focus.Path $attr.Path) }}focused{{ end }}">
+                <div class="attribute {{ if (eq $.Client.Input.Focus.RawID $attr.ID) }}focused{{ end }}">
                     {{ if ne $ai 0 }}{{ end }}
                     <form
                         class="focusable fr g1"
@@ -95,7 +95,7 @@
                         <input
                             type="hidden"
                             name="focus"
-                            value="{{ $attr.Path }}"
+                            value="{{ $attr.ID }}"
                         >
                         <i class="material-icons attr-icon-{{ $attr.Kind }}"></i>
                         {{ $attr.Name }}
@@ -109,13 +109,13 @@
     </div>
     <div class="fc g2">
         {{ if .Client.Input.Focus.Schema }}
-        {{ template "fields.schema" . }}
+        {{ template "form.schema" . }}
         {{ end }}
         {{ if .Client.Input.Focus.Entity }}
-        {{ template "fields.entity" . }}
+        {{ template "form.entity" . }}
         {{ end }}
         {{ if .Client.Input.Focus.Attribute }}
-        {{ template "fields.attribute" . }}
+        {{ template "form.attribute" . }}
         {{ end }}
     </div>
 </div>

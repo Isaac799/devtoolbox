@@ -7,6 +7,8 @@ import (
 
 // Entity is an entity in a schema
 type Entity struct {
+	ID string
+
 	Name   string
 	Parent *Schema
 
@@ -16,6 +18,12 @@ type Entity struct {
 
 	// all attributes after cached
 	ar []*Attribute
+}
+
+// ClearCache lets an entity know that something changed, and we
+// must not use cache
+func (ent *Entity) ClearCache() {
+	ent.ar = nil
 }
 
 // Path is a unique accessor value for focusing via the ux
@@ -28,7 +36,10 @@ func (ent *Entity) Path() string {
 
 // String provides parsable text to generate itself
 func (ent *Entity) String() string {
-	return fmt.Sprintf("## %s", ent.Name)
+	opts := []string{}
+
+	optsStr := strings.Join(opts, ", ")
+	return fmt.Sprintf("## %s with %s", ent.Name, optsStr)
 }
 
 // Attribute is a attribute discovered curing recursion.
@@ -89,16 +100,20 @@ func (ent *Entity) attributes(n, max int, path string, collection *[]*Attribute,
 			continue
 		}
 
-		*collection = append(*collection, &Attribute{
+		ref := Reference{
+			Path:          p,
+			Source:        src,
+			Final:         attr,
+			ChangedSchema: src.Parent.Parent != attr.Parent.Parent,
+		}
+
+		attr := &Attribute{
 			Attribute:   attr,
 			DirectChild: n == 0,
-			Reference: Reference{
-				Path:          p,
-				Source:        src,
-				Final:         attr,
-				ChangedSchema: src.Parent.Parent != attr.Parent.Parent,
-			},
-		})
+			Reference:   ref,
+		}
+
+		*collection = append(*collection, attr)
 	}
 
 	return *collection

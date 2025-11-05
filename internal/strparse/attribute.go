@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"slices"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/Isaac799/devtoolbox/pkg/model"
 	"github.com/iancoleman/strcase"
@@ -37,8 +35,8 @@ func newAttributeFromLine(s string) *model.AttributeRaw {
 	// allow 'foo.bar' for schema.entity name as a reference
 	// later I prevent it if kind is not relevant
 	identifierStrBefore, identifierStrAfter, identifierStrHadPeriod := strings.Cut(identifierStr, ".")
-	identifierStrBefore = normalize(identifierStrBefore)
-	identifierStrAfter = normalize(identifierStrAfter)
+	identifierStrBefore = Normalize(identifierStrBefore)
+	identifierStrAfter = Normalize(identifierStrAfter)
 
 	if identifierStrHadPeriod {
 		identifierStr = fmt.Sprintf("%s.%s", identifierStrBefore, identifierStrAfter)
@@ -51,7 +49,7 @@ func newAttributeFromLine(s string) *model.AttributeRaw {
 		optsRaw             = strings.Split(optsStr, ",")
 		attr                = model.AttributeRaw{
 			Name:   identifierStr,
-			Alias:  normalize(alias),
+			Alias:  Normalize(alias),
 			Unique: make([]string, 0, len(optsRaw)),
 		}
 	)
@@ -110,63 +108,6 @@ func newAttributeFromLine(s string) *model.AttributeRaw {
 			minStr, maxStr, _ := strings.Cut(opt, deliRange)
 			attr.Min = sql.NullString{String: minStr, Valid: len(minStr) > 0}
 			attr.Max = sql.NullString{String: maxStr, Valid: len(maxStr) > 0}
-
-			switch attr.Kind {
-			case model.AttrKindBit:
-				attr.Min = sql.NullString{String: "", Valid: false}
-				_, maxErr := strconv.Atoi(maxStr)
-				if maxErr != nil {
-					attr.AppendErr(ErrRangeMaxMalformed)
-				}
-			case model.AttrKindDate:
-				min, minErr := time.Parse(time.DateOnly, minStr)
-				max, maxErr := time.Parse(time.DateOnly, maxStr)
-				if minErr != nil && len(minStr) > 0 {
-					attr.AppendErr(ErrRangeMinMalformed)
-				}
-				if maxErr != nil && len(maxStr) > 0 {
-					attr.AppendErr(ErrRangeMaxMalformed)
-				}
-				if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
-					attr.AppendErr(ErrRangeMaxUnderMin)
-				}
-			case model.AttrKindTime:
-				min, minErr := time.Parse(time.TimeOnly, minStr)
-				max, maxErr := time.Parse(time.TimeOnly, maxStr)
-				if minErr != nil && len(minStr) > 0 {
-					attr.AppendErr(ErrRangeMinMalformed)
-				}
-				if maxErr != nil && len(maxStr) > 0 {
-					attr.AppendErr(ErrRangeMaxMalformed)
-				}
-				if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
-					attr.AppendErr(ErrRangeMaxUnderMin)
-				}
-			case model.AttrKindTimestamp:
-				min, minErr := time.Parse(time.DateTime, minStr)
-				max, maxErr := time.Parse(time.DateTime, maxStr)
-				if minErr != nil && len(minStr) > 0 {
-					attr.AppendErr(ErrRangeMinMalformed)
-				}
-				if maxErr != nil && len(maxStr) > 0 {
-					attr.AppendErr(ErrRangeMaxMalformed)
-				}
-				if len(minStr) > 0 && len(maxStr) > 0 && max.Before(min) {
-					attr.AppendErr(ErrRangeMaxUnderMin)
-				}
-			case model.AttrKindDecimal, model.AttrKindReal, model.AttrKindFloat, model.AttrKindInt, model.AttrKindMoney, model.AttrKindSerial, model.AttrKindString, model.AttrKindChar:
-				min, minErr := strconv.ParseFloat(minStr, 64)
-				max, maxErr := strconv.ParseFloat(maxStr, 64)
-				if len(minStr) > 0 && minErr != nil {
-					attr.AppendErr(ErrRangeMinMalformed)
-				}
-				if len(maxStr) > 0 && maxErr != nil {
-					attr.AppendErr(ErrRangeMaxMalformed)
-				}
-				if len(minStr) > 0 && len(maxStr) > 0 && min > max {
-					attr.AppendErr(ErrRangeMaxUnderMin)
-				}
-			}
 			continue
 		}
 
@@ -181,21 +122,6 @@ func newAttributeFromLine(s string) *model.AttributeRaw {
 
 			continue
 		}
-	}
-
-	attr.MaybeRequireValidation()
-
-	attr.SanitizeDefaultValue()
-
-	if attr.Kind == model.AttrKindString && !attr.Validation.Max.Valid {
-		attr.AppendErr(ErrMissingMax)
-	}
-
-	if attr.Kind == model.AttrKindSerial {
-		attr.Primary = true
-		attr.Required = sql.NullBool{Valid: true, Bool: true}
-		attr.Min = sql.NullString{Valid: false}
-		attr.Max = sql.NullString{Valid: false}
 	}
 
 	return &attr

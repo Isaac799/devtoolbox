@@ -6,14 +6,7 @@
 
     <p>Entity should be a singular thing. A table / blueprint.</p>
 
-    <form
-        hx-post="/make/entity"
-        hx-target="#make-entity"
-        hx-swap="innerText"
-        hx-trigger="keyup delay:500ms changed"
-    >
-        {{ template "fields.entity" . }}
-    </form>
+    {{ template "form.entity" . }}
 
     <pre id="make-entity"></pre>
 

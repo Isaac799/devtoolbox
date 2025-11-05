@@ -1,6 +1,23 @@
-{{ define "fields.attribute" }}
+
+
+{{ define "form.attribute" }}
 {{ with $a := .Client.Input.Focus.Attribute }}
-<div class="fc g2">
+
+<form
+    hx-post="/delta"
+    hx-target="body"
+    hx-trigger="change delay:500ms, keyup delay:500ms"
+    class="fc g2"
+>
+    <input
+        type="hidden"
+        name="AttributeID"
+        id="AttributeID"
+        readonly
+        {{ if $a }}
+        value="{{ $a.ID }}"
+        {{ end }}
+    >
 
     {{ if $a }}
     {{ if $a.ReferenceTo }}
@@ -29,11 +46,8 @@
             >
         </div>
     </div>
-   
     {{ else }}
-
     <!-- non reference -->
-
     <div class="fr g1">
         <div>
             <label for="AttributeName">Name</label>
@@ -70,81 +84,81 @@
             </select>
         </div>
     </div>
-    {{ end }}
-    {{ end }}
-</div>
+        {{ end }}
+        {{ end }}
 
-<span>
-    WITH
-</span>
+    <span>
+        WITH
+    </span>
 
-<div class="fr g1">
-    <div>
-        <label for="AttributeRequired">Is Required</label>
-        <input
-            type="checkbox"
-            value="true"
-            name="AttributeRequired"
-            id="AttributeRequired"
-            {{ if $a }}{{ if $a.Validation.Required.Bool }} checked {{ end }}{{ end }}
-        >
+    <div class="fr g1">
+        <div>
+            <label for="AttributeRequired">Is Required</label>
+            <input
+                type="checkbox"
+                value="true"
+                name="AttributeRequired"
+                id="AttributeRequired"
+                {{ if $a }}{{ if $a.Validation.Required.Bool }} checked {{ end }}{{ end }}
+            >
+        </div>
+        <div>
+            <label for="AttributePrimary">Is Primary</label>
+            <input
+                type="checkbox"
+                value="true"
+                name="AttributePrimary"
+                id="AttributePrimary"
+                {{ if $a }}{{ if $a.Primary }} checked {{ end }}{{ end }}
+            >
+        </div>
     </div>
     <div>
-        <label for="AttributePrimary">Is Primary</label>
-        <input
-            type="checkbox"
-            value="true"
-            name="AttributePrimary"
-            id="AttributePrimary"
-            {{ if $a }}{{ if $a.Primary }} checked {{ end }}{{ end }}
-        >
-    </div>
-</div>
-<div>
-    <label for="AttributeUnique">Unique Labels (csv)</label>
-    <input
-        type="text"
-        name="AttributeUnique"
-        id="AttributeUnique"
-        {{ if $a }}
-        value="{{ $a.UniqueLabels }}"
-        {{ end }}
-    >
-</div>
-<div>
-    <label for="AttributeDefault">Default Value</label>
-    <input
-        type="text"
-        name="AttributeDefault"
-        id="AttributeDefault"
-        {{ if $a }}
-        value="{{ $a.DefaultValue }}"
-        {{ end }}
-    >
-</div>
-<div class="fr g1">
-    <div>
-        <label for="AttributeMin">Min</label>
+        <label for="AttributeUnique">Unique Labels (csv)</label>
         <input
             type="text"
-            name="AttributeMin"
-            id="AttributeMin"
+            name="AttributeUnique"
+            id="AttributeUnique"
             {{ if $a }}
-            value="{{ $a.Validation.Min.String }}"
+            value="{{ $a.UniqueLabels }}"
             {{ end }}
         >
     </div>
     <div>
-        <label for="AttributeMax">Max</label>
+        <label for="AttributeDefault">Default Value</label>
         <input
             type="text"
-            name="AttributeMax"
-            id="AttributeMax"
+            name="AttributeDefault"
+            id="AttributeDefault"
             {{ if $a }}
-            value="{{ $a.Validation.Max.String }}"
+            value="{{ $a.DefaultValue }}"
             {{ end }}
         >
     </div>
-</div>
+    <div class="fr g1">
+        <div>
+            <label for="AttributeMin">Min</label>
+            <input
+                type="text"
+                name="AttributeMin"
+                id="AttributeMin"
+                {{ if $a }}
+                value="{{ $a.Validation.Min.String }}"
+                {{ end }}
+            >
+        </div>
+        <div>
+            <label for="AttributeMax">Max</label>
+            <input
+                type="text"
+                name="AttributeMax"
+                id="AttributeMax"
+                {{ if $a }}
+                value="{{ $a.Validation.Max.String }}"
+                {{ end }}
+            >
+        </div>
+    </div>
+</form>
 {{ end }}
 {{ end }}

@@ -2,7 +2,7 @@
 <div class="fc g2 fade-me-in">
 
     <div class="fr g1">
-        {{- if .Output.OkayToDownload }}
+        {{- if .Client.LastOutput.OkayToDownload }}
         <form
             action="/download"
             method="post"
@@ -16,7 +16,7 @@
         {{- end }}
     </div>
 
-    {{- if .Output.HasErr }}
+    {{- if .Client.LastOutput.HasErr }}
     <details
         open
         style="color: red;"
@@ -24,7 +24,7 @@
         <summary>Errors</summary>
         <div class="scroll-box">
             <pre>
-        {{- range $index, $sch := .Output.Schemas }}
+        {{- range $index, $sch := .Client.LastOutput.Schemas }}
         {{- range $index, $ent := $sch.Entities }}
         {{- range $index, $attr := $ent.RawAttributes }}
         {{- range $index, $err := $attr.Err }}{{ $sch.Name }}/{{ $ent.Name }}/{{ $attr.Name }}: {{ $err }}{{- end }}
@@ -39,8 +39,8 @@
 
     <h3>Postgres</h3>
 
-    {{ range $k, $v := .Output.PgGen }}
-    <details>
+    {{ range $k, $v := .Client.LastOutput.PgGen }}
+    <details open>
         <summary class="file-name"> {{ $k.Full }} </summary>
         <div class="scroll-box">
             <pre>{{- $v }}</pre>
@@ -50,7 +50,7 @@
 
     <h3>Go</h3>
 
-    {{ range $k, $v := .Output.GoGen }}
+    {{ range $k, $v := .Client.LastOutput.GoGen }}
     <details>
         <summary class="file-name"> {{ $k.Full }} </summary>
         <div class="scroll-box">

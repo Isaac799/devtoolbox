@@ -6,15 +6,7 @@
 
     <p>Attribute is a property or single descriptor of an entity.</p>
 
-    <form
-        hx-post="/make/attribute"
-        hx-target="#make-attribute"
-        hx-swap="innerText"
-        hx-trigger="change delay:500ms, keyup delay:500ms"
-        class="fc g2"
-    >
-        {{ template "fields.attribute" . }}
-    </form>
+    {{ template "form.attribute" . }}
 
     <pre id="make-attribute"></pre>
 

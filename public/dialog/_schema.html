@@ -6,14 +6,7 @@
 
     <p>Schema is a namespace or category to store entities.</p>
 
-    <form
-        hx-post="/make/schema"
-        hx-target="#make-schema"
-        hx-swap="innerText"
-        hx-trigger="keyup delay:500ms changed"
-    >
-        {{ template "fields.schema" }}
-    </form>
+    {{ template "form.schema" . }}
 
     <pre id="make-schema"></pre>
 

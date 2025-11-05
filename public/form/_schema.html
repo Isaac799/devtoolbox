@@ -1,0 +1,27 @@
+{{ define "form.schema" }}
+<form
+    hx-post="/delta"
+    hx-target="body"
+    hx-trigger="keyup delay:500ms changed"
+>
+    <input
+        type="hidden"
+        name="SchemaID"
+        id="SchemaID"
+        {{ if .Client.Input.Focus.Schema }}
+        value="{{ .Client.Input.Focus.Schema.ID }}"
+        {{ end }}
+    >
+    <div>
+        <label for="SchemaName">Name</label>
+        <input
+            type="text"
+            name="SchemaName"
+            id="SchemaName"
+            {{ if .Client.Input.Focus.Schema }}
+            value="{{ .Client.Input.Focus.Schema.Name }}"
+            {{ end }}
+        >
+    </div>
+</form>
+{{ end }}

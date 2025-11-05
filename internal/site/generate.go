@@ -1,8 +1,6 @@
 package site
 
 import (
-	"strings"
-
 	"github.com/Isaac799/devtoolbox/internal/strgen"
 	"github.com/Isaac799/devtoolbox/internal/strparse"
 	"github.com/Isaac799/devtoolbox/pkg/model"
@@ -19,12 +17,13 @@ const (
 
 // Focus is the gui focus of a user
 type Focus struct {
-	Path string
+	RawID string
 
-	// one of the following
-	Schema    *model.Schema
-	Entity    *model.Entity
-	Attribute *model.AttributeRaw
+	// zero or one of the following may be set.
+	// is pointer to a pointer to allow me to replace it in place
+	Schema    **model.Schema
+	Entity    **model.Entity
+	Attribute **model.AttributeRaw
 }
 
 // Input is for template rendering to help retain state
@@ -35,38 +34,35 @@ type Input struct {
 	Mode    InputMode
 }
 
-// SetFocus sets the focus based on its path, given schemas
-func (focus *Focus) SetFocus(schemas []*model.Schema) {
-	focus.Schema = nil
-	focus.Entity = nil
-	focus.Attribute = nil
+// SetFocus sets the focus based on its path, given schemas.
+func (client *Client) SetFocus() {
+	client.Input.Focus.Schema = nil
+	client.Input.Focus.Entity = nil
+	client.Input.Focus.Attribute = nil
 
-	if len(focus.Path) == 0 {
+	if len(client.Input.Focus.RawID) == 0 {
 		return
 	}
 
-	schemaStr, s, _ := strings.Cut(focus.Path, "/")
-	entityStr, attrStr, _ := strings.Cut(s, "/")
+	schemas := client.LastOutput.Schemas
 
-	for _, schema := range schemas {
-		if schema.Name != schemaStr {
-			continue
-		}
-		if schema.Name == schemaStr && len(entityStr) == 0 && len(attrStr) == 0 {
-			focus.Schema = schema
+	// index gives direct access, instead of copy
+
+	for si := range schemas {
+		if schemas[si].ID == client.Input.Focus.RawID {
+			client.Input.Focus.Schema = &schemas[si]
 			break
 		}
-		for _, entity := range schema.Entities {
-			if entity.Name != entityStr {
-				continue
-			}
-			if entity.Name == entityStr && len(attrStr) == 0 {
-				focus.Entity = entity
+		for ei := range schemas[si].Entities {
+			if schemas[si].Entities[ei].ID == client.Input.Focus.RawID {
+				// schemas[si].Entities[ei].ClearCache()
+				client.Input.Focus.Entity = &schemas[si].Entities[ei]
 				break
 			}
-			for _, attr := range entity.RawAttributes {
-				if attr.Name == attrStr {
-					focus.Attribute = attr
+			for i := range schemas[si].Entities[ei].RawAttributes {
+				if schemas[si].Entities[ei].RawAttributes[i].ID == client.Input.Focus.RawID {
+					// schemas[si].Entities[ei].ClearCache()
+					client.Input.Focus.Attribute = &schemas[si].Entities[ei].RawAttributes[i]
 					break
 				}
 			}
@@ -130,53 +126,72 @@ func defaultExamples() []Example {
 	}
 }
 
-func output(input *Input) (*Output, error) {
-	schemas := strparse.Raw(input.Q)
-	goGen, err := strgen.GoStructs(schemas)
+func emptyLastOutput(schemas []*model.Schema) *Output {
+	return &Output{
+		Schemas: schemas,
+		GoGen:   make(map[strgen.FileName]string),
+		PgGen:   make(map[strgen.FileName]string, 0),
+	}
+}
+
+// SetOutput sets the output.
+// If running in text mode, we parse out.
+// If running in gui mode, we just use the last parse.
+func (client *Client) SetOutput() error {
+	schemas := make([]*model.Schema, 0)
+
+	if client.LastOutput == nil {
+		client.LastOutput = emptyLastOutput(schemas)
+	}
+
+	if client.Input.Mode == InputModeText {
+		schemas = strparse.Raw(client.Input.Q)
+	} else {
+		schemas = client.LastOutput.Schemas
+	}
+
+	pgFiles, err := strgen.PostgresSetup(schemas)
 	if err != nil {
-		return nil, err
+		client.LastOutput = emptyLastOutput(schemas)
+		return err
+	}
+
+	goFiles, err := strgen.GoStructs(schemas)
+	if err != nil {
+		client.LastOutput = emptyLastOutput(schemas)
+		return err
 	}
 
 	var hasErr bool
-	for _, s := range schemas {
+	for _, s := range client.LastOutput.Schemas {
 		if s.HasErr() {
 			hasErr = true
 			break
 		}
 	}
 
-	pgGen, err := strgen.PostgresSetup(schemas)
-	if err != nil {
-		return nil, err
+	out := Output{
+		Schemas:        schemas,
+		HasErr:         hasErr,
+		OkayToDownload: len(client.LastOutput.Schemas) > 0 && !hasErr,
+		GoGen:          goFiles,
+		PgGen:          pgFiles,
 	}
 
-	return &Output{
-		Schemas:        schemas,
-		GoGen:          goGen,
-		PgGen:          pgGen,
-		HasErr:         hasErr,
-		OkayToDownload: len(schemas) > 0 && !hasErr,
-	}, nil
+	client.LastOutput = &out
+
+	return nil
 }
 
 // TemplateData is the structure used for most templates
 type TemplateData struct {
 	Client   *Client
-	Output   *Output
 	Examples []Example
 }
 
 func (client *Client) templateData() (*TemplateData, error) {
-	out, err := output(&client.Input)
-	if err != nil {
-		return nil, err
-	}
-
-	client.Input.Focus.SetFocus(out.Schemas)
-
 	return &TemplateData{
 		Client:   client,
-		Output:   out,
 		Examples: defaultExamples(),
 	}, nil
 }

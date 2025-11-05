@@ -7,6 +7,8 @@ import (
 
 // Schema is the primary categorizations
 type Schema struct {
+	ID string
+
 	Name     string
 	Entities []*Entity
 }
@@ -31,5 +33,9 @@ func (sch *Schema) HasErr() bool {
 
 // String provides parsable text to generate itself
 func (sch *Schema) String() string {
-	return fmt.Sprintf("# %s", sch.Name)
+	opts := []string{}
+
+	optsStr := strings.Join(opts, ", ")
+
+	return fmt.Sprintf("# %s with %s", sch.Name, optsStr)
 }

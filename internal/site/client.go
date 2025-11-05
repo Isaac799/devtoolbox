@@ -29,9 +29,10 @@ type Client struct {
 	CSRF string
 
 	// mutex protects below
-	mu     sync.Mutex
-	Expire time.Time
-	Input  Input
+	mu         sync.Mutex
+	Expire     time.Time
+	Input      Input
+	LastOutput *Output
 }
 
 func (c *Client) extendLife() {
