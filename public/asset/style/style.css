@@ -79,6 +79,13 @@ dialog h3 {
   flex-direction: row;
 }
 
+.fr-left-center {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .fw {
   flex-wrap: wrap;
 }

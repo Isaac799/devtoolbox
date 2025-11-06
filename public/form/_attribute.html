@@ -95,6 +95,8 @@
         {{ end }}
         {{ end }}
 
+    <!-- not serial -->
+    {{ if ne $a.Kind 2 }}
     <span>
         WITH
     </span>
@@ -167,6 +169,21 @@
             >
         </div>
     </div>
+    {{ else }}
+    <span>
+        No more options for a serial kind.
+    </span>
+    {{ end }}
+</form>
+
+<form
+    hx-delete="/rm/child/{{ $a.ID }}"
+    hx-target="body"
+    hx-swap="innerHTML"
+>
+    <button type="submit">
+        Delete
+    </button>
 </form>
 {{ end }}
 {{ end }}

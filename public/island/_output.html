@@ -8,7 +8,11 @@
             method="post"
             target="_blank"
         >
-            <input type="hidden" name="X-CSRF-TOKEN" value="{{ .Client.CSRF }}">
+            <input
+                type="hidden"
+                name="X-CSRF-TOKEN"
+                value="{{ .Client.CSRF }}"
+            >
             <button type="submit">
                 Download
             </button>
@@ -17,13 +21,10 @@
     </div>
 
     {{- if .Client.LastOutput.HasErr }}
-    <details
-        open
-        style="color: red;"
-    >
+    <details open>
         <summary>Errors</summary>
         <div class="scroll-box">
-            <pre>
+            <pre class="fr-red">
         {{- range $index, $sch := .Client.LastOutput.Schemas }}
         {{- range $index, $ent := $sch.Entities }}
         {{- range $index, $attr := $ent.RawAttributes }}
@@ -32,7 +33,6 @@
         {{- end }}
         {{- end }}
             </pre>
-
         </div>
     </details>
     {{- end }}

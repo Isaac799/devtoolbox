@@ -260,10 +260,6 @@ func (attr *AttributeRaw) EnsureValidName(ent *Entity) {
 }
 
 func (attr *AttributeRaw) EnsureValidReference(schemas []*Schema) {
-	if attr.ReferenceTo != nil {
-		return
-	}
-
 	before, after, isFullRef := strings.Cut(attr.Name, ".")
 
 	for _, sch := range schemas {
@@ -351,6 +347,13 @@ func (attr *AttributeRaw) EnsureValidRange() {
 		}
 		if len(minStr) > 0 && len(maxStr) > 0 && min > max {
 			attr.AppendErr(ErrRangeMaxUnderMin)
+		}
+	}
+
+	if attr.Kind == AttrKindString || attr.Kind == AttrKindChar || attr.Kind == AttrKindBit {
+		max, maxErr := strconv.ParseFloat(maxStr, 64)
+		if len(maxStr) > 0 && maxErr == nil && max < 0 {
+			attr.AppendErr(ErrRangeMaxBelowZero)
 		}
 	}
 }

@@ -398,3 +398,63 @@ func (store *ClientStore) HandlerNewChild(w http.ResponseWriter, r *http.Request
 
 	store.HandlerPageHome(w, r)
 }
+
+// HandlerRmChild removes a child from a schema, entity, or attribute
+func (store *ClientStore) HandlerRmChild(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if len(id) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	client, csrfOk := store.clientInfo(w, r)
+	if client == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if !csrfOk {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	removed := false
+	for si, schema := range client.LastOutput.Schemas {
+		if schema.ID == id {
+			removed = true
+			client.LastOutput.Schemas = slices.Delete(client.LastOutput.Schemas, si, si+1)
+			break
+		}
+		for ei, entity := range schema.Entities {
+			if entity.ID == id {
+				removed = true
+				schema.Entities = slices.Delete(schema.Entities, ei, ei+1)
+				break
+			}
+			for i, attr := range entity.RawAttributes {
+				if attr.ID == id {
+					entity.RawAttributes = slices.Delete(entity.RawAttributes, i, i+1)
+					removed = true
+					break
+				}
+
+			}
+		}
+	}
+
+	if removed {
+		for _, schema := range client.LastOutput.Schemas {
+			for _, entity := range schema.Entities {
+				entity.ClearCache()
+				for _, attr := range entity.RawAttributes {
+					if attr.Kind == model.AttrKindReference {
+						attr.EnsureValidReference(client.LastOutput.Schemas)
+					}
+				}
+			}
+		}
+		client.ClearFocus()
+		client.SetOutput()
+	}
+
+	store.HandlerPageHome(w, r)
+}

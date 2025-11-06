@@ -86,7 +86,7 @@
                 <div class="attribute {{ if (eq $.Client.Input.Focus.RawID $attr.ID) }}focused{{ end }}">
                     {{ if ne $ai 0 }}{{ end }}
                     <form
-                        class="focusable fr g1 w-full"
+                        class="focusable fr-left-center g1 w-full"
                         hx-post="/focus"
                         hx-target="#input-box"
                         hx-swap="innerHTML"
@@ -110,9 +110,24 @@
                             </span>
                             {{ end }}
                         </span>
-                        {{ if $attr.Primary }}
-                        <i class="material-icons fg-pink ml-auto">key</i>
-                        {{ end }}
+                        <div class="fr-left-center g1 ml-auto">
+                            {{ if $attr.Primary }}
+                            <i
+                                class="material-icons fg-pink"
+                                title="primary key"
+                            >
+                                key
+                            </i>
+                            {{ end }}
+                            {{ if $attr.HasErr }}
+                            <i
+                                class="material-icons fg-red"
+                                title="{{ $attr.ErrString }}"
+                            >
+                                error
+                            </i>
+                            {{ end }}
+                        </div>
                     </form>
                 </div>
                 {{- end }}

@@ -13,4 +13,5 @@ var (
 	ErrRangeMinMalformed = errors.New("range invalid: min malformed")
 	ErrRangeMaxMalformed = errors.New("range invalid: max malformed")
 	ErrRangeMaxUnderMin  = errors.New("range invalid: max under min")
+	ErrRangeMaxBelowZero = errors.New("range invalid: max below zero")
 )

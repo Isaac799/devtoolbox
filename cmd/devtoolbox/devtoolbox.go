@@ -26,6 +26,7 @@ func main() {
 	script := http.FileServer(http.Dir(filepath.Join("public", "asset")))
 	mux.Handle("/public/asset/", http.StripPrefix("/public/asset/", script))
 
+	mux.HandleFunc("/rm/child/{id}", store.HandlerRmChild)
 	mux.HandleFunc("/new/child/{id}", store.HandlerNewChild)
 	mux.HandleFunc("/dialog/{what}", store.HandlerDialog)
 	mux.HandleFunc("/island/{what}", store.HandlerIsland)

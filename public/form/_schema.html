@@ -24,4 +24,14 @@
         >
     </div>
 </form>
+
+<form
+    hx-delete="/rm/child/{{ .Client.Input.Focus.Schema.ID }}"
+    hx-target="body"
+    hx-swap="innerHTML"
+>
+    <button type="submit">
+        Delete
+    </button>
+</form>
 {{ end }}
