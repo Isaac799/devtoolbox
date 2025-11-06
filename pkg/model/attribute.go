@@ -259,6 +259,17 @@ func (attr *AttributeRaw) EnsureValidName(ent *Entity) {
 	}
 }
 
+func (attr *AttributeRaw) ClearReferenceErr() {
+	keepErrs := make([]error, 0, len(attr.Err))
+	for _, err := range attr.Err {
+		if errors.Is(err, ErrReference) {
+			continue
+		}
+		keepErrs = append(keepErrs, err)
+	}
+	attr.Err = keepErrs
+}
+
 func (attr *AttributeRaw) EnsureValidReference(schemas []*Schema) {
 	before, after, isFullRef := strings.Cut(attr.Name, ".")
 
@@ -266,6 +277,10 @@ func (attr *AttributeRaw) EnsureValidReference(schemas []*Schema) {
 		for _, ent := range sch.Entities {
 			// ID is set on gui delta
 			if ent.ID == before {
+				if !ent.HasPrimary() {
+					attr.Err = append(attr.Err, errors.Join(ErrReference, ErrEmptyPrimary))
+					return
+				}
 				attr.ReferenceTo = ent
 				attr.Name = fmt.Sprintf("%s.%s", ent.Parent.Name, ent.Name)
 				return
@@ -273,6 +288,10 @@ func (attr *AttributeRaw) EnsureValidReference(schemas []*Schema) {
 
 			if isFullRef {
 				if before == sch.Name && after == ent.Name {
+					if !ent.HasPrimary() {
+						attr.Err = append(attr.Err, errors.Join(ErrReference, ErrEmptyPrimary))
+						return
+					}
 					attr.ReferenceTo = ent
 					return
 				}
@@ -280,13 +299,17 @@ func (attr *AttributeRaw) EnsureValidReference(schemas []*Schema) {
 			}
 
 			if before == ent.Name {
+				if !ent.HasPrimary() {
+					attr.Err = append(attr.Err, errors.Join(ErrReference, ErrEmptyPrimary))
+					return
+				}
 				attr.ReferenceTo = ent
 				return
 			}
 		}
 	}
 
-	attr.AppendErr(ErrInvalidReference)
+	attr.AppendErr(errors.Join(ErrReference, ErrNonExistent))
 }
 
 func (attr *AttributeRaw) EnsureValidRange() {

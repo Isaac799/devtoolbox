@@ -34,7 +34,7 @@ func (sch *Schema) Path() string {
 func (sch *Schema) HasErr() bool {
 	for _, ent := range sch.Entities {
 		for _, attr := range ent.RawAttributes {
-			if attr.Err != nil {
+			if attr.HasErr() {
 				return true
 			}
 		}

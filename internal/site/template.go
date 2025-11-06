@@ -282,6 +282,8 @@ func (store *ClientStore) HandlerDelta(w http.ResponseWriter, r *http.Request) {
 		deltaSchema, deltaEntity, deltaAttribute,
 	)
 
+	client.LastOutput.refreshSchemas()
+
 	err := client.SetOutput()
 	if err != nil {
 		fmt.Println(err)
@@ -442,16 +444,7 @@ func (store *ClientStore) HandlerRmChild(w http.ResponseWriter, r *http.Request)
 	}
 
 	if removed {
-		for _, schema := range client.LastOutput.Schemas {
-			for _, entity := range schema.Entities {
-				entity.ClearCache()
-				for _, attr := range entity.RawAttributes {
-					if attr.Kind == model.AttrKindReference {
-						attr.EnsureValidReference(client.LastOutput.Schemas)
-					}
-				}
-			}
-		}
+		client.LastOutput.refreshSchemas()
 		client.ClearFocus()
 		client.SetOutput()
 	}

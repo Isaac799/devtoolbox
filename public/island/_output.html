@@ -21,14 +21,17 @@
     </div>
 
     {{- if .Client.LastOutput.HasErr }}
-    <details open>
+    <details open class="fg-red">
         <summary>Errors</summary>
         <div class="scroll-box">
-            <pre class="fr-red">
+            <pre>
         {{- range $index, $sch := .Client.LastOutput.Schemas }}
         {{- range $index, $ent := $sch.Entities }}
         {{- range $index, $attr := $ent.RawAttributes }}
-        {{- range $index, $err := $attr.Err }}{{ $sch.Name }}/{{ $ent.Name }}/{{ $attr.Name }}: {{ $err }}{{- end }}
+        {{- range $index, $err := $attr.Err }}
+{{ $sch.Name }} > {{ $ent.Name }} > {{ $attr.Name }}
+{{ $attr.ErrString }}
+{{ end }}
         {{- end }}
         {{- end }}
         {{- end }}

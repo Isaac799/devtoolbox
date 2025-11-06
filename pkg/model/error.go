@@ -6,8 +6,12 @@ var (
 	ErrMalformedDefault = errors.New("unacceptable default value")
 	ErrMaxLenRequired   = errors.New("upper range is required")
 	ErrBitSizeRequired  = errors.New("bit size is required")
-	ErrInvalidReference = errors.New("cannot find reference")
-	ErrMissingReference = errors.New("reference is not set")
+
+	ErrReference = errors.New("reference error")
+
+	ErrNonExistent  = errors.New("cannot find reference")
+	ErrEmptyPrimary = errors.New("missing primary")
+	ErrUnset        = errors.New("is not set")
 
 	ErrMissingMax        = errors.New("missing max")
 	ErrRangeMinMalformed = errors.New("range invalid: min malformed")

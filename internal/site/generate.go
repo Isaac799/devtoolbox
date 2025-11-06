@@ -105,6 +105,20 @@ type Output struct {
 	HasErr         bool
 }
 
+func (out *Output) refreshSchemas() {
+	for _, schema := range out.Schemas {
+		for _, entity := range schema.Entities {
+			entity.ClearCache()
+			for _, attr := range entity.RawAttributes {
+				attr.ClearReferenceErr()
+				if attr.Kind == model.AttrKindReference {
+					attr.EnsureValidReference(out.Schemas)
+				}
+			}
+		}
+	}
+}
+
 // Example is preset to show functionality
 type Example struct {
 	Label string
