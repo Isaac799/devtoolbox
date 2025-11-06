@@ -3,6 +3,7 @@ package strparse
 import (
 	"strings"
 
+	"github.com/Isaac799/devtoolbox/internal"
 	"github.com/Isaac799/devtoolbox/pkg/model"
 )
 
@@ -15,7 +16,7 @@ func newEntFromLine(s string) (*model.Entity, error) {
 	)
 
 	ent := model.Entity{
-		Name:          Normalize(name),
+		Name:          internal.Normalize(name),
 		RawAttributes: make([]*model.AttributeRaw, 0, 10),
 	}
 

@@ -1,8 +1,11 @@
 package model
 
 import (
+	"crypto/rand"
 	"fmt"
 	"strings"
+
+	"github.com/Isaac799/devtoolbox/internal"
 )
 
 // Schema is the primary categorizations
@@ -11,6 +14,14 @@ type Schema struct {
 
 	Name     string
 	Entities []*Entity
+}
+
+func NewSchema() *Schema {
+	return &Schema{
+		ID:       rand.Text(),
+		Name:     internal.NewFallbackName(),
+		Entities: make([]*Entity, 0, 3),
+	}
 }
 
 // Path is a unique accessor value for focusing via the ux

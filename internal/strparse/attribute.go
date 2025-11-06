@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Isaac799/devtoolbox/internal"
 	"github.com/Isaac799/devtoolbox/pkg/model"
 	"github.com/iancoleman/strcase"
 )
@@ -35,8 +36,8 @@ func newAttributeFromLine(s string) *model.AttributeRaw {
 	// allow 'foo.bar' for schema.entity name as a reference
 	// later I prevent it if kind is not relevant
 	identifierStrBefore, identifierStrAfter, identifierStrHadPeriod := strings.Cut(identifierStr, ".")
-	identifierStrBefore = Normalize(identifierStrBefore)
-	identifierStrAfter = Normalize(identifierStrAfter)
+	identifierStrBefore = internal.Normalize(identifierStrBefore)
+	identifierStrAfter = internal.Normalize(identifierStrAfter)
 
 	if identifierStrHadPeriod {
 		identifierStr = fmt.Sprintf("%s.%s", identifierStrBefore, identifierStrAfter)
@@ -49,7 +50,7 @@ func newAttributeFromLine(s string) *model.AttributeRaw {
 		optsRaw             = strings.Split(optsStr, ",")
 		attr                = model.AttributeRaw{
 			Name:   identifierStr,
-			Alias:  Normalize(alias),
+			Alias:  internal.Normalize(alias),
 			Unique: make([]string, 0, len(optsRaw)),
 		}
 	)

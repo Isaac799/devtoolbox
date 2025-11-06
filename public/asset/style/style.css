@@ -188,11 +188,11 @@ button:hover:not(:disabled) {
 .bg-green {
   background-color: var(--green);
 }
-.fg-light {
-  color: var(--light);
+.fg-light-blue {
+  color: var(--light-blue);
 }
-.bg-light {
-  background-color: var(--light);
+.bg-light-blue {
+  background-color: var(--light-blue);
 }
 .fg-orange {
   color: var(--orange);

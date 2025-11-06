@@ -1,6 +1,7 @@
 package model
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Isaac799/devtoolbox/internal"
 )
 
 // AttrKind is the core type of an attribute
@@ -68,6 +71,17 @@ type AttributeRaw struct {
 	ReferenceTo *Entity
 
 	Validation
+}
+
+func NewAttribute(parent *Entity) *AttributeRaw {
+	return &AttributeRaw{
+		ID:     rand.Text(),
+		Kind:   AttrKindInt,
+		Name:   internal.NewFallbackName(),
+		Unique: make([]string, 0, 2),
+		Err:    make([]error, 0, 2),
+		Parent: parent,
+	}
 }
 
 // Path is a unique accessor value for focusing via the ux
@@ -225,6 +239,23 @@ func (attr *AttributeRaw) EnsureValidAlias(ent *Entity) {
 		attr.Alias = ""
 		// todo warnings
 		// attr.AppendErr(ErrReusedAlias)
+	}
+}
+
+func (attr *AttributeRaw) EnsureValidName(ent *Entity) {
+	consumed := make([]string, 0, len(ent.RawAttributes))
+	for _, a := range ent.RawAttributes {
+		// concerned about self
+		if a.ID == attr.ID {
+			continue
+		}
+		consumed = append(consumed, a.Name)
+	}
+
+	if slices.Contains(consumed, attr.Name) {
+		attr.Name = internal.NewFallbackName()
+		// todo warnings
+		// attr.AppendErr(ErrReusedName)
 	}
 }
 

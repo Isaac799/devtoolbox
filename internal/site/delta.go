@@ -136,6 +136,7 @@ var deltaAttribute = delta(func(r *http.Request, c *Client) {
 	}
 
 	attr.EnsureValidAlias(oldAttr.Parent)
+	attr.EnsureValidName(oldAttr.Parent)
 	attr.EnsureValidRange()
 	attr.MaybeRequireValidation()
 	attr.SanitizeDefaultValue()

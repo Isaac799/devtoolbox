@@ -1,13 +1,12 @@
 package site
 
 import (
-	"crypto/rand"
 	"database/sql"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/Isaac799/devtoolbox/internal/strparse"
+	"github.com/Isaac799/devtoolbox/internal"
 	"github.com/Isaac799/devtoolbox/pkg/model"
 )
 
@@ -63,7 +62,7 @@ func makeAttribute(r *http.Request) *model.AttributeRaw {
 	}
 
 	var (
-		fallbackName = strparse.Normalize("unset " + rand.Text()[:4])
+		fallbackName = internal.NewFallbackName()
 		kind         = model.AttrKind(attributeKind)
 	)
 
@@ -75,7 +74,7 @@ func makeAttribute(r *http.Request) *model.AttributeRaw {
 			attributeName = fallbackName
 		}
 	} else {
-		attributeName = strparse.Normalize(attributeName)
+		attributeName = internal.Normalize(attributeName)
 	}
 
 	if len(attributeName) == 0 {
@@ -102,7 +101,7 @@ func makeAttribute(r *http.Request) *model.AttributeRaw {
 			Required: sql.NullBool{Bool: attributeRequired == "true", Valid: len(attributeRequired) > 0},
 		},
 		Primary:      attributePrimary == "true",
-		Alias:        strparse.Normalize(attributeAlias),
+		Alias:        internal.Normalize(attributeAlias),
 		DefaultValue: strings.TrimSpace(attributeDefault),
 		Unique:       cleanUniqueLabels,
 		Err:          []error{},

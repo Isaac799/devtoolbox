@@ -1,7 +1,5 @@
 package strparse
 
-import "regexp"
-
 type lineKind int
 
 const (
@@ -19,11 +17,4 @@ const (
 	deliWith   = " with "
 	deliRange  = ".."
 	deliLabel  = ":"
-)
-
-var (
-	regDigit    = regexp.MustCompile("[0-9]")
-	regChar     = regexp.MustCompile("[a-zA-Z]")
-	regWordChar = regexp.MustCompile("\\w")
-	regWord     = regexp.MustCompile("^\\w+$")
 )

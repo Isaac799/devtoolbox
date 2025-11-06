@@ -34,11 +34,37 @@ type Input struct {
 	Mode    InputMode
 }
 
-// SetFocus sets the focus based on its path, given schemas.
-func (client *Client) SetFocus() {
+// ClearFocus clears the focus of a client
+func (client *Client) ClearFocus() {
 	client.Input.Focus.Schema = nil
 	client.Input.Focus.Entity = nil
 	client.Input.Focus.Attribute = nil
+}
+
+// SetFocusSchema sets the focus to a schema
+func (client *Client) SetFocusSchema(schema *model.Schema) {
+	client.ClearFocus()
+	client.Input.Focus.RawID = schema.ID
+	client.Input.Focus.Schema = &schema
+}
+
+// SetFocusEntity sets the focus to a entity
+func (client *Client) SetFocusEntity(entity *model.Entity) {
+	client.ClearFocus()
+	client.Input.Focus.RawID = entity.ID
+	client.Input.Focus.Entity = &entity
+}
+
+// SetFocusAttribute sets the focus to a attribute
+func (client *Client) SetFocusAttribute(attr *model.AttributeRaw) {
+	client.ClearFocus()
+	client.Input.Focus.RawID = attr.ID
+	client.Input.Focus.Attribute = &attr
+}
+
+// SetFocus sets the focus based on its path, given schemas.
+func (client *Client) SetFocus() {
+	client.ClearFocus()
 
 	if len(client.Input.Focus.RawID) == 0 {
 		return

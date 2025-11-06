@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/Isaac799/devtoolbox/internal/strparse"
+	"github.com/Isaac799/devtoolbox/pkg/model"
 )
 
 // HandlerPageHome handles the home page.
@@ -348,4 +349,52 @@ func (store *ClientStore) HandlerFocus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
 	tmpl.ExecuteTemplate(w, what, templateData)
+}
+
+// HandlerNewChild adds a new child to a schema, entity, or attribute
+func (store *ClientStore) HandlerNewChild(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if len(id) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	client, csrfOk := store.clientInfo(w, r)
+	if client == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if !csrfOk {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	if id == "root" {
+		schema := model.NewSchema()
+		client.LastOutput.Schemas = append(client.LastOutput.Schemas, schema)
+		client.SetFocusSchema(schema)
+		client.SetOutput()
+	} else {
+		for _, schema := range client.LastOutput.Schemas {
+			if schema.ID == id {
+				entity := model.NewEntity(schema)
+				schema.Entities = append(schema.Entities, entity)
+				client.SetFocusEntity(entity)
+				client.SetOutput()
+				break
+			}
+			for _, entity := range schema.Entities {
+				if entity.ID == id {
+					attr := model.NewAttribute(entity)
+					entity.RawAttributes = append(entity.RawAttributes, attr)
+					entity.ClearCache()
+					client.SetFocusAttribute(attr)
+					client.SetOutput()
+					break
+				}
+			}
+		}
+	}
+
+	store.HandlerPageHome(w, r)
 }

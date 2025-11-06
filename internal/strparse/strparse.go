@@ -2,11 +2,9 @@ package strparse
 
 import (
 	"crypto/rand"
-	"regexp"
 	"strings"
 
 	"github.com/Isaac799/devtoolbox/pkg/model"
-	"github.com/iancoleman/strcase"
 )
 
 func determineLineKind(s string) lineKind {
@@ -19,41 +17,6 @@ func determineLineKind(s string) lineKind {
 		kind = lineKindAttr
 	}
 	return kind
-}
-
-// Normalize makes a string follow my naming convention of snake, but with digit consideration
-// for valid syntax on generated code
-func Normalize(s string) string {
-	s = strings.ToLower(strcase.ToSnake(s))
-
-	ok := make([]rune, 0, len(s))
-	var prev rune
-
-	for i, r := range s {
-		if len(ok) == 0 && r == '_' {
-			continue
-		}
-
-		if r == '_' && prev == '_' {
-			continue
-		}
-
-		// no digit first char
-		if i == 0 {
-			if matched, _ := regexp.Match(regDigit.String(), []byte(string(r))); matched {
-				continue
-			}
-		}
-		// word chars (snake) only
-		if matched, _ := regexp.Match(regWordChar.String(), []byte(string(r))); !matched {
-			continue
-		}
-
-		ok = append(ok, r)
-		prev = r
-	}
-
-	return string(ok)
 }
 
 // Raw takes in a string and provides the schemas
@@ -108,6 +71,7 @@ func Raw(s string) []*model.Schema {
 			}
 
 			attr.EnsureValidAlias(prevEnt)
+			attr.EnsureValidName(prevEnt)
 			attr.EnsureValidRange()
 			attr.MaybeRequireValidation()
 			attr.SanitizeDefaultValue()

@@ -1,8 +1,11 @@
 package model
 
 import (
+	"crypto/rand"
 	"fmt"
 	"strings"
+
+	"github.com/Isaac799/devtoolbox/internal"
 )
 
 // Entity is an entity in a schema
@@ -18,6 +21,15 @@ type Entity struct {
 
 	// all attributes after cached
 	ar []*Attribute
+}
+
+func NewEntity(parent *Schema) *Entity {
+	return &Entity{
+		ID:            rand.Text(),
+		Name:          internal.NewFallbackName(),
+		RawAttributes: make([]*AttributeRaw, 0, 6),
+		Parent:        parent,
+	}
 }
 
 // ClearCache lets an entity know that something changed, and we

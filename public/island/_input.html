@@ -116,10 +116,52 @@
                     </form>
                 </div>
                 {{- end }}
+                <div class="attribute">
+                    <form
+                        class="focusable fr g1 w-full fg-blue"
+                        hx-post="/new/child/{{ $entity.ID }}"
+                        hx-target="body"
+                        hx-swap="innerHTML"
+                        hx-trigger="click"
+                    >
+                        <i class="material-icons">add</i>
+                        <span>
+                            new attribute
+                        </span>
+                    </form>
+                </div>
             </div>
             {{- end }}
+            <div class="attribute">
+                <form
+                    class="focusable fr g1 w-full fg-blue"
+                    hx-post="/new/child/{{ $schema.ID }}"
+                    hx-target="body"
+                    hx-swap="innerHTML"
+                    hx-trigger="click"
+                >
+                    <i class="material-icons">add</i>
+                    <span>
+                        new entity
+                    </span>
+                </form>
+            </div>
         </div>
         {{- end }}
+        <div class="attribute">
+            <form
+                class="focusable fr g1 w-full fg-blue"
+                hx-post="/new/child/root"
+                hx-target="body"
+                hx-swap="innerHTML"
+                hx-trigger="click"
+            >
+                <i class="material-icons">add</i>
+                <span>
+                    new schema
+                </span>
+            </form>
+        </div>
     </div>
     <div class="fc g2">
         {{ if .Client.Input.Focus.Schema }}

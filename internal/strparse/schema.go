@@ -3,6 +3,7 @@ package strparse
 import (
 	"strings"
 
+	"github.com/Isaac799/devtoolbox/internal"
 	"github.com/Isaac799/devtoolbox/pkg/model"
 )
 
@@ -15,7 +16,7 @@ func newSchFromLine(s string) (*model.Schema, error) {
 	)
 
 	sch := model.Schema{
-		Name:     Normalize(name),
+		Name:     internal.Normalize(name),
 		Entities: make([]*model.Entity, 0, 5),
 	}
 
