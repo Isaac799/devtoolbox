@@ -75,21 +75,21 @@ func renderPathValues(ent *model.Entity) string {
 	if len(primaries) > 1 {
 		for _, attr := range primaries {
 			if attr.Final.Parent.CompositePrimary() {
-				s := fmt.Sprintf("%s/{%s}", strcase.ToKebab(attr.Name()), strcase.ToKebab(attr.Name()))
+				s := fmt.Sprintf("%s/{%s}", strcase.ToKebab(attr.Name()), attr.Name())
 				parts = append(parts, s)
 				continue
 			}
 
 			// if not composite we can remove redundant pattern to improve clarity
-			// 'foo-id/{foo-id}' -> '/foo/{foo-id}'
-			redundantSuffix := fmt.Sprintf("_%s", attr.Final.Name)
-			s2, _ := strings.CutSuffix(attr.Name(), redundantSuffix)
-			s := fmt.Sprintf("%s/{%s}", strcase.ToKebab(s2), strcase.ToKebab(attr.Name()))
+			// 'foo-id/{foo_id}' -> '/foo/{foo_id}'
+			redundantSuffix := fmt.Sprintf("-%s", attr.Final.Name)
+			s2, _ := strings.CutSuffix(strcase.ToKebab(attr.Name()), redundantSuffix)
+			s := fmt.Sprintf("%s/{%s}", s2, attr.Name())
 			parts = append(parts, s)
 		}
 	} else {
 		for _, attr := range primaries {
-			s := fmt.Sprintf("{%s}", strcase.ToKebab(attr.Name()))
+			s := fmt.Sprintf("{%s}", strcase.ToSnake(attr.Name()))
 			parts = append(parts, s)
 		}
 	}
