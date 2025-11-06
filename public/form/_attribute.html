@@ -20,19 +20,50 @@
     >
 
     {{ if $a }}
-    {{ if $a.ReferenceTo }}
+
+    <!-- reference or not, allow kind change  -->
+    <div class="fr g1">
+        <div>
+            <label for="AttributeKind">Kind</label>
+            <select
+                name="AttributeKind"
+                id="AttributeKind"
+            >
+                <option value="0" disabled>None</option>
+                <!-- <option value="1">Reference</option> -->
+                <option {{ if $a }}{{ if (eq 1 $a.Kind ) }} selected {{ end }}{{ end }} value="1">Reference</option>
+                <option {{ if $a }}{{ if (eq 2 $a.Kind ) }} selected {{ end }}{{ end }} value="2">Serial</option>
+                <option {{ if $a }}{{ if (eq 3 $a.Kind ) }} selected {{ end }}{{ end }} value="3">Int</option>
+                <option {{ if $a }}{{ if (eq 4 $a.Kind ) }} selected {{ end }}{{ end }} value="4">Char</option>
+                <option {{ if $a }}{{ if (eq 5 $a.Kind ) }} selected {{ end }}{{ end }} value="5">String</option>
+                <option {{ if $a }}{{ if (eq 6 $a.Kind ) }} selected {{ end }}{{ end }} value="6">Bit</option>
+                <option {{ if $a }}{{ if (eq 7 $a.Kind ) }} selected {{ end }}{{ end }} value="7">Boolean</option>
+                <option {{ if $a }}{{ if (eq 8 $a.Kind ) }} selected {{ end }}{{ end }} value="8">Date</option>
+                <option {{ if $a }}{{ if (eq 9 $a.Kind ) }} selected {{ end }}{{ end }} value="9">Time</option>
+                <option {{ if $a }}{{ if (eq 10 $a.Kind ) }} selected {{ end }}{{ end }} value="10">Timestamp</option>
+                <option {{ if $a }}{{ if (eq 11 $a.Kind ) }} selected {{ end }}{{ end }} value="11">Float</option>
+                <option {{ if $a }}{{ if (eq 12 $a.Kind ) }} selected {{ end }}{{ end }} value="12">Real</option>
+                <option {{ if $a }}{{ if (eq 13 $a.Kind ) }} selected {{ end }}{{ end }} value="13">Decimal</option>
+                <option {{ if $a }}{{ if (eq 14 $a.Kind ) }} selected {{ end }}{{ end }} value="14">Money</option>
+            </select>
+        </div>
+    </div>        
+
+    {{ if eq $a.Kind 1 }}
     <!-- reference -->
     <div class="fr g1">
         <div>
             <label for="AttributeReferenceTo">Reference To</label>
-            <input
-                type="text"
-                name="AttributeReferenceTo"
-                id="AttributeReferenceTo"
-                {{ if $a }}
-                value="{{ $a.ReferenceTo.Name }}"
+            <select name="AttributeReferenceTo" id="AttributeReferenceTo">
+                <option value="">unset</option>
+                {{ range $si, $schema := $.Client.LastOutput.Schemas }}
+                    {{ range $ei, $entity := $schema.Entities }}
+                        <option value="{{ $entity.ID }}" {{ if $a.ReferenceTo }}{{ if eq $a.ReferenceTo.ID $entity.ID }}selected="true"{{ end }}{{ end }}>
+                            {{ $entity.Parent.Name }}.{{ $entity.Name }}
+                        </option>
+                    {{ end }}
                 {{ end }}
-            >
+            </select>
         </div>
         <div>
             <label for="AttributeAlias">Alias</label>
@@ -59,29 +90,6 @@
                 value="{{ $a.Name }}"
                 {{ end }}
             >
-        </div>
-        <div>
-            <label for="AttributeKind">Kind</label>
-            <select
-                name="AttributeKind"
-                id="AttributeKind"
-            >
-                <option value="0">None</option>
-                <!-- <option value="1">Reference</option> -->
-                <option {{ if $a }}{{ if (eq 2 $a.Kind ) }} selected {{ end }}{{ end }} value="2">Serial</option>
-                <option {{ if $a }}{{ if (eq 3 $a.Kind ) }} selected {{ end }}{{ end }} value="3">Int</option>
-                <option {{ if $a }}{{ if (eq 4 $a.Kind ) }} selected {{ end }}{{ end }} value="4">Char</option>
-                <option {{ if $a }}{{ if (eq 5 $a.Kind ) }} selected {{ end }}{{ end }} value="5">String</option>
-                <option {{ if $a }}{{ if (eq 6 $a.Kind ) }} selected {{ end }}{{ end }} value="6">Bit</option>
-                <option {{ if $a }}{{ if (eq 7 $a.Kind ) }} selected {{ end }}{{ end }} value="7">Boolean</option>
-                <option {{ if $a }}{{ if (eq 8 $a.Kind ) }} selected {{ end }}{{ end }} value="8">Date</option>
-                <option {{ if $a }}{{ if (eq 9 $a.Kind ) }} selected {{ end }}{{ end }} value="9">Time</option>
-                <option {{ if $a }}{{ if (eq 10 $a.Kind ) }} selected {{ end }}{{ end }} value="10">Timestamp</option>
-                <option {{ if $a }}{{ if (eq 11 $a.Kind ) }} selected {{ end }}{{ end }} value="11">Float</option>
-                <option {{ if $a }}{{ if (eq 12 $a.Kind ) }} selected {{ end }}{{ end }} value="12">Real</option>
-                <option {{ if $a }}{{ if (eq 13 $a.Kind ) }} selected {{ end }}{{ end }} value="13">Decimal</option>
-                <option {{ if $a }}{{ if (eq 14 $a.Kind ) }} selected {{ end }}{{ end }} value="14">Money</option>
-            </select>
         </div>
     </div>
         {{ end }}

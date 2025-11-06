@@ -210,11 +210,15 @@ func (attr *AttributeRaw) SanativeSerialKind() {
 
 func (attr *AttributeRaw) EnsureValidAlias(ent *Entity) {
 	consumedAlias := make([]string, 0, len(ent.RawAttributes))
-	for _, attr := range ent.RawAttributes {
-		if len(attr.Alias) == 0 {
+	for _, a := range ent.RawAttributes {
+		// concerned about aliases that are not self
+		if a.ID == attr.ID {
 			continue
 		}
-		consumedAlias = append(consumedAlias, attr.Alias)
+		if len(a.Alias) == 0 {
+			continue
+		}
+		consumedAlias = append(consumedAlias, a.Alias)
 	}
 
 	if slices.Contains(consumedAlias, attr.Alias) {
@@ -233,6 +237,13 @@ func (attr *AttributeRaw) EnsureValidReference(schemas []*Schema) {
 
 	for _, sch := range schemas {
 		for _, ent := range sch.Entities {
+			// ID is set on gui delta
+			if ent.ID == before {
+				attr.ReferenceTo = ent
+				attr.Name = fmt.Sprintf("%s.%s", ent.Parent.Name, ent.Name)
+				return
+			}
+
 			if isFullRef {
 				if before == sch.Name && after == ent.Name {
 					attr.ReferenceTo = ent

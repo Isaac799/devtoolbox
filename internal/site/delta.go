@@ -130,7 +130,6 @@ var deltaAttribute = delta(func(r *http.Request, c *Client) {
 
 	attr.ID = oldAttr.ID
 	attr.Parent = oldAttr.Parent
-	attr.ReferenceTo = oldAttr.ReferenceTo
 
 	if attr.Kind == model.AttrKindReference {
 		attr.EnsureValidReference(c.LastOutput.Schemas)

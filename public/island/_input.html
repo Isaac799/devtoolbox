@@ -98,7 +98,11 @@
                             value="{{ $attr.ID }}"
                         >
                         <i class="material-icons attr-icon-{{ $attr.Kind }}"></i>
+                        {{ if $attr.Alias }}
+                        {{ $attr.Alias }} ({{ $attr.Name }})
+                        {{ else }}
                         {{ $attr.Name }}
+                        {{ end }}
                     </form>
                 </div>
                 {{- end }}

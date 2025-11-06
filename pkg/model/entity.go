@@ -91,6 +91,11 @@ func (ent *Entity) attributes(n, max int, path string, collection *[]*Attribute,
 			src = attr
 		}
 
+		// may be missing reference if not set in gui
+		if attr.ReferenceTo == nil && attr.Kind == AttrKindReference {
+			continue
+		}
+
 		if attr.ReferenceTo != nil {
 			attr.ReferenceTo.attributes(n+1, max, p, collection, src)
 			continue
@@ -126,7 +131,7 @@ func (ent *Entity) Attributes() []*Attribute {
 		return ent.ar
 	}
 
-	max := 5
+	max := 1
 
 	attrs := make([]*Attribute, 0, len(ent.RawAttributes)*max)
 

@@ -1,8 +1,8 @@
 package site
 
 import (
+	"crypto/rand"
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -43,37 +43,43 @@ func makeEntity(r *http.Request) *model.Entity {
 }
 
 func makeAttribute(r *http.Request) *model.AttributeRaw {
-	id := r.FormValue("AttributeID")
-	attributeName := r.FormValue("AttributeName")
-	attributeKindStr := r.FormValue("AttributeKind")
-	attributeKind, _ := strconv.Atoi(attributeKindStr)
+	var (
+		id                   = r.FormValue("AttributeID")
+		attributeName        = r.FormValue("AttributeName")
+		attributeKindStr     = r.FormValue("AttributeKind")
+		attributeKind, _     = strconv.Atoi(attributeKindStr)
+		attributeMin         = r.FormValue("AttributeMin")
+		attributeMax         = r.FormValue("AttributeMax")
+		attributeRequired    = r.FormValue("AttributeRequired")
+		attributePrimary     = r.FormValue("AttributePrimary")
+		attributeUnique      = r.FormValue("AttributeUnique")
+		attributeDefault     = r.FormValue("AttributeDefault")
+		attributeReferenceTo = r.FormValue("AttributeReferenceTo")
+		attributeAlias       = r.FormValue("AttributeAlias")
+	)
+
 	if attributeKind > 14 || attributeKind < 0 {
 		attributeKind = 0
 	}
 
-	attributeMin := r.FormValue("AttributeMin")
-	attributeMax := r.FormValue("AttributeMax")
-	attributeRequired := r.FormValue("AttributeRequired")
-	attributePrimary := r.FormValue("AttributePrimary")
-	attributeUnique := r.FormValue("AttributeUnique")
-	attributeDefault := r.FormValue("AttributeDefault")
-	attributeReferenceTo := r.FormValue("AttributeReferenceTo")
-	attributeAlias := r.FormValue("AttributeAlias")
+	var (
+		fallbackName = strparse.Normalize("unset " + rand.Text()[:4])
+		kind         = model.AttrKind(attributeKind)
+	)
 
-	// allow 'foo.bar' for schema.entity name as a reference
-	// later I prevent it if kind is not relevant
-	identifierStrBefore, identifierStrAfter, identifierStrHadPeriod := strings.Cut(attributeName, ".")
-	identifierStrBefore = strparse.Normalize(identifierStrBefore)
-	identifierStrAfter = strparse.Normalize(identifierStrAfter)
-
-	if identifierStrHadPeriod {
-		attributeName = fmt.Sprintf("%s.%s", identifierStrBefore, identifierStrAfter)
+	if kind == model.AttrKindReference {
+		if len(attributeReferenceTo) > 0 {
+			// setting ID as the attr name
+			attributeName = attributeReferenceTo
+		} else {
+			attributeName = fallbackName
+		}
 	} else {
-		attributeName = identifierStrBefore
+		attributeName = strparse.Normalize(attributeName)
 	}
 
-	if len(attributeReferenceTo) > 0 {
-		attributeName = strparse.Normalize(attributeReferenceTo)
+	if len(attributeName) == 0 {
+		attributeName = fallbackName
 	}
 
 	rawUniqueLabels := strings.Split(attributeUnique, ",")
@@ -89,7 +95,7 @@ func makeAttribute(r *http.Request) *model.AttributeRaw {
 	raw := model.AttributeRaw{
 		ID:   id,
 		Name: attributeName,
-		Kind: model.AttrKind(attributeKind),
+		Kind: kind,
 		Validation: model.Validation{
 			Min:      sql.NullString{String: attributeMin, Valid: len(attributeMin) > 0},
 			Max:      sql.NullString{String: attributeMax, Valid: len(attributeMax) > 0},

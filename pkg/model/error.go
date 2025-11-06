@@ -7,6 +7,7 @@ var (
 	ErrMaxLenRequired   = errors.New("upper range is required")
 	ErrBitSizeRequired  = errors.New("bit size is required")
 	ErrInvalidReference = errors.New("cannot find reference")
+	ErrMissingReference = errors.New("reference is not set")
 
 	ErrMissingMax        = errors.New("missing max")
 	ErrRangeMinMalformed = errors.New("range invalid: min malformed")
