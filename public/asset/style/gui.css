@@ -40,9 +40,12 @@
 }
 
 .attribute {
-  padding: 0 1rem 0 0.35rem;
+  padding: 0.1rem 0.5rem 0.1rem 0.35rem;
   transition: all ease-in-out 0.25s;
   background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .attribute.focused,

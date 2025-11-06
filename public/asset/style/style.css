@@ -53,6 +53,10 @@ dialog h3 {
   margin-top: 0;
 }
 
+.ml-auto {
+  margin-left: auto;
+}
+
 .p1 {
   padding: 0.5rem;
 }
@@ -148,4 +152,51 @@ button:hover:not(:disabled) {
 .fade-me-in {
   opacity: 1;
   transition: opacity 250ms ease-out;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.fg-blue {
+  color: var(--blue);
+}
+.bg-blue {
+  background-color: var(--blue);
+}
+.fg-red {
+  color: var(--red);
+}
+.bg-red {
+  background-color: var(--red);
+}
+.fg-pink {
+  color: var(--pink);
+}
+.bg-pink {
+  background-color: var(--pink);
+}
+.fg-yellow {
+  color: var(--yellow);
+}
+.bg-yellow {
+  background-color: var(--yellow);
+}
+.fg-green {
+  color: var(--green);
+}
+.bg-green {
+  background-color: var(--green);
+}
+.fg-light {
+  color: var(--light);
+}
+.bg-light {
+  background-color: var(--light);
+}
+.fg-orange {
+  color: var(--orange);
+}
+.bg-orange {
+  background-color: var(--orange);
 }
