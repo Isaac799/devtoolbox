@@ -1,9 +1,5 @@
 {{ define "form.entity" }}
-<form
-    hx-post="/delta"
-    hx-target="body"
-    hx-trigger="keyup delay:500ms changed"
->
+<form>
     <input
         type="hidden"
         name="EntityID"
@@ -15,6 +11,8 @@
     <div>
         <label for="EntityName">Name</label>
         <input
+            hx-post="/change"
+            hx-trigger="keyup delay:500ms"
             type="text"
             name="EntityName"
             id="EntityName"
@@ -26,8 +24,7 @@
 </form>
 
 <form
-    hx-delete="/rm/child/{{ .Client.Input.Focus.Entity.ID }}"
-    hx-target="body"
+    hx-delete="/child/{{ .Client.Input.Focus.Entity.ID }}"
     hx-swap="innerHTML"
 >
     <button type="submit">

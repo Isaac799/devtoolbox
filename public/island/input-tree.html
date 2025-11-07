@@ -1,0 +1,131 @@
+{{ define "input-tree" }}
+<div
+    class="fc g2"
+    id="input-tree"
+>
+    {{ range $si, $schema := .Client.LastOutput.Schemas }}
+    <div class="schema {{ if (eq $.Client.Input.Focus.RawID $schema.ID) }}focused{{ end }}">
+        {{ if ne $si 0 }}{{ end }}
+        <form
+            class="focusable fr g1"
+            hx-post="/focus"
+            hx-trigger="click"
+        >
+            <input
+                type="hidden"
+                name="focus"
+                value="{{ $schema.ID }}"
+            >
+            <span class="schema-title">
+                {{ $schema.Name }}
+            </span>
+        </form>
+        {{ range $ei, $entity := $schema.Entities }}
+        <div class="entity {{ if (eq $.Client.Input.Focus.RawID $entity.ID) }}focused{{ end }}">
+            {{ if ne $ei 0 }}{{ end }}
+            <form
+                class="focusable fr g1"
+                hx-post="/focus"
+                hx-trigger="click"
+            >
+                <input
+                    type="hidden"
+                    name="focus"
+                    value="{{ $entity.ID }}"
+                >
+                <span class="entity-title">
+                    {{ $entity.Name }}
+                </span>
+            </form>
+            {{ range $ai, $attr := $entity.RawAttributes }}
+            <div class="attribute {{ if (eq $.Client.Input.Focus.RawID $attr.ID) }}focused{{ end }}">
+                {{ if ne $ai 0 }}{{ end }}
+                <form
+                    class="focusable fr-left-center g1 w-full"
+                    hx-post="/focus"
+                    hx-trigger="click"
+                >
+                    <input
+                        type="hidden"
+                        name="focus"
+                        value="{{ $attr.ID }}"
+                    >
+                    <i class="material-icons attr-icon-{{ $attr.Kind }}"></i>
+                    <span>
+                        {{ if $attr.Alias }}
+                        {{ $attr.Alias }} ({{ $attr.Name }})
+                        {{ else }}
+                        {{ $attr.Name }}
+                        {{ end }}
+                        {{ if $attr.Required.Bool }}
+                        <span class="fg-red">
+                            *
+                        </span>
+                        {{ end }}
+                    </span>
+                    <div class="fr-left-center g1 ml-auto">
+                        {{ if $attr.Primary }}
+                        <i
+                            class="material-icons fg-pink"
+                            title="primary key"
+                        >
+                            key
+                        </i>
+                        {{ end }}
+                        {{ if $attr.HasErr }}
+                        <i
+                            class="material-icons fg-red"
+                            title="{{ $attr.ErrString }}"
+                        >
+                            error
+                        </i>
+                        {{ end }}
+                    </div>
+                </form>
+            </div>
+            {{- end }}
+            <div class="attribute">
+                <form
+                    class="focusable fr g1 w-full fg-blue"
+                    hx-post="/child/{{ $entity.ID }}"
+                    hx-swap="innerHTML"
+                    hx-trigger="click"
+                >
+                    <i class="material-icons">add</i>
+                    <span>
+                        new attribute
+                    </span>
+                </form>
+            </div>
+        </div>
+        {{- end }}
+        <div class="attribute">
+            <form
+                class="focusable fr g1 w-full fg-blue"
+                hx-post="/child/{{ $schema.ID }}"
+                hx-swap="innerHTML"
+                hx-trigger="click"
+            >
+                <i class="material-icons">add</i>
+                <span>
+                    new entity
+                </span>
+            </form>
+        </div>
+    </div>
+    {{- end }}
+    <div class="attribute">
+        <form
+            class="focusable fr g1 w-full fg-blue"
+            hx-post="/child/root"
+            hx-swap="innerHTML"
+            hx-trigger="click"
+        >
+            <i class="material-icons">add</i>
+            <span>
+                new schema
+            </span>
+        </form>
+    </div>
+</div>
+{{ end }}

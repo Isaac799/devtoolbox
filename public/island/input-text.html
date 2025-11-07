@@ -1,0 +1,19 @@
+{{ define "input-text" }}
+{{ if eq .Client.Input.Mode 1 }}
+<div
+    class="fc g2"
+    id="input-text"
+>
+    <textarea
+        id="input-text"
+        name="q"
+        hx-post="/island/output"
+        hx-trigger="keyup delay:500ms changed"
+        cols="60"
+        rows="40"
+        autocapitalize="false"
+        autocomplete="false"
+    >{{ .Client.Input.Q }}</textarea>
+</div>
+{{ end }}
+{{ end }}

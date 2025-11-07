@@ -3,12 +3,7 @@
 {{ define "form.attribute" }}
 {{ with $a := .Client.Input.Focus.Attribute }}
 
-<form
-    hx-post="/delta"
-    hx-target="body"
-    hx-trigger="change delay:500ms, keyup delay:500ms"
-    class="fc g2"
->
+<form class="fc g2">
     <input
         type="hidden"
         name="AttributeID"
@@ -26,6 +21,8 @@
         <div>
             <label for="AttributeKind">Kind</label>
             <select
+                hx-post="/change"
+                hx-trigger="change"
                 name="AttributeKind"
                 id="AttributeKind"
             >
@@ -68,6 +65,8 @@
         <div>
             <label for="AttributeAlias">Alias</label>
             <input
+                hx-post="/change"
+                hx-trigger="keyup delay:500ms"
                 type="text"
                 name="AttributeAlias"
                 id="AttributeAlias"
@@ -83,6 +82,8 @@
         <div>
             <label for="AttributeName">Name</label>
             <input
+                hx-post="/change"
+                hx-trigger="keyup delay:500ms"
                 type="text"
                 name="AttributeName"
                 id="AttributeName"
@@ -105,6 +106,8 @@
         <div>
             <label for="AttributeRequired">Is Required</label>
             <input
+                hx-post="/change"
+                hx-trigger="change"
                 type="checkbox"
                 value="true"
                 name="AttributeRequired"
@@ -115,6 +118,8 @@
         <div>
             <label for="AttributePrimary">Is Primary</label>
             <input
+                hx-post="/change"
+                hx-trigger="change"
                 type="checkbox"
                 value="true"
                 name="AttributePrimary"
@@ -126,6 +131,8 @@
     <div>
         <label for="AttributeUnique">Unique Labels (csv)</label>
         <input
+            hx-post="/change"
+            hx-trigger="keyup delay:500ms"
             type="text"
             name="AttributeUnique"
             id="AttributeUnique"
@@ -137,6 +144,8 @@
     <div>
         <label for="AttributeDefault">Default Value</label>
         <input
+            hx-post="/change"
+            hx-trigger="keyup delay:500ms"
             type="text"
             name="AttributeDefault"
             id="AttributeDefault"
@@ -149,6 +158,8 @@
         <div>
             <label for="AttributeMin">Min</label>
             <input
+                hx-post="/change"
+                hx-trigger="keyup delay:500ms"
                 type="text"
                 name="AttributeMin"
                 id="AttributeMin"
@@ -160,6 +171,8 @@
         <div>
             <label for="AttributeMax">Max</label>
             <input
+                hx-post="/change"
+                hx-trigger="keyup delay:500ms"
                 type="text"
                 name="AttributeMax"
                 id="AttributeMax"
@@ -177,8 +190,7 @@
 </form>
 
 <form
-    hx-delete="/rm/child/{{ $a.ID }}"
-    hx-target="body"
+    hx-delete="/child/{{ $a.ID }}"
     hx-swap="innerHTML"
 >
     <button type="submit">

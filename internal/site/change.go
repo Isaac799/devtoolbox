@@ -10,38 +10,74 @@ import (
 	"github.com/Isaac799/devtoolbox/pkg/model"
 )
 
-// Make is the handler to make a new schema, entity, or attribute
-func Make(w http.ResponseWriter, r *http.Request) {
-	switch r.PathValue("what") {
-	case "schema":
-		schema := makeSchema(r)
-		w.Write([]byte(schema.String()))
-	case "entity":
-		entity := makeEntity(r)
-		w.Write([]byte(entity.String()))
-	case "attribute":
-		attribute := makeAttribute(r)
-		w.Write([]byte(attribute.String()))
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-	}
-}
+// change is how we change a client based on a request
+type change = func(*http.Request, *Client)
 
-func makeSchema(r *http.Request) *model.Schema {
+var changeQ = change(func(r *http.Request, c *Client) {
+	const k = "q"
+	_, exists := r.Form[k]
+	if !exists {
+		return
+	}
+
+	c.Input.Q = r.FormValue(k)
+})
+
+var changeMode = change(func(r *http.Request, c *Client) {
+	const k = "mode"
+	_, exists := r.Form[k]
+	if !exists {
+		return
+	}
+
+	mode := InputModeText
+	modeStr := r.FormValue(k)
+	modeInt, err := strconv.Atoi(modeStr)
+	if err == nil {
+		if modeInt == int(InputModeGraphical) {
+			mode = InputModeGraphical
+		}
+	}
+
+	c.Input.Mode = mode
+})
+
+var changeExample = change(func(r *http.Request, c *Client) {
+	const k = "example"
+	_, exists := r.Form[k]
+	if !exists {
+		return
+	}
+
+	c.Input.Example = r.FormValue(k)
+})
+
+var changeFocus = change(func(r *http.Request, c *Client) {
+	const k = "focus"
+	_, exists := r.Form[k]
+	if !exists {
+		return
+	}
+
+	c.Input.Focus.RawID = r.FormValue(k)
+	c.setFocus()
+})
+
+func newSchemaFromRequest(r *http.Request) *model.Schema {
 	return &model.Schema{
 		ID:   r.FormValue("SchemaID"),
 		Name: r.FormValue("SchemaName"),
 	}
 }
 
-func makeEntity(r *http.Request) *model.Entity {
+func newEntityFromRequest(r *http.Request) *model.Entity {
 	return &model.Entity{
 		ID:   r.FormValue("EntityID"),
 		Name: r.FormValue("EntityName"),
 	}
 }
 
-func makeAttribute(r *http.Request) *model.AttributeRaw {
+func newAttributeFromRequest(r *http.Request) *model.AttributeRaw {
 	var (
 		id                   = r.FormValue("AttributeID")
 		attributeName        = r.FormValue("AttributeName")
@@ -109,3 +145,61 @@ func makeAttribute(r *http.Request) *model.AttributeRaw {
 
 	return &raw
 }
+
+var changeSchema = change(func(r *http.Request, c *Client) {
+	c.setFocus()
+	if c.Input.Focus.Schema == nil {
+		return
+	}
+
+	sch := newSchemaFromRequest(r)
+	oldSch := *c.Input.Focus.Schema
+
+	sch.ID = oldSch.ID
+
+	*c.Input.Focus.Schema = sch
+})
+
+var changeEntity = change(func(r *http.Request, c *Client) {
+	c.setFocus()
+	if c.Input.Focus.Entity == nil {
+		return
+	}
+
+	ent := newEntityFromRequest(r)
+	oldEnt := *c.Input.Focus.Entity
+
+	ent.ID = oldEnt.ID
+
+	ent.ClearCache()
+
+	*c.Input.Focus.Entity = ent
+})
+
+var changeAttribute = change(func(r *http.Request, c *Client) {
+	c.setFocus()
+	if c.Input.Focus.Attribute == nil {
+		return
+	}
+
+	oldAttr := *c.Input.Focus.Attribute
+	attr := newAttributeFromRequest(r)
+
+	attr.ID = oldAttr.ID
+	attr.Parent = oldAttr.Parent
+
+	if attr.Kind == model.AttrKindReference {
+		attr.EnsureValidReference(c.LastOutput.Schemas)
+	}
+
+	attr.EnsureValidAlias(oldAttr.Parent)
+	attr.EnsureValidName(oldAttr.Parent)
+	attr.EnsureValidRange()
+	attr.MaybeRequireValidation()
+	attr.SanitizeDefaultValue()
+	attr.SanativeSerialKind()
+
+	attr.Parent.ClearCache()
+
+	*c.Input.Focus.Attribute = attr
+})

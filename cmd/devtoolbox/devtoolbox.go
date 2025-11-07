@@ -26,16 +26,28 @@ func main() {
 	script := http.FileServer(http.Dir(filepath.Join("public", "asset")))
 	mux.Handle("/public/asset/", http.StripPrefix("/public/asset/", script))
 
-	mux.HandleFunc("/rm/child/{id}", store.HandlerRmChild)
-	mux.HandleFunc("/new/child/{id}", store.HandlerNewChild)
-	mux.HandleFunc("/dialog/{what}", store.HandlerDialog)
-	mux.HandleFunc("/island/{what}", store.HandlerIsland)
+	mux.HandleFunc("/child/{id}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			store.HandleChildPost(w, r)
+		case http.MethodDelete:
+			store.HandleChildDelete(w, r)
+		default:
+			http.Error(w, "", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/change", store.HandleChange)
+	mux.HandleFunc("/focus", store.HandleFocus)
+
+	mux.HandleFunc("/dialog/{what}", store.HandleDialog)
+	mux.HandleFunc("/island/{what}", store.HandleIsland)
 	mux.HandleFunc("/download", store.Download())
-	mux.HandleFunc("/help", store.HandlerPageHelp)
-	mux.HandleFunc("/delta", store.HandlerDelta)
-	mux.HandleFunc("/focus", store.HandlerFocus)
-	mux.HandleFunc("/home", store.HandlerPageHome)
-	mux.HandleFunc("/make/{what}", site.Make)
+
+	// pages
+	mux.HandleFunc("/about", store.HandlePageAbout)
+	mux.HandleFunc("/help", store.HandlePageHelp)
+	mux.HandleFunc("/home", store.HandlePageHome)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/home", http.StatusTemporaryRedirect)

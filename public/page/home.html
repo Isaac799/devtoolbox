@@ -6,40 +6,17 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta
-        http-equiv="Content-Security-Policy"
-        content="default-src 'self';"
-    >
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-    <link
-        rel="stylesheet"
-        href="/public/asset/style/dialog.css"
-    >
-    <link
-        rel="stylesheet"
-        href="/public/asset/style/style.css"
-    >
-    <link
-        rel="stylesheet"
-        href="/public/asset/style/gui.css"
-    >
-    <link
-        rel="stylesheet"
-        href="/public/asset/font/material-icons.css"
-    >
-    <link
-        rel="stylesheet"
-        href="/public/asset/font/jetbrains.css"
-    >
-    <link
-        rel="stylesheet"
-        href="/public/asset/font/red-hat-display.css"
-    >
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+    <link rel="stylesheet" href="/public/asset/style/dialog.css" >
+    <link rel="stylesheet" href="/public/asset/style/style.css" >
+    <link rel="stylesheet" href="/public/asset/style/gui.css" >
+    <link rel="stylesheet" href="/public/asset/font/material-icons.css" >
+    <link rel="stylesheet" href="/public/asset/font/jetbrains.css" >
+    <link rel="stylesheet" href="/public/asset/font/red-hat-display.css" >
     <script src="/public/asset/script/dialog.js"></script>
     <script src="/public/asset/script/htmlx.js"></script>
+    <link rel="shortcut icon" href="/public/asset/images/favicon.ico" type="image/x-icon">
 
     <title>Home</title>
 </head>
@@ -50,21 +27,21 @@
             Dev Toolbox
         </h1>
 
-        {{ template "_nav" }}
+        {{ template "nav.pub" }}
     </header>
 
     <main>
         <div class="fc g2">
             <div class="fr g1">
                 <button
-                    hx-get="/dialog/_settings"
+                    hx-get="/dialog/settings"
                     hx-target="body"
                     hx-swap="beforeend"
                 >
                     Settings
                 </button>
                 <button
-                    hx-get="/dialog/_examples"
+                    hx-get="/dialog/examples"
                     hx-target="body"
                     hx-swap="beforeend"
                 >
@@ -72,23 +49,18 @@
                 </button>
             </div>
 
-            <div class="fr g1">
-                <div id="input-box">
-                    <div
-                        hx-get="/island/_input"
-                        hx-trigger="load"
-                        hx-swap="outerHTML"
-                    ></div>
-                </div>
+            <div class="fr g2">
+                <div
+                    hx-get="/island/input"
+                    hx-trigger="load"
+                ></div>
+                <div id="input"></div>
 
-                <!-- targeted by input template -->
-                <div id="output-box">
-                    <div
-                        hx-get="/island/_output"
-                        hx-trigger="load"
-                        hx-swap="outerHTML"
-                    ></div>
-                </div>
+                <div
+                    hx-get="/island/output"
+                    hx-trigger="load"
+                ></div>
+                <div id="output"></div>
             </div>
         </div>
     </main>

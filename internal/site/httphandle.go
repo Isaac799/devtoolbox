@@ -1,6 +1,7 @@
 package site
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,11 +13,11 @@ import (
 	"github.com/Isaac799/devtoolbox/pkg/model"
 )
 
-// HandlerPageHome handles the home page.
+// HandlePageHome handles the home page.
 // Located in /public/page
 // No access to client information
 // Limit access to public islands
-func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request) {
+func (store *ClientStore) HandlePageHome(w http.ResponseWriter, r *http.Request) {
 	var (
 		wd, err = os.Getwd()
 		tmpl    *template.Template
@@ -69,11 +70,11 @@ func (store *ClientStore) HandlerPageHome(w http.ResponseWriter, r *http.Request
 	tmpl.Execute(w, client.CSRF)
 }
 
-// HandlerPageHelp handles the help page
+// HandlePageHelp handles the help page
 // Located in /public/page
 // No access to client information
 // Limit access to public islands
-func (store *ClientStore) HandlerPageHelp(w http.ResponseWriter, _ *http.Request) {
+func (store *ClientStore) HandlePageHelp(w http.ResponseWriter, _ *http.Request) {
 	var (
 		wd, err = os.Getwd()
 		tmpl    *template.Template
@@ -108,11 +109,11 @@ func (store *ClientStore) HandlerPageHelp(w http.ResponseWriter, _ *http.Request
 	tmpl.Execute(w, nil)
 }
 
-// HandlerDialog handles the dialogs
-// Located in /public/dialog
-// Has access to client information
-// Has access to islands
-func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) {
+// HandlePageAbout handles the help page
+// Located in /public/about
+// No access to client information
+// Limit access to public islands
+func (store *ClientStore) HandlePageAbout(w http.ResponseWriter, _ *http.Request) {
 	var (
 		wd, err = os.Getwd()
 		tmpl    *template.Template
@@ -123,7 +124,46 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	acceptable := []string{"_attribute", "_entity", "_examples", "_schema", "_settings"}
+	{
+		s := filepath.Join(wd, "public", "page", "about.html")
+		tmpl, err = template.ParseFiles(s)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+	{
+		s := filepath.Join(wd, "public", "island", "*.pub.html")
+		tmpl, err = tmpl.ParseGlob(s)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	w.Header().Add("Content-Type", "text/html")
+	tmpl.Execute(w, nil)
+}
+
+// HandleDialog handles the dialogs
+// Located in /public/dialog
+// Has access to client information
+// Has access to islands
+func (store *ClientStore) HandleDialog(w http.ResponseWriter, r *http.Request) {
+	var (
+		wd, err = os.Getwd()
+		tmpl    *template.Template
+	)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	acceptable := []string{"examples", "settings"}
 	what := r.PathValue("what")
 	if !slices.Contains(acceptable, what) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -170,12 +210,7 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 
 	r.ParseForm()
 
-	client.deltas(
-		r,
-		deltaQ, deltaMode, deltaExample,
-	)
-
-	templateData, err := client.templateData()
+	render, err := client.render()
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -184,30 +219,13 @@ func (store *ClientStore) HandlerDialog(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
-	tmpl.ExecuteTemplate(w, what, templateData)
+	tmpl.ExecuteTemplate(w, what, render)
 }
 
-// HandlerIsland handles the islands
+// HandleIsland handles the islands
 // Located in /public/island
 // Has access to client information
-func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) {
-	var (
-		wd, err = os.Getwd()
-	)
-
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	acceptable := []string{"_input", "_output", "_nav"}
-	what := r.PathValue("what")
-	if !slices.Contains(acceptable, what) {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
-	}
-
+func (store *ClientStore) HandleIsland(w http.ResponseWriter, r *http.Request) {
 	client, csrfOk := store.clientInfo(w, r)
 	if client == nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -218,37 +236,7 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	s := filepath.Join(wd, "public", "island", what+".html")
-	tmpl, err := template.ParseFiles(s)
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	{
-		s := filepath.Join(wd, "public", "form", "*.html")
-		tmpl, err = tmpl.ParseGlob(s)
-		if err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
 	r.ParseForm()
-
-	client.deltas(
-		r,
-		deltaQ, deltaMode, deltaExample,
-	)
-
-	templateData, err := client.templateData()
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 
 	// TODO remove: allows setting initial off example
 	if len(client.Input.Q) > 0 && (client.LastOutput == nil || len(client.LastOutput.Schemas) == 0) {
@@ -256,14 +244,45 @@ func (store *ClientStore) HandlerIsland(w http.ResponseWriter, r *http.Request) 
 		client.SetOutput()
 	}
 
+	render, err := client.render()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+
+	var (
+		what = r.PathValue("what")
+		buff = bytes.NewBuffer(nil)
+	)
+
+	switch what {
+	case "input":
+		if err := render.input(buff); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
+	case "output":
+		if err := render.output(buff); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
+	default:
+		fmt.Println("unknown island: ", what)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
+
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
-	tmpl.ExecuteTemplate(w, what, templateData)
+	w.Write(buff.Bytes())
 }
 
-// HandlerDelta handles changes to a clients state and refreshes the entire page
+// HandleChange handles changes to a clients state and refreshes the entire page
 // Has access to client information
-func (store *ClientStore) HandlerDelta(w http.ResponseWriter, r *http.Request) {
+func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 	client, csrfOk := store.clientInfo(w, r)
 	if client == nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -276,36 +295,36 @@ func (store *ClientStore) HandlerDelta(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 
-	client.deltas(
+	client.change(
 		r,
-		deltaQ, deltaMode, deltaExample,
-		deltaSchema, deltaEntity, deltaAttribute,
+		changeExample, changeQ, changeMode,
+		changeSchema, changeEntity, changeAttribute,
 	)
 
 	client.LastOutput.refreshSchemas()
 
 	err := client.SetOutput()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
 
-	store.HandlerPageHome(w, r)
+	buff, err := client.renderFull()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	w.Header().Add("Content-Type", "text/html")
+	w.Write(buff.Bytes())
 }
 
-// HandlerFocus handles changes to a clients input state and refreshes the entire input section
+// HandleFocus handles changes to a clients input state and refreshes the entire input section
 // Has access to client information
-func (store *ClientStore) HandlerFocus(w http.ResponseWriter, r *http.Request) {
-	var (
-		what    = "_input"
-		wd, err = os.Getwd()
-	)
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
+func (store *ClientStore) HandleFocus(w http.ResponseWriter, r *http.Request) {
 	client, csrfOk := store.clientInfo(w, r)
 	if client == nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -316,45 +335,27 @@ func (store *ClientStore) HandlerFocus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s := filepath.Join(wd, "public", "island", what+".html")
-	tmpl, err := template.ParseFiles(s)
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	{
-		s := filepath.Join(wd, "public", "form", "*.html")
-		tmpl, err = tmpl.ParseGlob(s)
-		if err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
 	r.ParseForm()
 
-	client.deltas(
+	client.change(
 		r,
-		deltaFocus,
+		changeFocus,
 	)
 
-	templateData, err := client.templateData()
+	buff, err := client.renderFull()
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
 		return
 	}
 
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
-	tmpl.ExecuteTemplate(w, what, templateData)
+	w.Write(buff.Bytes())
 }
 
-// HandlerNewChild adds a new child to a schema, entity, or attribute
-func (store *ClientStore) HandlerNewChild(w http.ResponseWriter, r *http.Request) {
+// HandleChildPost adds a new child to a schema, entity, or attribute
+func (store *ClientStore) HandleChildPost(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if len(id) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -374,14 +375,14 @@ func (store *ClientStore) HandlerNewChild(w http.ResponseWriter, r *http.Request
 	if id == "root" {
 		schema := model.NewSchema()
 		client.LastOutput.Schemas = append(client.LastOutput.Schemas, schema)
-		client.SetFocusSchema(schema)
+		client.setFocusSchema(schema)
 		client.SetOutput()
 	} else {
 		for _, schema := range client.LastOutput.Schemas {
 			if schema.ID == id {
 				entity := model.NewEntity(schema)
 				schema.Entities = append(schema.Entities, entity)
-				client.SetFocusEntity(entity)
+				client.setFocusEntity(entity)
 				client.SetOutput()
 				break
 			}
@@ -390,7 +391,7 @@ func (store *ClientStore) HandlerNewChild(w http.ResponseWriter, r *http.Request
 					attr := model.NewAttribute(entity)
 					entity.RawAttributes = append(entity.RawAttributes, attr)
 					entity.ClearCache()
-					client.SetFocusAttribute(attr)
+					client.setFocusAttribute(attr)
 					client.SetOutput()
 					break
 				}
@@ -398,11 +399,18 @@ func (store *ClientStore) HandlerNewChild(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	store.HandlerPageHome(w, r)
+	buff, err := client.renderFull()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+
+	w.Write(buff.Bytes())
 }
 
-// HandlerRmChild removes a child from a schema, entity, or attribute
-func (store *ClientStore) HandlerRmChild(w http.ResponseWriter, r *http.Request) {
+// HandleChildDelete removes a child from a schema, entity, or attribute
+func (store *ClientStore) HandleChildDelete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if len(id) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -443,11 +451,22 @@ func (store *ClientStore) HandlerRmChild(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	if removed {
-		client.LastOutput.refreshSchemas()
-		client.ClearFocus()
-		client.SetOutput()
+	if !removed {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
 	}
 
-	store.HandlerPageHome(w, r)
+	client.LastOutput.refreshSchemas()
+	client.clearFocus()
+	client.SetOutput()
+
+	buff, err := client.renderFull()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+
+	w.Write(buff.Bytes())
+
 }

@@ -1,0 +1,12 @@
+{{ define "input" }}
+<div id="input" hx-swap-oob="true">
+    {{ if eq .Client.Input.Mode 1 }}
+        {{ template "input-text" . }}
+    {{ else }}
+    <div class="fr g2">
+        {{ template "input-tree" . }}
+        {{ template "input-form" . }}
+    </div>
+    {{ end }}
+</div>
+{{ end }}

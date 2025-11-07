@@ -1,0 +1,16 @@
+{{ define "input-form" }}
+<div
+    class="fc g2"
+    id="input-form"
+>
+    {{ if .Client.Input.Focus.Schema }}
+        {{ template "form.schema" . }}
+    {{ end }}
+    {{ if .Client.Input.Focus.Entity }}
+        {{ template "form.entity" . }}
+    {{ end }}
+    {{ if .Client.Input.Focus.Attribute }}
+        {{ template "form.attribute" . }}
+    {{ end }}
+</div>
+{{ end }}

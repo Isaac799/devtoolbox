@@ -1,5 +1,9 @@
-{{ define "_output" }}
-<div class="fc g2 fade-me-in">
+{{ define "output-tree" }}
+<div
+    class="fc g2 fade-me-in"
+    id="output-tree"
+    hx-swap-oob="true"
+>
 
     <div class="fr g1">
         {{- if .Client.LastOutput.OkayToDownload }}
@@ -21,7 +25,10 @@
     </div>
 
     {{- if .Client.LastOutput.HasErr }}
-    <details open class="fg-red">
+    <details
+        open
+        class="fg-red"
+    >
         <summary>Errors</summary>
         <div class="scroll-box">
             <pre>

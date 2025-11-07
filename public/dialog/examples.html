@@ -1,4 +1,4 @@
-{{ define "_examples" }}
+{{ define "examples" }}
 <dialog>
     <h3>
         Examples
@@ -8,19 +8,18 @@
     </p>
     <div class="fr g1">
         {{- range $index, $element := .Examples }}
-        <form
-            hx-post="/delta"
-            hx-target="body"
+        <button
+            hx-post="/change"
+            hx-trigger="click"
+            type="submit"
+            name="example"
+            hx-swap="none"
+            value="{{ $element.Value }}"
         >
-            <button
-                type="submit"
-                name="example"
-                value="{{ $element.Value }}"
-            >
-                {{- $element.Label }}
-            </button>
-        </form>
+            {{- $element.Label }}
+        </button>
         {{- end }}
+
         <form method="dialog">
             <button>
                 Close

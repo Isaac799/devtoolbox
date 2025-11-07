@@ -1,18 +1,17 @@
-{{ define "_settings" }}
+{{ define "settings" }}
 <dialog>
     <h3>
         Settings
     </h3>
 
-    <form
-        hx-post="/delta"
-        hx-target="body"
-        class="fc g2"
-    >
+    <form class="fc g2">
         <fieldset>
             <legend>Input Mode:</legend>
             <div>
                 <input
+                    hx-post="/change"
+                    hx-trigger="change"
+                    hx-swap="none"
                     type="radio"
                     name="mode"
                     id="mode-text"
@@ -23,6 +22,9 @@
             </div>
             <div>
                 <input
+                    hx-post="/change"
+                    hx-trigger="change"
+                    hx-swap="none"
                     type="radio"
                     name="mode"
                     id="mode-graphical"
@@ -34,9 +36,6 @@
         </fieldset>
 
         <div class="fr g1">
-            <button type="submit">
-                Save Preferences
-            </button>
             <form method="dialog">
                 <button>
                     Close

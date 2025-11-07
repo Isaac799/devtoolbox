@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/asset/style/dialog.css">
+    <link rel="stylesheet" href="/public/asset/style/style.css">
+    <link rel="stylesheet" href="/public/asset/font/material-icons.css">
+    <link rel="stylesheet" href="/public/asset/font/jetbrains.css">
+    <link rel="stylesheet" href="/public/asset/font/red-hat-display.css">
+    <link rel="shortcut icon" href="/public/asset/images/favicon.ico" type="image/x-icon">
+
+    <title>About</title>
+</head>
+
+<body>
+    <header>
+        <h1>About</h1>
+        {{ template "nav.pub" }}
+    </header>
+
+    <main>
+
+        <h3>
+            Backstory
+        </h3>
+
+        <p>
+            A fun side project that generates boilerplate web application code. 
+        </p>
+
+        <ul>
+            <li>It generate code that is useful to me</li>
+            <li>Keeps me busy</li>
+            <li>Lets me tinker with different tools (like <a href="https://htmx.org/">htmx</a>)</li>
+            <li>I can approach problems in new (to me) ways</li>
+        </ul>
+
+        <p>
+            I have iterated on this idea many times over several years (taking multi month breaks in between). The
+            current version you are seeing is the latest challenge for myself - a fully SSR site with state exclusive to
+            the server. The only client side JS is <a href="https://htmx.org/">htmx</a>.
+        </p>
+
+        <h3>Privacy</h3>
+
+        <p>
+            I do not look at, share, sell or send what you do anywhere.
+        </p>
+
+        <h3>Be Kind</h3>
+
+        <p>
+            Resources are limited. Be kind to my server.
+        </p>
+
+        <p>
+            Also, this means your session may be cleared whenever I update. So make sure to save a copy of the text (see:
+            settings > text mode) for safe keeping. One day I may try and add a login system and save them for you.
+        </p>
+
+    </main>
+
+    <footer>
+        <p>
+            <a href="https://github.com/Isaac799/devtoolbox">Github</a>
+        </p>
+    </footer>
+</body>
+
+</html>
