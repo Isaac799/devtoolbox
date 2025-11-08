@@ -38,6 +38,7 @@ type Output struct {
 	Schemas        []*model.Schema
 	GoGen          map[strgen.FileName]string
 	PgGen          map[strgen.FileName]string
+	HurlGen        map[strgen.FileName]string
 	OkayToDownload bool
 	HasErr         bool
 }
@@ -110,5 +111,6 @@ func emptyLastOutput(schemas []*model.Schema) *Output {
 		Schemas: schemas,
 		GoGen:   make(map[strgen.FileName]string),
 		PgGen:   make(map[strgen.FileName]string, 0),
+		HurlGen: make(map[strgen.FileName]string, 0),
 	}
 }

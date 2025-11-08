@@ -172,6 +172,12 @@ func (c *Client) SetOutput() error {
 		return err
 	}
 
+	hurlFiles, err := strgen.HurlTests(schemas)
+	if err != nil {
+		c.LastOutput = emptyLastOutput(schemas)
+		return err
+	}
+
 	var hasErr bool
 	for _, s := range c.LastOutput.Schemas {
 		if s.HasErr() {
@@ -186,6 +192,7 @@ func (c *Client) SetOutput() error {
 		OkayToDownload: len(c.LastOutput.Schemas) > 0 && !hasErr,
 		GoGen:          goFiles,
 		PgGen:          pgFiles,
+		HurlGen:        hurlFiles,
 	}
 
 	c.LastOutput = &out

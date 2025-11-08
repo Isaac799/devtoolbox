@@ -163,6 +163,24 @@ func (store *ClientStore) Download() http.HandlerFunc {
 			}
 		}
 
+		hurlGen, err := strgen.HurlTests(schemas)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		for k, v := range hurlGen {
+			zw, err := zWriter.Create(k.Full())
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			_, err = zw.Write([]byte(v))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+
 		zWriter.Close()
 		archName := fmt.Sprintf("devtoolbox-%d", time.Now().Unix())
 		b := buff.Bytes()

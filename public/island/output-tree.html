@@ -58,6 +58,17 @@
     </details>
     {{ end }}
 
+    <h3>Hurl Tests</h3>
+
+    {{ range $k, $v := .Client.LastOutput.HurlGen }}
+    <details>
+        <summary class="file-name"> {{ $k.Full }} </summary>
+        <div class="scroll-box">
+            <pre>{{- $v }}</pre>
+        </div>
+    </details>
+    {{ end }}
+
     <h3>Go</h3>
 
     {{ range $k, $v := .Client.LastOutput.GoGen }}
