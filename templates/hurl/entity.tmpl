@@ -1,0 +1,59 @@
+{{- block "createHurl" . }}
+# post {{ .Name }}
+POST http://localhost:8080/api/{{ renderKebab .Name }}
+{{ template "json" . }} 
+HTTP 200
+[Captures]
+{{- range $index, $element := .Primary }}
+{{ $element.Name }}: jsonpath "$['{{ $element.Name }}']"{{- end }}
+[Asserts]
+{{- range $index, $element := .Primary }}
+variable "{{ $element.Name }}" > 0{{- end }}
+{{- end }}
+{{- block "readHurl" . }}
+# read one {{ .Name }}
+GET http://localhost:8080/api/{{ renderKebab .Name }}/{{ renderHurlPathValues . }}
+HTTP 200
+[Asserts]
+{{- range $index, $element := .Primary }}
+jsonpath "$['{{ $element.Name }}']" > 0{{- end }}
+
+{{- end }}
+{{- block "readManyHurl" . }}
+# read many {{ .Name }}
+GET http://localhost:8080/api/{{ renderKebab .Name }}
+HTTP 200
+[Captures]
+records: jsonpath "$."
+[Asserts]
+variable "records" count > 0
+
+{{- end }}
+{{- block "updateHurl" . }}
+# update {{ .Name }}
+PUT http://localhost:8080/api/{{ renderKebab .Name }}/{{ renderHurlPathValues . }}
+{{ template "json" . }} 
+HTTP 200
+[Asserts]
+body == "1"
+
+{{- end }}
+{{- block "deleteHurl" . }}
+# delete {{ .Name }}
+DELETE http://localhost:8080/api/{{ renderKebab .Name }}/{{ renderHurlPathValues . }}
+HTTP 200
+[Asserts]
+body == "1"
+
+{{- end }}
+{{- define "entity" }}
+{{- if ne .HasPrimary true }}
+# NOTICE: {{ .Name }} has no primary key, cannot generate CRUD tests
+{{- else }}
+{{ template "createHurl" . }}
+{{ template "readHurl" . }}
+{{ template "readManyHurl" . }}
+{{ template "updateHurl" . }}
+{{ template "deleteHurl" . }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,6 @@
+
+{{- define "json" }}{
+{{- range $index, $element := .Attributes }}
+	"{{ $element.Name }}": {{ renderSeedValue $element }}{{if notLast $index $.Attributes }}, {{ end }}
+{{- end }}
+}{{- end }}
