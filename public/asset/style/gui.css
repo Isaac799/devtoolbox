@@ -32,7 +32,6 @@
 
 .entity,
 .schema {
-  transition: all ease-in-out 0.25s;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -41,7 +40,6 @@
 
 .attribute {
   padding: 0.1rem 0.5rem 0.1rem 0.35rem;
-  transition: all ease-in-out 0.25s;
   background-color: white;
   display: flex;
   align-items: center;

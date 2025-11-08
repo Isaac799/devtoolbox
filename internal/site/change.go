@@ -173,7 +173,6 @@ var changeSchema = change(func(r *http.Request, c *Client) {
 
 	sch.ID = oldSch.ID
 
-	c.Dirty = c.Dirty | MaskDirtyFocus
 	*c.Input.Focus.Schema = sch
 })
 
@@ -189,7 +188,6 @@ var changeEntity = change(func(r *http.Request, c *Client) {
 
 	ent.ClearCache()
 
-	c.Dirty = c.Dirty | MaskDirtyFocus
 	*c.Input.Focus.Entity = ent
 })
 
@@ -217,6 +215,5 @@ var changeAttribute = change(func(r *http.Request, c *Client) {
 
 	attr.Parent.ClearCache()
 
-	c.Dirty = c.Dirty | MaskDirtyFocus
 	*c.Input.Focus.Attribute = attr
 })

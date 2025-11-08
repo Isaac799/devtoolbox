@@ -8,7 +8,7 @@ import (
 	"slices"
 	"text/template"
 
-	"github.com/Isaac799/devtoolbox/internal/strparse"
+	"github.com/Isaac799/devtoolbox/pkg/htmx"
 	"github.com/Isaac799/devtoolbox/pkg/model"
 )
 
@@ -207,10 +207,12 @@ func (store *ClientStore) HandleDialog(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	oobSwapper := NewOobSwapper(client)
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
-	tmpl.ExecuteTemplate(w, what, oobSwapper)
+	tmpl.ExecuteTemplate(w, what, templateData{
+		Client:   client,
+		Examples: DefaultExamples(),
+	})
 
 }
 
@@ -230,19 +232,9 @@ func (store *ClientStore) HandleIsland(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 
-	// TODO remove: allows setting initial off example
-	if len(client.Input.Q) > 0 && (client.LastOutput == nil || len(client.LastOutput.Schemas) == 0) {
-		client.LastOutput = emptyLastOutput(strparse.Raw(client.Input.Q))
+	client.SetOutput()
 
-		err := client.SetOutput()
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Println(err)
-			return
-		}
-	}
-
-	oobSwapper := NewOobSwapper(client)
+	oobSwapper := htmx.NewOobSwapper()
 
 	var (
 		what = r.PathValue("what")
@@ -250,13 +242,13 @@ func (store *ClientStore) HandleIsland(w http.ResponseWriter, r *http.Request) {
 
 	switch what {
 	case "input":
-		if err := oobSwapper.Write(sectionInput); err != nil {
+		if err := oobSwapper.Write(oobSwapInput(client)); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
 		}
 	case "output":
-		if err := oobSwapper.Write(sectionOutput); err != nil {
+		if err := oobSwapper.Write(oobSwapOutput(client)); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
@@ -267,7 +259,7 @@ func (store *ClientStore) HandleIsland(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oobSwapper.Flush(w)
+	oobSwapper.FlushToResponseWriter(w)
 	client.Dirty = 0
 }
 
@@ -284,17 +276,17 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oobSwapper := NewOobSwapper(client)
+	oobSwapper := htmx.NewOobSwapper()
 	r.ParseForm()
 
 	client.change(r, changeFocus)
 	if client.Dirty&MaskDirtyFocus == MaskDirtyFocus {
-		if err := oobSwapper.Write(sectionInput); err != nil {
+		if err := oobSwapper.Write(oobSwapInput(client)); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
 		}
-		oobSwapper.Flush(w)
+		oobSwapper.FlushToResponseWriter(w)
 		client.Dirty = 0
 		return
 	}
@@ -305,6 +297,10 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 		changeSchema, changeEntity, changeAttribute,
 	)
 
+	if client.Dirty&MaskDirtyExample == MaskDirtyExample {
+		client.clearFocus()
+	}
+
 	client.LastOutput.refreshSchemas()
 	err := client.SetOutput()
 	if err != nil {
@@ -314,26 +310,26 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if client.Dirty&MaskDirtyQ == MaskDirtyQ {
-		if err := oobSwapper.Write(sectionOutputTree); err != nil {
+		if err := oobSwapper.Write(oobSwapOutput(client)); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
 		}
 	} else if client.Dirty&MaskDirtyFocus == MaskDirtyFocus {
-		if err := oobSwapper.Write(sectionInput); err != nil {
+		if err := oobSwapper.Write(oobSwapInput(client)); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
 		}
 	} else {
-		if err := oobSwapper.Write(sectionInput, sectionOutput); err != nil {
+		if err := oobSwapper.Write(oobSwapInput(client), oobSwapOutput(client)); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
 		}
 	}
 
-	oobSwapper.Flush(w)
+	oobSwapper.FlushToResponseWriter(w)
 	client.Dirty = 0
 }
 
@@ -388,15 +384,15 @@ func (store *ClientStore) HandleChildPost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	oobSwapper := NewOobSwapper(client)
+	oobSwapper := htmx.NewOobSwapper()
 
-	if err := oobSwapper.Write(sectionInput, sectionOutput); err != nil {
+	if err := oobSwapper.Write(oobSwapInput(client), oobSwapOutput(client)); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
 
-	oobSwapper.Flush(w)
+	oobSwapper.FlushToResponseWriter(w)
 	client.Dirty = 0
 
 }
@@ -452,13 +448,13 @@ func (store *ClientStore) HandleChildDelete(w http.ResponseWriter, r *http.Reque
 	client.clearFocus()
 	client.SetOutput()
 
-	oobSwapper := NewOobSwapper(client)
-	if err := oobSwapper.Write(sectionInput, sectionOutput); err != nil {
+	oobSwapper := htmx.NewOobSwapper()
+	if err := oobSwapper.Write(oobSwapInput(client), oobSwapOutput(client)); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
 
-	oobSwapper.Flush(w)
+	oobSwapper.FlushToResponseWriter(w)
 	client.Dirty = 0
 }
