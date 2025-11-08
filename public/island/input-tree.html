@@ -8,7 +8,7 @@
         {{ if ne $si 0 }}{{ end }}
         <form
             class="focusable fr g1"
-            hx-post="/focus"
+            hx-post="/change"
             hx-trigger="click"
         >
             <input
@@ -25,7 +25,7 @@
             {{ if ne $ei 0 }}{{ end }}
             <form
                 class="focusable fr g1"
-                hx-post="/focus"
+                hx-post="/change"
                 hx-trigger="click"
             >
                 <input
@@ -42,7 +42,7 @@
                 {{ if ne $ai 0 }}{{ end }}
                 <form
                     class="focusable fr-left-center g1 w-full"
-                    hx-post="/focus"
+                    hx-post="/change"
                     hx-trigger="click"
                 >
                     <input

@@ -32,6 +32,7 @@ type Client struct {
 	Expire     time.Time
 	Input      Input
 	LastOutput *Output
+	Dirty      uint
 }
 
 func (c *Client) extendLife() {
@@ -200,25 +201,23 @@ func (c *Client) SetOutput() error {
 	return nil
 }
 
-func (c *Client) renderFull() (*bytes.Buffer, error) {
+func (c *Client) renderFull(buff *bytes.Buffer) error {
 	render, err := c.render()
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	buff := bytes.NewBuffer(nil)
 
 	err = render.input(buff)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = render.output(buff)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return buff, nil
+	return nil
 }
 
 // NewClient makes a new client

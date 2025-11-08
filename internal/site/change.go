@@ -10,6 +10,14 @@ import (
 	"github.com/Isaac799/devtoolbox/pkg/model"
 )
 
+// masks of client state changes to help inform what parts of the ui need to be re-rendered
+const (
+	MaskDirtyQ = 1 << iota
+	MaskDirtyMode
+	MaskDirtyExample
+	MaskDirtyFocus
+)
+
 // change is how we change a client based on a request
 type change = func(*http.Request, *Client)
 
@@ -20,6 +28,7 @@ var changeQ = change(func(r *http.Request, c *Client) {
 		return
 	}
 
+	c.Dirty = c.Dirty | MaskDirtyQ
 	c.Input.Q = r.FormValue(k)
 })
 
@@ -39,6 +48,7 @@ var changeMode = change(func(r *http.Request, c *Client) {
 		}
 	}
 
+	c.Dirty = c.Dirty | MaskDirtyMode
 	c.Input.Mode = mode
 })
 
@@ -49,6 +59,7 @@ var changeExample = change(func(r *http.Request, c *Client) {
 		return
 	}
 
+	c.Dirty = c.Dirty | MaskDirtyExample
 	c.Input.Example = r.FormValue(k)
 })
 
@@ -59,7 +70,13 @@ var changeFocus = change(func(r *http.Request, c *Client) {
 		return
 	}
 
-	c.Input.Focus.RawID = r.FormValue(k)
+	s := r.FormValue(k)
+	if len(s) == 0 {
+		return
+	}
+
+	c.Dirty = c.Dirty | MaskDirtyFocus
+	c.Input.Focus.RawID = s
 	c.setFocus()
 })
 
@@ -147,7 +164,6 @@ func newAttributeFromRequest(r *http.Request) *model.AttributeRaw {
 }
 
 var changeSchema = change(func(r *http.Request, c *Client) {
-	c.setFocus()
 	if c.Input.Focus.Schema == nil {
 		return
 	}
@@ -157,11 +173,11 @@ var changeSchema = change(func(r *http.Request, c *Client) {
 
 	sch.ID = oldSch.ID
 
+	c.Dirty = c.Dirty | MaskDirtyFocus
 	*c.Input.Focus.Schema = sch
 })
 
 var changeEntity = change(func(r *http.Request, c *Client) {
-	c.setFocus()
 	if c.Input.Focus.Entity == nil {
 		return
 	}
@@ -173,11 +189,11 @@ var changeEntity = change(func(r *http.Request, c *Client) {
 
 	ent.ClearCache()
 
+	c.Dirty = c.Dirty | MaskDirtyFocus
 	*c.Input.Focus.Entity = ent
 })
 
 var changeAttribute = change(func(r *http.Request, c *Client) {
-	c.setFocus()
 	if c.Input.Focus.Attribute == nil {
 		return
 	}
@@ -201,5 +217,6 @@ var changeAttribute = change(func(r *http.Request, c *Client) {
 
 	attr.Parent.ClearCache()
 
+	c.Dirty = c.Dirty | MaskDirtyFocus
 	*c.Input.Focus.Attribute = attr
 })

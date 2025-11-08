@@ -295,6 +295,31 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 
+	buff := bytes.NewBuffer(nil)
+
+	var sendRender = func() {
+		client.Dirty = 0
+		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+		w.Header().Add("Content-Type", "text/html")
+		w.Write(buff.Bytes())
+	}
+
+	client.change(
+		r,
+		changeFocus,
+	)
+
+	if client.Dirty&MaskDirtyFocus == MaskDirtyFocus {
+		err := client.renderFull(buff)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
+		sendRender()
+		return
+	}
+
 	client.change(
 		r,
 		changeExample, changeQ, changeMode,
@@ -310,48 +335,27 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buff, err := client.renderFull()
+	render, err := client.render()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
 
-	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-	w.Header().Add("Content-Type", "text/html")
-	w.Write(buff.Bytes())
-}
-
-// HandleFocus handles changes to a clients input state and refreshes the entire input section
-// Has access to client information
-func (store *ClientStore) HandleFocus(w http.ResponseWriter, r *http.Request) {
-	client, csrfOk := store.clientInfo(w, r)
-	if client == nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	if !csrfOk {
-		w.WriteHeader(http.StatusForbidden)
-		return
+	if client.Dirty&MaskDirtyQ == MaskDirtyQ {
+		render.outputTree(buff)
+	} else if client.Dirty&MaskDirtyFocus == MaskDirtyFocus {
+		render.input(buff)
+	} else {
+		err = client.renderFull(buff)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
 	}
 
-	r.ParseForm()
-
-	client.change(
-		r,
-		changeFocus,
-	)
-
-	buff, err := client.renderFull()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
-		return
-	}
-
-	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-	w.Header().Add("Content-Type", "text/html")
-	w.Write(buff.Bytes())
+	sendRender()
 }
 
 // HandleChildPost adds a new child to a schema, entity, or attribute
@@ -399,7 +403,8 @@ func (store *ClientStore) HandleChildPost(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	buff, err := client.renderFull()
+	buff := bytes.NewBuffer(nil)
+	err := client.renderFull(buff)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
@@ -460,7 +465,8 @@ func (store *ClientStore) HandleChildDelete(w http.ResponseWriter, r *http.Reque
 	client.clearFocus()
 	client.SetOutput()
 
-	buff, err := client.renderFull()
+	buff := bytes.NewBuffer(nil)
+	err := client.renderFull(buff)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)

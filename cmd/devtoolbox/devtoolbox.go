@@ -38,7 +38,6 @@ func main() {
 	})
 
 	mux.HandleFunc("/change", store.HandleChange)
-	mux.HandleFunc("/focus", store.HandleFocus)
 
 	mux.HandleFunc("/dialog/{what}", store.HandleDialog)
 	mux.HandleFunc("/island/{what}", store.HandleIsland)
