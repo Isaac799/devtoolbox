@@ -44,9 +44,5 @@ func (sch *Schema) HasErr() bool {
 
 // String provides parsable text to generate itself
 func (sch *Schema) String() string {
-	opts := []string{}
-
-	optsStr := strings.Join(opts, ", ")
-
-	return fmt.Sprintf("# %s with %s", sch.Name, optsStr)
+	return fmt.Sprintf("# %s", sch.Name)
 }

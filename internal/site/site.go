@@ -62,7 +62,9 @@ type Example struct {
 	Value string
 }
 
-func defaultExamples() []Example {
+// DefaultExamples are preset examples I made to showcase different capabilities
+// and levels of complexity
+func DefaultExamples() []Example {
 	return []Example{
 		{
 			Label: "Books and People",

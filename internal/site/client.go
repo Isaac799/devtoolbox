@@ -1,7 +1,6 @@
 package site
 
 import (
-	"bytes"
 	"crypto/rand"
 	"net/http"
 	"strings"
@@ -98,24 +97,6 @@ func (c *Client) clearFocus() {
 	c.Input.Focus.Attribute = nil
 }
 
-func (c *Client) setFocusSchema(schema *model.Schema) {
-	c.clearFocus()
-	c.Input.Focus.RawID = schema.ID
-	c.Input.Focus.Schema = &schema
-}
-
-func (c *Client) setFocusEntity(entity *model.Entity) {
-	c.clearFocus()
-	c.Input.Focus.RawID = entity.ID
-	c.Input.Focus.Entity = &entity
-}
-
-func (c *Client) setFocusAttribute(attr *model.AttributeRaw) {
-	c.clearFocus()
-	c.Input.Focus.RawID = attr.ID
-	c.Input.Focus.Attribute = &attr
-}
-
 func (c *Client) setFocus() {
 	c.clearFocus()
 
@@ -130,23 +111,26 @@ func (c *Client) setFocus() {
 	for si := range schemas {
 		if schemas[si].ID == c.Input.Focus.RawID {
 			c.Input.Focus.Schema = &schemas[si]
-			break
+			return
 		}
 		for ei := range schemas[si].Entities {
 			if schemas[si].Entities[ei].ID == c.Input.Focus.RawID {
 				// schemas[si].Entities[ei].ClearCache()
 				c.Input.Focus.Entity = &schemas[si].Entities[ei]
-				break
+				return
 			}
 			for i := range schemas[si].Entities[ei].RawAttributes {
 				if schemas[si].Entities[ei].RawAttributes[i].ID == c.Input.Focus.RawID {
 					// schemas[si].Entities[ei].ClearCache()
 					c.Input.Focus.Attribute = &schemas[si].Entities[ei].RawAttributes[i]
-					break
+					return
 				}
 			}
 		}
 	}
+
+	// not found
+	c.Input.Focus.RawID = ""
 }
 
 // SetOutput sets the output.
@@ -161,11 +145,19 @@ func (c *Client) SetOutput() error {
 
 	if len(c.Input.Example) > 0 {
 		schemas = strparse.Raw(c.Input.Example)
+		c.Input.Q = c.Input.Example
 		c.Input.Example = ""
 	} else if c.Input.Mode == InputModeText {
 		schemas = strparse.Raw(c.Input.Q)
 	} else {
 		schemas = c.LastOutput.Schemas
+	}
+
+	switch c.Input.Mode {
+	case InputModeGraphical:
+		c.SetQ(schemas)
+	case InputModeText:
+		c.clearFocus()
 	}
 
 	pgFiles, err := strgen.PostgresSetup(schemas)
@@ -201,25 +193,6 @@ func (c *Client) SetOutput() error {
 	return nil
 }
 
-func (c *Client) renderFull(buff *bytes.Buffer) error {
-	render, err := c.render()
-	if err != nil {
-		return err
-	}
-
-	err = render.input(buff)
-	if err != nil {
-		return err
-	}
-
-	err = render.output(buff)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // NewClient makes a new client
 func NewClient() *Client {
 	return &Client{
@@ -227,7 +200,7 @@ func NewClient() *Client {
 		CSRF: rand.Text(),
 		Input: Input{
 			Mode: InputModeGraphical,
-			Q:    defaultExamples()[0].Value,
+			Q:    DefaultExamples()[0].Value,
 		},
 	}
 }

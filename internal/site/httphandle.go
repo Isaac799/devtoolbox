@@ -1,7 +1,6 @@
 package site
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -163,7 +162,7 @@ func (store *ClientStore) HandleDialog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	acceptable := []string{"examples", "settings"}
+	acceptable := []string{"example", "setting"}
 	what := r.PathValue("what")
 	if !slices.Contains(acceptable, what) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -208,18 +207,11 @@ func (store *ClientStore) HandleDialog(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	r.ParseForm()
-
-	render, err := client.render()
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
+	oobSwapper := NewOobSwapper(client)
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	w.Header().Add("Content-Type", "text/html")
-	tmpl.ExecuteTemplate(w, what, render)
+	tmpl.ExecuteTemplate(w, what, oobSwapper)
+
 }
 
 // HandleIsland handles the islands
@@ -241,30 +233,30 @@ func (store *ClientStore) HandleIsland(w http.ResponseWriter, r *http.Request) {
 	// TODO remove: allows setting initial off example
 	if len(client.Input.Q) > 0 && (client.LastOutput == nil || len(client.LastOutput.Schemas) == 0) {
 		client.LastOutput = emptyLastOutput(strparse.Raw(client.Input.Q))
-		client.SetOutput()
+
+		err := client.SetOutput()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
 	}
 
-	render, err := client.render()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
-		return
-	}
+	oobSwapper := NewOobSwapper(client)
 
 	var (
 		what = r.PathValue("what")
-		buff = bytes.NewBuffer(nil)
 	)
 
 	switch what {
 	case "input":
-		if err := render.input(buff); err != nil {
+		if err := oobSwapper.Write(sectionInput); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
 		}
 	case "output":
-		if err := render.output(buff); err != nil {
+		if err := oobSwapper.Write(sectionOutput); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
@@ -275,9 +267,8 @@ func (store *ClientStore) HandleIsland(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-	w.Header().Add("Content-Type", "text/html")
-	w.Write(buff.Bytes())
+	oobSwapper.Flush(w)
+	client.Dirty = 0
 }
 
 // HandleChange handles changes to a clients state and refreshes the entire page
@@ -293,30 +284,18 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	oobSwapper := NewOobSwapper(client)
 	r.ParseForm()
 
-	buff := bytes.NewBuffer(nil)
-
-	var sendRender = func() {
-		client.Dirty = 0
-		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-		w.Header().Add("Content-Type", "text/html")
-		w.Write(buff.Bytes())
-	}
-
-	client.change(
-		r,
-		changeFocus,
-	)
-
+	client.change(r, changeFocus)
 	if client.Dirty&MaskDirtyFocus == MaskDirtyFocus {
-		err := client.renderFull(buff)
-		if err != nil {
+		if err := oobSwapper.Write(sectionInput); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
 		}
-		sendRender()
+		oobSwapper.Flush(w)
+		client.Dirty = 0
 		return
 	}
 
@@ -327,7 +306,6 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 	)
 
 	client.LastOutput.refreshSchemas()
-
 	err := client.SetOutput()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -335,27 +313,28 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render, err := client.render()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
-		return
-	}
-
 	if client.Dirty&MaskDirtyQ == MaskDirtyQ {
-		render.outputTree(buff)
+		if err := oobSwapper.Write(sectionOutputTree); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
 	} else if client.Dirty&MaskDirtyFocus == MaskDirtyFocus {
-		render.input(buff)
+		if err := oobSwapper.Write(sectionInput); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
 	} else {
-		err = client.renderFull(buff)
-		if err != nil {
+		if err := oobSwapper.Write(sectionInput, sectionOutput); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println(err)
 			return
 		}
 	}
 
-	sendRender()
+	oobSwapper.Flush(w)
+	client.Dirty = 0
 }
 
 // HandleChildPost adds a new child to a schema, entity, or attribute
@@ -379,39 +358,47 @@ func (store *ClientStore) HandleChildPost(w http.ResponseWriter, r *http.Request
 	if id == "root" {
 		schema := model.NewSchema()
 		client.LastOutput.Schemas = append(client.LastOutput.Schemas, schema)
-		client.setFocusSchema(schema)
-		client.SetOutput()
+		client.Input.Focus.RawID = schema.ID
+		client.setFocus()
 	} else {
-		for _, schema := range client.LastOutput.Schemas {
-			if schema.ID == id {
-				entity := model.NewEntity(schema)
-				schema.Entities = append(schema.Entities, entity)
-				client.setFocusEntity(entity)
-				client.SetOutput()
+		for si := range client.LastOutput.Schemas {
+			if client.LastOutput.Schemas[si].ID == id {
+				entity := model.NewEntity(client.LastOutput.Schemas[si])
+				client.LastOutput.Schemas[si].Entities = append(client.LastOutput.Schemas[si].Entities, entity)
+				client.Input.Focus.RawID = entity.ID
+				client.setFocus()
 				break
 			}
-			for _, entity := range schema.Entities {
-				if entity.ID == id {
-					attr := model.NewAttribute(entity)
-					entity.RawAttributes = append(entity.RawAttributes, attr)
-					entity.ClearCache()
-					client.setFocusAttribute(attr)
-					client.SetOutput()
+			for ei := range client.LastOutput.Schemas[si].Entities {
+				if client.LastOutput.Schemas[si].Entities[ei].ID == id {
+					attr := model.NewAttribute(client.LastOutput.Schemas[si].Entities[ei])
+					client.LastOutput.Schemas[si].Entities[ei].RawAttributes = append(client.LastOutput.Schemas[si].Entities[ei].RawAttributes, attr)
+					client.Input.Focus.RawID = attr.ID
+					client.setFocus()
 					break
 				}
 			}
 		}
 	}
 
-	buff := bytes.NewBuffer(nil)
-	err := client.renderFull(buff)
+	err := client.SetOutput()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
 
-	w.Write(buff.Bytes())
+	oobSwapper := NewOobSwapper(client)
+
+	if err := oobSwapper.Write(sectionInput, sectionOutput); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+
+	oobSwapper.Flush(w)
+	client.Dirty = 0
+
 }
 
 // HandleChildDelete removes a child from a schema, entity, or attribute
@@ -465,14 +452,13 @@ func (store *ClientStore) HandleChildDelete(w http.ResponseWriter, r *http.Reque
 	client.clearFocus()
 	client.SetOutput()
 
-	buff := bytes.NewBuffer(nil)
-	err := client.renderFull(buff)
-	if err != nil {
+	oobSwapper := NewOobSwapper(client)
+	if err := oobSwapper.Write(sectionInput, sectionOutput); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
 
-	w.Write(buff.Bytes())
-
+	oobSwapper.Flush(w)
+	client.Dirty = 0
 }

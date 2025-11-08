@@ -48,10 +48,7 @@ func (ent *Entity) Path() string {
 
 // String provides parsable text to generate itself
 func (ent *Entity) String() string {
-	opts := []string{}
-
-	optsStr := strings.Join(opts, ", ")
-	return fmt.Sprintf("## %s with %s", ent.Name, optsStr)
+	return fmt.Sprintf("## %s", ent.Name)
 }
 
 // Attribute is a attribute discovered curing recursion.
