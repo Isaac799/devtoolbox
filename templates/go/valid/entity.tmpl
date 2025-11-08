@@ -1,4 +1,5 @@
 {{- define "entity" }}
+// Valid ensures a value is acceptable for create and update operations
 func ({{ renderCamel .Name }} *{{ renderPascal .Name }}) Valid() error {
     const label = "{{ .Name }}"
 {{- range $index, $element := .AttributesToCreate }}

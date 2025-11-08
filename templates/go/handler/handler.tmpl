@@ -6,6 +6,7 @@
 	}
 {{- end }}
 {{- block "createHandler" . }}
+// Post is the http handler func to allow creating a record
 func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -44,6 +45,7 @@ func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Re
 }
 {{- end }}
 {{- block "readHandler" . }}
+// Get is the http handler func to allow reading a record
 func (handler *{{ renderHandlerName . }}) Get(w http.ResponseWriter, r *http.Request) {
 	{{- template "primaryFromRequest" . }}
 	one, err := handler.store.Read({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
@@ -61,6 +63,7 @@ func (handler *{{ renderHandlerName . }}) Get(w http.ResponseWriter, r *http.Req
 }
 {{- end }}
 {{- block "readManyHandler" . }}
+// GetMany is the http handler func to allow reading many records
 func (handler *{{ renderHandlerName . }}) GetMany(w http.ResponseWriter, r *http.Request) {
 	limitStr := r.FormValue("limit")
 	limit, err := strconv.Atoi(limitStr)
@@ -89,6 +92,7 @@ func (handler *{{ renderHandlerName . }}) GetMany(w http.ResponseWriter, r *http
 }
 {{- end }}
 {{- block "updateHandler" . }}
+// Put is the http handler func to allow replacing a record
 func (handler *{{ renderHandlerName . }}) Put(w http.ResponseWriter, r *http.Request) {
 	{{- template "primaryFromRequest" . }}
 	b, err := io.ReadAll(r.Body)
@@ -122,6 +126,7 @@ func (handler *{{ renderHandlerName . }}) Put(w http.ResponseWriter, r *http.Req
 }
 {{- end }}
 {{- block "deleteHandler" . }}
+// Delete is the http handler func to allow removing a record
 func (handler *{{ renderHandlerName . }}) Delete(w http.ResponseWriter, r *http.Request) {
 	{{- template "primaryFromRequest" . }}
 	n, err := handler.store.Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
@@ -133,6 +138,7 @@ func (handler *{{ renderHandlerName . }}) Delete(w http.ResponseWriter, r *http.
 }
 {{- end }}
 {{- block "attachMux" . }}
+// Register will apply restful routes to the mux.
 func (handler *{{ renderHandlerName . }}) Register(mux *http.ServeMux, prefix string) {
 	mux.HandleFunc(prefix+"/{{ renderKebab .Name }}", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -159,6 +165,7 @@ func (handler *{{ renderHandlerName . }}) Register(mux *http.ServeMux, prefix st
 }
 {{- end }}
 {{- block "gatherPrimaryFn" . }}
+// primaryFromRequest gathers the primary keys from the request for record identification
 func (handler *{{ renderHandlerName . }}) primaryFromRequest(r *http.Request) ({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderGoKind $element }}{{ end }}, error) {
 	{{- range $index, $element := .Primary }}
 		{{- template "parseprimary" $element }}
@@ -167,10 +174,12 @@ func (handler *{{ renderHandlerName . }}) primaryFromRequest(r *http.Request) ({
 }
 {{- end }}
 {{- define "handler" }}
+// {{ renderHandlerName . }} handles http routing for crud against a record
 type {{ renderHandlerName . }} struct {
 	store *{{ renderStoreName . }}
 }
 
+// New{{ renderHandlerName . }} provides a new handler
 func New{{ renderHandlerName . }}(db *sql.DB) *{{ renderHandlerName . }} {
 	return &{{ renderHandlerName . }}{store: New{{ renderStoreName . }}(db)}
 }

@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// errors related to validation
 var (
 	ErrValidation = errors.New("validation failed")
 	ErrMin        = errors.New("too small")
@@ -16,6 +17,7 @@ var (
 	ErrEmpty      = errors.New("empty")
 )
 
+// NewErrValidation provides a formatted error to indicate which field failed validation
 func NewErrValidation(s string) error {
 	return fmt.Errorf("%w: %s", ErrValidation, s)
 }

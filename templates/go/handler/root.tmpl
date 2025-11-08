@@ -11,10 +11,12 @@ import (
 	"time"
 )
 
+// errors related to http handling
 var (
 	ErrBadParam = errors.New("unacceptable parameter")
 )
 
+// NewErrBadParam provides a formatted error for a poor param
 func NewErrBadParam(s string) error {
 	return fmt.Errorf("%w: %s", ErrBadParam, s)
 }

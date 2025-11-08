@@ -1,4 +1,5 @@
 {{- block "create" . }}
+// Create will insert a record into the database. If invalid it will err before running
 func (store *{{ renderStoreName . }}) Create({{ renderCamel .Name }} *{{ renderPascal .Name }}) error {
     {{- if $.HasValidity }}
 	if err := {{ renderCamel .Name }}.Valid(); err != nil {
@@ -20,6 +21,7 @@ func (store *{{ renderStoreName . }}) Create({{ renderCamel .Name }} *{{ renderP
 }
 {{- end }}
 {{- block "read" . }}
+// Read will select a single record from then database given its primary key
 func (store *{{ renderStoreName . }}) Read({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{ end }}) (*{{ renderPascal .Name }}, error) {
 	q := `SELECT {{ range $index, $element := .Attributes }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}{{- end }} FROM {{ .Parent.Name }}.{{ .Name }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }} AND {{ end }}{{ $element.Name }}=${{ renderPlusOne $index }}{{ renderCast $element }}{{- end }}`
 	row := store.db.QueryRow(q, {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }})
@@ -35,6 +37,7 @@ func (store *{{ renderStoreName . }}) Read({{ range $index, $element := .Primary
 }
 {{- end }}
 {{- block "readMany" . }}
+// ReadMany will select a many record from then database given typical pagination constraints
 func (store *{{ renderStoreName . }}) ReadMany(limit, offset int) ([]{{ renderPascal .Name }}, error) {
 	q := `SELECT {{ range $index, $element := .Attributes }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}{{- end }} FROM {{ .Parent.Name }}.{{ .Name }} ORDER BY {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }} DESC{{- end }} LIMIT $1 OFFSET $2`
 	rows, err := store.db.Query(q, limit, offset)
@@ -58,6 +61,7 @@ func (store *{{ renderStoreName . }}) ReadMany(limit, offset int) ([]{{ renderPa
 }
 {{- end }}
 {{- block "update" . }}
+// Update will update all fields of a record in the database. If invalid it will err before running
 func (store *{{ renderStoreName . }}) Update({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderPascal $element.Name }} {{ renderGoKind $element }}{{- end }}, {{ renderCamel .Name }} *{{ renderPascal .Name }}) (int64, error) {
     {{- if $.HasValidity }}
 	if err := {{ renderCamel .Name }}.Valid(); err != nil {
@@ -79,6 +83,7 @@ func (store *{{ renderStoreName . }}) Update({{ range $index, $element := .Prima
 }
 {{- end }}
 {{- block "delete" . }}
+// Delete will remove a record from the database given its primary key. Does not cascade.
 func (store *{{ renderStoreName . }}) Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{ end }}) (int64, error) {
 	q := `DELETE FROM {{ .Parent.Name }}.{{ .Name }} WHERE {{ range $index, $element := .Primary }}{{ if ne $index 0 }} AND {{ end }}{{ $element.Name }}=${{ renderPlusOne $index }}{{ renderCast $element }}{{- end }}`
 	result, err := store.db.Exec(q, {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }})
@@ -93,10 +98,12 @@ func (store *{{ renderStoreName . }}) Delete({{ range $index, $element := .Prima
 }
 {{- end }}
 {{- define "store" }}
+// {{ renderStoreName . }} is a store to apply crud operations against sql
 type {{ renderStoreName . }} struct {
     db *sql.DB
 }
 
+// New{{ renderStoreName . }} provides a new store. The db pointer should not be nil.
 func New{{ renderStoreName . }}(db *sql.DB) *{{ renderStoreName . }} {
 	return &{{ renderStoreName . }}{db: db}
 }
