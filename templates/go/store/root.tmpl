@@ -2,8 +2,43 @@ package {{ renderCamel .Name }}
 
 import (
 	"database/sql"
-	"time"
+	"strings"
+	"fmt"
 )
+
+// WhereClause is a map of values that are to be used in the where clause of sql statement
+type WhereClause map[string]any
+
+// PlaceholderArgs provides placeholder args starting after n
+// example:
+//
+//	items := make(WhereClause, 5)
+//	items["flags::bit(16)"] = fmt.Sprintf("%016b", 32)
+//	items["foo"] = "bar"
+//	items["fizz"] = 2006
+//	placeholder, args := items.PlaceholderArgs(2)
+//	fmt.Println(placeholder) // WHERE flags=$3::bit(16) AND foo=$4 AND fizz=$5
+//	fmt.Println(args) // [0000000000100000 bar 2006]
+func (w WhereClause) PlaceholderArgs(n int) (string, []any) {
+	placeholders := make([]string, 0, len(w))
+	values := make([]any, 0, len(w))
+	i := n + 1
+	for k, v := range w {
+		beforeCast, afterCast, found := strings.Cut(k, "::")
+		if found {
+			placeholders = append(placeholders, fmt.Sprintf("%s=$%d::%s", beforeCast, i, afterCast))
+		} else {
+			placeholders = append(placeholders, fmt.Sprintf("%s=$%d", k, i))
+		}
+		values = append(values, v)
+		i++
+	}
+	if len(placeholders) == 0 {
+		return "", make([]any, 0)
+	}
+	return fmt.Sprintf("WHERE %s", strings.Join(placeholders, " AND ")), values
+}
+
 {{- range $index, $element := .Entities }}
 {{ template "store" $element }}
 {{- end }}

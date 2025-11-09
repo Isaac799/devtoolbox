@@ -1,0 +1,70 @@
+{{- block "collectAttrFloat" . }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	if {{ renderCamel .Name }}, err := strconv.ParseFloat(raw{{ renderPascal .Name }}, 64); err == nil {
+		items["{{ .Name }}"] = {{ renderCamel .Name }}
+	}
+{{- end }}
+{{- block "collectAttrInt" . }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	if {{ renderCamel .Name }}, err := strconv.Atoi(raw{{ renderPascal .Name }}); err == nil {
+		items["{{ .Name }}"] = {{ renderCamel .Name }}
+	}
+{{- end }}
+{{- define "collectattrfromreq" }}
+{{- if eq .Final.Kind 2 }}
+    {{- template "collectAttrInt" . }}
+{{- else if eq .Final.Kind 3 }}
+    {{- template "collectAttrInt" . }}
+{{- else if eq .Final.Kind 4 }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	if len(raw{{ renderPascal .Name }}) > 0 {
+		items["{{ .Name }}"] = raw{{ renderPascal .Name }}
+	}
+{{- else if eq .Final.Kind 5 }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	if len(raw{{ renderPascal .Name }}) > 0 {
+		items["{{ .Name }}"] = raw{{ renderPascal .Name }}
+	}
+{{- else if eq .Final.Kind 6 }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	parsed{{ renderPascal .Name }}, err := strconv.ParseUint(raw{{ renderPascal .Name }}, 2, {{ .Final.Max.String }})
+	if err == nil {
+		items["{{ .Name }}::bit({{ .Final.Max.String }})"] = fmt.Sprintf("%0{{ .Final.Max.String }}b", parsed{{ renderPascal .Name }})
+	} else {
+		int{{ renderPascal .Name }}, err := strconv.ParseUint(raw{{ renderPascal .Name }}, 10, {{ .Final.Max.String }})
+		if err == nil {
+			items["{{ .Name }}::bit({{ .Final.Max.String }})"] = fmt.Sprintf("%0{{ .Final.Max.String }}b", int{{ renderPascal .Name }})
+		}
+	}
+{{- else if eq .Final.Kind 7 }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	if {{ renderCamel .Name }}, err := strconv.ParseBool(raw{{ renderPascal .Name }}); err == nil {
+		items["{{ .Name }}"] = {{ renderCamel .Name }}
+	}
+{{- else if eq .Final.Kind 8 }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	if {{ renderCamel .Name }}, err := time.Parse(time.DateOnly, raw{{ renderPascal .Name }}); err == nil {
+		items["{{ .Name }}"] = {{ renderPascal .Name }}
+	}
+{{- else if eq .Final.Kind 9 }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	if {{ renderCamel .Name }}, err := time.Parse(time.TimeOnly, raw{{ renderPascal .Name }}); err == nil {
+		items["{{ .Name }}"] = {{ renderPascal .Name }}
+	}
+{{- else if eq .Final.Kind 10 }}
+	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
+	if {{ renderCamel .Name }}, err := time.Parse(time.DateTime, raw{{ renderPascal .Name }}); err == nil {
+		items["{{ .Name }}"] = {{ renderPascal .Name }}
+	}
+{{- else if eq .Final.Kind 11 }}
+    {{- template "collectAttrFloat" . }}
+{{- else if eq .Final.Kind 12 }}
+    {{- template "collectAttrFloat" . }}
+{{- else if eq .Final.Kind 13 }}
+    {{- template "collectAttrFloat" . }}
+{{- else if eq .Final.Kind 14 }}
+    {{- template "collectAttrFloat" . }}
+{{- else }}
+???
+{{- end}}
+{{- end}}
