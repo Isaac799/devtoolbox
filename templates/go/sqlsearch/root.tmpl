@@ -1,0 +1,138 @@
+package sqlsearch
+
+import (
+	"strings"
+	"fmt"
+)
+
+// OperatorKind is a a operator that can guide sql where statements
+type OperatorKind int
+
+// kinds of operators
+const (
+	Equal OperatorKind = iota + 1
+	NotEqual
+	GreaterThan
+	GreaterThanEqual
+	LessThan
+	LessThanEqual
+	IsNull
+	NotNull
+	Like
+	NotLike
+)
+
+const (
+	// the prefix to form keys that indicates the desired operator for a filter
+	// 
+	// Example: 
+	// filter foo by 'bar' using op__foo
+	OperatorPrefix = "op__"
+)
+
+// ParseOperator will determine the operator, falling back to eq
+func ParseOperator(s string) OperatorKind {
+	switch s {
+	case "==", "=", "eq":
+		return Equal
+	case "!=", "<>", "ne":
+		return NotEqual
+	case ">", "gt":
+		return GreaterThan
+	case ">=", "ge", "gte":
+		return GreaterThanEqual
+	case "<", "lt":
+		return LessThan
+	case "<=", "le", "lte":
+		return LessThanEqual
+	case "isnull":
+		return IsNull
+	case "notnull":
+		return NotNull
+	case "~", " like":
+		return Like
+	case "!~", "notlike":
+		return NotLike
+	default:
+		return Equal
+	}
+}
+
+// WhereClauseItem is an item in a where clause
+type WhereClauseItem struct {
+	Column   string
+	Value    any
+	Cast     string
+	Operator OperatorKind
+}
+
+// PlaceholderString provides the sql placeholder string to use in query
+func (wi *WhereClauseItem) PlaceholderString(i int) string {
+	switch wi.Operator {
+	case Equal:
+		return fmt.Sprintf("%s=$%d%s", wi.Column, i, wi.Cast)
+	case NotEqual:
+		return fmt.Sprintf("%s<>$%d%s", wi.Column, i, wi.Cast)
+	case GreaterThan:
+		return fmt.Sprintf("%s>$%d%s", wi.Column, i, wi.Cast)
+	case GreaterThanEqual:
+		return fmt.Sprintf("%s>=$%d%s", wi.Column, i, wi.Cast)
+	case LessThan:
+		return fmt.Sprintf("%s<$%d%s", wi.Column, i, wi.Cast)
+	case LessThanEqual:
+		return fmt.Sprintf("%s<=$%d%s", wi.Column, i, wi.Cast)
+	case IsNull:
+		return fmt.Sprintf("%s IS NOT NULL", wi.Column)
+	case NotNull:
+		return fmt.Sprintf("%s IS NULL", wi.Column)
+	case Like:
+		return fmt.Sprintf("%s LIKE %d%s", wi.Column, i, wi.Cast)
+	case NotLike:
+		return fmt.Sprintf("%s NOT LIKE $%d%s", wi.Column, i, wi.Cast)
+	default:
+		// unreachable
+		return "true"
+	}
+}
+
+// PlaceholderArgs provides placeholder args starting after n
+// example:
+//
+//	items := []WhereClauseItem{
+//		{
+//			Column:   "flags",
+//			Value:    "01010011",
+//			Cast:     "::bit(8)",
+//			Operator: Equal,
+//		},
+//		{
+//			Column:   "name",
+//			Value:    "foo",
+//			Operator: Like,
+//		},
+//		{
+//			Column:   "height",
+//			Value:    210,
+//			Operator: LessThan,
+//		},
+//	}
+//	placeholder, args := PlaceholderArgs(2, items)
+//	fmt.Println(placeholder) // WHERE flags=$3::bit(8) AND name=$4 AND height<$5
+//	fmt.Println(args) // [01010011 foo 210]
+func PlaceholderArgs(n int, items []WhereClauseItem) (string, []any) {
+	placeholders := make([]string, 0, len(items))
+	values := make([]any, 0, len(items))
+	i := n + 1
+	for _, item := range items {
+		if len(item.Column) == 0 || item.Operator == 0 {
+			continue
+		}
+		placeholders = append(placeholders, item.PlaceholderString(i))
+		values = append(values, item.Value)
+		i++
+	}
+	if len(placeholders) == 0 {
+		return "", make([]any, 0)
+	}
+	return fmt.Sprintf("WHERE %s", strings.Join(placeholders, " AND ")), values
+}

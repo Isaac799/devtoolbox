@@ -179,7 +179,7 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 			return nil, err
 		}
 		pn := packageName(s.Name)
-		m[newFileName(pn, fmt.Sprintf("%s.go", pn))] = sb.String()
+		m[newFileName("internal/"+pn, fmt.Sprintf("%s.go", pn))] = sb.String()
 	}
 
 	for _, s := range schemas {
@@ -194,7 +194,7 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		m[newFileName(packageName(s.Name), "store.go")] = sb.String()
+		m[newFileName(packageName("internal/"+s.Name), "store.go")] = sb.String()
 	}
 
 	for _, s := range schemas {
@@ -209,7 +209,7 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		m[newFileName(packageName(s.Name), "handler.go")] = sb.String()
+		m[newFileName(packageName("internal/"+s.Name), "handler.go")] = sb.String()
 	}
 
 	for _, s := range schemas {
@@ -224,7 +224,50 @@ func GoStructs(schemas []*model.Schema) (map[FileName]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		m[newFileName(packageName(s.Name), "valid.go")] = sb.String()
+		m[newFileName(packageName("internal/"+s.Name), "valid.go")] = sb.String()
+	}
+
+	{
+		tmpl := rootTmpl()
+		_, err = tmpl.ParseGlob("templates/go/sqlsearch/**.tmpl")
+		if err != nil {
+			return nil, err
+		}
+
+		sb := strings.Builder{}
+		err = tmpl.ExecuteTemplate(&sb, "root.tmpl", nil)
+		if err != nil {
+			return nil, err
+		}
+		m[newFileName(packageName("pkg/sqlsearch"), "sqlsearch.go")] = sb.String()
+	}
+
+	{
+		tmpl := rootTmpl()
+		_, err = tmpl.ParseFiles("templates/go/app/main.tmpl")
+		if err != nil {
+			return nil, err
+		}
+		sb := strings.Builder{}
+		err = tmpl.ExecuteTemplate(&sb, "main.tmpl", schemas)
+		if err != nil {
+			return nil, err
+		}
+		m[newFileName("", "main.go")] = sb.String()
+	}
+
+	{
+		tmpl := rootTmpl()
+		_, err = tmpl.ParseFiles("templates/go/app/mod.tmpl")
+		if err != nil {
+			return nil, err
+		}
+		sb := strings.Builder{}
+		err = tmpl.ExecuteTemplate(&sb, "mod.tmpl", nil)
+		if err != nil {
+			return nil, err
+		}
+		m[newFileName("", "go.mod")] = sb.String()
 	}
 
 	return m, nil

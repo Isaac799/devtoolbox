@@ -189,7 +189,7 @@ func (c *Client) SetOutput() error {
 	out := Output{
 		Schemas:        schemas,
 		HasErr:         hasErr,
-		OkayToDownload: len(c.LastOutput.Schemas) > 0 && !hasErr,
+		OkayToDownload: len(schemas) > 0 && !hasErr,
 		GoGen:          goFiles,
 		PgGen:          pgFiles,
 		HurlGen:        hurlFiles,

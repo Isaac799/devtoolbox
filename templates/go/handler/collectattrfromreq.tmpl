@@ -1,20 +1,20 @@
 {{- block "collectAttrFloat" . }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	if {{ renderCamel .Name }}, err := strconv.ParseFloat(raw{{ renderPascal .Name }}, 64); err == nil {
-		items = append(items, WhereClauseItem{
-			column:   "{{ .Name }}",
-			value:    {{ renderCamel .Name }},
-			operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+		items = append(items, sqlsearch.WhereClauseItem{
+			Column:   "{{ .Name }}",
+			Value:    {{ renderCamel .Name }},
+			Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 		})
 	}
 {{- end }}
 {{- block "collectAttrInt" . }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	if {{ renderCamel .Name }}, err := strconv.Atoi(raw{{ renderPascal .Name }}); err == nil {
-		items = append(items, WhereClauseItem{
-			column:   "{{ .Name }}",
-			value:    {{ renderCamel .Name }},
-			operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+		items = append(items, sqlsearch.WhereClauseItem{
+			Column:   "{{ .Name }}",
+			Value:    {{ renderCamel .Name }},
+			Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 		})		
 	}
 {{- end }}
@@ -26,76 +26,76 @@
 {{- else if eq .Final.Kind 4 }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	if len(raw{{ renderPascal .Name }}) > 0 {
-		items = append(items, WhereClauseItem{
-			column:   "{{ .Name }}",
-			value:    raw{{ renderPascal .Name }},
-			operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+		items = append(items, sqlsearch.WhereClauseItem{
+			Column:   "{{ .Name }}",
+			Value:    raw{{ renderPascal .Name }},
+			Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 		})		
 	}
 {{- else if eq .Final.Kind 5 }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	if len(raw{{ renderPascal .Name }}) > 0 {
-		items = append(items, WhereClauseItem{
-			column:   "{{ .Name }}",
-			value:    raw{{ renderPascal .Name }},
-			operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+		items = append(items, sqlsearch.WhereClauseItem{
+			Column:   "{{ .Name }}",
+			Value:    raw{{ renderPascal .Name }},
+			Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 		})		
 	}
 {{- else if eq .Final.Kind 6 }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	parsed{{ renderPascal .Name }}, err := strconv.ParseUint(raw{{ renderPascal .Name }}, 2, {{ .Final.Max.String }})
 	if err == nil {
-			items = append(items, WhereClauseItem{
-				column:   "{{ .Name }}",
-				value:    fmt.Sprintf("%0{{ .Final.Max.String }}b", parsed{{ renderPascal .Name }}),
-				cast:     "::bit({{ .Final.Max.String }})",
-				operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+			items = append(items, sqlsearch.WhereClauseItem{
+				Column:   "{{ .Name }}",
+				Value:    fmt.Sprintf("%0{{ .Final.Max.String }}b", parsed{{ renderPascal .Name }}),
+				Cast:     "::bit({{ .Final.Max.String }})",
+				Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 			})		
 	} else {
 		int{{ renderPascal .Name }}, err := strconv.ParseUint(raw{{ renderPascal .Name }}, 10, {{ .Final.Max.String }})
 		if err == nil {
-			items = append(items, WhereClauseItem{
-				column:   "{{ .Name }}",
-				value:    fmt.Sprintf("%0{{ .Final.Max.String }}b", int{{ renderPascal .Name }}),
-				cast:     "::bit({{ .Final.Max.String }})",
-				operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+			items = append(items, sqlsearch.WhereClauseItem{
+				Column:   "{{ .Name }}",
+				Value:    fmt.Sprintf("%0{{ .Final.Max.String }}b", int{{ renderPascal .Name }}),
+				Cast:     "::bit({{ .Final.Max.String }})",
+				Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 			})		
 		}
 	}
 {{- else if eq .Final.Kind 7 }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	if {{ renderCamel .Name }}, err := strconv.ParseBool(raw{{ renderPascal .Name }}); err == nil {
-		items = append(items, WhereClauseItem{
-			column:   "{{ .Name }}",
-			value:    {{ renderCamel .Name }},
-			operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+		items = append(items, sqlsearch.WhereClauseItem{
+			Column:   "{{ .Name }}",
+			Value:    {{ renderCamel .Name }},
+			Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 		})		
 	}
 {{- else if eq .Final.Kind 8 }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	if {{ renderCamel .Name }}, err := time.Parse(time.DateOnly, raw{{ renderPascal .Name }}); err == nil {
-		items = append(items, WhereClauseItem{
-			column:   "{{ .Name }}",
-			value:    {{ renderCamel .Name }},
-			operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+		items = append(items, sqlsearch.WhereClauseItem{
+			Column:   "{{ .Name }}",
+			Value:    {{ renderCamel .Name }},
+			Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 		})		
 	}
 {{- else if eq .Final.Kind 9 }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	if {{ renderCamel .Name }}, err := time.Parse(time.TimeOnly, raw{{ renderPascal .Name }}); err == nil {
-		items = append(items, WhereClauseItem{
-			column:   "{{ .Name }}",
-			value:    {{ renderCamel .Name }},
-			operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+		items = append(items, sqlsearch.WhereClauseItem{
+			Column:   "{{ .Name }}",
+			Value:    {{ renderCamel .Name }},
+			Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 		})		
 	}
 {{- else if eq .Final.Kind 10 }}
 	raw{{ renderPascal .Name }} := r.FormValue("{{ .Name }}")
 	if {{ renderCamel .Name }}, err := time.Parse(time.DateTime, raw{{ renderPascal .Name }}); err == nil {
-		items = append(items, WhereClauseItem{
-			column:   "{{ .Name }}",
-			value:    {{ renderCamel .Name }},
-			operator: ParseOperator(r.FormValue(OperatorPrefix+"{{ .Name }}")),
+		items = append(items, sqlsearch.WhereClauseItem{
+			Column:   "{{ .Name }}",
+			Value:    {{ renderCamel .Name }},
+			Operator: sqlsearch.ParseOperator(r.FormValue(sqlsearch.OperatorPrefix+"{{ .Name }}")),
 		})		
 	}
 {{- else if eq .Final.Kind 11 }}

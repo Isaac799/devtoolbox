@@ -99,7 +99,7 @@ func HurlTests(schemas []*model.Schema) (map[FileName]string, error) {
 				return nil, err
 			}
 			pn := packageName(s.Name)
-			m[newFileName(pn, fmt.Sprintf("%s.hurl", ent.Name))] = sb.String()
+			m[newFileName("tests", fmt.Sprintf("%s.%s.hurl", pn, ent.Name))] = sb.String()
 		}
 	}
 

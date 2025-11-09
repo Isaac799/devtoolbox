@@ -175,9 +175,9 @@ func (handler *{{ renderHandlerName . }}) primaryFromRequest(r *http.Request) ({
 
 // WhereClauseItemFromRequest creates a where clause for a sql statement
 // based on fields in an entity, and if they where provided in the request.
-func (handler *{{ renderHandlerName . }}) WhereClauseItemFromRequest(r *http.Request) []WhereClauseItem {
+func (handler *{{ renderHandlerName . }}) WhereClauseItemFromRequest(r *http.Request) []sqlsearch.WhereClauseItem {
 	r.ParseForm()
-	items := make([]WhereClauseItem, 0, {{ len .Attributes }})
+	items := make([]sqlsearch.WhereClauseItem, 0, {{ len .Attributes }})
 	{{- range $index, $element := .Attributes }}
 		{{- template "collectattrfromreq" $element }}
 	{{- end }}	

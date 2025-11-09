@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/Isaac799/devtoolbox/pkg/model"
 )
@@ -133,7 +134,7 @@ func PostgresSetup(schemas []*model.Schema) (map[FileName]string, error) {
 		s := sb.String()
 
 		if len(s) > 0 {
-			m[newFileName("postgres", "tables.sql")] = s
+			m[newFileName("migrations", fmt.Sprintf("%d.sql", time.Now().Unix()))] = s
 		}
 	}
 	return m, nil

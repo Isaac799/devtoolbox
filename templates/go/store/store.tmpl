@@ -38,8 +38,8 @@ func (store *{{ renderStoreName . }}) Read({{ range $index, $element := .Primary
 {{- end }}
 {{- block "readMany" . }}
 // ReadMany will select a many record from then database given typical pagination constraints
-func (store *{{ renderStoreName . }}) ReadMany(limit, offset int, whereClauseItems []WhereClauseItem) ([]{{ renderPascal .Name }}, error) {
-	placeholder, placeholderValues := PlaceholderArgs(2, whereClauseItems)
+func (store *{{ renderStoreName . }}) ReadMany(limit, offset int, whereClauseItems []sqlsearch.WhereClauseItem) ([]{{ renderPascal .Name }}, error) {
+	placeholder, placeholderValues := sqlsearch.PlaceholderArgs(2, whereClauseItems)
 	q := fmt.Sprintf(`SELECT {{ range $index, $element := .Attributes }}{{ if ne $index 0 }}, {{ end }}{{ .Name }}{{- end }} FROM {{ .Parent.Name }}.{{ .Name }} %s ORDER BY {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ $element.Name }} DESC{{- end }} LIMIT $1 OFFSET $2`, placeholder)
 	args := append([]any{limit, offset}, placeholderValues...)
 	rows, err := store.db.Query(q, args...)

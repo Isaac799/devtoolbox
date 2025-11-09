@@ -1,0 +1,58 @@
+// Package main is the primary entry point to serve a crud application
+package main
+
+import (
+	"database/sql"
+	"errors"
+{{- range $index, $schema := . }}
+	"example/internal/{{ renderCamel $schema.Name }}"
+{{- end }}
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+)
+
+func setup() (*http.ServeMux, *sql.DB, error) {
+	// https://pkg.go.dev/github.com/joho/godotenv
+	err := godotenv.Load()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	connStr := os.Getenv("DB_CONN_STR")
+	if len(connStr) == 0 {
+		return nil, nil, errors.New("missing conn str from env")
+	}
+
+	// https://pkg.go.dev/github.com/lib/pq
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var (
+		apiPrefix = "api"
+		mux       = http.NewServeMux()
+	)
+
+
+{{- range $index, $schema := . }}
+{{- range $index, $entity := $schema.Entities }}
+	{{ renderCamel $schema.Name }}.New{{ renderHandlerName $entity }}(db).Register(mux, apiPrefix)
+{{- end }}
+{{- end }}
+
+	return mux, db, nil
+}
+
+func main() {
+	mux, _, err := setup()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	http.ListenAndServe(":8080", mux)
+}
