@@ -186,6 +186,12 @@ func (c *Client) SetOutput() error {
 		}
 	}
 
+	for _, s := range schemas {
+		for _, e := range s.Entities {
+			e.SetRelations(schemas)
+		}
+	}
+
 	out := Output{
 		Schemas:        schemas,
 		HasErr:         hasErr,

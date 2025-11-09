@@ -21,6 +21,10 @@ type Entity struct {
 
 	// all attributes after cached
 	ar []*Attribute
+
+	// Relations provides all the relations for a schema, has setter method.
+	// Should be set before using templates
+	Relations []Relation
 }
 
 func NewEntity(parent *Schema) *Entity {
@@ -30,6 +34,12 @@ func NewEntity(parent *Schema) *Entity {
 		RawAttributes: make([]*AttributeRaw, 0, 6),
 		Parent:        parent,
 	}
+}
+
+// SetRelations sets the relations for a schema given them all
+func (ent *Entity) SetRelations(schemas []*Schema) {
+	relationMaker := NewRelationMaker(schemas)
+	ent.Relations = relationMaker.DetermineFor(ent)
 }
 
 // ClearCache lets an entity know that something changed, and we

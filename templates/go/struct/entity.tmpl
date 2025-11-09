@@ -1,9 +1,31 @@
 {{ define "entity" }}
-// {{ renderPascal .Name }} is a entity in sql. Then json struct tags align with its column name.
+// {{ renderPascal .Name }} is a entity in sql. The json struct tags align with its column name.
 type {{ renderPascal .Name }} struct {
     {{ range $index, $element := .Attributes }}
     {{- template "attribute" . }}{{if notLast $index $.Attributes }}
     {{ end }}
     {{- end }}
 }
+
+{{- range $index, $relation := .Relations }}
+    {{ if $relation.Many }} 
+// {{ renderPascal $relation.Name }} is an associative relation:
+// {{ $relation.Base.Name }} has zero to many {{ $relation.Has.Name }} 
+    {{- else if $relation.Optional }}
+// {{ renderPascal $relation.Name }} is a direct relation:
+// {{ $relation.Base.Name }} has zero to one {{ $relation.Has.Name }} 
+    {{- else }}
+// {{ renderPascal $relation.Name }} is a direct relation:
+// {{ $relation.Base.Name }} has one and exactly one {{ $relation.Has.Name }} 
+    {{- end }}
+type {{ renderPascal $relation.Name }} struct {
+    {{ renderPascal $relation.Base.Name }}
+    {{- if $relation.Many }} 
+    {{ renderPascal $relation.HasName }} []{{ renderPascal $relation.Has.Name }} `json:"{{ $relation.HasName }}"`
+    {{- else }}
+    {{ renderPascal $relation.Has.Name }} {{ renderPascal $relation.Has.Name }} `json:"{{ $relation.Has.Name }}"`
+    {{- end }}
+}
+
+{{- end }}
 {{- end }}

@@ -83,5 +83,11 @@ func Raw(s string) []*model.Schema {
 		}
 	}
 
+	for _, s := range schemas {
+		for _, e := range s.Entities {
+			e.SetRelations(schemas)
+		}
+	}
+
 	return schemas
 }
