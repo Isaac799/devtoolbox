@@ -9,11 +9,16 @@ import (
 
 const testMockSchemaKitchen = `# Kitchen
 
+## Supplier
+- id          as ++
+- name        as str  with required, 3..30, unique
+
 ## Ingredient
 - id          as ++
 - name        as str  with required, 3..30, unique
 - eol         as date with required
 - rare        as bool
+- @supplier
 
 ## Food
 - id          as ++
@@ -73,6 +78,9 @@ func TestRecursiveRead(t *testing.T) {
 
 	for i, attr := range attrs {
 		if attr.Attribute.Err != nil {
+			continue
+		}
+		if attr.DirectChild {
 			continue
 		}
 		if i == 0 && attr.Name() != "co_id" {
