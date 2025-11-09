@@ -77,7 +77,7 @@ func (handler *{{ renderHandlerName . }}) GetMany(w http.ResponseWriter, r *http
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	many, err := handler.store.ReadMany(limit, offset, handler.WhereClauseFromRequest(r))
+	many, err := handler.store.ReadMany(limit, offset, handler.WhereClauseItemFromRequest(r))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -173,11 +173,11 @@ func (handler *{{ renderHandlerName . }}) primaryFromRequest(r *http.Request) ({
 	return {{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel .Name }}{{ end }}, nil
 }
 
-// WhereClauseFromRequest creates a where clause for a sql statement
+// WhereClauseItemFromRequest creates a where clause for a sql statement
 // based on fields in an entity, and if they where provided in the request.
-func (handler *{{ renderHandlerName . }}) WhereClauseFromRequest(r *http.Request) WhereClause {
+func (handler *{{ renderHandlerName . }}) WhereClauseItemFromRequest(r *http.Request) []WhereClauseItem {
 	r.ParseForm()
-	items := make(WhereClause, {{ len .Attributes }})
+	items := make([]WhereClauseItem, 0, {{ len .Attributes }})
 	{{- range $index, $element := .Attributes }}
 		{{- template "collectattrfromreq" $element }}
 	{{- end }}	

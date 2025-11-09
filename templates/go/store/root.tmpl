@@ -6,31 +6,127 @@ import (
 	"fmt"
 )
 
-// WhereClause is a map of values that are to be used in the where clause of sql statement
-type WhereClause map[string]any
+
+// OperatorKind is a a categorical operator that is supported
+type OperatorKind int
+
+// kinds of operators
+const (
+	Equal OperatorKind = iota + 1
+	NotEqual
+	GreaterThan
+	GreaterThanEqual
+	LessThan
+	LessThanEqual
+	IsNull
+	NotNull
+	Like
+	NotLike
+)
+
+const (
+	OperatorPrefix = "op__"
+)
+
+// ParseOperator will determine the operator, falling back to eq
+func ParseOperator(s string) OperatorKind {
+	switch s {
+	case "==", "=", "eq":
+		return Equal
+	case "!=", "<>", "ne":
+		return NotEqual
+	case ">", "gt":
+		return GreaterThan
+	case ">=", "ge", "gte":
+		return GreaterThanEqual
+	case "<", "lt":
+		return LessThan
+	case "<=", "le", "lte":
+		return LessThanEqual
+	case "isnull":
+		return IsNull
+	case "notnull":
+		return NotNull
+	case "~", " like":
+		return Like
+	case "!~", "notlike":
+		return NotLike
+	default:
+		return Equal
+	}
+}
+
+// WhereClauseItem is an item in a where clause
+type WhereClauseItem struct {
+	column   string
+	value    any
+	cast     string
+	operator OperatorKind
+}
+
+// PlaceholderString provides the sql placeholder string to use in query
+func (wi *WhereClauseItem) PlaceholderString(i int) string {
+	switch wi.operator {
+	case Equal:
+		return fmt.Sprintf("%s=$%d%s", wi.column, i, wi.cast)
+	case NotEqual:
+		return fmt.Sprintf("%s<>$%d%s", wi.column, i, wi.cast)
+	case GreaterThan:
+		return fmt.Sprintf("%s>$%d%s", wi.column, i, wi.cast)
+	case GreaterThanEqual:
+		return fmt.Sprintf("%s>=$%d%s", wi.column, i, wi.cast)
+	case LessThan:
+		return fmt.Sprintf("%s<$%d%s", wi.column, i, wi.cast)
+	case LessThanEqual:
+		return fmt.Sprintf("%s<=$%d%s", wi.column, i, wi.cast)
+	case IsNull:
+		return fmt.Sprintf("%s IS NOT NULL", wi.column)
+	case NotNull:
+		return fmt.Sprintf("%s IS NULL", wi.column)
+	case Like:
+		return fmt.Sprintf("%s LIKE %d%s", wi.column, i, wi.cast)
+	case NotLike:
+		return fmt.Sprintf("%s NOT LIKE $%d%s", wi.column, i, wi.cast)
+	default:
+		// unreachable
+		return "true"
+	}
+}
 
 // PlaceholderArgs provides placeholder args starting after n
 // example:
 //
-//	items := make(WhereClause, 5)
-//	items["flags::bit(16)"] = fmt.Sprintf("%016b", 32)
-//	items["foo"] = "bar"
-//	items["fizz"] = 2006
-//	placeholder, args := items.PlaceholderArgs(2)
-//	fmt.Println(placeholder) // WHERE flags=$3::bit(16) AND foo=$4 AND fizz=$5
-//	fmt.Println(args) // [0000000000100000 bar 2006]
-func (w WhereClause) PlaceholderArgs(n int) (string, []any) {
-	placeholders := make([]string, 0, len(w))
-	values := make([]any, 0, len(w))
+//	items := []WhereClauseItem{
+//		{
+//			column:   "flags",
+//			value:    "01010011",
+//			cast:     "::bit(8)",
+//			operator: Equal,
+//		},
+//		{
+//			column:   "name",
+//			value:    "foo",
+//			operator: Like,
+//		},
+//		{
+//			column:   "height",
+//			value:    210,
+//			operator: LessThan,
+//		},
+//	}
+//	placeholder, args := PlaceholderArgs(2, items)
+//	fmt.Println(placeholder) // WHERE flags=$3::bit(8) AND name=$4 AND height<$5
+//	fmt.Println(args) // [01010011 foo 210]
+func PlaceholderArgs(n int, items []WhereClauseItem) (string, []any) {
+	placeholders := make([]string, 0, len(items))
+	values := make([]any, 0, len(items))
 	i := n + 1
-	for k, v := range w {
-		beforeCast, afterCast, found := strings.Cut(k, "::")
-		if found {
-			placeholders = append(placeholders, fmt.Sprintf("%s=$%d::%s", beforeCast, i, afterCast))
-		} else {
-			placeholders = append(placeholders, fmt.Sprintf("%s=$%d", k, i))
+	for _, item := range items {
+		if len(item.column) == 0 || item.operator == 0 {
+			continue
 		}
-		values = append(values, v)
+		placeholders = append(placeholders, item.PlaceholderString(i))
+		values = append(values, item.value)
 		i++
 	}
 	if len(placeholders) == 0 {
