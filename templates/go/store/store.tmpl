@@ -48,7 +48,7 @@ func (store *{{ renderStoreName $entity }}) ReadWith{{ renderPascal $relation.Ha
 		{{ range $index, $attr := $relation.Has.Attributes }}{{ if ne $index 0 }}, {{ end }}{{ $attr.Source.Parent.Name }}.{{ $attr.Name }} as {{ $attr.AsName }}{{- end }}
 	FROM {{ $entity.Parent.Name }}.{{ $entity.Name }} 
 	{{- range $index, $join := $relation.KeysForAssocRelation }}
-	LEFT JOIN {{ $relation.Assoc.Name }} ON {{ range $index, $pk := $join }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Reference.Source.Parent.Name }}.{{ $pk.Name }} = {{ $pk.Reference.Final.Parent.Name }}.{{ $pk.Reference.Final.Name }}{{- end }} 
+	LEFT JOIN {{ $relation.Assoc.Parent.Name }}.{{ $relation.Assoc.Name }} ON {{ range $index, $pk := $join }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Reference.Source.Parent.Name }}.{{ $pk.Name }} = {{ $pk.Reference.Final.Parent.Name }}.{{ $pk.Reference.Final.Name }}{{- end }} 
 	{{- end }}
 	WHERE {{ range $index, $pk := $entity.Primary }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Source.Parent.Name }}.{{ $pk.Name }}=${{ renderPlusOne $index }}{{ renderCast $pk }}{{- end }}`
 	row := store.db.QueryRow(q, {{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }})
@@ -77,7 +77,7 @@ func (store *{{ renderStoreName $entity }}) ReadWith{{ renderPascal $relation.Ha
 		{{ range $index, $attr := $relation.Base.Attributes }}{{ if ne $index 0 }}, {{ end }}{{ $attr.Source.Parent.Name }}.{{ $attr.Name }} as {{ $attr.AsName }}{{- end }},
 		{{ range $index, $attr := $relation.Has.Attributes }}{{ if ne $index 0 }}, {{ end }}{{ $attr.Source.Parent.Name }}.{{ $attr.Name }} as {{ $attr.AsName }}{{- end }}
 	FROM {{ $entity.Parent.Name }}.{{ $entity.Name }} 
-	LEFT JOIN {{ $relation.Has.Name }} ON {{ range $index, $pk := $relation.KeysForDirectRelation }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Reference.Source.Parent.Name }}.{{ $pk.Name }} = {{ $pk.Reference.Final.Parent.Name }}.{{ $pk.Reference.Final.Name }}{{- end }} 
+	LEFT JOIN {{ $relation.Has.Parent.Name }}.{{ $relation.Has.Name }} ON {{ range $index, $pk := $relation.KeysForDirectRelation }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Reference.Source.Parent.Name }}.{{ $pk.Name }} = {{ $pk.Reference.Final.Parent.Name }}.{{ $pk.Reference.Final.Name }}{{- end }} 
 	WHERE {{ range $index, $pk := $entity.Primary }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Source.Parent.Name }}.{{ $pk.Name }}=${{ renderPlusOne $index }}{{ renderCast $pk }}{{- end }}`
 	row := store.db.QueryRow(q, {{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }})
 	if row.Err() != nil {

@@ -10,6 +10,7 @@
 func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -32,11 +33,13 @@ func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Re
 		{{- else }}
 		// NOTE: lack of validity err check
 		{{- end }}
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	b, err = json.Marshal({{ renderCamel .Name }})
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -45,16 +48,32 @@ func (handler *{{ renderHandlerName . }}) Post(w http.ResponseWriter, r *http.Re
 }
 {{- end }}
 {{- block "readHandler" . }}
+{{ $entity := . }}
 // Get is the http handler func to allow reading a record
 func (handler *{{ renderHandlerName . }}) Get(w http.ResponseWriter, r *http.Request) {
 	{{- template "primaryFromRequest" . }}
+{{ if gt (len .Relations) 0 }}
+	var one any
+	switch r.URL.Query().Get("include") {
+{{- range $index, $relation := .Relations }}
+	case "{{ $relation.Has.Name }}":
+		one, err = handler.store.ReadWith{{ renderPascal $relation.HasName }}({{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
+{{- end }}	
+	default:
+		one, err = handler.store.Read({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
+	}
+{{- else }}
 	one, err := handler.store.Read({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
+{{- end }}
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	}
+	}	
+
 	b, err := json.Marshal(one)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -79,11 +98,13 @@ func (handler *{{ renderHandlerName . }}) GetMany(w http.ResponseWriter, r *http
 	}
 	many, err := handler.store.ReadMany(limit, offset, handler.WhereClauseItemFromRequest(r))
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	b, err := json.Marshal(many)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -97,6 +118,7 @@ func (handler *{{ renderHandlerName . }}) Put(w http.ResponseWriter, r *http.Req
 	{{- template "primaryFromRequest" . }}
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -119,6 +141,7 @@ func (handler *{{ renderHandlerName . }}) Put(w http.ResponseWriter, r *http.Req
 
 	n, err := handler.store.Update({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }}, &{{ renderCamel .Name }})
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -131,6 +154,7 @@ func (handler *{{ renderHandlerName . }}) Delete(w http.ResponseWriter, r *http.
 	{{- template "primaryFromRequest" . }}
 	n, err := handler.store.Delete({{ range $index, $element := .Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
