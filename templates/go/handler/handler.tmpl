@@ -56,7 +56,7 @@ func (handler *{{ renderHandlerName . }}) Get(w http.ResponseWriter, r *http.Req
 	var one any
 	switch r.URL.Query().Get("include") {
 {{- range $index, $relation := .Relations }}
-	case "{{ $relation.Has.Name }}":
+	case "{{ $relation.HasName }}":
 		one, err = handler.store.ReadWith{{ renderPascal $relation.HasName }}({{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{- end }})
 {{- end }}	
 	default:

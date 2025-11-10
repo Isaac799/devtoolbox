@@ -40,7 +40,7 @@ func (store *{{ renderStoreName . }}) Read({{ range $index, $element := .Primary
 {{ $entity := . }}
 {{- range $index, $relation := $entity.Relations }}
 {{- if $relation.Assoc }}
-// ReadWith{{ renderPascal $relation.HasName }} selects a single '{{ $relation.Base.Name }}' including all '{{ $relation.HasName }}', via associative relation '{{ $relation.Assoc.Name }}'
+// ReadWith{{ renderPascal $relation.HasName }} selects a single '{{ $relation.Base.Name }}' including all '{{ $relation.HasName }}', via associative entity '{{ $relation.Assoc.Name }}'
 func (store *{{ renderStoreName $entity }}) ReadWith{{ renderPascal $relation.HasName }}({{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{ end }}) (*{{ renderPascal $relation.Name }}, error) {
 	q := `
 	SELECT 
@@ -51,21 +51,28 @@ func (store *{{ renderStoreName $entity }}) ReadWith{{ renderPascal $relation.Ha
 	LEFT JOIN {{ $relation.Assoc.Parent.Name }}.{{ $relation.Assoc.Name }} ON {{ range $index, $pk := $join }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Reference.Source.Parent.Name }}.{{ $pk.Name }} = {{ $pk.Reference.Final.Parent.Name }}.{{ $pk.Reference.Final.Name }}{{- end }} 
 	{{- end }}
 	WHERE {{ range $index, $pk := $entity.Primary }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Source.Parent.Name }}.{{ $pk.Name }}=${{ renderPlusOne $index }}{{ renderCast $pk }}{{- end }}`
-	row := store.db.QueryRow(q, {{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }})
-	if row.Err() != nil {
-		return nil, row.Err()
+	rows, err := store.db.Query(q, {{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }})
+	if err != nil {
+		return nil, err
 	}
+	defer rows.Close()
+
 	one := {{ renderPascal $relation.Name }}{
 		{{ renderPascal $relation.HasName }}: make([]{{ renderPascal $relation.Has.Name }}, 0, 10),
 	}
-	var {{ renderCamel $relation.Has.Name }} {{ renderPascal $relation.Has.Name }}
-	err := row.Scan(
-		{{ range $index, $attr := $relation.Base.Attributes }}{{ if ne $index 0 }}, {{ end }}&one.{{ renderPascal $attr.Name }}{{- end }},
-		{{ range $index, $attr := $relation.Has.Attributes }}{{ if ne $index 0 }}, {{ end }}&{{ renderCamel $relation.Has.Name }}.{{ renderPascal $attr.Name }}{{- end }},
-	)
-	one.{{ renderPascal $relation.HasName }} = append(one.{{ renderPascal $relation.HasName }}, {{ renderCamel $relation.Has.Name }})
-	if err != nil {
-		return nil, err
+	for rows.Next() {
+		var {{ renderCamel $relation.Has.Name }} {{ renderPascal $relation.Has.Name }}
+		err := rows.Scan(
+			{{ range $index, $attr := $relation.Base.Attributes }}{{ if ne $index 0 }}, {{ end }}&one.{{ renderPascal $attr.Name }}{{- end }},
+			{{ range $index, $attr := $relation.Has.Attributes }}{{ if ne $index 0 }}, {{ end }}&{{ renderCamel $relation.Has.Name }}.{{ renderPascal $attr.Name }}{{- end }},
+		)
+		one.{{ renderPascal $relation.HasName }} = append(one.{{ renderPascal $relation.HasName }}, {{ renderCamel $relation.Has.Name }})
+		if err != nil {
+			return nil, err
+		}
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
 	}
 	return &one, nil
 }

@@ -9,14 +9,14 @@ type {{ renderPascal .Name }} struct {
 
 {{- range $index, $relation := .Relations }}
     {{ if $relation.Assoc }} 
-// {{ renderPascal $relation.Name }} is an associative relation {{ $relation.Assoc.Name }}:
-// {{ $relation.Base.Name }} has zero to many {{ $relation.Has.Name }} 
+// {{ renderPascal $relation.Name }} is derived from associative entity '{{ $relation.Assoc.Name }}':
+// '{{ $relation.Base.Name }}' has zero to many '{{ $relation.Has.Name }}' 
     {{- else if $relation.Optional }}
 // {{ renderPascal $relation.Name }} is a direct relation:
-// {{ $relation.Base.Name }} has zero to one {{ $relation.Has.Name }} 
+// '{{ $relation.Base.Name }}' has zero to one '{{ $relation.Has.Name }}' 
     {{- else }}
 // {{ renderPascal $relation.Name }} is a direct relation:
-// {{ $relation.Base.Name }} has one and exactly one {{ $relation.Has.Name }} 
+// '{{ $relation.Base.Name }}' has one and exactly one '{{ $relation.Has.Name }}' 
     {{- end }}
 type {{ renderPascal $relation.Name }} struct {
     {{ renderPascal $relation.Base.Name }}
