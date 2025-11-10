@@ -62,7 +62,9 @@ func NewOobSwap(
 		}
 
 		for _, templateOpt := range templateOptions {
-			templateOpt(tmpl)
+			if err := templateOpt(tmpl); err != nil {
+				return err
+			}
 		}
 
 		if err := tmpl.ExecuteTemplate(oobSwapper.buff, templateName, data); err != nil {

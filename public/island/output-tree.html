@@ -53,7 +53,7 @@
     <details open>
         <summary class="file-name"> {{ $k.Full }} </summary>
         <div class="scroll-box">
-            <pre>{{- $v }}</pre>
+            {{- chroma $v "PL/pgSQL" }}
         </div>
     </details>
     {{ end }}
@@ -64,7 +64,7 @@
     <details>
         <summary class="file-name"> {{ $k.Full }} </summary>
         <div class="scroll-box">
-            <pre>{{- $v }}</pre>
+            {{- chroma $v "ini" }}
         </div>
     </details>
     {{ end }}
@@ -75,7 +75,7 @@
     <details>
         <summary class="file-name"> {{ $k.Full }} </summary>
         <div class="scroll-box">
-            <pre>{{- $v }}</pre>
+            {{- chroma $v "go" }}
         </div>
     </details>
     {{ end }}

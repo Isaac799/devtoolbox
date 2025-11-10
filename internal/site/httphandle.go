@@ -189,7 +189,7 @@ func (store *ClientStore) HandleDialog(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	{
-		s := filepath.Join(wd, "public", "island", "*.html")
+		s := filepath.Join(wd, "public", "island", "*.pub.html")
 		tmpl, err = tmpl.ParseGlob(s)
 		if err != nil {
 			fmt.Println(err)
