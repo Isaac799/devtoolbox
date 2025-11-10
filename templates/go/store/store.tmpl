@@ -76,6 +76,41 @@ func (store *{{ renderStoreName $entity }}) ReadWith{{ renderPascal $relation.Ha
 	}
 	return &one, nil
 }
+{{- else if $relation.Many }}
+// ReadWith{{ renderPascal $relation.HasName }} selects a single '{{ $relation.Base.Name }}' including all '{{ $relation.HasName }}'
+func (store *{{ renderStoreName $entity }}) ReadWith{{ renderPascal $relation.HasName }}({{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{ end }}) (*{{ renderPascal $relation.Name }}, error) {
+	q := `
+	SELECT 
+		{{ range $index, $attr := $relation.Base.Attributes }}{{ if ne $index 0 }}, {{ end }}{{ $attr.Source.Parent.Name }}.{{ $attr.Name }} as {{ $attr.AsName }}{{- end }},
+		{{ range $index, $attr := $relation.Has.Attributes }}{{ if ne $index 0 }}, {{ end }}{{ $attr.Source.Parent.Name }}.{{ $attr.Name }} as {{ $attr.AsName }}{{- end }}
+	FROM {{ $entity.Parent.Name }}.{{ $entity.Name }} 
+	LEFT JOIN {{ $relation.Has.Parent.Name }}.{{ $relation.Has.Name }} ON {{ range $index, $pk := $relation.PrimaryHasToBase }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Reference.Source.Parent.Name }}.{{ $pk.Name }} = {{ $pk.Reference.Final.Parent.Name }}.{{ $pk.Reference.Final.Name }}{{- end }} 
+	WHERE {{ range $index, $pk := $entity.Primary }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Source.Parent.Name }}.{{ $pk.Name }}=${{ renderPlusOne $index }}{{ renderCast $pk }}{{- end }}`
+	rows, err := store.db.Query(q, {{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }})
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	one := {{ renderPascal $relation.Name }}{
+		{{ renderPascal $relation.HasName }}: make([]{{ renderPascal $relation.Has.Name }}, 0, 10),
+	}
+	for rows.Next() {
+		var {{ renderCamel $relation.Has.Name }} {{ renderPascal $relation.Has.Name }}
+		err := rows.Scan(
+			{{ range $index, $attr := $relation.Base.Attributes }}{{ if ne $index 0 }}, {{ end }}&one.{{ renderPascal $attr.Name }}{{- end }},
+			{{ range $index, $attr := $relation.Has.Attributes }}{{ if ne $index 0 }}, {{ end }}&{{ renderCamel $relation.Has.Name }}.{{ renderPascal $attr.Name }}{{- end }},
+		)
+		one.{{ renderPascal $relation.HasName }} = append(one.{{ renderPascal $relation.HasName }}, {{ renderCamel $relation.Has.Name }})
+		if err != nil {
+			return nil, err
+		}
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	return &one, nil
+}
 {{- else }}
 // ReadWith{{ renderPascal $relation.HasName }} selects a single {{ $relation.Base.Name }} including its {{ $relation.Has.Name }}
 func (store *{{ renderStoreName $entity }}) ReadWith{{ renderPascal $relation.HasName }}({{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }} {{ renderGoKind $element }}{{ end }}) (*{{ renderPascal $relation.Name }}, error) {
@@ -84,7 +119,7 @@ func (store *{{ renderStoreName $entity }}) ReadWith{{ renderPascal $relation.Ha
 		{{ range $index, $attr := $relation.Base.Attributes }}{{ if ne $index 0 }}, {{ end }}{{ $attr.Source.Parent.Name }}.{{ $attr.Name }} as {{ $attr.AsName }}{{- end }},
 		{{ range $index, $attr := $relation.Has.Attributes }}{{ if ne $index 0 }}, {{ end }}{{ $attr.Source.Parent.Name }}.{{ $attr.Name }} as {{ $attr.AsName }}{{- end }}
 	FROM {{ $entity.Parent.Name }}.{{ $entity.Name }} 
-	LEFT JOIN {{ $relation.Has.Parent.Name }}.{{ $relation.Has.Name }} ON {{ range $index, $pk := $relation.KeysForDirectRelation }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Reference.Source.Parent.Name }}.{{ $pk.Name }} = {{ $pk.Reference.Final.Parent.Name }}.{{ $pk.Reference.Final.Name }}{{- end }} 
+	LEFT JOIN {{ $relation.Has.Parent.Name }}.{{ $relation.Has.Name }} ON {{ range $index, $pk := $relation.PrimaryBaseToHas }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Reference.Source.Parent.Name }}.{{ $pk.Name }} = {{ $pk.Reference.Final.Parent.Name }}.{{ $pk.Reference.Final.Name }}{{- end }} 
 	WHERE {{ range $index, $pk := $entity.Primary }}{{ if ne $index 0 }} AND {{ end }}{{ $pk.Source.Parent.Name }}.{{ $pk.Name }}=${{ renderPlusOne $index }}{{ renderCast $pk }}{{- end }}`
 	row := store.db.QueryRow(q, {{ range $index, $element := $entity.Primary }}{{ if ne $index 0 }}, {{ end }}{{ renderCamel $element.Name }}{{ end }})
 	if row.Err() != nil {

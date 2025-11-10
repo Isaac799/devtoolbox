@@ -11,6 +11,9 @@ type {{ renderPascal .Name }} struct {
     {{ if $relation.Assoc }} 
 // {{ renderPascal $relation.Name }} is derived from associative entity '{{ $relation.Assoc.Name }}':
 // '{{ $relation.Base.Name }}' has zero to many '{{ $relation.Has.Name }}' 
+    {{- else if $relation.Many }}
+// {{ renderPascal $relation.Name }} is a optional relation:
+// '{{ $relation.Base.Name }}' has zero to many '{{ $relation.Has.Name }}' 
     {{- else if $relation.Optional }}
 // {{ renderPascal $relation.Name }} is a direct relation:
 // '{{ $relation.Base.Name }}' has zero to one '{{ $relation.Has.Name }}' 
@@ -21,6 +24,8 @@ type {{ renderPascal .Name }} struct {
 type {{ renderPascal $relation.Name }} struct {
     {{ renderPascal $relation.Base.Name }}
     {{- if $relation.Assoc }} 
+    {{ renderPascal $relation.HasName }} []{{ renderPascal $relation.Has.Name }} `json:"{{ $relation.HasName }}"`
+    {{- else if $relation.Many }} 
     {{ renderPascal $relation.HasName }} []{{ renderPascal $relation.Has.Name }} `json:"{{ $relation.HasName }}"`
     {{- else }}
     {{ renderPascal $relation.Has.Name }} {{ renderPascal $relation.Has.Name }} `json:"{{ $relation.Has.Name }}"`

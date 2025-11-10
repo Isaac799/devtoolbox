@@ -24,6 +24,7 @@ type Relation struct {
 	Base     *Entity
 	Has      *Entity
 	Assoc    *Entity
+	Many     bool
 	Optional bool
 }
 
@@ -33,8 +34,9 @@ func (rel *Relation) Name() string {
 }
 
 // HasName provides a case corrected name for the has entity use in templating
+// many-many or 0(1)-1
 func (rel *Relation) HasName() string {
-	if rel.Assoc == nil {
+	if rel.Assoc == nil && !rel.Many {
 		return rel.Has.Name
 	}
 	plural := "s"
@@ -45,8 +47,9 @@ func (rel *Relation) HasName() string {
 	return rel.Has.Name + plural
 }
 
-// KeysForDirectRelation returns a list of pk that make up the relation between 2 entities
-func (rel *Relation) KeysForDirectRelation() []*Attribute {
+// PrimaryBaseToHas returns a list of pk that make up the relation between 2 entities
+// many-many or 0(1)-1
+func (rel *Relation) PrimaryBaseToHas() []*Attribute {
 	pks := rel.Base.Primary()
 	overlap := make([]*Attribute, 0, len(pks))
 	for _, attr := range rel.Base.Attributes() {
@@ -55,6 +58,24 @@ func (rel *Relation) KeysForDirectRelation() []*Attribute {
 		}
 		a := attr.Reference.Final.Parent
 		b := rel.Has
+		if a == b {
+			overlap = append(overlap, attr)
+		}
+	}
+	return overlap
+}
+
+// PrimaryHasToBase returns a list of pk that make up the relation between 2 entities
+// 0(1)-many
+func (rel *Relation) PrimaryHasToBase() []*Attribute {
+	pks := rel.Has.Primary()
+	overlap := make([]*Attribute, 0, len(pks))
+	for _, attr := range rel.Has.Attributes() {
+		if attr.DirectChild {
+			continue
+		}
+		a := attr.Reference.Final.Parent
+		b := rel.Base
 		if a == b {
 			overlap = append(overlap, attr)
 		}
@@ -111,6 +132,7 @@ func (relationMaker *RelationMaker) Determine() []Relation {
 	relations := make([]Relation, 0, 20)
 	for _, schema := range relationMaker.Schemas {
 		for _, entity := range schema.Entities {
+			// many to many via associative
 			if entity.CompositePrimary() {
 				pks := entity.Primary()
 				for _, pkA := range pks {
@@ -143,6 +165,7 @@ func (relationMaker *RelationMaker) Determine() []Relation {
 				continue
 			}
 
+			// one and exactly one
 			for _, attr := range entity.Attributes() {
 				if attr.DirectChild {
 					continue
@@ -151,6 +174,34 @@ func (relationMaker *RelationMaker) Determine() []Relation {
 					Base:     entity,
 					Has:      attr.Final.Parent,
 					Optional: !attr.Reference.Source.Required.Bool,
+					Many:     false,
+				}
+
+				// prevents duplicate on composite pk
+				distinct := true
+				for _, rel := range relations {
+					if rel.Base == candidate.Base && rel.Has == candidate.Has {
+						distinct = false
+						break
+					}
+				}
+				if !distinct {
+					continue
+				}
+
+				relations = append(relations, candidate)
+			}
+
+			// zero to many
+			for _, attr := range entity.Attributes() {
+				if attr.DirectChild {
+					continue
+				}
+				candidate := Relation{
+					Base:     attr.Final.Parent,
+					Has:      entity,
+					Optional: true,
+					Many:     true,
 				}
 
 				// prevents duplicate on composite pk
