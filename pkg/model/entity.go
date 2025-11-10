@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Isaac799/devtoolbox/internal"
+	"github.com/iancoleman/strcase"
 )
 
 // Entity is an entity in a schema
@@ -86,6 +87,11 @@ func (attr *Attribute) Name() string {
 	a := strings.ReplaceAll(attr.Path, "/", "_")
 	b := strings.ReplaceAll(a, ".", "_")
 	return strings.Trim(b, "_")
+}
+
+// AsName is a naming for sql column aliasing to distinguish on column name overlap
+func (attr *Attribute) AsName() string {
+	return strcase.ToSnake(fmt.Sprintf("%s_%s", attr.Source.Parent.Name, attr.Name()))
 }
 
 func (ent *Entity) attributes(n, max int, path string, collection *[]*Attribute, source *AttributeRaw) []*Attribute {

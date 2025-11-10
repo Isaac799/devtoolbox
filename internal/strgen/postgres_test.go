@@ -11,7 +11,8 @@ import (
 const testMockSchemaKitchen = `# Kitchen
 
 ## Supplier
-- id          as bit with primary, ..16
+- k1 as ++
+- k2 as ++
 - name        as str  with required, 3..30
 
 ## Ingredient

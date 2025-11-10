@@ -8,8 +8,8 @@ type {{ renderPascal .Name }} struct {
 }
 
 {{- range $index, $relation := .Relations }}
-    {{ if $relation.Many }} 
-// {{ renderPascal $relation.Name }} is an associative relation:
+    {{ if $relation.Assoc }} 
+// {{ renderPascal $relation.Name }} is an associative relation {{ $relation.Assoc.Name }}:
 // {{ $relation.Base.Name }} has zero to many {{ $relation.Has.Name }} 
     {{- else if $relation.Optional }}
 // {{ renderPascal $relation.Name }} is a direct relation:
@@ -20,7 +20,7 @@ type {{ renderPascal .Name }} struct {
     {{- end }}
 type {{ renderPascal $relation.Name }} struct {
     {{ renderPascal $relation.Base.Name }}
-    {{- if $relation.Many }} 
+    {{- if $relation.Assoc }} 
     {{ renderPascal $relation.HasName }} []{{ renderPascal $relation.Has.Name }} `json:"{{ $relation.HasName }}"`
     {{- else }}
     {{ renderPascal $relation.Has.Name }} {{ renderPascal $relation.Has.Name }} `json:"{{ $relation.Has.Name }}"`
