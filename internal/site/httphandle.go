@@ -291,9 +291,21 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	client.change(r, changeChroma)
+	if client.Dirty&MaskDirtyChroma == MaskDirtyChroma {
+		if err := oobSwapper.Write(oobSwapOutput(client)); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
+		oobSwapper.FlushToResponseWriter(w)
+		client.Dirty = 0
+		return
+	}
+
 	client.change(
 		r,
-		changeExample, changeQ, changeMode, changeChroma,
+		changeExample, changeQ, changeMode,
 		changeSchema, changeEntity, changeAttribute,
 	)
 

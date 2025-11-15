@@ -16,6 +16,7 @@ const (
 	MaskDirtyMode
 	MaskDirtyExample
 	MaskDirtyFocus
+	MaskDirtyChroma
 )
 
 // change is how we change a client based on a request
@@ -74,7 +75,9 @@ var changeFocus = change(func(r *http.Request, c *Client) {
 	if len(s) == 0 {
 		return
 	}
-
+	if c.Input.Focus.RawID == s {
+		return
+	}
 	c.Dirty = c.Dirty | MaskDirtyFocus
 	c.Input.Focus.RawID = s
 	c.setFocus()
@@ -83,7 +86,15 @@ var changeFocus = change(func(r *http.Request, c *Client) {
 var changeChroma = change(func(r *http.Request, c *Client) {
 	const k = "chroma"
 	v := r.FormValue(k)
-	c.Input.Chroma = v == "true"
+	if len(v) == 0 {
+		return
+	}
+	useChroma := v == "true"
+	if useChroma == c.Input.Chroma {
+		return
+	}
+	c.Dirty = c.Dirty | MaskDirtyChroma
+	c.Input.Chroma = useChroma
 })
 
 func newSchemaFromRequest(r *http.Request) *model.Schema {
