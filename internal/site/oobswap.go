@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"text/template"
+	"unicode/utf8"
 
 	"github.com/Isaac799/devtoolbox/pkg/htmx"
 	"github.com/alecthomas/chroma/v2"
@@ -65,8 +66,11 @@ func oobSwapOutput(client *Client) htmx.OobSwap {
 		return nil
 	}
 
-	withChroma := func(t *template.Template) error {
+	withFuncMap := func(t *template.Template) error {
 		t.Funcs(template.FuncMap{
+			"stringSize": func(s string) string {
+				return fmt.Sprintf("%d bytes", utf8.RuneCountInString(s))
+			},
 			"chroma": func(s string, useLexer string) string {
 				if !client.Input.Chroma {
 					return s
@@ -103,6 +107,6 @@ func oobSwapOutput(client *Client) htmx.OobSwap {
 		filepath.Join(wd, "public", "island", "output.html"),
 		"output",
 		data,
-		withChroma, withOutputs,
+		withFuncMap, withOutputs,
 	)
 }

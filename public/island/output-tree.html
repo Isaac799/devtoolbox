@@ -51,7 +51,7 @@
 
     {{ range $k, $v := .Client.LastOutput.PgGen }}
     <details open>
-        <summary class="file-name"> {{ $k.Full }} </summary>
+        <summary class="file-name"> {{ $k.Full }}  ({{ stringSize $v }}) </summary>
         {{ if $.Client.Input.Chroma }}
         <div class="scroll-box">
             {{- chroma $v "PL/pgSQL" }}
@@ -68,7 +68,7 @@
 
     {{ range $k, $v := .Client.LastOutput.HurlGen }}
     <details>
-        <summary class="file-name"> {{ $k.Full }} </summary>
+        <summary class="file-name"> {{ $k.Full }} ({{ stringSize $v }}) </summary>
         {{ if $.Client.Input.Chroma }}
         <div class="scroll-box">
             {{- chroma $v "ini" }}
@@ -85,7 +85,7 @@
 
     {{ range $k, $v := .Client.LastOutput.GoGen }}
     <details>
-        <summary class="file-name"> {{ $k.Full }} </summary>
+        <summary class="file-name"> {{ $k.Full }} ({{ stringSize $v }}) </summary>
         {{ if $.Client.Input.Chroma }}
         <div class="scroll-box">
             {{- chroma $v "go" }}
