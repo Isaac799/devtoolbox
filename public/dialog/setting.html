@@ -34,6 +34,35 @@
                 <label for="mode-graphical">Graphical Mode</label>
             </div>
         </fieldset>
+        <fieldset>
+            <legend>Syntax Highlighting:</legend>
+            <div>
+                <input
+                    hx-post="/change"
+                    hx-trigger="change"
+                    hx-swap="none"
+                    type="radio"
+                    name="chroma"
+                    id="chroma"
+                    value="false"
+                    {{ if not .Client.Input.Chroma }}checked{{ end }}
+                />
+                <label for="mode-graphical">None (fastest)</label>
+            </div>
+            <div>
+                <input
+                    hx-post="/change"
+                    hx-trigger="change"
+                    hx-swap="none"
+                    type="radio"
+                    name="chroma"
+                    id="chroma"
+                    value="true"
+                    {{ if .Client.Input.Chroma }}checked{{ end }}
+                />
+                <label for="mode-graphical">Active</label>
+            </div>
+        </fieldset>
 
         <div class="fr g1">
             <form method="dialog">

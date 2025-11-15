@@ -80,6 +80,12 @@ var changeFocus = change(func(r *http.Request, c *Client) {
 	c.setFocus()
 })
 
+var changeChroma = change(func(r *http.Request, c *Client) {
+	const k = "chroma"
+	v := r.FormValue(k)
+	c.Input.Chroma = v == "true"
+})
+
 func newSchemaFromRequest(r *http.Request) *model.Schema {
 	return &model.Schema{
 		ID:   r.FormValue("SchemaID"),

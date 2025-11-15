@@ -31,6 +31,7 @@ type Input struct {
 	Example string
 	Focus   Focus
 	Mode    InputMode
+	Chroma  bool
 }
 
 // Output is for template rendering to show what was generated

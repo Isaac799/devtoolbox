@@ -68,6 +68,10 @@ func oobSwapOutput(client *Client) htmx.OobSwap {
 	withChroma := func(t *template.Template) error {
 		t.Funcs(template.FuncMap{
 			"chroma": func(s string, useLexer string) string {
+				if !client.Input.Chroma {
+					return s
+				}
+
 				lexer := lexers.Get(useLexer)
 				lexer = chroma.Coalesce(lexer)
 				style := styles.Get("github")

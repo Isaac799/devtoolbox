@@ -293,7 +293,7 @@ func (store *ClientStore) HandleChange(w http.ResponseWriter, r *http.Request) {
 
 	client.change(
 		r,
-		changeExample, changeQ, changeMode,
+		changeExample, changeQ, changeMode, changeChroma,
 		changeSchema, changeEntity, changeAttribute,
 	)
 
